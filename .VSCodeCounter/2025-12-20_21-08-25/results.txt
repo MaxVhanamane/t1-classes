@@ -1,0 +1,199 @@
+Date : 2025-12-20 21:08:25
+Directory : c:\Users\maxvh\Desktop\infinity classes
+Total : 110 files,  14680 codes, 140 comments, 971 blanks, all 15791 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| JSON               |          3 |      8,342 |          0 |          3 |      8,345 |
+| TypeScript JSX     |         77 |      5,624 |        132 |        796 |      6,552 |
+| TypeScript         |         20 |        512 |          6 |        146 |        664 |
+| PostCSS            |          1 |        120 |          0 |          6 |        126 |
+| JSON with Comments |          1 |         34 |          0 |          1 |         35 |
+| Markdown           |          1 |         23 |          0 |         14 |         37 |
+| JavaScript         |          2 |         20 |          2 |          5 |         27 |
+| XML                |          5 |          5 |          0 |          0 |          5 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                                  | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                     |        110 |     14,680 |        140 |        971 |     15,791 |
+| . (Files)                                                                                                             |          8 |      8,431 |          2 |         26 |      8,459 |
+| components                                                                                                            |          1 |        130 |          0 |         14 |        144 |
+| components\ui                                                                                                         |          1 |        130 |          0 |         14 |        144 |
+| public                                                                                                                |          5 |          5 |          0 |          0 |          5 |
+| src                                                                                                                   |         96 |      6,114 |        138 |        931 |      7,183 |
+| src\app                                                                                                               |         51 |      3,773 |        109 |        598 |      4,480 |
+| src\app (Files)                                                                                                       |          2 |        152 |          0 |         11 |        163 |
+| src\app\admin                                                                                                         |         43 |      3,266 |         94 |        521 |      3,881 |
+| src\app\admin (Files)                                                                                                 |          2 |         85 |          0 |         18 |        103 |
+| src\app\admin\batches                                                                                                 |         18 |      1,057 |         29 |        178 |      1,264 |
+| src\app\admin\batches (Files)                                                                                         |          2 |         71 |          0 |         13 |         84 |
+| src\app\admin\batches\_features                                                                                       |         16 |        986 |         29 |        165 |      1,180 |
+| src\app\admin\batches\_features\actions                                                                               |          2 |         64 |          0 |         22 |         86 |
+| src\app\admin\batches\_features\components                                                                            |         10 |        803 |         29 |        115 |        947 |
+| src\app\admin\batches\_features\helper-functions                                                                      |          1 |         12 |          0 |          5 |         17 |
+| src\app\admin\batches\_features\hooks                                                                                 |          1 |         29 |          0 |          7 |         36 |
+| src\app\admin\batches\_features\types                                                                                 |          1 |         33 |          0 |         12 |         45 |
+| src\app\admin\batches\_features\zod-schema                                                                            |          1 |         45 |          0 |          4 |         49 |
+| src\app\admin\courses                                                                                                 |          6 |        835 |         23 |        133 |        991 |
+| src\app\admin\courses (Files)                                                                                         |          2 |         18 |          0 |          5 |         23 |
+| src\app\admin\courses\_features                                                                                       |          4 |        817 |         23 |        128 |        968 |
+| src\app\admin\courses\_features\actions                                                                               |          1 |        108 |          1 |         22 |        131 |
+| src\app\admin\courses\_features\components                                                                            |          3 |        709 |         22 |        106 |        837 |
+| src\app\admin\enrollments                                                                                             |         15 |      1,138 |         33 |        155 |      1,326 |
+| src\app\admin\enrollments (Files)                                                                                     |          2 |        104 |          0 |         10 |        114 |
+| src\app\admin\enrollments\_features                                                                                   |         13 |      1,034 |         33 |        145 |      1,212 |
+| src\app\admin\enrollments\_features\actions                                                                           |          2 |         60 |          0 |         23 |         83 |
+| src\app\admin\enrollments\_features\components                                                                        |          9 |        887 |         30 |         98 |      1,015 |
+| src\app\admin\enrollments\_features\types                                                                             |          1 |         60 |          3 |         16 |         79 |
+| src\app\admin\enrollments\_features\zod-schema                                                                        |          1 |         27 |          0 |          8 |         35 |
+| src\app\admin\users                                                                                                   |          2 |        151 |          9 |         37 |        197 |
+| src\app\admin\users (Files)                                                                                           |          1 |         48 |          2 |          6 |         56 |
+| src\app\admin\users\_features                                                                                         |          1 |        103 |          7 |         31 |        141 |
+| src\app\admin\users\_features\actions                                                                                 |          1 |        103 |          7 |         31 |        141 |
+| src\app\auth                                                                                                          |          2 |         90 |          2 |         26 |        118 |
+| src\app\auth\callback                                                                                                 |          1 |         42 |          2 |         13 |         57 |
+| src\app\auth\set-password                                                                                             |          1 |         48 |          0 |         13 |         61 |
+| src\app\login                                                                                                         |          1 |         72 |          0 |         14 |         86 |
+| src\app\student                                                                                                       |          3 |        193 |         13 |         26 |        232 |
+| src\app\student\dashboard                                                                                             |          1 |         99 |          6 |         11 |        116 |
+| src\app\student\papers                                                                                                |          2 |         94 |          7 |         15 |        116 |
+| src\app\student\papers (Files)                                                                                        |          1 |         82 |          4 |         11 |         97 |
+| src\app\student\papers\view                                                                                           |          1 |         12 |          3 |          4 |         19 |
+| src\components                                                                                                        |         36 |      2,219 |         24 |        293 |      2,536 |
+| src\components\ui                                                                                                     |         36 |      2,219 |         24 |        293 |      2,536 |
+| src\components\ui (Files)                                                                                             |         24 |      1,565 |          5 |        196 |      1,766 |
+| src\components\ui\admin                                                                                               |          8 |        453 |         11 |         69 |        533 |
+| src\components\ui\admin (Files)                                                                                       |          3 |        138 |          4 |         20 |        162 |
+| src\components\ui\admin\users                                                                                         |          5 |        315 |          7 |         49 |        371 |
+| src\components\ui\skeleton                                                                                            |          3 |         86 |          6 |         15 |        107 |
+| src\components\ui\skeleton\table                                                                                      |          3 |         86 |          6 |         15 |        107 |
+| src\components\ui\user-search-combobox                                                                                |          1 |        115 |          2 |         13 |        130 |
+| src\lib                                                                                                               |          8 |        107 |          5 |         35 |        147 |
+| src\lib (Files)                                                                                                       |          3 |         33 |          0 |         10 |         43 |
+| src\lib\actions                                                                                                       |          1 |         20 |          0 |          9 |         29 |
+| src\lib\hooks                                                                                                         |          1 |         11 |          0 |          5 |         16 |
+| src\lib\supabase                                                                                                      |          3 |         43 |          5 |         11 |         59 |
+| src\types                                                                                                             |          1 |         15 |          0 |          5 |         20 |
++-----------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                                                              | language           | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| c:\Users\maxvh\Desktop\infinity classes\README.md                                                                     | Markdown           |         23 |          0 |         14 |         37 |
+| c:\Users\maxvh\Desktop\infinity classes\components.json                                                               | JSON               |         22 |          0 |          1 |         23 |
+| c:\Users\maxvh\Desktop\infinity classes\components\ui\dialog.tsx                                                      | TypeScript JSX     |        130 |          0 |         14 |        144 |
+| c:\Users\maxvh\Desktop\infinity classes\eslint.config.mjs                                                             | JavaScript         |         14 |          2 |          3 |         19 |
+| c:\Users\maxvh\Desktop\infinity classes\next.config.ts                                                                | TypeScript         |         12 |          0 |          3 |         15 |
+| c:\Users\maxvh\Desktop\infinity classes\package-lock.json                                                             | JSON               |      8,269 |          0 |          1 |      8,270 |
+| c:\Users\maxvh\Desktop\infinity classes\package.json                                                                  | JSON               |         51 |          0 |          1 |         52 |
+| c:\Users\maxvh\Desktop\infinity classes\postcss.config.mjs                                                            | JavaScript         |          6 |          0 |          2 |          8 |
+| c:\Users\maxvh\Desktop\infinity classes\public\file.svg                                                               | XML                |          1 |          0 |          0 |          1 |
+| c:\Users\maxvh\Desktop\infinity classes\public\globe.svg                                                              | XML                |          1 |          0 |          0 |          1 |
+| c:\Users\maxvh\Desktop\infinity classes\public\next.svg                                                               | XML                |          1 |          0 |          0 |          1 |
+| c:\Users\maxvh\Desktop\infinity classes\public\vercel.svg                                                             | XML                |          1 |          0 |          0 |          1 |
+| c:\Users\maxvh\Desktop\infinity classes\public\window.svg                                                             | XML                |          1 |          0 |          0 |          1 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\actions\actions.ts                            | TypeScript         |         37 |          0 |         14 |         51 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\actions\toggle-batch-active.ts                | TypeScript         |         27 |          0 |          8 |         35 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batch-active-switch.tsx            | TypeScript JSX     |         36 |          0 |          9 |         45 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batch-badges.tsx                   | TypeScript JSX     |         31 |          1 |          4 |         36 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batch-dialog.tsx                   | TypeScript JSX     |        344 |         16 |         44 |        404 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batch-duration.tsx                 | TypeScript JSX     |         21 |          0 |          5 |         26 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-cards.tsx                  | TypeScript JSX     |        115 |          8 |         20 |        143 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-client-wrapper.tsx         | TypeScript JSX     |         46 |          0 |          8 |         54 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-header-skeleton.tsx        | TypeScript JSX     |          9 |          0 |          2 |         11 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-header.tsx                 | TypeScript JSX     |         19 |          1 |          4 |         24 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-table-skeleton.tsx         | TypeScript JSX     |         22 |          0 |          3 |         25 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-table.tsx                  | TypeScript JSX     |        160 |          3 |         16 |        179 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\helper-functions\functions.ts                 | TypeScript         |         12 |          0 |          5 |         17 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\hooks\use-batch-active-toggle.ts              | TypeScript         |         29 |          0 |          7 |         36 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\types\types.ts                                | TypeScript         |         33 |          0 |         12 |         45 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\zod-schema\schema.ts                          | TypeScript         |         45 |          0 |          4 |         49 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\loading.tsx                                             | TypeScript JSX     |         12 |          0 |          2 |         14 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\page.tsx                                                | TypeScript JSX     |         59 |          0 |         11 |         70 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\_features\actions\actions.ts                            | TypeScript         |        108 |          1 |         22 |        131 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\_features\components\course-dialog.tsx                  | TypeScript JSX     |        429 |          8 |         66 |        503 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\_features\components\courses-client.tsx                 | TypeScript JSX     |         41 |          0 |          9 |         50 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\_features\components\courses-table.tsx                  | TypeScript JSX     |        239 |         14 |         31 |        284 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\loading.tsx                                             | TypeScript JSX     |         12 |          0 |          2 |         14 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\page.tsx                                                | TypeScript JSX     |          6 |          0 |          3 |          9 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\actions\create-enrollment.ts              | TypeScript         |         28 |          0 |         12 |         40 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\actions\update-enrollment.ts              | TypeScript         |         32 |          0 |         11 |         43 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\batch-combo-box.tsx            | TypeScript JSX     |         86 |          1 |         10 |         97 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\course-combo-box.tsx           | TypeScript JSX     |         79 |          0 |          9 |         88 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollment-cards.tsx           | TypeScript JSX     |        131 |          8 |         16 |        155 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollment-dialog.tsx          | TypeScript JSX     |        299 |         10 |         27 |        336 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollment-header.tsx          | TypeScript JSX     |         19 |          0 |          3 |         22 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollment-table.tsx           | TypeScript JSX     |        163 |          9 |         17 |        189 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollments-client.tsx         | TypeScript JSX     |         60 |          2 |          7 |         69 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\registration-channel-badge.tsx | TypeScript JSX     |         24 |          0 |          5 |         29 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\status-badge.tsx               | TypeScript JSX     |         26 |          0 |          4 |         30 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\types\enrollments.tsx                     | TypeScript JSX     |         60 |          3 |         16 |         79 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\zod-schema\enrollments.ts                 | TypeScript         |         27 |          0 |          8 |         35 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\loading.tsx                                         | TypeScript JSX     |         12 |          0 |          2 |         14 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\page.tsx                                            | TypeScript JSX     |         92 |          0 |          8 |        100 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\layout.tsx                                                      | TypeScript JSX     |         23 |          0 |          7 |         30 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\page.tsx                                                        | TypeScript JSX     |         62 |          0 |         11 |         73 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\users\_features\actions\actions.tsx                             | TypeScript JSX     |        103 |          7 |         31 |        141 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\admin\users\page.tsx                                                  | TypeScript JSX     |         48 |          2 |          6 |         56 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\auth\callback\page.tsx                                                | TypeScript JSX     |         42 |          2 |         13 |         57 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\auth\set-password\page.tsx                                            | TypeScript JSX     |         48 |          0 |         13 |         61 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\globals.css                                                           | PostCSS            |        120 |          0 |          6 |        126 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\layout.tsx                                                            | TypeScript JSX     |         32 |          0 |          5 |         37 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\login\page.tsx                                                        | TypeScript JSX     |         72 |          0 |         14 |         86 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\student\dashboard\page.tsx                                            | TypeScript JSX     |         99 |          6 |         11 |        116 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\student\papers\page.tsx                                               | TypeScript JSX     |         82 |          4 |         11 |         97 |
+| c:\Users\maxvh\Desktop\infinity classes\src\app\student\papers\view\page.tsx                                          | TypeScript JSX     |         12 |          3 |          4 |         19 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\PdfViewerInner.tsx                                          | TypeScript JSX     |         40 |          1 |          6 |         47 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\TruncatedWithTooltip.tsx                                    | TypeScript JSX     |         41 |          2 |          6 |         49 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\admin-shell.tsx                                       | TypeScript JSX     |         31 |          3 |          7 |         41 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\header.tsx                                            | TypeScript JSX     |         38 |          1 |          7 |         46 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\sidebar.tsx                                           | TypeScript JSX     |         69 |          0 |          6 |         75 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\create-user-dialog.tsx                          | TypeScript JSX     |         91 |          0 |         12 |        103 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\edit-user-dialog.tsx                            | TypeScript JSX     |        136 |          1 |         16 |        153 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\user-card.tsx                                   | TypeScript JSX     |         36 |          0 |          7 |         43 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\user-row.tsx                                    | TypeScript JSX     |         28 |          0 |          6 |         34 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\user-table-row.tsx                              | TypeScript JSX     |         24 |          6 |          8 |         38 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\badge.tsx                                                   | TypeScript JSX     |         41 |          0 |          5 |         46 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\button.tsx                                                  | TypeScript JSX     |         56 |          0 |          5 |         61 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\card.tsx                                                    | TypeScript JSX     |         83 |          0 |         10 |         93 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\checkbox.tsx                                                | TypeScript JSX     |         28 |          0 |          5 |         33 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\command.tsx                                                 | TypeScript JSX     |        172 |          0 |         13 |        185 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\dialog.tsx                                                  | TypeScript JSX     |        130 |          0 |         14 |        144 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\dropdown-menu.tsx                                           | TypeScript JSX     |        239 |          0 |         19 |        258 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\error-screen.tsx                                            | TypeScript JSX     |         12 |          0 |          1 |         13 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\form.tsx                                                    | TypeScript JSX     |        144 |          0 |         25 |        169 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\input.tsx                                                   | TypeScript JSX     |         18 |          0 |          4 |         22 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\label.tsx                                                   | TypeScript JSX     |         20 |          0 |          5 |         25 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\loading.tsx                                                 | TypeScript JSX     |          7 |          0 |          1 |          8 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\pdf-viewer.tsx                                              | TypeScript JSX     |          9 |          0 |          4 |         13 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\popover.tsx                                                 | TypeScript JSX     |         41 |          0 |          8 |         49 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\select.tsx                                                  | TypeScript JSX     |        177 |          0 |         14 |        191 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\skeleton.tsx                                                | TypeScript JSX     |         11 |          0 |          3 |         14 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\skeleton\table\admin-header-skeleton.tsx                    | TypeScript JSX     |          9 |          0 |          2 |         11 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\skeleton\table\table-cards-skeleton.tsx                     | TypeScript JSX     |         36 |          6 |          9 |         51 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\skeleton\table\table-skeleton.tsx                           | TypeScript JSX     |         41 |          0 |          4 |         45 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\sonner.tsx                                                  | TypeScript JSX     |         36 |          0 |          5 |         41 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\switch.tsx                                                  | TypeScript JSX     |         27 |          0 |          5 |         32 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\table.tsx                                                   | TypeScript JSX     |        105 |          0 |         12 |        117 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\textarea.tsx                                                | TypeScript JSX     |         15 |          0 |          4 |         19 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\tooltip.tsx                                                 | TypeScript JSX     |         54 |          0 |          8 |         62 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\user-search-combobox\user-search-combobox.tsx               | TypeScript JSX     |        115 |          2 |         13 |        130 |
+| c:\Users\maxvh\Desktop\infinity classes\src\components\ui\viewer-client.tsx                                           | TypeScript JSX     |         59 |          2 |         14 |         75 |
+| c:\Users\maxvh\Desktop\infinity classes\src\lib\actions\search-users.ts                                               | TypeScript         |         20 |          0 |          9 |         29 |
+| c:\Users\maxvh\Desktop\infinity classes\src\lib\date.ts                                                               | TypeScript         |         23 |          0 |          6 |         29 |
+| c:\Users\maxvh\Desktop\infinity classes\src\lib\hooks\use-debounce.ts                                                 | TypeScript         |         11 |          0 |          5 |         16 |
+| c:\Users\maxvh\Desktop\infinity classes\src\lib\pdf.ts                                                                | TypeScript         |          5 |          0 |          2 |          7 |
+| c:\Users\maxvh\Desktop\infinity classes\src\lib\supabase\admin.server.ts                                              | TypeScript         |         13 |          0 |          3 |         16 |
+| c:\Users\maxvh\Desktop\infinity classes\src\lib\supabase\supabase-client.ts                                           | TypeScript         |          6 |          4 |          4 |         14 |
+| c:\Users\maxvh\Desktop\infinity classes\src\lib\supabase\supabase-server.ts                                           | TypeScript         |         24 |          1 |          4 |         29 |
+| c:\Users\maxvh\Desktop\infinity classes\src\lib\utils.ts                                                              | TypeScript         |          5 |          0 |          2 |          7 |
+| c:\Users\maxvh\Desktop\infinity classes\src\types\user.ts                                                             | TypeScript         |         15 |          0 |          5 |         20 |
+| c:\Users\maxvh\Desktop\infinity classes\tsconfig.json                                                                 | JSON with Comments |         34 |          0 |          1 |         35 |
+| Total                                                                                                                 |                    |     14,680 |        140 |        971 |     15,791 |
++-----------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
