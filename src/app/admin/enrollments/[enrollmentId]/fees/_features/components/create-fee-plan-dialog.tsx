@@ -29,13 +29,13 @@ import { TruncatedWithTooltip } from "@/src/components/ui/TruncatedWithTooltip";
 interface Props {
   enrollmentId: string;
   defaultTotalAmount: number;
-  courseTitle: string;
+  title: string; // renamed (course OR batch)
 }
 
 export function CreateFeePlanDialog({
   enrollmentId,
   defaultTotalAmount,
-  courseTitle,
+  title,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -69,7 +69,8 @@ export function CreateFeePlanDialog({
 
   /** Revalidate discount when total changes */
   useEffect(() => {
-    form.trigger("discountAmount");
+    //I know this returns a promise, and I am intentionally not awaiting it...eslint rule
+    void form.trigger("discountAmount");
   }, [total, form]);
 
   const { isDirty, isValid } = form.formState;
@@ -97,7 +98,6 @@ export function CreateFeePlanDialog({
 
   const basePrice = defaultTotalAmount;
   const isPriceOverridden = total > 0 && total !== basePrice;
-
   const priceDiff = total - basePrice;
 
   return (
@@ -110,8 +110,12 @@ export function CreateFeePlanDialog({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Fee Plan</DialogTitle>
-            <DialogDescription>
-              Define the fee structure for this enrollment.
+            <DialogDescription className="flex items-center gap-1">
+              Define the fee structure for{" "}
+              <TruncatedWithTooltip
+                text={title}
+                className="inline-block max-w-64 font-medium"
+              />
             </DialogDescription>
           </DialogHeader>
 
@@ -130,7 +134,7 @@ export function CreateFeePlanDialog({
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Standard course price: ₹{basePrice.toLocaleString()}
+                  Base price: ₹{basePrice.toLocaleString()}
                 </p>
 
                 {isPriceOverridden && (
@@ -140,10 +144,9 @@ export function CreateFeePlanDialog({
                       <span className="font-medium">
                         {priceDiff > 0 ? "increased" : "decreased"}
                       </span>{" "}
-                      by ₹{Math.abs(priceDiff).toLocaleString()} from the course
-                      price for{" "}
+                      by ₹{Math.abs(priceDiff).toLocaleString()} for{" "}
                       <TruncatedWithTooltip
-                        text={courseTitle}
+                        text={title}
                         className="inline-block max-w-40 align-bottom font-medium"
                       />
                     </div>

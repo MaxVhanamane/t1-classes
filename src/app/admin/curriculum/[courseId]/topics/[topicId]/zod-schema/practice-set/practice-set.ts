@@ -18,7 +18,7 @@ export type PracticeSetInput = z.infer<typeof practiceSetSchema>;
 export const updatePracticeSetSchema = z.object({
     courseId: z.uuid(),
     topicId: z.uuid(),
-    practiceSetId: z.string().uuid(),
+    practiceSetId: z.uuid(),
     title: z.string().min(1, "Title is required"),
     description: z.string().nullable(),
 });
@@ -31,7 +31,7 @@ export type UpdatePracticeSetInput = z.infer<
 export const deletePracticeSetSchema = z.object({
     courseId: z.uuid(),
     topicId: z.uuid(),
-    practiceSetId: z.string().uuid(),
+    practiceSetId: z.uuid(),
 });
 
 export type DeletePracticeSetInput = z.infer<

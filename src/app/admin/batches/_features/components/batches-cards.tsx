@@ -1,11 +1,17 @@
 import { Button } from "@/src/components/ui/button";
 import { ModeBadge, StatusBadge } from "./batch-badges";
 import { BatchDuration } from "./batch-duration";
-import { Pencil } from "lucide-react";
+import { ChevronDown, Pencil } from "lucide-react";
 import { BatchListItem } from "../types/types";
 import { BatchActiveSwitch } from "./batch-active-switch";
 import { Badge } from "@/src/components/ui/badge";
 import { useEffect, useRef, useState } from "react";
+import { getHighlightPreview } from "./batches-table";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/src/components/ui/collapsible";
 type Props = {
   batches: BatchListItem[];
   onEdit: (batch: BatchListItem) => void;
@@ -21,13 +27,19 @@ export function BatchesCards({ batches, onEdit }: Props) {
             <div className="space-y-0.5">
               <h3 className="font-semibold text-base">{batch.name}</h3>
 
-              {batch.course_info ? (
+              {/* COURSES */}
+              {batch.courses.length === 0 ? (
+                <p className="text-sm text-destructive font-medium">
+                  No courses linked
+                </p>
+              ) : batch.courses.length === 1 ? (
                 <p className="text-sm text-muted-foreground">
-                  Course: {batch.course_info.title}
+                  Course: {batch.courses[0].course.title}
                 </p>
               ) : (
-                <p className="text-sm text-destructive font-medium">
-                  Course missing
+                <p className="text-sm text-muted-foreground">
+                  Courses:{" "}
+                  {batch.courses.map(({ course }) => course.title).join(", ")}
                 </p>
               )}
             </div>
@@ -37,16 +49,58 @@ export function BatchesCards({ batches, onEdit }: Props) {
             </Button>
           </div>
 
+          {/* DESCRIPTION */}
           {batch.description && <MobileDescription text={batch.description} />}
 
-          {/* PRIMARY FLAGS */}
-          <div className="flex flex-wrap gap-2">
+          {batch.batch_highlights &&
+            getHighlightPreview(batch.batch_highlights).length > 0 && (
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="text-sm text-primary font-medium flex items-center gap-1"
+                  >
+                    View highlights
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </CollapsibleTrigger>
+
+                <CollapsibleContent className="mt-2 space-y-3">
+                  {getHighlightPreview(batch.batch_highlights).map(
+                    (section) => (
+                      <div key={section.title}>
+                        <p className="text-sm font-semibold text-muted-foreground">
+                          {section.title}
+                        </p>
+
+                        <ul className="list-disc pl-4 text-sm space-y-0.5">
+                          {section.shown.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+
+                        {section.hiddenCount > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            +{section.hiddenCount} more
+                          </p>
+                        )}
+                      </div>
+                    )
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
+          {/* PRICE + ADMISSION */}
+          <div className="flex flex-wrap gap-2 text-sm">
+            <Badge variant="secondary">₹ {batch.price}</Badge>
+
             <Badge variant="outline">
               {batch.admission_open ? "Admission Open" : "Admission Closed"}
             </Badge>
           </div>
 
-          {/* MODE + STATUS (LABELED) */}
+          {/* MODE + STATUS */}
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Mode:</span>

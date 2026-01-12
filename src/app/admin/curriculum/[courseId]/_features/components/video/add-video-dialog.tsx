@@ -205,6 +205,7 @@ export function AddVideoDialog({ topicId, courseId }: Props) {
 
             <DialogFooter>
               <Button
+                className="cursor-pointer"
                 type="button"
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
@@ -214,6 +215,7 @@ export function AddVideoDialog({ topicId, courseId }: Props) {
               </Button>
 
               <Button
+                className="cursor-pointer"
                 type="submit"
                 disabled={
                   submitting || !form.formState.isValid || urlStatus !== "valid"

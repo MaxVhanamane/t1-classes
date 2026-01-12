@@ -53,18 +53,18 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
     setLoading(true);
 
     const supabase = createClient();
-
     let uploadedPath: string | null = null;
 
     try {
-      /**
-       * 1. Validate file
-       */
+      //Validate file
       if (!data.file) {
         throw new Error("Please select a PDF file");
       }
 
-      if (data.file.type !== "application/pdf") {
+      if (
+        data.file.type !== "application/pdf" &&
+        !data.file.name.toLowerCase().endsWith(".pdf")
+      ) {
         throw new Error("Only PDF files are allowed");
       }
 
@@ -72,12 +72,9 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
         throw new Error(`PDF must be smaller than ${MAX_PDF_SIZE_MB}MB`);
       }
 
-      /**
-       * 2. Upload PDF
-       */
-      const filePath = `courses/${courseId}/topics/${topicId}/${crypto.randomUUID()}-${
-        data.file.name
-      }`;
+      //Create SAFE storage path (NO user input)
+      const safeFileName = `${crypto.randomUUID()}.pdf`;
+      const filePath = `courses/${courseId}/topics/${topicId}/${safeFileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("course-pdfs")
@@ -92,9 +89,7 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
 
       uploadedPath = filePath;
 
-      /**
-       * 3. Save DB record (server action)
-       */
+      //Save DB record
       await createPdf(courseId, topicId, filePath, data);
 
       toast.success("PDF added", {
@@ -104,7 +99,7 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
       setOpen(false);
       form.reset();
     } catch (err) {
-      // Cleanup orphaned upload if DB insert fails
+      /* Cleanup orphaned upload */
       if (uploadedPath) {
         await supabase.storage.from("course-pdfs").remove([uploadedPath]);
       }

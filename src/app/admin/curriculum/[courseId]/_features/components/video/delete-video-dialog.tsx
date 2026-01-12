@@ -50,7 +50,7 @@ export function DeleteVideoDialog({
       <Button
         variant="ghost"
         size="sm"
-        className=" justify-start  cursor-pointer text-destructive w-full "
+        className="justify-start cursor-pointer text-destructive w-full "
         onClick={() => setOpen(true)}
       >
         Delete

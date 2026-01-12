@@ -7,15 +7,12 @@ import { FeePlanSummaryCard } from "./fee-plan-summary-card";
 import { FeePlanHistoryList } from "./fee-plan-history-list";
 import { PaymentsSection } from "./payment/payments-section";
 import { Payment } from "../types/payment.types";
+import { EnrollmentPricingContext } from "../types/fee-types";
 import { Separator } from "@/src/components/ui/separator";
 
 interface Props {
   enrollmentId: string;
-  pricing: {
-    courseId: string;
-    courseTitle: string;
-    listPrice: number;
-  };
+  pricing: EnrollmentPricingContext;
   payments: Payment[];
 }
 
@@ -86,7 +83,7 @@ export async function FeeSection({ enrollmentId, pricing, payments }: Props) {
           <CreateFeePlanDialog
             enrollmentId={enrollmentId}
             defaultTotalAmount={pricing.listPrice}
-            courseTitle={pricing.courseTitle}
+            title={pricing.title}
           />
         </div>
       )}

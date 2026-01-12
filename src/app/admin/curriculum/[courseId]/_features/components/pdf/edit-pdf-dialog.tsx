@@ -59,13 +59,18 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
     let newFilePath: string | undefined;
 
     try {
-      /**
-       * 1. Upload new file if replaced
-       */
+      // 1. Upload new file if replaced
       if (data.file) {
-        newFilePath = `courses/${courseId}/topics/${topicId}/${crypto.randomUUID()}-${
-          data.file.name
-        }`;
+        if (
+          data.file.type !== "application/pdf" &&
+          !data.file.name.toLowerCase().endsWith(".pdf")
+        ) {
+          throw new Error("Only PDF files are allowed");
+        }
+
+        // Create SAFE storage path (NO user input)
+        const safeFileName = `${crypto.randomUUID()}.pdf`;
+        newFilePath = `courses/${courseId}/topics/${topicId}/${safeFileName}`;
 
         const { error } = await supabase.storage
           .from("course-pdfs")
@@ -77,9 +82,7 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
         if (error) throw new Error(error.message);
       }
 
-      /**
-       * 2. Update DB
-       */
+      // 2. Update DB (now receives correct path)
       await updatePdfUnit(courseId, topicId, pdf.id, {
         form: data,
         newFilePath,

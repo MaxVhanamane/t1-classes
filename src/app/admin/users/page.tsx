@@ -2,7 +2,6 @@ import { AppUser } from "@/src/types/user";
 import UserTableRow from "@/src/components/ui/admin/users/user-table-row";
 import UserCard from "@/src/components/ui/admin/users/user-card";
 import CreateUserDialog from "@/src/components/ui/admin/users/create-user-dialog";
-import { Button } from "@/src/components/ui/button";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 export default async function UsersPage() {
   const supabase = await createServerSupabaseClient();
@@ -18,9 +17,7 @@ export default async function UsersPage() {
     <div className="space-y-6">
       <div className="flex gap-2 justify-between">
         <h1 className="text-xl font-semibold">Users</h1>
-        <CreateUserDialog>
-          <Button>Create User</Button>
-        </CreateUserDialog>
+        <CreateUserDialog />
       </div>
 
       {/*  Desktop */}

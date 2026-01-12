@@ -22,34 +22,57 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { createUserAdmin } from "@/src/app/admin/users/_features/actions/actions";
+import { toast } from "sonner";
 
 const roles: UserRole[] = ["student", "teacher", "admin"];
 
-export default function CreateUserDialog({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function CreateUserDialog() {
+  const [open, setOpen] = useState(false);
+
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState<UserRole>("student");
   const [loading, setLoading] = useState(false);
 
-  async function handleCreate() {
-    setLoading(true);
-    await createUserAdmin({
-      email,
-      full_name: name,
-      phone,
-      role,
-    });
+  function resetForm() {
+    setEmail("");
+    setName("");
+    setPhone("");
+    setRole("student");
     setLoading(false);
   }
 
+  function handleOpenChange(isOpen: boolean) {
+    if (!isOpen) {
+      resetForm(); // dialog is closing
+    }
+    setOpen(isOpen);
+  }
+
+  async function handleCreate() {
+    setLoading(true);
+    try {
+      await createUserAdmin({
+        email,
+        full_name: name,
+        phone,
+        role,
+      });
+      toast.success("User created");
+      setOpen(false); // close dialog after success
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to create user");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button className="cursor-pointer">Create User</Button>
+      </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
@@ -89,9 +112,9 @@ export default function CreateUserDialog({
 
         <DialogFooter>
           <Button
+            className="cursor-pointer"
             onClick={handleCreate}
             disabled={loading}
-            className="cursor-pointer"
           >
             {loading ? "Creating..." : "Create & Send Invite"}
           </Button>

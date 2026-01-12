@@ -136,13 +136,18 @@ export default function EditUserDialog({
 
         <DialogFooter>
           <Button
+            className="cursor-pointer"
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={loading}
           >
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading}>
+          <Button
+            className="cursor-pointer"
+            onClick={handleSave}
+            disabled={loading}
+          >
             {loading ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>

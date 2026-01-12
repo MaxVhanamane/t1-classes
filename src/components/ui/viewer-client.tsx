@@ -57,7 +57,7 @@ export default function ViewerClient() {
       setLoading(false);
     }
 
-    loadPdf();
+    void loadPdf();
   }, [cls, subject, year, supabase]);
 
   if (loading) {

@@ -6,6 +6,7 @@ import {
 } from "@/src/components/ui/tooltip";
 import { cn } from "@/src/lib/utils";
 import { useEffect, useRef, useState } from "react";
+
 export function TruncatedWithTooltip({
   text,
   className,
@@ -13,7 +14,7 @@ export function TruncatedWithTooltip({
   text: string;
   className?: string;
 }) {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const ref = useRef<HTMLSpanElement | null>(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
   useEffect(() => {
@@ -24,17 +25,16 @@ export function TruncatedWithTooltip({
   }, [text]);
 
   const content = (
-    <div ref={ref} className={cn("truncate max-w-55", className)}>
+    <span ref={ref} className={cn("truncate inline-block max-w-55", className)}>
       {text}
-    </div>
+    </span>
   );
 
-  //  If not truncated → no tooltip at all
+  // Not truncated → no tooltip
   if (!isTruncated) {
     return content;
   }
 
-  //  Tooltip only when needed
   return (
     <TooltipProvider>
       <Tooltip>

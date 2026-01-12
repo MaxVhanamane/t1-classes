@@ -64,7 +64,6 @@ export async function toggleCourseUnitPublish({
         .eq("id", unitId)
         .single<CourseUnitWithRelations>();
 
-    console.log("unitunitunit", unit)
 
     if (unitError || !unit) {
         throw new Error("Content not found");

@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "../supabase/supabase-server";
+import { ROUTES } from "../constants/route-constants";
 
 
 export async function getCurrentUser() {
@@ -11,7 +13,8 @@ export async function getCurrentUser() {
     } = await supabase.auth.getUser();
 
     if (authError || !authUser) {
-        throw new Error("Not authenticated");
+        redirect(ROUTES.login);
+
     }
 
     // 2 Get public.users row
@@ -22,12 +25,14 @@ export async function getCurrentUser() {
         .single();
 
     if (userError || !user) {
-        throw new Error("User profile not found");
+        redirect(ROUTES.login);
+
     }
 
     // 3 Status checks
     if (user.status !== "active") {
-        throw new Error("User is not active");
+        redirect(ROUTES.inactiveUser);
+
     }
 
     return user;

@@ -25,6 +25,33 @@ type Props = {
   batches: BatchListItem[];
   onEdit: (batch: BatchListItem) => void;
 };
+export function getHighlightPreview(
+  highlights: BatchListItem["batch_highlights"] | null,
+  maxItemsPerSection = 3
+) {
+  if (!highlights || !Array.isArray(highlights.sections)) {
+    return [];
+  }
+
+  return highlights.sections
+    .filter(
+      (section) =>
+        section &&
+        typeof section.title === "string" &&
+        Array.isArray(section.items) &&
+        section.items.length > 0
+    )
+    .map((section) => {
+      const shown = section.items.slice(0, maxItemsPerSection);
+      const hiddenCount = section.items.length - shown.length;
+
+      return {
+        title: section.title,
+        shown,
+        hiddenCount,
+      };
+    });
+}
 
 export function BatchesTable({ batches, onEdit }: Props) {
   return (
@@ -36,6 +63,7 @@ export function BatchesTable({ batches, onEdit }: Props) {
               <TableHead>Batch</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Course</TableHead>
+              <TableHead>Price</TableHead>
               <TableHead>Center</TableHead>
               <TableHead>Languages</TableHead>
               <TableHead>Admission</TableHead>
@@ -51,7 +79,54 @@ export function BatchesTable({ batches, onEdit }: Props) {
           <TableBody>
             {batches.map((batch) => (
               <TableRow key={batch.id}>
-                <TableCell className="font-medium">{batch.name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    <span>{batch.name}</span>
+
+                    {batch.batch_highlights &&
+                      getHighlightPreview(batch.batch_highlights).length >
+                        0 && (
+                        <Tooltip delayDuration={200}>
+                          <TooltipTrigger asChild>
+                            <Badge
+                              variant="secondary"
+                              className="text-xs cursor-help"
+                            >
+                              Highlights
+                            </Badge>
+                          </TooltipTrigger>
+
+                          <TooltipContent
+                            align="start"
+                            className="max-w-sm space-y-2"
+                          >
+                            {getHighlightPreview(batch.batch_highlights).map(
+                              (section) => (
+                                <div key={section.title}>
+                                  <p className="text-xs font-semibold text-muted-foreground">
+                                    {section.title}
+                                  </p>
+
+                                  <ul className="list-disc pl-4 text-xs space-y-0.5">
+                                    {section.shown.map((item) => (
+                                      <li key={item}>{item}</li>
+                                    ))}
+                                  </ul>
+
+                                  {section.hiddenCount > 0 && (
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      +{section.hiddenCount} more
+                                    </p>
+                                  )}
+                                </div>
+                              )
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                  </div>
+                </TableCell>
+
                 <TableCell className="font-medium">
                   {batch.description ? (
                     <Tooltip delayDuration={200}>
@@ -71,16 +146,41 @@ export function BatchesTable({ batches, onEdit }: Props) {
                 </TableCell>
 
                 <TableCell>
-                  {batch.course_info ? (
+                  {batch.courses.length === 0 ? (
+                    <span className="text-xs text-destructive font-medium">
+                      No courses
+                    </span>
+                  ) : batch.courses.length === 1 ? (
                     <span className="text-muted-foreground">
-                      {batch.course_info.title}
+                      {batch.courses[0].course.title}
                     </span>
                   ) : (
-                    <span className="text-xs text-destructive font-medium">
-                      Course missing
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-muted-foreground cursor-help underline-offset-4 hover:underline">
+                          {batch.courses.length} courses
+                        </span>
+                      </TooltipTrigger>
+
+                      <TooltipContent align="start" className="max-w-xs">
+                        <ul className="space-y-1">
+                          {batch.courses.map(({ course }) => (
+                            <li key={course.id} className="text-sm">
+                              • {course.title}
+                            </li>
+                          ))}
+                        </ul>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                 </TableCell>
+                {/* Price */}
+                <TableCell>
+                  {batch.price ?? (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+
                 {/* Center */}
                 <TableCell>
                   {batch.center_name ?? (

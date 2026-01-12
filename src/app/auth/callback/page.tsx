@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/src/lib/supabase/supabase-client";
+import { Loader2 } from "lucide-react";
 
 function getHashParams() {
   const hash = window.location.hash.substring(1);
@@ -34,17 +35,23 @@ export default function AuthCallbackPage() {
         router.replace("/login");
         return;
       }
-
+      window.location.hash = "";
       // Session is now stored
       router.replace("/auth/set-password");
     }
 
-    handleInviteCallback();
+    void handleInviteCallback();
   }, [router, supabase]);
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <p className="text-sm text-muted-foreground">Completing sign-in…</p>
+    <div className="flex h-screen flex-col items-center justify-center gap-4">
+      <Loader2 className="animate-spin text-gray-900" />
+      <div className="text-center">
+        <p className="text-sm font-medium">Signing you in</p>
+        <p className="text-xs text-muted-foreground">
+          Please wait while we verify your invitation
+        </p>
+      </div>
     </div>
   );
 }

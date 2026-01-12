@@ -1,22 +1,28 @@
 export type EnrollmentResult = {
-    id: string
-    target_type: 'course' | 'batch'
-    course: {
-        id: string
-        title: string
-        price: number
-    } | null
-    batch: {
-        id: string
-        name: string
-        course: {
-            id: string
-            title: string
-            price: number
-        }
-    } | null
-}
+    id: string;
+    target_type: "course" | "batch";
 
+    /** Present when target_type === "course" */
+    course: {
+        id: string;
+        title: string;
+        price: number;
+    } | null;
+
+    /** Present when target_type === "batch" */
+    batch: {
+        id: string;
+        name: string;
+
+        batch_courses: {
+            course: {
+                id: string;
+                title: string;
+                price: number;
+            } | null;
+        }[];
+    } | null;
+};
 
 
 export type FeePlanRow = {
@@ -36,11 +42,9 @@ export type FeePlanRow = {
     created_at: string;
     updated_at: string | null;
 
-    // audit (IDs only, lazy-resolved if needed)
     created_by: string;
     updated_by: string | null;
 };
-
 
 export type FeePlanHistoryRow = {
     id: string;
@@ -57,7 +61,12 @@ export type FeePlanHistoryRow = {
     created_at: string;
     updated_at: string | null;
 
-    // audit (IDs only)
     created_by: string;
     updated_by: string | null;
+};
+
+export type EnrollmentPricingContext = {
+    targetType: "course" | "batch";
+    title: string;
+    listPrice: number;
 };

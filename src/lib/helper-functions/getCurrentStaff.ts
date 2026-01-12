@@ -1,18 +1,12 @@
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "./getCurrentUser";
+import { ROUTES } from "../constants/route-constants";
 
 export async function getCurrentStaff() {
     const user = await getCurrentUser();
 
-    if (!user) {
-        throw new Error("Unauthorized");
-    }
-
     if (user.role !== "admin" && user.role !== "teacher") {
-        throw new Error("Staff access required");
-    }
-
-    if (user.status !== "active") {
-        throw new Error("Inactive account");
+        redirect(ROUTES.unauthorized);
     }
 
     return user;

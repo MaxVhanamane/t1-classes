@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { UserRole } from "@/src/types/user";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { createAdminSupabaseClient } from "@/src/lib/supabase/admin.server";
+import { getCurrentAdmin } from "@/src/lib/helper-functions/getCurrentAdmin";
 
 export async function updateUserProfile(
   userId: string,
@@ -52,33 +53,50 @@ export async function createUserAdmin(data: {
   phone?: string;
   role: UserRole;
 }) {
-  //  Verify caller is admin
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // 1 Verify caller is admin
+  await getCurrentAdmin();
 
-  if (!user) throw new Error("Not authenticated");
-
-  const { data: appUser } = await supabase
-    .from("users")
-    .select("role, status")
-    .eq("id", user.id)
-    .single();
-
-  if (!appUser || appUser.role !== "admin" || appUser.status !== "active") {
-    throw new Error("Not authorized");
-  }
-
-  //  Invite user (THIS sends email)
   const adminSupabase = createAdminSupabaseClient();
 
+  // 2 Normalize email
+  const email = data.email.trim().toLowerCase();
+
+  // 3 Check if user already exists in app DB
+  const { data: existingUser, error: existingError } = await adminSupabase
+    .from("users")
+    .select("id, status")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existingError) {
+    throw new Error("Failed to check existing user");
+  }
+
+  if (existingUser) {
+    if (existingUser.status === "active") {
+      throw new Error("User with this email already exists");
+    }
+
+    if (existingUser.status === "invited") {
+      throw new Error("User has already been invited");
+      // later you can add: resend invite logic
+    }
+
+    throw new Error("User already exists");
+  }
+
+  // 4 Safe redirect construction
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!SITE_URL) {
+    throw new Error("NEXT_PUBLIC_SITE_URL is not set");
+  }
+
+  const redirectTo = new URL("/auth/callback", SITE_URL).toString();
+
+  // 5 Send invite
   const { data: inviteData, error } =
-    await adminSupabase.auth.admin.inviteUserByEmail(data.email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-      data: {
-        full_name: data.full_name,
-      },
+    await adminSupabase.auth.admin.inviteUserByEmail(email, {
+      redirectTo,
     });
 
   if (error || !inviteData.user) {
@@ -87,14 +105,15 @@ export async function createUserAdmin(data: {
 
   const userId = inviteData.user.id;
 
-  //  Update app-level user row
+  // 6 Create / update app-level user row
   await adminSupabase
     .from("users")
     .update({
+      email,
       full_name: data.full_name,
       phone: data.phone ?? null,
       role: data.role,
-      status: "active",
+      status: "invited",
     })
     .eq("id", userId);
 

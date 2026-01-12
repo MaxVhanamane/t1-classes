@@ -5,11 +5,13 @@ import { Button } from "@/src/components/ui/button";
 import StatusBadge from "./status-badge";
 import RegistrationChannelBadge from "./registration-channel-badge";
 import { Badge } from "@/src/components/ui/badge";
+import { TruncatedWithTooltip } from "@/src/components/ui/TruncatedWithTooltip";
 
 type EnrollmentCardsProps = {
   enrollments: EnrollmentRow[];
   onEdit: (enrollment: EnrollmentRow) => void;
 };
+
 export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
   if (enrollments.length === 0) {
     return (
@@ -26,19 +28,21 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
         const batch = enrollment.batch;
         const course = enrollment.course;
 
-        const targetLabel =
-          enrollment.target_type === "batch"
-            ? batch
-              ? batch.name
-              : "⚠ Missing batch"
-            : course
-            ? course.title
-            : "⚠ Missing course";
+        // ---- Target label logic (multi-course aware) ----
+        let primaryTitle: string | null = null;
+        let extraCoursesText: string | null = null;
 
-        const subTargetLabel =
-          enrollment.target_type === "batch"
-            ? batch?.course?.title ?? null
-            : null;
+        if (enrollment.target_type === "batch" && batch) {
+          primaryTitle = batch.name;
+
+          if (batch.courses.length > 0) {
+            extraCoursesText = batch.courses.map((c) => c.title).join(", ");
+          }
+        }
+
+        if (enrollment.target_type === "course" && course) {
+          primaryTitle = course.title;
+        }
 
         return (
           <Card key={enrollment.id}>
@@ -48,7 +52,10 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
                 <div className="text-xs text-muted-foreground">User</div>
                 {user ? (
                   <div>
-                    <div className="font-medium">{user.full_name}</div>
+                    <TruncatedWithTooltip
+                      text={user.full_name}
+                      className="font-medium"
+                    />
                     {user.phone && (
                       <div className="text-xs text-muted-foreground">
                         {user.phone}
@@ -60,29 +67,39 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
                 )}
               </div>
 
-              {/* Target TYPE */}
-              <div className="space-y-1 flex items-center justify-between">
+              {/* TARGET TYPE */}
+              <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground">Target type</div>
                 <Badge variant="secondary">{enrollment.target_type}</Badge>
               </div>
 
-              {/* TARGET */}
+              {/* ENROLLED IN */}
               <div className="space-y-1">
-                <div className="text-xs text-muted-foreground">Enrolled In</div>
+                <div className="text-xs text-muted-foreground">Enrolled in</div>
 
-                <div className="font-medium">{targetLabel}</div>
+                {primaryTitle ? (
+                  <>
+                    <TruncatedWithTooltip
+                      text={primaryTitle}
+                      className="font-medium"
+                    />
 
-                {subTargetLabel && (
-                  <div className="text-xs text-muted-foreground">
-                    {subTargetLabel}
-                  </div>
+                    {extraCoursesText && (
+                      <TruncatedWithTooltip
+                        text={extraCoursesText}
+                        className="text-xs text-muted-foreground"
+                      />
+                    )}
+                  </>
+                ) : (
+                  <div className="text-sm text-destructive">Missing target</div>
                 )}
               </div>
 
-              {/* STATUS */}
-              <div className="space-y-1 flex gap-2 items-center justify-between">
+              {/* ENROLLMENT STATUS */}
+              <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground">
-                  Enrollment Status
+                  Enrollment status
                 </div>
                 <StatusBadge
                   status={enrollment.status}
@@ -90,16 +107,16 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
                 />
               </div>
 
-              {/* Granted As */}
-              <div className="space-y-1 flex items-center justify-between">
-                <div className="text-xs text-muted-foreground">Granted As</div>
+              {/* GRANTED AS */}
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-muted-foreground">Granted as</div>
                 <Badge variant="secondary">{enrollment.enrollment_type}</Badge>
               </div>
 
               {/* REGISTRATION CHANNEL */}
-              <div className="space-y-1 flex items-center justify-between">
+              <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground">
-                  Registration Channel
+                  Registration channel
                 </div>
                 <RegistrationChannelBadge
                   channel={enrollment.registration_channel}
@@ -109,7 +126,7 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
               {/* ACCESS PERIOD */}
               <div className="space-y-1">
                 <div className="text-xs text-muted-foreground">
-                  Access Period
+                  Access period
                 </div>
                 <div className="text-sm">
                   <span className="font-medium">
@@ -130,7 +147,7 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
                 </div>
               </div>
 
-              {/* ENROLLED AT + ACTION */}
+              {/* FOOTER */}
               <div className="flex items-center justify-between pt-2">
                 <div className="text-xs text-muted-foreground">
                   Enrolled on{" "}

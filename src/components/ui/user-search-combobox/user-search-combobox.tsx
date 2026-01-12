@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Button } from "@/src/components/ui/button";
 import {
   Popover,
@@ -36,14 +36,13 @@ export function UserSearchCombobox({
   const debouncedQuery = useDebounce(query, 300);
 
   const [results, setResults] = useState<UserSearchResult[]>([]);
+  const [pickedUser, setPickedUser] = useState<UserSearchResult | null>(null);
+
   const [isPending, startTransition] = useTransition();
 
-  /** Fetch users via SERVER ACTION */
+  /** Fetch users (only when searching) */
   useEffect(() => {
-    if (!debouncedQuery) {
-      setResults([]);
-      return;
-    }
+    if (!debouncedQuery) return;
 
     startTransition(async () => {
       try {
@@ -55,11 +54,12 @@ export function UserSearchCombobox({
     });
   }, [debouncedQuery]);
 
-  /** Determine what to display in trigger */
-  const displayUser =
-    selectedUser && selectedUser.id === value
-      ? selectedUser
-      : results.find((u) => u.id === value) ?? null;
+  /** Derive what user should be displayed */
+  const displayUser = useMemo(() => {
+    if (selectedUser && selectedUser.id === value) return selectedUser;
+    if (pickedUser && pickedUser.id === value) return pickedUser;
+    return null;
+  }, [selectedUser, pickedUser, value]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -94,9 +94,11 @@ export function UserSearchCombobox({
                 key={user.id}
                 value={user.full_name}
                 onSelect={() => {
+                  setPickedUser(user); // local cache
                   onChange(user.id);
                   setOpen(false);
                   setQuery("");
+                  setResults([]);
                 }}
                 className="cursor-pointer"
               >

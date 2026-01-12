@@ -54,39 +54,50 @@ export function BatchCombobox({
 
         <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
           <Command>
-            <CommandInput placeholder="Search batch..." />
+            <CommandInput placeholder="Search batch or course..." />
             <CommandEmpty>No batch found.</CommandEmpty>
 
             <CommandGroup>
-              {batches.map((batch) => (
-                <CommandItem
-                  key={batch.id}
-                  value={`${batch.name} ${batch.course?.[0]?.title ?? ""}`}
-                  onSelect={() => onChange(batch.id)}
-                >
-                  {/* Selection indicator */}
-                  <div className="mr-2 flex h-4 w-4 items-center justify-center">
-                    <div
-                      className={cn(
-                        "h-2.5 w-2.5 rounded-full border",
-                        batch.id === value
-                          ? "bg-primary border-primary"
-                          : "border-muted-foreground"
-                      )}
-                    />
-                  </div>
+              {batches.map((batch) => {
+                const courseTitles = batch.course.map((c) => c.title);
+                const primaryCourse = courseTitles[0];
+                const extraCount = courseTitles.length - 1;
 
-                  <div className="flex flex-col gap-0.5 max-w-65">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate font-medium">{batch.name}</span>
+                return (
+                  <CommandItem
+                    key={batch.id}
+                    value={`${batch.name} ${courseTitles.join(" ")}`}
+                    onSelect={() => onChange(batch.id)}
+                    className="cursor-pointer"
+                  >
+                    {/* Selection indicator */}
+                    <div className="mr-2 flex h-4 w-4 items-center justify-center">
+                      <div
+                        className={cn(
+                          "h-2.5 w-2.5 rounded-full border",
+                          batch.id === value
+                            ? "bg-primary border-primary"
+                            : "border-muted-foreground"
+                        )}
+                      />
                     </div>
 
-                    <p className="truncate text-xs text-muted-foreground">
-                      {batch.course?.[0]?.title ?? "Unknown course"}
-                    </p>
-                  </div>
-                </CommandItem>
-              ))}
+                    <div className="flex flex-col gap-0.5 max-w-65">
+                      {/* Batch name */}
+                      <span className="truncate font-medium">{batch.name}</span>
+
+                      {/* Course summary */}
+                      <span className="truncate text-xs text-muted-foreground">
+                        {primaryCourse
+                          ? `${primaryCourse}${
+                              extraCount > 0 ? ` +${extraCount} more` : ""
+                            }`
+                          : "No courses"}
+                      </span>
+                    </div>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </Command>
         </PopoverContent>

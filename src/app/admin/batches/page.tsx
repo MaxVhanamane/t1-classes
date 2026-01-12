@@ -7,8 +7,7 @@ async function getCourses(): Promise<CourseSelectItem[]> {
 
   const { data, error } = await supabase
     .from("courses")
-    .select("id, title")
-    .eq("is_active", true)
+    .select("id, title, is_active")
     .order("title")
     .overrideTypes<CourseSelectItem[], { merge: false }>();
 
@@ -19,31 +18,35 @@ async function getCourses(): Promise<CourseSelectItem[]> {
   return data;
 }
 
-async function getBatches() {
+async function getBatches(): Promise<BatchListItem[]> {
   const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("batches")
     .select(
       `
-    id,
-    name,
-    mode,
-    status,
-    is_active,
-    description,
-    admission_open,
-    center_name,
-    languages,
-    start_date,
-    end_date,
-    duration,
-    capacity,
-    schedule,
-    course_info:course_id (
       id,
-      title
-    )
+      name,
+      description,
+      mode,
+      status,
+      price,
+      is_active,
+      admission_open,
+      center_name,
+      batch_highlights,
+      languages,
+      start_date,
+      end_date,
+      duration,
+      capacity,
+      schedule,
+      courses:batch_courses (
+        course:courses (
+          id,
+          title
+        )
+      )
     `
     )
     .order("created_at", { ascending: false })

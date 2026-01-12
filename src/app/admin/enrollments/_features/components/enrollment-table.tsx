@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -22,9 +24,10 @@ type EnrollmentTableProps = {
 
 export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
   const router = useRouter();
+
   if (enrollments.length === 0) {
     return (
-      <div className="rounded-md border p-6 text-center text-sm text-muted-foreground ">
+      <div className="rounded-md border p-6 text-center text-sm text-muted-foreground">
         No enrollments found!
       </div>
     );
@@ -53,19 +56,20 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
             const batch = enrollment.batch;
             const course = enrollment.course;
 
-            const targetLabel =
-              enrollment.target_type === "batch"
-                ? batch
-                  ? `${batch.name}`
-                  : "⚠ Missing batch"
-                : course
-                ? course.title
-                : "⚠ Missing course";
+            const isBatch = enrollment.target_type === "batch";
 
-            const subTargetLabel =
-              enrollment.target_type === "batch"
-                ? batch?.course?.title ?? null
-                : null;
+            const courseTitles =
+              isBatch && batch
+                ? batch.courses.map((c) => c.title)
+                : course
+                ? [course.title]
+                : [];
+
+            const primaryTitle = courseTitles[0];
+            const extraCount = courseTitles.length - 1;
+
+            const extraCoursesText =
+              extraCount > 0 ? courseTitles.slice(1).join(", ") : null;
 
             return (
               <TableRow key={enrollment.id}>
@@ -74,7 +78,6 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                   {user ? (
                     <div className="space-y-0.5">
                       <TruncatedWithTooltip text={user.full_name} />
-
                       {user.phone && (
                         <div className="text-xs text-muted-foreground">
                           {user.phone}
@@ -87,31 +90,48 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                     </span>
                   )}
                 </TableCell>
+
                 {/* TARGET TYPE */}
                 <TableCell>
-                  <div className="space-y-0.5">
-                    <Badge variant="secondary">{enrollment.target_type}</Badge>
-                  </div>
+                  <Badge variant="secondary">{enrollment.target_type}</Badge>
                 </TableCell>
 
-                {/* TARGET */}
+                {/* ENROLLED IN */}
                 <TableCell>
                   <div className="space-y-0.5">
-                    <TruncatedWithTooltip
-                      text={targetLabel}
-                      className="font-medium"
-                    />
-
-                    {subTargetLabel && (
+                    {isBatch && batch ? (
+                      <>
+                        <TruncatedWithTooltip
+                          text={batch.name}
+                          className="font-medium"
+                        />
+                        {primaryTitle && (
+                          <div className="text-xs text-muted-foreground">
+                            <TruncatedWithTooltip
+                              text={
+                                extraCount > 0
+                                  ? `${primaryTitle}, ${extraCoursesText}`
+                                  : primaryTitle
+                              }
+                              className="max-w-65"
+                            />
+                          </div>
+                        )}
+                      </>
+                    ) : course ? (
                       <TruncatedWithTooltip
-                        text={subTargetLabel}
-                        className="text-xs text-muted-foreground"
+                        text={course.title}
+                        className="font-medium"
                       />
+                    ) : (
+                      <span className="text-destructive text-sm">
+                        Missing target
+                      </span>
                     )}
                   </div>
                 </TableCell>
 
-                {/* ENROLLMENT TYPE */}
+                {/* GRANTED AS */}
                 <TableCell>
                   <Badge variant="secondary">
                     {enrollment.enrollment_type}
@@ -120,23 +140,17 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
 
                 {/* STATUS */}
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge
-                      status={enrollment.status}
-                      isActive={enrollment.is_active}
-                    />
-                  </div>
+                  <StatusBadge
+                    status={enrollment.status}
+                    isActive={enrollment.is_active}
+                  />
                 </TableCell>
-                {/* REGISTERED VIA */}
 
+                {/* REGISTERED VIA */}
                 <TableCell>
-                  {enrollment.registration_channel ? (
-                    <RegistrationChannelBadge
-                      channel={enrollment.registration_channel}
-                    />
-                  ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
-                  )}
+                  <RegistrationChannelBadge
+                    channel={enrollment.registration_channel}
+                  />
                 </TableCell>
 
                 {/* ACCESS */}
@@ -151,7 +165,6 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                         )}
                       </span>
                     </div>
-
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <span className="text-xs">To</span>
                       <span className="font-medium text-foreground">
@@ -170,12 +183,13 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                 <TableCell className="text-sm text-muted-foreground">
                   {format(new Date(enrollment.enrolled_at), "dd MMM yyyy")}
                 </TableCell>
+
                 {/* ACTIONS */}
-                <TableCell className="text-left">
-                  <div className="flex items-center justify-start gap-2">
+                <TableCell>
+                  <div className="flex items-center gap-2">
                     <Button
-                      variant="outline"
                       className="cursor-pointer"
+                      variant="outline"
                       size="sm"
                       onClick={() => onEdit(enrollment)}
                     >

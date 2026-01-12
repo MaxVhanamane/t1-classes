@@ -35,6 +35,7 @@ import { updateEnrollment } from "../actions/update-enrollment";
 import { UserSearchCombobox } from "@/src/components/ui/user-search-combobox/user-search-combobox";
 import {
   addDaysFromTodayEndOfDayISO,
+  localDateTimeToUTCISO,
   startOfTodayISO,
   toDateTimeLocal,
 } from "@/src/lib/date";
@@ -125,11 +126,17 @@ export function EnrollmentDialog({
   async function onSubmit(values: CreateEnrollmentInput) {
     startTransition(async () => {
       try {
+        const payload: CreateEnrollmentInput = {
+          ...values,
+          access_starts_at: localDateTimeToUTCISO(values.access_starts_at)!,
+          access_ends_at: localDateTimeToUTCISO(values.access_ends_at)!,
+        };
+
         if (isEdit && enrollment) {
-          await updateEnrollment(enrollment.id, values);
+          await updateEnrollment(enrollment.id, payload);
           toast.success("Enrollment updated");
         } else {
-          await createEnrollment(values);
+          await createEnrollment(payload);
           toast.success("Enrollment created");
         }
 

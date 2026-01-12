@@ -27,7 +27,7 @@ export default function AdminShell({
       <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col overflow-auto">
         <AdminHeader
           userName={userName}
           onMenuClick={() => setSidebarOpen(true)}

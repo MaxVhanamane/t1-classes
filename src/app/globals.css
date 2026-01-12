@@ -1,5 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "react-pdf/dist/Page/TextLayer.css";
+@import "react-pdf/dist/Page/AnnotationLayer.css";
+
+@layer utilities {
+  .scrollbar-gutter-stable {
+    scrollbar-gutter: stable;
+  }
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -119,7 +127,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+
+
   body {
     @apply bg-background text-foreground;
+
   }
+
 }

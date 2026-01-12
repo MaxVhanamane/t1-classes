@@ -1,4 +1,10 @@
-import { EnrollmentRow } from "./_features/types/enrollments";
+import {
+  BatchOption,
+  BatchSupabaseRow,
+  CourseSupabaseRow,
+  EnrollmentRow,
+  EnrollmentSupabaseRow,
+} from "./_features/types/enrollments";
 import { EnrollmentsClient } from "./_features/components/enrollments-client";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
@@ -15,6 +21,7 @@ export default async function AdminEnrollmentsPage() {
     registration_channel,
     status,
     is_active,
+    notes,
     enrolled_at,
     access_starts_at,
     access_ends_at,
@@ -35,17 +42,55 @@ export default async function AdminEnrollmentsPage() {
       id,
       name,
       status,
-      course:courses (
-        title
+      batch_courses (
+        course:courses (
+          id,
+          title
+        )
       )
     )
-  `
+    `
     )
     .order("enrolled_at", { ascending: false })
     .limit(50)
-    .overrideTypes<EnrollmentRow[], { merge: false }>();
+    .overrideTypes<EnrollmentSupabaseRow[], { merge: false }>();
 
-  const enrollments: EnrollmentRow[] = data ?? [];
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const enrollments: EnrollmentRow[] =
+    (data as EnrollmentSupabaseRow[] | null)?.map((e) => ({
+      id: e.id,
+      target_type: e.target_type,
+
+      enrollment_type: e.enrollment_type,
+      registration_channel: e.registration_channel,
+
+      status: e.status,
+      is_active: e.is_active,
+      notes: e.notes,
+
+      enrolled_at: e.enrolled_at,
+      access_starts_at: e.access_starts_at,
+      access_ends_at: e.access_ends_at,
+
+      user: e.user,
+
+      course: e.course,
+
+      batch: e.batch
+        ? {
+            id: e.batch.id,
+            name: e.batch.name,
+            status: e.batch.status,
+            courses: e.batch.batch_courses.map((bc) => ({
+              id: bc.course.id,
+              title: bc.course.title,
+            })),
+          }
+        : null,
+    })) ?? [];
 
   const [{ data: batches }, { data: courses }] = await Promise.all([
     supabase
@@ -60,15 +105,19 @@ export default async function AdminEnrollmentsPage() {
       end_date,
       duration,
       admission_open,
-      course:courses (
-        title
+      batch_courses (
+        course:courses (
+          id,
+          title
+        )
       )
-    `
+      `
       )
       .eq("is_active", true)
       .eq("admission_open", true)
       .in("status", ["upcoming", "ongoing"])
-      .order("start_date", { ascending: true }),
+      .order("start_date", { ascending: true })
+      .overrideTypes<BatchSupabaseRow[], { merge: false }>(),
 
     supabase
       .from("courses")
@@ -77,21 +126,35 @@ export default async function AdminEnrollmentsPage() {
       id,
       title,
       is_active
-    `
+      `
       )
       .eq("is_active", true)
-      .order("title"),
+      .order("title")
+      .overrideTypes<CourseSupabaseRow[], { merge: false }>(),
   ]);
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  const batchOptions: BatchOption[] = (batches ?? []).map((b) => ({
+    id: b.id,
+    name: b.name,
+    status: b.status,
+
+    start_date: b.start_date,
+    end_date: b.end_date,
+    duration: b.duration,
+
+    course: b.batch_courses.map((bc) => ({
+      title: bc.course.title,
+    })),
+
+    is_active: b.is_active,
+    admission_open: b.admission_open,
+  }));
 
   return (
     <div className="space-y-6">
       <EnrollmentsClient
-        enrollments={enrollments ?? []}
-        batches={batches ?? []}
+        enrollments={enrollments}
+        batches={batchOptions}
         courses={courses ?? []}
       />
     </div>

@@ -492,7 +492,11 @@ export function CourseDialog({
         </div>
 
         <DialogFooter>
-          <Button onClick={handleSubmit} disabled={loading}>
+          <Button
+            className="cursor-pointer"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
             {loading ? "Saving..." : isEdit ? "Save Changes" : "Create Course"}
           </Button>
         </DialogFooter>

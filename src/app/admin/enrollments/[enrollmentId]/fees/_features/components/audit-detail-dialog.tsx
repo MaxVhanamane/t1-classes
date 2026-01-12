@@ -60,8 +60,8 @@ export function AuditDetailsDialog({
         if (!cancelled) setLoading(false);
       }
     }
-
-    loadAudit();
+    //I know this returns a promise, and I am intentionally not awaiting it
+    void loadAudit();
 
     return () => {
       cancelled = true;

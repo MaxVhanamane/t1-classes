@@ -75,7 +75,8 @@ export function SupersedeFeePlanDialog({
 
   /**  Revalidate discount when total changes */
   useEffect(() => {
-    form.trigger("discountAmount");
+    //I know this returns a promise, and I am intentionally not awaiting it
+    void form.trigger("discountAmount");
   }, [total, form]);
 
   const { isDirty, isValid } = form.formState;

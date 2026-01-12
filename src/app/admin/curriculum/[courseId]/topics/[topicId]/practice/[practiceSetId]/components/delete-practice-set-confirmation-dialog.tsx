@@ -83,7 +83,7 @@ export function DeletePracticeSetDialog({
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault(); //  stop auto close
-              handleDelete();
+              void handleDelete();
             }}
             disabled={loading}
             className="bg-destructive cursor-pointer"

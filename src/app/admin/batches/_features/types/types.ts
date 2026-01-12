@@ -1,29 +1,42 @@
+export type BatchHighlights = {
+    sections: {
+        title: string;
+        items: string[];
+    }[];
+};
+
+
+export type BatchMode = "offline" | "online" | "hybrid";
+export type BatchStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
+
 export type BatchListItem = {
     id: string;
     name: string;
     description: string | null;
-    mode: "offline" | "online" | "hybrid";
-    status: "upcoming" | "ongoing" | "completed" | "cancelled";
 
+    batch_highlights: BatchHighlights | null;
+
+    mode: BatchMode;
+    status: BatchStatus;
+    price: number;
     is_active: boolean;
     admission_open: boolean;
-
     center_name: string | null;
     languages: string[];
-
     start_date: string | null;
     end_date: string | null;
     duration: number | null;
-
     capacity: number | null;
     schedule: string | null;
-
-    course_info?: {
-        id: string;
-        title: string;
-    } | null;
+    courses: {
+        course: {
+            id: string;
+            title: string;
+        };
+    }[];
 };
 
+export type BatchEditState = "unlocked" | "locked";
 
 
 export type BatchDialogProps = {
@@ -31,14 +44,12 @@ export type BatchDialogProps = {
     onOpenChange: (open: boolean) => void;
 
     batch?: BatchListItem; // undefined = create
-    courses: {
-        id: string;
-        title: string;
-    }[];
+    courses: CourseSelectItem[];
 };
 
 
-export type CourseSelectItem = {
-    id: string;
-    title: string;
-};
+export interface CourseSelectItem {
+    id: string
+    title: string
+    is_active: boolean
+}

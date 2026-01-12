@@ -72,7 +72,7 @@ export function EditFeePlanDialog({ feePlan }: Props) {
 
   //  Revalidate discount whenever total changes
   useEffect(() => {
-    form.trigger("discountAmount");
+    void form.trigger("discountAmount");
   }, [total, form]);
 
   async function onSubmit(data: FeePlanFormInput) {
