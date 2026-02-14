@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "motion/react";
 import { Button } from "@/src/components/ui/button";
 import { useParams } from "next/navigation";
 import { cn } from "@/src/lib/utils";
@@ -13,16 +12,11 @@ export function StudentNavbar() {
   const params = useParams();
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
   return (
-    <motion.header
-      initial={{ y: -8, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="sticky top-0 z-50 border-b bg-background backdrop-blur"
-    >
+    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
       <div className="flex h-14 items-center justify-between px-4 sm:px-7">
         {/* Left: Logo */}
         <div className="flex gap-2 items-center">
-          <Link href="/dashboard" className="flex shrink-0 items-center gap-2">
+          <Link href="/" className="flex shrink-0 items-center gap-2">
             <Image
               src="/logo.png"
               alt="Imperial classes"
@@ -36,7 +30,8 @@ export function StudentNavbar() {
           </Link>
           <p
             className={cn(
-              slug && "border-l px-2 text-sm  line-clamp-1 max-w-65 lg:max-w-md"
+              slug &&
+                "border-l px-2 text-sm  line-clamp-1 max-w-65 lg:max-w-md",
             )}
           >
             {slug && decodeURIComponent(slug)}
@@ -65,6 +60,6 @@ export function StudentNavbar() {
           <UserMenu />
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 }

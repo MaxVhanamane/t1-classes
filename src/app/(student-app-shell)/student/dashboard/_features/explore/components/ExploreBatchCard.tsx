@@ -2,9 +2,9 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import type { ExploreBatch } from "../types";
 import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";
 import { formatDateShort } from "@/src/lib/date";
+import { ExploreBatch } from "@/src/app/api/explore-batches/types";
 
 export function ExploreBatchCard({ batch }: { batch: ExploreBatch }) {
   return (

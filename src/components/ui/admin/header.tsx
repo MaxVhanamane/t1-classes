@@ -3,6 +3,7 @@
 import { Menu, LogOut } from "lucide-react";
 import { Button } from "../button";
 import { createClient } from "@/src/lib/supabase/supabase-client";
+import { ThemeToggle } from "../Theme-toggle";
 
 const supabase = createClient();
 
@@ -30,16 +31,18 @@ export default function AdminHeader({
           Welcome, <strong>{userName}</strong>
         </span>
       </div>
-
-      <Button
-        variant="outline"
-        size="sm"
-        className="cursor-pointer"
-        onClick={handleLogout}
-      >
-        <LogOut className="mr-2 h-4 w-4 " />
-        Logout
-      </Button>
+      <div className="flex items-center justify-center gap-4">
+        <ThemeToggle />
+        <Button
+          variant="outline"
+          size="sm"
+          className="cursor-pointer"
+          onClick={handleLogout}
+        >
+          <LogOut className="mr-2 h-4 w-4 " />
+          Logout
+        </Button>
+      </div>
     </header>
   );
 }

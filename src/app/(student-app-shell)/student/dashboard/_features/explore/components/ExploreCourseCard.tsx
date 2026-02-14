@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import type { ExploreCourse } from "../types";
+import { ExploreCourse } from "@/src/app/api/explore-batches/types";
 
 export function ExploreCourseCard({ course }: { course: ExploreCourse }) {
   return (
@@ -30,13 +30,6 @@ export function ExploreCourseCard({ course }: { course: ExploreCourse }) {
         {course.description && (
           <p className="line-clamp-5 text-sm text-muted-foreground">
             {course.description}
-            This course introduces the fundamental principles of chemistry,
-            including atomic structure, chemical bonding, reactions, and the
-            properties of matter, with practical applications through
-            experiments andThis course introduces the fundamental principles of
-            chemistry, including atomic structure, chemical bonding, reactions,
-            and the properties of matter, with practical applications through
-            experiments and
           </p>
         )}
 

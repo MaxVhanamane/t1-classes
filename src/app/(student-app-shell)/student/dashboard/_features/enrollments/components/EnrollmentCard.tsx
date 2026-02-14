@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import type { MyEnrollment } from "../types";
+import type { MyEnrollment } from "../../../../../../api/my-enrollments/types";
 import { formatDateShort } from "@/src/lib/date";
 import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";
 
@@ -51,7 +51,9 @@ export function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
 
         <CardFooter className="px-4 pb-4 pt-2">
           <Button asChild className="w-full">
-            <Link href={`/course/${course.slug}`}>Continue Learning</Link>
+            <Link href={`/learn/courses/${course.slug}`}>
+              Continue Learning
+            </Link>
           </Button>
         </CardFooter>
       </Card>

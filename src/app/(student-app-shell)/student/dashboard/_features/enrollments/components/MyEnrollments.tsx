@@ -1,12 +1,46 @@
-import { getMyEnrollments } from "../actions/getMyEnrollments";
-import type { MyEnrollment } from "../types";
+import type { MyEnrollment } from "../../../../../../api/my-enrollments/types";
 import { CourseEnrollmentCard } from "./CourseEnrollmentCard";
 import { BatchEnrollmentCard } from "./BatchEnrollmentCard";
+import { cookies } from "next/headers";
+import { SectionError } from "@/src/components/system/SectionError";
 
 export async function MyEnrollments() {
-  const enrollments: MyEnrollment[] = await getMyEnrollments();
+  let enrollments: MyEnrollment[] | null = null;
+  let fetchError = false;
 
-  if (enrollments.length === 0) {
+  try {
+    const cookieStore = await cookies();
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL}/api/my-enrollments`,
+      {
+        method: "GET",
+        headers: {
+          cookie: cookieStore.toString(),
+        },
+        cache: "no-store",
+      },
+    );
+
+    if (!res.ok) {
+      fetchError = true;
+    } else {
+      enrollments = await res.json();
+    }
+  } catch {
+    fetchError = true;
+  }
+
+  if (fetchError) {
+    return (
+      <SectionError
+        title="Failed to load enrollments"
+        message="We couldn’t fetch your enrollments right now."
+      />
+    );
+  }
+
+  if (!enrollments || enrollments.length === 0) {
     return (
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm text-muted-foreground">

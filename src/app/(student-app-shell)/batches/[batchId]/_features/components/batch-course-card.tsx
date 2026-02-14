@@ -114,8 +114,8 @@ export function CourseCard({ course, batchId }: CourseCardProps) {
           <Link
             href={
               batchId
-                ? `/course/${course.slug}?batchId=${batchId}`
-                : `/course/${course.slug}`
+                ? `/learn/courses/${course.slug}?batchId=${batchId}`
+                : `/learn/course/${course.slug}`
             }
           >
             Open course

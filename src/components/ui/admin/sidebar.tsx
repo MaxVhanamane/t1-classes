@@ -10,7 +10,9 @@ import {
   Layers,
   GraduationCap,
   X,
+  NotepadText,
 } from "lucide-react";
+import { Button } from "../button";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -18,6 +20,7 @@ const navItems = [
   { label: "Courses", href: "/admin/courses", icon: BookOpen },
   { label: "Batches", href: "/admin/batches", icon: Layers },
   { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
+  { label: "Tests", href: "/admin/tests", icon: NotepadText },
 ];
 
 export default function AdminSidebar({
@@ -37,9 +40,9 @@ export default function AdminSidebar({
     >
       <div className="flex items-center justify-between p-4 md:p-6">
         <div className="font-semibold text-lg">Coaching Admin</div>
-        <button className="md:hidden" onClick={onClose}>
+        <Button variant="ghost" className="md:hidden" onClick={onClose}>
           <X className="h-5 w-5" />
-        </button>
+        </Button>
       </div>
 
       <nav className="flex flex-col gap-1 px-3">

@@ -1,39 +1,50 @@
-import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "../supabase/supabase-server";
-import { ROUTES } from "../constants/route-constants";
+import "server-only"
+
+import { redirect } from "next/navigation"
+import { createServerSupabaseClient } from "../supabase/supabase-server"
+import { ROUTES } from "../constants/route-constants"
+import { AppUser } from "@/src/types/user"
 
 
-export async function getCurrentUser() {
-    const supabase = await createServerSupabaseClient();
+export async function getCurrentUser(): Promise<AppUser> {
+    const supabase = await createServerSupabaseClient()
 
-    // 1 Get auth user
+    // 1. Get auth user
     const {
         data: { user: authUser },
         error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser()
 
     if (authError || !authUser) {
-        redirect(ROUTES.login);
-
+        redirect(ROUTES.login)
     }
 
-    // 2 Get public.users row
-    const { data: user, error: userError } = await supabase
+    // 2. Get public.users row
+    const { data, error: userError } = await supabase
         .from("users")
-        .select("*")
+        .select(
+            `
+      id,
+      full_name,
+      phone,
+      role,
+      status,
+      profile_image,
+      created_at,
+      email
+    `
+        )
         .eq("id", authUser.id)
-        .single();
+        .single()
 
-    if (userError || !user) {
-        redirect(ROUTES.login);
-
+    if (userError || !data) {
+        redirect(ROUTES.login)
     }
 
-    // 3 Status checks
-    if (user.status !== "active") {
-        redirect(ROUTES.inactiveUser);
-
+    // 3. Status gate
+    if (data.status !== "active") {
+        redirect(ROUTES.inactiveUser)
     }
 
-    return user;
+    return data as AppUser
 }

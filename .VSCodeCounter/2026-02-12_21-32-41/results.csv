@@ -1,0 +1,513 @@
+"filename", "language", "JSON with Comments", "TypeScript", "TypeScript JSX", "Markdown", "JavaScript", "JSON", "XML", "PostCSS", "comment", "blank", "total"
+"c:\Users\maxvh\Desktop\infinity classes\README.md", "Markdown", 0, 0, 0, 23, 0, 0, 0, 0, 0, 14, 37
+"c:\Users\maxvh\Desktop\infinity classes\components.json", "JSON", 0, 0, 0, 0, 0, 22, 0, 0, 0, 1, 23
+"c:\Users\maxvh\Desktop\infinity classes\docs\README.md", "Markdown", 0, 0, 0, 75, 0, 0, 0, 0, 0, 44, 119
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\001-enrollment-controls-access.md", "Markdown", 0, 0, 0, 90, 0, 0, 0, 0, 0, 47, 137
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\002-payments-reference-enrollment-not-fee-plan.md", "Markdown", 0, 0, 0, 90, 0, 0, 0, 0, 0, 51, 141
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\003-fee-plans-are-immutable-after-payments.md", "Markdown", 0, 0, 0, 79, 0, 0, 0, 0, 0, 48, 127
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\004-payments-are-immutable-ledger-entries.md", "Markdown", 0, 0, 0, 84, 0, 0, 0, 0, 0, 53, 137
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\005-snapshot-user-data-in-financial-records.md", "Markdown", 0, 0, 0, 81, 0, 0, 0, 0, 0, 52, 133
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\006-no-hard-deletes-in-financial-data.md", "Markdown", 0, 0, 0, 99, 0, 0, 0, 0, 0, 56, 155
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\007-fee-plans-are-contracts-not-prices.md", "Markdown", 0, 0, 0, 114, 0, 0, 0, 0, 0, 56, 170
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\008-payments-do-not-control-access.md", "Markdown", 0, 0, 0, 110, 0, 0, 0, 0, 0, 59, 169
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\009-admin-actions-are-explicit-and-intentional.md", "Markdown", 0, 0, 0, 108, 0, 0, 0, 0, 0, 57, 165
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\010-offline-first-system-design.md", "Markdown", 0, 0, 0, 98, 0, 0, 0, 0, 0, 55, 153
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\011-derived-views-over-mutable-state.md", "Markdown", 0, 0, 0, 97, 0, 0, 0, 0, 0, 59, 156
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\012-rls-first-security-model.md", "Markdown", 0, 0, 0, 105, 0, 0, 0, 0, 0, 57, 162
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\013-audit-columns-are-not-foreign-keys.md", "Markdown", 0, 0, 0, 95, 0, 0, 0, 0, 0, 62, 157
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\014-server-actions-only-no-client-mutations.md", "Markdown", 0, 0, 0, 95, 0, 0, 0, 0, 0, 56, 151
+"c:\Users\maxvh\Desktop\infinity classes\docs\adr\015-Course Content Structure, Publishing Model, and Ordering.md", "Markdown", 0, 0, 0, 268, 0, 0, 0, 0, 0, 99, 367
+"c:\Users\maxvh\Desktop\infinity classes\eslint.config.mjs", "JavaScript", 0, 0, 0, 0, 33, 0, 0, 0, 2, 3, 38
+"c:\Users\maxvh\Desktop\infinity classes\next.config.ts", "TypeScript", 0, 12, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"c:\Users\maxvh\Desktop\infinity classes\package-lock.json", "JSON", 0, 0, 0, 0, 0, 11784, 0, 0, 0, 1, 11785
+"c:\Users\maxvh\Desktop\infinity classes\package.json", "JSON", 0, 0, 0, 0, 0, 81, 0, 0, 0, 1, 82
+"c:\Users\maxvh\Desktop\infinity classes\postcss.config.mjs", "JavaScript", 0, 0, 0, 0, 6, 0, 0, 0, 0, 2, 8
+"c:\Users\maxvh\Desktop\infinity classes\public\file.svg", "XML", 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1
+"c:\Users\maxvh\Desktop\infinity classes\public\globe.svg", "XML", 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1
+"c:\Users\maxvh\Desktop\infinity classes\public\next.svg", "XML", 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1
+"c:\Users\maxvh\Desktop\infinity classes\public\school.svg", "XML", 0, 0, 0, 0, 0, 0, 71, 0, 0, 1, 72
+"c:\Users\maxvh\Desktop\infinity classes\public\vercel.svg", "XML", 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1
+"c:\Users\maxvh\Desktop\infinity classes\public\window.svg", "XML", 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\course-error-state.tsx", "TypeScript JSX", 0, 0, 26, 0, 0, 0, 0, 0, 0, 7, 33
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\course-player.tsx", "TypeScript JSX", 0, 0, 270, 0, 0, 0, 0, 0, 7, 31, 308
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\course-structure-tree.tsx", "TypeScript JSX", 0, 0, 279, 0, 0, 0, 0, 0, 3, 32, 314
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\empty-player-state.tsx", "TypeScript JSX", 0, 0, 15, 0, 0, 0, 0, 0, 0, 2, 17
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\pdf\pdf-viewer-client.tsx", "TypeScript JSX", 0, 0, 31, 0, 0, 0, 0, 0, 0, 4, 35
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\pdf\pdf-viewer-dialog.tsx", "TypeScript JSX", 0, 0, 92, 0, 0, 0, 0, 0, 9, 14, 115
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\player-skeleton.tsx", "TypeScript JSX", 0, 0, 22, 0, 0, 0, 0, 0, 6, 4, 32
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\practice-set\badge.tsx", "TypeScript JSX", 0, 0, 30, 0, 0, 0, 0, 0, 0, 6, 36
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\practice-set\error-practice-set.tsx", "TypeScript JSX", 0, 0, 7, 0, 0, 0, 0, 0, 0, 1, 8
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\practice-set\gravity-confety.tsx", "TypeScript JSX", 0, 0, 35, 0, 0, 0, 0, 0, 0, 5, 40
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\practice-set\loading-practice-set.tsx", "TypeScript JSX", 0, 0, 9, 0, 0, 0, 0, 0, 0, 2, 11
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\practice-set\practice-intro.tsx", "TypeScript JSX", 0, 0, 59, 0, 0, 0, 0, 0, 3, 9, 71
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\practice-set\practice-progress-bar.tsx", "TypeScript JSX", 0, 0, 21, 0, 0, 0, 0, 0, 0, 4, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\practice-set\practice-question-view.tsx", "TypeScript JSX", 0, 0, 133, 0, 0, 0, 0, 0, 8, 14, 155
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\practice-set\practice-set-dialog.tsx", "TypeScript JSX", 0, 0, 133, 0, 0, 0, 0, 0, 0, 20, 153
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\practice-set\practice-summary.tsx", "TypeScript JSX", 0, 0, 111, 0, 0, 0, 0, 0, 5, 13, 129
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\components\video-player.tsx", "TypeScript JSX", 0, 0, 84, 0, 0, 0, 0, 0, 6, 16, 106
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\helper-functions\course-progress.ts", "TypeScript", 0, 26, 0, 0, 0, 0, 0, 0, 0, 3, 29
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\helper-functions\video.ts", "TypeScript", 0, 26, 0, 0, 0, 0, 0, 0, 2, 6, 34
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\_features\types\course-unit-content.ts", "TypeScript", 0, 10, 0, 0, 0, 0, 0, 0, 1, 2, 13
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\error.tsx", "TypeScript JSX", 0, 0, 9, 0, 0, 0, 0, 0, 0, 2, 11
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\loading.tsx", "TypeScript JSX", 0, 0, 100, 0, 0, 0, 0, 0, 10, 10, 120
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\(learning)\course\[slug]\page.tsx", "TypeScript JSX", 0, 0, 34, 0, 0, 0, 0, 0, 0, 8, 42
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\batches\[batchId]\_features\components\batch-course-card.tsx", "TypeScript JSX", 0, 0, 114, 0, 0, 0, 0, 0, 0, 14, 128
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\batches\[batchId]\_features\components\batch-tests-panel.tsx", "TypeScript JSX", 0, 0, 243, 0, 0, 0, 0, 0, 33, 55, 331
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\batches\[batchId]\_features\components\section-instruction-card.tsx", "TypeScript JSX", 0, 0, 99, 0, 0, 0, 0, 0, 0, 11, 110
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\batches\[batchId]\_features\helper-functions\helper.ts", "TypeScript", 0, 26, 0, 0, 0, 0, 0, 0, 0, 5, 31
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\batches\[batchId]\page.tsx", "TypeScript JSX", 0, 0, 129, 0, 0, 0, 0, 0, 9, 19, 157
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\layout.tsx", "TypeScript JSX", 0, 0, 16, 0, 0, 0, 0, 0, 0, 4, 20
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\common\StudentNavbar.tsx", "TypeScript JSX", 0, 0, 58, 0, 0, 0, 0, 0, 2, 6, 66
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\enrollments\actions\getMyEnrollments.ts", "TypeScript", 0, 134, 0, 0, 0, 0, 0, 0, 9, 26, 169
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\enrollments\components\BatchEnrollmentCard.tsx", "TypeScript JSX", 0, 0, 59, 0, 0, 0, 0, 0, 4, 8, 71
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\enrollments\components\CourseEnrollmentCard.tsx", "TypeScript JSX", 0, 0, 45, 0, 0, 0, 0, 0, 4, 8, 57
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\enrollments\components\EnrollmentCard.tsx", "TypeScript JSX", 0, 0, 95, 0, 0, 0, 0, 0, 10, 14, 119
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\enrollments\components\MyEnrollments.tsx", "TypeScript JSX", 0, 0, 39, 0, 0, 0, 0, 0, 0, 5, 44
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\enrollments\components\MyEnrollmentsSkeleton.tsx", "TypeScript JSX", 0, 0, 28, 0, 0, 0, 0, 0, 5, 8, 41
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\enrollments\types.ts", "TypeScript", 0, 61, 0, 0, 0, 0, 0, 0, 11, 11, 83
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\explore\actions\getExploreBatches.ts", "TypeScript", 0, 49, 0, 0, 0, 0, 0, 0, 1, 11, 61
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\explore\actions\getExploreCourses.ts", "TypeScript", 0, 40, 0, 0, 0, 0, 0, 0, 5, 10, 55
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\explore\components\ExploreBatchCard.tsx", "TypeScript JSX", 0, 0, 40, 0, 0, 0, 0, 0, 7, 7, 54
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\explore\components\ExploreBatches.tsx", "TypeScript JSX", 0, 0, 21, 0, 0, 0, 0, 0, 0, 4, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\explore\components\ExploreBatchesSkeleton.tsx", "TypeScript JSX", 0, 0, 29, 0, 0, 0, 0, 0, 6, 7, 42
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\explore\components\ExploreCourseCard.tsx", "TypeScript JSX", 0, 0, 57, 0, 0, 0, 0, 0, 3, 6, 66
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\explore\components\ExploreCourses.tsx", "TypeScript JSX", 0, 0, 21, 0, 0, 0, 0, 0, 0, 4, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\explore\components\ExploreCoursesSkeleton.tsx", "TypeScript JSX", 0, 0, 31, 0, 0, 0, 0, 0, 6, 6, 43
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\_features\explore\types.ts", "TypeScript", 0, 31, 0, 0, 0, 0, 0, 0, 2, 4, 37
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\student\dashboard\page.tsx", "TypeScript JSX", 0, 0, 67, 0, 0, 0, 0, 0, 6, 8, 81
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\api\grid.ts", "TypeScript", 0, 16, 0, 0, 0, 0, 0, 0, 0, 4, 20
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\attempt-denied-card.tsx", "TypeScript JSX", 0, 0, 91, 0, 0, 0, 0, 0, 0, 15, 106
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\exam-header.tsx", "TypeScript JSX", 0, 0, 38, 0, 0, 0, 0, 0, 3, 8, 49
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\exam-shell.tsx", "TypeScript JSX", 0, 0, 66, 0, 0, 0, 0, 0, 7, 12, 85
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\grid-badge.tsx", "TypeScript JSX", 0, 0, 45, 0, 0, 0, 0, 0, 0, 9, 54
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\question-actions.tsx", "TypeScript JSX", 0, 0, 96, 0, 0, 0, 0, 0, 7, 10, 113
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\question-body.tsx", "TypeScript JSX", 0, 0, 88, 0, 0, 0, 0, 0, 10, 15, 113
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\question-grid.tsx", "TypeScript JSX", 0, 0, 74, 0, 0, 0, 0, 0, 2, 15, 91
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\question-workspace.tsx", "TypeScript JSX", 0, 0, 128, 0, 0, 0, 0, 0, 4, 14, 146
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\submit-overlay.tsx", "TypeScript JSX", 0, 0, 70, 0, 0, 0, 0, 0, 9, 11, 90
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\components\sync-dot.tsx", "TypeScript JSX", 0, 0, 32, 0, 0, 0, 0, 0, 0, 7, 39
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\helpers\denormalize-student-answer.ts", "TypeScript", 0, 25, 0, 0, 0, 0, 0, 0, 0, 7, 32
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\helpers\grid-colors.ts", "TypeScript", 0, 37, 0, 0, 0, 0, 0, 0, 0, 7, 44
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\helpers\grid-optimistic.ts", "TypeScript", 0, 12, 0, 0, 0, 0, 0, 0, 0, 2, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\helpers\is-empty-answer.ts", "TypeScript", 0, 6, 0, 0, 0, 0, 0, 0, 0, 1, 7
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\helpers\map-grid.ts", "TypeScript", 0, 25, 0, 0, 0, 0, 0, 0, 0, 4, 29
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\helpers\normalize-student-answer.ts", "TypeScript", 0, 29, 0, 0, 0, 0, 0, 0, 0, 7, 36
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\helpers\time.ts", "TypeScript", 0, 10, 0, 0, 0, 0, 0, 0, 0, 3, 13
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\hooks\use-answer-save.ts", "TypeScript", 0, 116, 0, 0, 0, 0, 0, 0, 15, 25, 156
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\hooks\use-attempt-state.ts", "TypeScript", 0, 42, 0, 0, 0, 0, 0, 0, 0, 10, 52
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\hooks\use-question-navigator.ts", "TypeScript", 0, 52, 0, 0, 0, 0, 0, 0, 9, 9, 70
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\hooks\use-question-session.ts", "TypeScript", 0, 135, 0, 0, 0, 0, 0, 0, 28, 26, 189
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\hooks\use-question-visit.ts", "TypeScript", 0, 76, 0, 0, 0, 0, 0, 0, 1, 17, 94
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\hooks\use-server-timer.ts", "TypeScript", 0, 26, 0, 0, 0, 0, 0, 0, 1, 8, 35
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\hooks\use-submission-guard.ts", "TypeScript", 0, 33, 0, 0, 0, 0, 0, 0, 2, 8, 43
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\hooks\use-sync-status.ts", "TypeScript", 0, 32, 0, 0, 0, 0, 0, 0, 0, 7, 39
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\hooks\use-test-submit.ts", "TypeScript", 0, 58, 0, 0, 0, 0, 0, 0, 1, 10, 69
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\types\attempt.types.ts", "TypeScript", 0, 52, 0, 0, 0, 0, 0, 0, 0, 3, 55
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\types\grid.types.ts", "TypeScript", 0, 21, 0, 0, 0, 0, 0, 0, 0, 3, 24
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\_features\types\workspace.types.ts", "TypeScript", 0, 6, 0, 0, 0, 0, 0, 0, 0, 2, 8
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\attempt\[attemptId]\page.tsx", "TypeScript JSX", 0, 0, 44, 0, 0, 0, 0, 0, 1, 10, 55
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\instructions\[distributionId]\_features\components\general-instructions.tsx", "TypeScript JSX", 0, 0, 53, 0, 0, 0, 0, 0, 0, 5, 58
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\instructions\[distributionId]\_features\components\section-instructions.tsx", "TypeScript JSX", 0, 0, 59, 0, 0, 0, 0, 0, 2, 10, 71
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\instructions\[distributionId]\_features\components\start-gate.tsx", "TypeScript JSX", 0, 0, 97, 0, 0, 0, 0, 0, 3, 16, 116
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\instructions\[distributionId]\_features\helpers\build-rules.ts", "TypeScript", 0, 40, 0, 0, 0, 0, 0, 0, 1, 4, 45
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\instructions\[distributionId]\_features\helpers\copy.ts", "TypeScript", 0, 39, 0, 0, 0, 0, 0, 0, 0, 6, 45
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\instructions\[distributionId]\_features\helpers\labels.ts", "TypeScript", 0, 17, 0, 0, 0, 0, 0, 0, 0, 3, 20
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\instructions\[distributionId]\_features\types\test-instructions.types.ts", "TypeScript", 0, 32, 0, 0, 0, 0, 0, 0, 0, 4, 36
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\instructions\[distributionId]\page.tsx", "TypeScript JSX", 0, 0, 112, 0, 0, 0, 0, 0, 0, 20, 132
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\_features\components\count-up-number.tsx", "TypeScript JSX", 0, 0, 36, 0, 0, 0, 0, 0, 2, 9, 47
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\_features\components\loading.tsx", "TypeScript JSX", 0, 0, 73, 0, 0, 0, 0, 0, 17, 15, 105
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\_features\components\pending-state.tsx", "TypeScript JSX", 0, 0, 46, 0, 0, 0, 0, 0, 3, 7, 56
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\_features\components\stat-card.tsx", "TypeScript JSX", 0, 0, 67, 0, 0, 0, 0, 0, 3, 7, 77
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\_features\helper-functions\rank-utils.ts", "TypeScript", 0, 9, 0, 0, 0, 0, 0, 0, 0, 4, 13
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\_features\hooks\use-my-rank.ts", "TypeScript", 0, 25, 0, 0, 0, 0, 0, 0, 0, 7, 32
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\_features\hooks\use-result-summary.ts", "TypeScript", 0, 55, 0, 0, 0, 0, 0, 0, 17, 15, 87
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\_features\types\my-rank.ts", "TypeScript", 0, 15, 0, 0, 0, 0, 0, 0, 0, 1, 16
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\analysis-loading-screen.tsx.tsx", "TypeScript JSX", 0, 0, 38, 0, 0, 0, 0, 0, 3, 9, 50
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\explanation-accordion.tsx", "TypeScript JSX", 0, 0, 23, 0, 0, 0, 0, 0, 0, 3, 26
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\meta-strip.tsx", "TypeScript JSX", 0, 0, 73, 0, 0, 0, 0, 0, 0, 8, 81
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\mobile-section-drawer.tsx", "TypeScript JSX", 0, 0, 102, 0, 0, 0, 0, 0, 6, 11, 119
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\option-item.tsx", "TypeScript JSX", 0, 0, 57, 0, 0, 0, 0, 0, 9, 15, 81
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\pagination-bar.tsx", "TypeScript JSX", 0, 0, 24, 0, 0, 0, 0, 0, 0, 5, 29
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\question-card.tsx", "TypeScript JSX", 0, 0, 137, 0, 0, 0, 0, 0, 14, 42, 193
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\question-viewer.tsx", "TypeScript JSX", 0, 0, 92, 0, 0, 0, 0, 0, 5, 14, 111
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\section-meta.tsx", "TypeScript JSX", 0, 0, 24, 0, 0, 0, 0, 0, 2, 8, 34
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\components\section-sidebar.tsx", "TypeScript JSX", 0, 0, 311, 0, 0, 0, 0, 0, 37, 71, 419
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\hooks\use-get-sections.ts", "TypeScript", 0, 51, 0, 0, 0, 0, 0, 0, 3, 11, 65
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\_features\hooks\use-section-questions.ts", "TypeScript", 0, 45, 0, 0, 0, 0, 0, 0, 0, 8, 53
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\detailed\page.tsx", "TypeScript JSX", 0, 0, 77, 0, 0, 0, 0, 0, 8, 19, 104
+"c:\Users\maxvh\Desktop\infinity classes\src\app\(student-app-shell)\tests\results\[attemptId]\page.tsx", "TypeScript JSX", 0, 0, 293, 0, 0, 0, 0, 0, 34, 72, 399
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\_features\components\stat-card-skeleton.tsx", "TypeScript JSX", 0, 0, 14, 0, 0, 0, 0, 0, 0, 2, 16
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\_features\components\stat-card.tsx", "TypeScript JSX", 0, 0, 40, 0, 0, 0, 0, 0, 0, 4, 44
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\_features\components\stats.tsx", "TypeScript JSX", 0, 0, 78, 0, 0, 0, 0, 0, 0, 16, 94
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\actions\create-batch.ts", "TypeScript", 0, 42, 0, 0, 0, 0, 0, 0, 16, 10, 68
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\actions\get-batch-edit-state.ts", "TypeScript", 0, 29, 0, 0, 0, 0, 0, 0, 2, 8, 39
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\actions\toggle-batch-active.ts", "TypeScript", 0, 27, 0, 0, 0, 0, 0, 0, 0, 8, 35
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\actions\update-batch.ts", "TypeScript", 0, 46, 0, 0, 0, 0, 0, 0, 12, 10, 68
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batch-active-switch.tsx", "TypeScript JSX", 0, 0, 36, 0, 0, 0, 0, 0, 0, 9, 45
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batch-badges.tsx", "TypeScript JSX", 0, 0, 31, 0, 0, 0, 0, 0, 1, 4, 36
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batch-dialog.tsx", "TypeScript JSX", 0, 0, 481, 0, 0, 0, 0, 0, 23, 66, 570
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batch-duration.tsx", "TypeScript JSX", 0, 0, 21, 0, 0, 0, 0, 0, 0, 5, 26
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batch-highlight-editor.tsx", "TypeScript JSX", 0, 0, 87, 0, 0, 0, 0, 0, 2, 11, 100
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-cards.tsx", "TypeScript JSX", 0, 0, 162, 0, 0, 0, 0, 0, 10, 25, 197
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-client-wrapper.tsx", "TypeScript JSX", 0, 0, 46, 0, 0, 0, 0, 0, 0, 8, 54
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-header-skeleton.tsx", "TypeScript JSX", 0, 0, 9, 0, 0, 0, 0, 0, 0, 2, 11
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-header.tsx", "TypeScript JSX", 0, 0, 19, 0, 0, 0, 0, 0, 1, 4, 24
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-table-skeleton.tsx", "TypeScript JSX", 0, 0, 22, 0, 0, 0, 0, 0, 0, 3, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\components\batches-table.tsx", "TypeScript JSX", 0, 0, 250, 0, 0, 0, 0, 0, 4, 25, 279
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\helper-functions\functions.ts", "TypeScript", 0, 12, 0, 0, 0, 0, 0, 0, 0, 5, 17
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\hooks\use-batch-active-toggle.ts", "TypeScript", 0, 29, 0, 0, 0, 0, 0, 0, 0, 7, 36
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\types\types.ts", "TypeScript", 0, 44, 0, 0, 0, 0, 0, 0, 0, 12, 56
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\_features\zod-schema\schema.ts", "TypeScript", 0, 65, 0, 0, 0, 0, 0, 0, 0, 13, 78
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\loading.tsx", "TypeScript JSX", 0, 0, 12, 0, 0, 0, 0, 0, 0, 2, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\batches\page.tsx", "TypeScript JSX", 0, 0, 60, 0, 0, 0, 0, 0, 0, 11, 71
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\_features\actions\actions.ts", "TypeScript", 0, 106, 0, 0, 0, 0, 0, 0, 1, 24, 131
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\_features\components\course-dialog.tsx", "TypeScript JSX", 0, 0, 433, 0, 0, 0, 0, 0, 8, 66, 507
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\_features\components\courses-client.tsx", "TypeScript JSX", 0, 0, 41, 0, 0, 0, 0, 0, 0, 9, 50
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\_features\components\courses-table.tsx", "TypeScript JSX", 0, 0, 263, 0, 0, 0, 0, 0, 10, 31, 304
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\loading.tsx", "TypeScript JSX", 0, 0, 12, 0, 0, 0, 0, 0, 0, 2, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\courses\page.tsx", "TypeScript JSX", 0, 0, 6, 0, 0, 0, 0, 0, 0, 3, 9
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\chapter\create-chapter.ts", "TypeScript", 0, 47, 0, 0, 0, 0, 0, 0, 7, 15, 69
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\chapter\delete-chapter.ts", "TypeScript", 0, 45, 0, 0, 0, 0, 0, 0, 5, 13, 63
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\chapter\rename-chapter.ts", "TypeScript", 0, 47, 0, 0, 0, 0, 0, 0, 4, 14, 65
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\chapter\toggle-chapter-publish.ts", "TypeScript", 0, 66, 0, 0, 0, 0, 0, 0, 21, 18, 105
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\get-chapters.ts", "TypeScript", 0, 21, 0, 0, 0, 0, 0, 0, 0, 8, 29
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\get-course-units-by-topic.ts", "TypeScript", 0, 29, 0, 0, 0, 0, 0, 0, 5, 7, 41
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\get-topics-by-chapter.ts", "TypeScript", 0, 32, 0, 0, 0, 0, 0, 0, 0, 9, 41
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\create-topic.ts", "TypeScript", 0, 67, 0, 0, 0, 0, 0, 0, 6, 20, 93
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\delete-topic.ts", "TypeScript", 0, 43, 0, 0, 0, 0, 0, 0, 15, 15, 73
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\pdf\create-pdf.ts", "TypeScript", 0, 60, 0, 0, 0, 0, 0, 0, 18, 16, 94
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\pdf\delete-pdf.ts", "TypeScript", 0, 46, 0, 0, 0, 0, 0, 0, 16, 13, 75
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\pdf\get-signed-pdf-url.ts", "TypeScript", 0, 19, 0, 0, 0, 0, 0, 0, 1, 8, 28
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\pdf\update-pdf.ts", "TypeScript", 0, 73, 0, 0, 0, 0, 0, 0, 19, 18, 110
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\rename-topic.ts", "TypeScript", 0, 56, 0, 0, 0, 0, 0, 0, 13, 17, 86
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\toggle-topic-publish.ts", "TypeScript", 0, 94, 0, 0, 0, 0, 0, 0, 26, 19, 139
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\toggleCourseUnitPublish.ts", "TypeScript", 0, 96, 0, 0, 0, 0, 0, 0, 24, 23, 143
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\video\create-video.ts", "TypeScript", 0, 68, 0, 0, 0, 0, 0, 0, 15, 16, 99
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\video\delete-video.ts", "TypeScript", 0, 50, 0, 0, 0, 0, 0, 0, 12, 14, 76
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\actions\topic\video\update-video.ts", "TypeScript", 0, 62, 0, 0, 0, 0, 0, 0, 6, 16, 84
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\chapter\add-chapter-dialog.tsx", "TypeScript JSX", 0, 0, 99, 0, 0, 0, 0, 0, 2, 16, 117
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\chapter\chapter-item.tsx", "TypeScript JSX", 0, 0, 160, 0, 0, 0, 0, 0, 6, 12, 178
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\chapter\delete-chapter-dialog.tsx", "TypeScript JSX", 0, 0, 75, 0, 0, 0, 0, 0, 0, 10, 85
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\chapter\rename-chapter-dialog.tsx", "TypeScript JSX", 0, 0, 85, 0, 0, 0, 0, 0, 0, 12, 97
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\pdf\add-pdf-dialog.tsx", "TypeScript JSX", 0, 0, 182, 0, 0, 0, 0, 0, 10, 31, 223
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\pdf\delete-pdf-dialog.tsx", "TypeScript JSX", 0, 0, 79, 0, 0, 0, 0, 0, 0, 10, 89
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\pdf\edit-pdf-dialog.tsx", "TypeScript JSX", 0, 0, 181, 0, 0, 0, 0, 0, 9, 26, 216
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\pdf\pdf-item.tsx", "TypeScript JSX", 0, 0, 207, 0, 0, 0, 0, 0, 4, 22, 233
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\skeletons\structure-tree-skeleton.tsx", "TypeScript JSX", 0, 0, 32, 0, 0, 0, 0, 0, 7, 5, 44
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\skeletons\topic-content-skeleton.tsx", "TypeScript JSX", 0, 0, 37, 0, 0, 0, 0, 0, 5, 7, 49
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\structure\mobile-switch.tsx", "TypeScript JSX", 0, 0, 14, 0, 0, 0, 0, 0, 4, 5, 23
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\structure\structure-tree.server.tsx", "TypeScript JSX", 0, 0, 20, 0, 0, 0, 0, 0, 0, 4, 24
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\structure\structure-tree.tsx", "TypeScript JSX", 0, 0, 28, 0, 0, 0, 0, 0, 3, 6, 37
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\topic\add-topic-dialog.tsx", "TypeScript JSX", 0, 0, 118, 0, 0, 0, 0, 0, 0, 13, 131
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\topic\delete-topic-dialog.tsx", "TypeScript JSX", 0, 0, 79, 0, 0, 0, 0, 0, 0, 12, 91
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\topic\rename-topic-dialog.tsx", "TypeScript JSX", 0, 0, 109, 0, 0, 0, 0, 0, 4, 19, 132
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\topic\topic-item.tsx", "TypeScript JSX", 0, 0, 154, 0, 0, 0, 0, 0, 2, 12, 168
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\topic\topic-unit-item.tsx", "TypeScript JSX", 0, 0, 23, 0, 0, 0, 0, 0, 0, 6, 29
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\video\add-video-dialog.tsx", "TypeScript JSX", 0, 0, 200, 0, 0, 0, 0, 0, 11, 29, 240
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\video\delete-video-dialog.tsx", "TypeScript JSX", 0, 0, 90, 0, 0, 0, 0, 0, 0, 13, 103
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\video\edit-video-dialog.tsx", "TypeScript JSX", 0, 0, 201, 0, 0, 0, 0, 0, 9, 31, 241
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\video\video-embed.tsx", "TypeScript JSX", 0, 0, 37, 0, 0, 0, 0, 0, 0, 7, 44
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\components\video\video-item.tsx", "TypeScript JSX", 0, 0, 170, 0, 0, 0, 0, 0, 5, 19, 194
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\helper-functions\video-provider.ts", "TypeScript", 0, 20, 0, 0, 0, 0, 0, 0, 0, 5, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\types\course-structure.types.ts", "TypeScript", 0, 30, 0, 0, 0, 0, 0, 0, 0, 7, 37
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\types\course-structure.ui.types.ts", "TypeScript", 0, 13, 0, 0, 0, 0, 0, 0, 0, 3, 16
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\types\course-unit.types.ts", "TypeScript", 0, 21, 0, 0, 0, 0, 0, 0, 0, 4, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\zod-schema\chapter.schema.ts", "TypeScript", 0, 18, 0, 0, 0, 0, 0, 0, 7, 6, 31
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\zod-schema\pdf.schema.ts", "TypeScript", 0, 42, 0, 0, 0, 0, 0, 0, 10, 15, 67
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\zod-schema\rename-topic.schema.ts", "TypeScript", 0, 10, 0, 0, 0, 0, 0, 0, 0, 3, 13
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\zod-schema\topic.schema.ts", "TypeScript", 0, 8, 0, 0, 0, 0, 0, 0, 0, 3, 11
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\_features\zod-schema\video.schema.ts", "TypeScript", 0, 18, 0, 0, 0, 0, 0, 0, 0, 6, 24
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\layout.tsx", "TypeScript JSX", 0, 0, 37, 0, 0, 0, 0, 0, 2, 7, 46
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\page.tsx", "TypeScript JSX", 0, 0, 7, 0, 0, 0, 0, 0, 0, 1, 8
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\create-practice-question-with-options.ts", "TypeScript", 0, 85, 0, 0, 0, 0, 0, 0, 24, 24, 133
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\create-practice-set.ts", "TypeScript", 0, 66, 0, 0, 0, 0, 0, 0, 18, 17, 101
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\delete-practice-question.ts", "TypeScript", 0, 68, 0, 0, 0, 0, 0, 0, 21, 21, 110
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\delete-practice-set.ts", "TypeScript", 0, 59, 0, 0, 0, 0, 0, 0, 19, 18, 96
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\get-practice-questions.ts", "TypeScript", 0, 26, 0, 0, 0, 0, 0, 0, 0, 6, 32
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\get-practice-set-by-id.ts", "TypeScript", 0, 14, 0, 0, 0, 0, 0, 0, 0, 6, 20
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\get-practice-sets-by-topic.ts", "TypeScript", 0, 13, 0, 0, 0, 0, 0, 0, 0, 5, 18
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\togglePracticeSetPublish.ts", "TypeScript", 0, 91, 0, 0, 0, 0, 0, 0, 21, 22, 134
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\update-practice-question-with-options.ts", "TypeScript", 0, 86, 0, 0, 0, 0, 0, 0, 24, 24, 134
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\actions\practice-set\update-practice-set.ts", "TypeScript", 0, 68, 0, 0, 0, 0, 0, 0, 18, 19, 105
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\components\practice-set\add-option-dialog.tsx", "TypeScript JSX", 0, 0, 87, 0, 0, 0, 0, 0, 0, 12, 99
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\components\practice-set\mcq-builder.tsx", "TypeScript JSX", 0, 0, 308, 0, 0, 0, 0, 0, 1, 46, 355
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\components\practice-set\practice-question-item.tsx", "TypeScript JSX", 0, 0, 210, 0, 0, 0, 0, 0, 4, 16, 230
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\components\practice-set\practice-question-list.tsx", "TypeScript JSX", 0, 0, 45, 0, 0, 0, 0, 0, 0, 5, 50
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\components\practice-set\practice-set-dialog.tsx", "TypeScript JSX", 0, 0, 165, 0, 0, 0, 0, 0, 5, 20, 190
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\components\practice-set\practice-set-item.tsx", "TypeScript JSX", 0, 0, 133, 0, 0, 0, 0, 0, 2, 9, 144
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\components\practice-set\practice-set-section.tsx", "TypeScript JSX", 0, 0, 56, 0, 0, 0, 0, 0, 0, 7, 63
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\components\skeleton\practice-set-skeleton.tsx", "TypeScript JSX", 0, 0, 8, 0, 0, 0, 0, 0, 0, 2, 10
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\loading.tsx", "TypeScript JSX", 0, 0, 4, 0, 0, 0, 0, 0, 0, 1, 5
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\page.tsx", "TypeScript JSX", 0, 0, 69, 0, 0, 0, 0, 0, 3, 10, 82
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\practice\[practiceSetId]\components\delete-practice-set-confirmation-dialog.tsx", "TypeScript JSX", 0, 0, 86, 0, 0, 0, 0, 0, 1, 11, 98
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\practice\[practiceSetId]\page.tsx", "TypeScript JSX", 0, 0, 41, 0, 0, 0, 0, 0, 3, 7, 51
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\types\question-builder.types.ts", "TypeScript", 0, 11, 0, 0, 0, 0, 0, 0, 0, 1, 12
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\zod-schema\practice-set\practice-question.schema.ts", "TypeScript", 0, 47, 0, 0, 0, 0, 0, 0, 0, 11, 58
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\curriculum\[courseId]\topics\[topicId]\zod-schema\practice-set\practice-set.ts", "TypeScript", 0, 30, 0, 0, 0, 0, 0, 0, 0, 10, 40
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\actions\cancel-fee-plan.ts", "TypeScript", 0, 46, 0, 0, 0, 0, 0, 0, 4, 14, 64
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\actions\fee-actions.ts", "TypeScript", 0, 150, 0, 0, 0, 0, 0, 0, 17, 47, 214
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\actions\get-enrollment-pricing-context.ts", "TypeScript", 0, 74, 0, 0, 0, 0, 0, 0, 6, 13, 93
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\actions\get-user-audit-info.ts", "TypeScript", 0, 29, 0, 0, 0, 0, 0, 0, 3, 11, 43
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\actions\payments\create-payment.ts", "TypeScript", 0, 47, 0, 0, 0, 0, 0, 0, 16, 21, 84
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\actions\payments\create-refund.ts", "TypeScript", 0, 47, 0, 0, 0, 0, 0, 0, 11, 18, 76
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\actions\payments\get-payments-for-enrollment.ts", "TypeScript", 0, 27, 0, 0, 0, 0, 0, 0, 0, 6, 33
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\actions\queries.ts", "TypeScript", 0, 58, 0, 0, 0, 0, 0, 0, 9, 8, 75
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\audit-detail-dialog.tsx", "TypeScript JSX", 0, 0, 107, 0, 0, 0, 0, 0, 3, 19, 129
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\cancel-fee-plan-dialog.tsx", "TypeScript JSX", 0, 0, 87, 0, 0, 0, 0, 0, 0, 11, 98
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\create-fee-plan-dialog.tsx", "TypeScript JSX", 0, 0, 202, 0, 0, 0, 0, 0, 7, 24, 233
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\create-supersede-fee-plan.tsx", "TypeScript JSX", 0, 0, 186, 0, 0, 0, 0, 0, 7, 23, 216
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\edit-fee-plan-dialog.tsx", "TypeScript JSX", 0, 0, 176, 0, 0, 0, 0, 0, 2, 23, 201
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\fee-plan-audit-trigger.tsx", "TypeScript JSX", 0, 0, 29, 0, 0, 0, 0, 0, 0, 6, 35
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\fee-plan-history-list.tsx", "TypeScript JSX", 0, 0, 103, 0, 0, 0, 0, 0, 6, 16, 125
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\fee-plan-summary-card.tsx", "TypeScript JSX", 0, 0, 129, 0, 0, 0, 0, 0, 9, 16, 154
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\fee-section.tsx", "TypeScript JSX", 0, 0, 88, 0, 0, 0, 0, 0, 3, 11, 102
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\money-input.tsx", "TypeScript JSX", 0, 0, 15, 0, 0, 0, 0, 0, 0, 2, 17
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\payment\confirm-refund-dialog.tsx", "TypeScript JSX", 0, 0, 68, 0, 0, 0, 0, 0, 0, 6, 74
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\payment\constants\payment-methods.ts", "TypeScript", 0, 41, 0, 0, 0, 0, 0, 0, 0, 3, 44
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\payment\payment-method-badge.tsx", "TypeScript JSX", 0, 0, 17, 0, 0, 0, 0, 0, 0, 5, 22
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\payment\payment-method-select.tsx", "TypeScript JSX", 0, 0, 54, 0, 0, 0, 0, 0, 1, 6, 61
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\payment\payment-status-badge.tsx", "TypeScript JSX", 0, 0, 36, 0, 0, 0, 0, 0, 0, 6, 42
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\payment\payments-list.tsx", "TypeScript JSX", 0, 0, 88, 0, 0, 0, 0, 0, 6, 11, 105
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\payment\payments-section.tsx", "TypeScript JSX", 0, 0, 82, 0, 0, 0, 0, 0, 5, 13, 100
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\payment\record-payment-dialog.tsx", "TypeScript JSX", 0, 0, 167, 0, 0, 0, 0, 0, 10, 23, 200
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\payment\refund-dialog.tsx", "TypeScript JSX", 0, 0, 216, 0, 0, 0, 0, 0, 12, 35, 263
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\components\role-badge.tsx", "TypeScript JSX", 0, 0, 19, 0, 0, 0, 0, 0, 0, 3, 22
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\types\fee-types.ts", "TypeScript", 0, 53, 0, 0, 0, 0, 0, 0, 2, 18, 73
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\types\payment.types.ts", "TypeScript", 0, 19, 0, 0, 0, 0, 0, 0, 0, 7, 26
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\zod\feePlan.schema.ts", "TypeScript", 0, 40, 0, 0, 0, 0, 0, 0, 6, 7, 53
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\zod\payment.schema.ts", "TypeScript", 0, 36, 0, 0, 0, 0, 0, 0, 10, 9, 55
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\_features\zod\refund.schema.ts", "TypeScript", 0, 24, 0, 0, 0, 0, 0, 0, 8, 13, 45
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\loading.tsx", "TypeScript JSX", 0, 0, 74, 0, 0, 0, 0, 0, 10, 15, 99
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\[enrollmentId]\fees\page.tsx", "TypeScript JSX", 0, 0, 21, 0, 0, 0, 0, 0, 0, 3, 24
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\actions\create-enrollment.ts", "TypeScript", 0, 70, 0, 0, 0, 0, 0, 0, 24, 17, 111
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\actions\update-enrollment.ts", "TypeScript", 0, 77, 0, 0, 0, 0, 0, 0, 24, 22, 123
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\batch-combo-box.tsx", "TypeScript JSX", 0, 0, 95, 0, 0, 0, 0, 0, 3, 10, 108
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\course-combo-box.tsx", "TypeScript JSX", 0, 0, 79, 0, 0, 0, 0, 0, 0, 9, 88
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollment-cards.tsx", "TypeScript JSX", 0, 0, 144, 0, 0, 0, 0, 0, 9, 19, 172
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollment-dialog.tsx", "TypeScript JSX", 0, 0, 310, 0, 0, 0, 0, 0, 10, 28, 348
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollment-header.tsx", "TypeScript JSX", 0, 0, 19, 0, 0, 0, 0, 0, 0, 3, 22
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollment-table.tsx", "TypeScript JSX", 0, 0, 189, 0, 0, 0, 0, 0, 9, 20, 218
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\enrollments-client.tsx", "TypeScript JSX", 0, 0, 60, 0, 0, 0, 0, 0, 2, 7, 69
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\registration-channel-badge.tsx", "TypeScript JSX", 0, 0, 24, 0, 0, 0, 0, 0, 0, 5, 29
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\components\status-badge.tsx", "TypeScript JSX", 0, 0, 26, 0, 0, 0, 0, 0, 0, 4, 30
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\types\enrollments.tsx", "TypeScript JSX", 0, 0, 115, 0, 0, 0, 0, 0, 2, 26, 143
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\_features\zod-schema\enrollments.ts", "TypeScript", 0, 27, 0, 0, 0, 0, 0, 0, 0, 8, 35
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\loading.tsx", "TypeScript JSX", 0, 0, 12, 0, 0, 0, 0, 0, 0, 2, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\enrollments\page.tsx", "TypeScript JSX", 0, 0, 145, 0, 0, 0, 0, 0, 0, 18, 163
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\layout.tsx", "TypeScript JSX", 0, 0, 10, 0, 0, 0, 0, 0, 0, 3, 13
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\page.tsx", "TypeScript JSX", 0, 0, 46, 0, 0, 0, 0, 0, 2, 9, 57
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\actions\get-test-by-id.ts", "TypeScript", 0, 37, 0, 0, 0, 0, 0, 0, 1, 7, 45
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\actions\sections\add-test-section.ts", "TypeScript", 0, 76, 0, 0, 0, 0, 0, 0, 18, 20, 114
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\actions\sections\delete-section.ts", "TypeScript", 0, 22, 0, 0, 0, 0, 0, 0, 2, 8, 32
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\actions\sections\get-section-templates.ts", "TypeScript", 0, 36, 0, 0, 0, 0, 0, 0, 0, 9, 45
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\actions\sections\get-test-sections.ts", "TypeScript", 0, 48, 0, 0, 0, 0, 0, 0, 0, 11, 59
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\components\back-button-client.tsx", "TypeScript JSX", 0, 0, 19, 0, 0, 0, 0, 0, 0, 4, 23
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\components\section\Test-section-list.tsx", "TypeScript JSX", 0, 0, 195, 0, 0, 0, 0, 0, 6, 30, 231
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\components\section\add-section-button.tsx", "TypeScript JSX", 0, 0, 29, 0, 0, 0, 0, 0, 0, 5, 34
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\components\section\section-template-card.tsx", "TypeScript JSX", 0, 0, 75, 0, 0, 0, 0, 0, 2, 9, 86
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\components\section\section-template-sheet-trigger.tsx", "TypeScript JSX", 0, 0, 27, 0, 0, 0, 0, 0, 0, 6, 33
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\components\section\section-template-sheet.tsx", "TypeScript JSX", 0, 0, 196, 0, 0, 0, 0, 0, 3, 30, 229
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\components\section\sections-empty-state.tsx", "TypeScript JSX", 0, 0, 21, 0, 0, 0, 0, 0, 0, 4, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\components\test-builder-header.tsx", "TypeScript JSX", 0, 0, 31, 0, 0, 0, 0, 0, 0, 5, 36
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\types\section-template.types.ts", "TypeScript", 0, 14, 0, 0, 0, 0, 0, 0, 0, 3, 17
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\types\test-builder.types.ts", "TypeScript", 0, 7, 0, 0, 0, 0, 0, 0, 0, 1, 8
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\_features\types\test-section.types.ts", "TypeScript", 0, 14, 0, 0, 0, 0, 0, 0, 0, 5, 19
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\page.tsx", "TypeScript JSX", 0, 0, 33, 0, 0, 0, 0, 0, 0, 5, 38
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\actions\delete-question.ts", "TypeScript", 0, 23, 0, 0, 0, 0, 0, 0, 0, 7, 30
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\actions\get-questions.ts", "TypeScript", 0, 45, 0, 0, 0, 0, 0, 0, 0, 6, 51
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\actions\get-section.ts", "TypeScript", 0, 48, 0, 0, 0, 0, 0, 0, 0, 11, 59
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\actions\upsert-question.ts", "TypeScript", 0, 88, 0, 0, 0, 0, 0, 0, 30, 17, 135
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\question-builder\match-matrix-builder.tsx", "TypeScript JSX", 0, 0, 268, 0, 0, 0, 0, 0, 16, 51, 335
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\question-builder\multi-select-builder.tsx", "TypeScript JSX", 0, 0, 87, 0, 0, 0, 0, 0, 7, 20, 114
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\question-builder\numerical-input-builder.tsx", "TypeScript JSX", 0, 0, 81, 0, 0, 0, 0, 0, 1, 13, 95
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\question-builder\question-builder-dialog.tsx", "TypeScript JSX", 0, 0, 374, 0, 0, 0, 0, 0, 35, 59, 468
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\question-builder\rich-editor.tsx", "TypeScript JSX", 0, 0, 86, 0, 0, 0, 0, 0, 2, 11, 99
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\question-builder\single-select-builder.tsx", "TypeScript JSX", 0, 0, 82, 0, 0, 0, 0, 0, 7, 17, 106
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\questions\add-question-button.tsx", "TypeScript JSX", 0, 0, 15, 0, 0, 0, 0, 0, 0, 4, 19
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\questions\question-actions-menu.tsx", "TypeScript JSX", 0, 0, 102, 0, 0, 0, 0, 0, 1, 16, 119
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\questions\question-card.tsx", "TypeScript JSX", 0, 0, 116, 0, 0, 0, 0, 0, 5, 23, 144
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\questions\questions-empty-state.tsx", "TypeScript JSX", 0, 0, 38, 0, 0, 0, 0, 0, 0, 8, 46
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\questions\questions-list.tsx", "TypeScript JSX", 0, 0, 39, 0, 0, 0, 0, 0, 2, 6, 47
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\questions\rich-text-renderer.tsx", "TypeScript JSX", 0, 0, 58, 0, 0, 0, 0, 0, 20, 23, 101
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\section-builder-client.tsx", "TypeScript JSX", 0, 0, 59, 0, 0, 0, 0, 0, 0, 10, 69
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\section-builder-header.tsx", "TypeScript JSX", 0, 0, 81, 0, 0, 0, 0, 0, 4, 18, 103
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\components\section-rules-card.tsx", "TypeScript JSX", 0, 0, 70, 0, 0, 0, 0, 0, 2, 15, 87
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\types\correct-answer.types.ts", "TypeScript", 0, 18, 0, 0, 0, 0, 0, 0, 0, 5, 23
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\types\question-form.types.ts", "TypeScript", 0, 14, 0, 0, 0, 0, 0, 0, 0, 3, 17
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\types\question.types.ts", "TypeScript", 0, 13, 0, 0, 0, 0, 0, 0, 0, 5, 18
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\types\section.types.ts", "TypeScript", 0, 13, 0, 0, 0, 0, 0, 0, 0, 2, 15
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\_features\zod\question.schema.ts", "TypeScript", 0, 39, 0, 0, 0, 0, 0, 0, 24, 8, 71
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\[testId]\sections\[sectionId]\page.tsx", "TypeScript JSX", 0, 0, 28, 0, 0, 0, 0, 0, 0, 6, 34
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\_features\actions\delete-test.ts", "TypeScript", 0, 30, 0, 0, 0, 0, 0, 0, 4, 10, 44
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\_features\actions\get-tests.ts", "TypeScript", 0, 19, 0, 0, 0, 0, 0, 0, 0, 7, 26
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\_features\actions\update-test.ts", "TypeScript", 0, 30, 0, 0, 0, 0, 0, 0, 1, 10, 41
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\_features\components\edit-test-dialog.tsx", "TypeScript JSX", 0, 0, 95, 0, 0, 0, 0, 0, 3, 17, 115
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\_features\components\test-list.tsx", "TypeScript JSX", 0, 0, 141, 0, 0, 0, 0, 0, 2, 14, 157
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\_features\types\test.types.ts", "TypeScript", 0, 14, 0, 0, 0, 0, 0, 0, 0, 8, 22
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\create\_features\actions\create-test.ts", "TypeScript", 0, 25, 0, 0, 0, 0, 0, 0, 0, 8, 33
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\create\_features\components\create-test-form.tsx", "TypeScript JSX", 0, 0, 127, 0, 0, 0, 0, 0, 3, 18, 148
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\create\_features\types\create-test.types.ts", "TypeScript", 0, 6, 0, 0, 0, 0, 0, 0, 0, 2, 8
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\create\_features\zod\create-test.schema.ts", "TypeScript", 0, 13, 0, 0, 0, 0, 0, 0, 0, 5, 18
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\create\page.tsx", "TypeScript JSX", 0, 0, 16, 0, 0, 0, 0, 0, 0, 3, 19
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\[distributionId]\results\_features\actions\get-distribution-results-summary.ts", "TypeScript", 0, 61, 0, 0, 0, 0, 0, 0, 9, 18, 88
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\[distributionId]\results\_features\actions\get-distribution-results.ts", "TypeScript", 0, 142, 0, 0, 0, 0, 0, 0, 18, 35, 195
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\[distributionId]\results\_features\components\results-table.tsx", "TypeScript JSX", 0, 0, 116, 0, 0, 0, 0, 0, 1, 16, 133
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\[distributionId]\results\_features\components\results-toolbar.tsx", "TypeScript JSX", 0, 0, 88, 0, 0, 0, 0, 0, 3, 14, 105
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\[distributionId]\results\_features\types\results.types.ts", "TypeScript", 0, 36, 0, 0, 0, 0, 0, 0, 0, 19, 55
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\[distributionId]\results\page.tsx", "TypeScript JSX", 0, 0, 88, 0, 0, 0, 0, 0, 7, 15, 110
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\actions\delete-distribution.ts", "TypeScript", 0, 32, 0, 0, 0, 0, 0, 0, 3, 11, 46
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\actions\extend-distribution.ts", "TypeScript", 0, 44, 0, 0, 0, 0, 0, 0, 3, 11, 58
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\actions\get-distributions-by-status.ts", "TypeScript", 0, 105, 0, 0, 0, 0, 0, 0, 27, 32, 164
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\actions\update-test-distribution.ts", "TypeScript", 0, 71, 0, 0, 0, 0, 0, 0, 8, 17, 96
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\components\distribution-row-card.tsx", "TypeScript JSX", 0, 0, 151, 0, 0, 0, 0, 0, 4, 26, 181
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\components\distribution-tabs.tsx", "TypeScript JSX", 0, 0, 34, 0, 0, 0, 0, 0, 0, 5, 39
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\components\distributions-list.tsx", "TypeScript JSX", 0, 0, 50, 0, 0, 0, 0, 0, 0, 8, 58
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\components\distributions-toolbar.tsx", "TypeScript JSX", 0, 0, 90, 0, 0, 0, 0, 0, 5, 17, 112
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\components\extend-distribution-dialog.tsx", "TypeScript JSX", 0, 0, 162, 0, 0, 0, 0, 0, 9, 32, 203
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\helpers\compute-distribution-status.ts", "TypeScript", 0, 12, 0, 0, 0, 0, 0, 0, 0, 6, 18
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\_features\types\distribution.types.ts", "TypeScript", 0, 56, 0, 0, 0, 0, 0, 0, 2, 14, 72
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\distributions\page.tsx", "TypeScript JSX", 0, 0, 31, 0, 0, 0, 0, 0, 2, 9, 42
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\page.tsx", "TypeScript JSX", 0, 0, 88, 0, 0, 0, 0, 0, 5, 14, 107
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\actions\create-test-distribution.ts", "TypeScript", 0, 27, 0, 0, 0, 0, 0, 0, 0, 12, 39
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\actions\get-batches-for-schedule.ts", "TypeScript", 0, 18, 0, 0, 0, 0, 0, 0, 0, 6, 24
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\actions\get-courses-for-schedule.ts", "TypeScript", 0, 18, 0, 0, 0, 0, 0, 0, 0, 6, 24
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\actions\get-paged-tests.ts", "TypeScript", 0, 36, 0, 0, 0, 0, 0, 0, 0, 10, 46
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\actions\schedule-test.ts", "TypeScript", 0, 33, 0, 0, 0, 0, 0, 0, 0, 8, 41
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\components\ScheduleTestDialog.tsx", "TypeScript JSX", 0, 0, 355, 0, 0, 0, 0, 0, 14, 46, 415
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\components\schedule-tests-client.tsx", "TypeScript JSX", 0, 0, 95, 0, 0, 0, 0, 0, 4, 14, 113
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\helpers\distribution-status.ts", "TypeScript", 0, 12, 0, 0, 0, 0, 0, 0, 0, 7, 19
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\types\audience.types.ts", "TypeScript", 0, 10, 0, 0, 0, 0, 0, 0, 0, 2, 12
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\types\schedule-form.types.ts", "TypeScript", 0, 11, 0, 0, 0, 0, 0, 0, 0, 6, 17
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\types\test-distribution.types.ts", "TypeScript", 0, 45, 0, 0, 0, 0, 0, 0, 0, 18, 63
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\types\test-pagination.types.ts", "TypeScript", 0, 12, 0, 0, 0, 0, 0, 0, 0, 2, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\_features\zod\schedule-test.schema.ts", "TypeScript", 0, 42, 0, 0, 0, 0, 0, 0, 0, 7, 49
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\tests\schedule\page.tsx", "TypeScript JSX", 0, 0, 41, 0, 0, 0, 0, 0, 1, 9, 51
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\users\_features\actions\actions.tsx", "TypeScript JSX", 0, 0, 113, 0, 0, 0, 0, 0, 11, 36, 160
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\users\loading.tsx", "TypeScript JSX", 0, 0, 12, 0, 0, 0, 0, 0, 0, 2, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\app\admin\users\page.tsx", "TypeScript JSX", 0, 0, 45, 0, 0, 0, 0, 0, 2, 6, 53
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\auth\user-status\activate\route.ts", "TypeScript", 0, 22, 0, 0, 0, 0, 0, 0, 3, 8, 33
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\batches\[batchId]\route.ts", "TypeScript", 0, 26, 0, 0, 0, 0, 0, 0, 0, 4, 30
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\batches\[batchId]\tests\route.ts", "TypeScript", 0, 107, 0, 0, 0, 0, 0, 0, 9, 22, 138
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\courses\[slug]\outline\route.ts", "TypeScript", 0, 26, 0, 0, 0, 0, 0, 0, 0, 8, 34
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\courses\units\[unitId]\route.ts", "TypeScript", 0, 22, 0, 0, 0, 0, 0, 0, 0, 6, 28
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\practice-sets\[practiceSetId]\route.ts", "TypeScript", 0, 22, 0, 0, 0, 0, 0, 0, 0, 3, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\attempts\[attemptId]\answer\route.ts", "TypeScript", 0, 256, 0, 0, 0, 0, 0, 0, 42, 46, 344
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\attempts\[attemptId]\answer\zod.answer.schema.ts", "TypeScript", 0, 24, 0, 0, 0, 0, 0, 0, 0, 7, 31
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\attempts\[attemptId]\attempt-types.ts", "TypeScript", 0, 58, 0, 0, 0, 0, 0, 0, 0, 7, 65
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\attempts\[attemptId]\grid\route.ts", "TypeScript", 0, 45, 0, 0, 0, 0, 0, 0, 12, 12, 69
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\attempts\[attemptId]\route.ts", "TypeScript", 0, 283, 0, 0, 0, 0, 0, 0, 36, 41, 360
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\attempts\[attemptId]\submit\route.ts", "TypeScript", 0, 125, 0, 0, 0, 0, 0, 0, 40, 18, 183
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\attempts\[attemptId]\visit\route.ts", "TypeScript", 0, 241, 0, 0, 0, 0, 0, 0, 33, 43, 317
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\distributions\[distributionId]\leaderboard\route.ts", "TypeScript", 0, 170, 0, 0, 0, 0, 0, 0, 47, 43, 260
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\distributions\[distributionId]\rank\route.ts", "TypeScript", 0, 112, 0, 0, 0, 0, 0, 0, 26, 19, 157
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\distributions\[distributionId]\start\route.ts", "TypeScript", 0, 176, 0, 0, 0, 0, 0, 0, 27, 35, 238
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\results\[attemptId]\sections\[sectionId]\questions\route.ts", "TypeScript", 0, 553, 0, 0, 0, 0, 0, 0, 32, 88, 673
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\results\[attemptId]\sections\route.ts", "TypeScript", 0, 185, 0, 0, 0, 0, 0, 0, 21, 35, 241
+"c:\Users\maxvh\Desktop\infinity classes\src\app\api\tests\results\[attemptId]\summary\route.ts", "TypeScript", 0, 192, 0, 0, 0, 0, 0, 0, 59, 41, 292
+"c:\Users\maxvh\Desktop\infinity classes\src\app\auth\callback\page.tsx", "TypeScript JSX", 0, 0, 46, 0, 0, 0, 0, 0, 1, 11, 58
+"c:\Users\maxvh\Desktop\infinity classes\src\app\auth\set-password\page.tsx", "TypeScript JSX", 0, 0, 110, 0, 0, 0, 0, 0, 7, 23, 140
+"c:\Users\maxvh\Desktop\infinity classes\src\app\globals.css", "PostCSS", 0, 0, 0, 0, 0, 0, 0, 129, 0, 12, 141
+"c:\Users\maxvh\Desktop\infinity classes\src\app\inactive-user\page.tsx", "TypeScript JSX", 0, 0, 15, 0, 0, 0, 0, 0, 0, 2, 17
+"c:\Users\maxvh\Desktop\infinity classes\src\app\layout.tsx", "TypeScript JSX", 0, 0, 44, 0, 0, 0, 0, 0, 0, 5, 49
+"c:\Users\maxvh\Desktop\infinity classes\src\app\login\page.tsx", "TypeScript JSX", 0, 0, 170, 0, 0, 0, 0, 0, 5, 22, 197
+"c:\Users\maxvh\Desktop\infinity classes\src\app\page.tsx", "TypeScript JSX", 0, 0, 20, 0, 0, 0, 0, 0, 0, 7, 27
+"c:\Users\maxvh\Desktop\infinity classes\src\app\pdfroute\dashboard\page.tsx", "TypeScript JSX", 0, 0, 99, 0, 0, 0, 0, 0, 6, 11, 116
+"c:\Users\maxvh\Desktop\infinity classes\src\app\pdfroute\papers\page.tsx", "TypeScript JSX", 0, 0, 82, 0, 0, 0, 0, 0, 4, 11, 97
+"c:\Users\maxvh\Desktop\infinity classes\src\app\pdfroute\papers\view\page.tsx", "TypeScript JSX", 0, 0, 12, 0, 0, 0, 0, 0, 3, 4, 19
+"c:\Users\maxvh\Desktop\infinity classes\src\app\unauthorized\page.tsx", "TypeScript JSX", 0, 0, 19, 0, 0, 0, 0, 0, 0, 4, 23
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\ApiErrorState.tsx", "TypeScript JSX", 0, 0, 85, 0, 0, 0, 0, 0, 24, 19, 128
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\PdfViewerInner.tsx", "TypeScript JSX", 0, 0, 40, 0, 0, 0, 0, 0, 1, 6, 47
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\Theme-toggle.tsx", "TypeScript JSX", 0, 0, 44, 0, 0, 0, 0, 0, 1, 8, 53
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\TruncatedWithTooltip.tsx", "TypeScript JSX", 0, 0, 41, 0, 0, 0, 0, 0, 1, 7, 49
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\accordion.tsx", "TypeScript JSX", 0, 0, 59, 0, 0, 0, 0, 0, 0, 8, 67
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\admin-shell.tsx", "TypeScript JSX", 0, 0, 31, 0, 0, 0, 0, 0, 3, 7, 41
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\header.tsx", "TypeScript JSX", 0, 0, 42, 0, 0, 0, 0, 0, 1, 6, 49
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\sidebar.tsx", "TypeScript JSX", 0, 0, 68, 0, 0, 0, 0, 0, 0, 6, 74
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\create-user-dialog.tsx", "TypeScript JSX", 0, 0, 111, 0, 0, 0, 0, 0, 0, 15, 126
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\edit-user-dialog.tsx", "TypeScript JSX", 0, 0, 141, 0, 0, 0, 0, 0, 1, 16, 158
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\user-card.tsx", "TypeScript JSX", 0, 0, 36, 0, 0, 0, 0, 0, 0, 7, 43
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\user-row.tsx", "TypeScript JSX", 0, 0, 28, 0, 0, 0, 0, 0, 0, 6, 34
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\admin\users\user-table-row.tsx", "TypeScript JSX", 0, 0, 24, 0, 0, 0, 0, 0, 6, 8, 38
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\alert-dialog.tsx", "TypeScript JSX", 0, 0, 143, 0, 0, 0, 0, 0, 0, 15, 158
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\badge.tsx", "TypeScript JSX", 0, 0, 43, 0, 0, 0, 0, 0, 0, 6, 49
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\button.tsx", "TypeScript JSX", 0, 0, 58, 0, 0, 0, 0, 0, 0, 6, 64
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\calendar.tsx", "TypeScript JSX", 0, 0, 210, 0, 0, 0, 0, 0, 0, 11, 221
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\card.tsx", "TypeScript JSX", 0, 0, 83, 0, 0, 0, 0, 0, 0, 10, 93
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\checkbox.tsx", "TypeScript JSX", 0, 0, 28, 0, 0, 0, 0, 0, 0, 5, 33
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\collapsible.tsx", "TypeScript JSX", 0, 0, 28, 0, 0, 0, 0, 0, 0, 6, 34
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\command.tsx", "TypeScript JSX", 0, 0, 172, 0, 0, 0, 0, 0, 0, 13, 185
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\common\StatusCard.tsx", "TypeScript JSX", 0, 0, 53, 0, 0, 0, 0, 0, 9, 13, 75
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\common\batch-meta-badges.tsx", "TypeScript JSX", 0, 0, 109, 0, 0, 0, 0, 0, 5, 17, 131
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\common\confirm-action-dialog.tsx", "TypeScript JSX", 0, 0, 70, 0, 0, 0, 0, 0, 1, 10, 81
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\common\visually-hidden.tsx", "TypeScript JSX", 0, 0, 17, 0, 0, 0, 0, 0, 0, 2, 19
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\dialog.tsx", "TypeScript JSX", 0, 0, 130, 0, 0, 0, 0, 0, 0, 14, 144
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\drawer.tsx", "TypeScript JSX", 0, 0, 122, 0, 0, 0, 0, 0, 0, 14, 136
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\dropdown-menu.tsx", "TypeScript JSX", 0, 0, 239, 0, 0, 0, 0, 0, 0, 19, 258
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\error-screen.tsx", "TypeScript JSX", 0, 0, 12, 0, 0, 0, 0, 0, 0, 1, 13
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\form.tsx", "TypeScript JSX", 0, 0, 144, 0, 0, 0, 0, 0, 0, 25, 169
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\input.tsx", "TypeScript JSX", 0, 0, 18, 0, 0, 0, 0, 0, 0, 4, 22
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\label.tsx", "TypeScript JSX", 0, 0, 20, 0, 0, 0, 0, 0, 0, 5, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\loading.tsx", "TypeScript JSX", 0, 0, 7, 0, 0, 0, 0, 0, 0, 1, 8
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\logout-buttont.tsx", "TypeScript JSX", 0, 0, 29, 0, 0, 0, 0, 0, 2, 7, 38
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\navigation\back-button.tsx", "TypeScript JSX", 0, 0, 27, 0, 0, 0, 0, 0, 1, 6, 34
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\pdf-viewer.tsx", "TypeScript JSX", 0, 0, 9, 0, 0, 0, 0, 0, 0, 4, 13
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\popover.tsx", "TypeScript JSX", 0, 0, 41, 0, 0, 0, 0, 0, 0, 8, 49
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\progress.tsx", "TypeScript JSX", 0, 0, 27, 0, 0, 0, 0, 0, 0, 5, 32
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\radio-group.tsx", "TypeScript JSX", 0, 0, 40, 0, 0, 0, 0, 0, 0, 6, 46
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\scroll-area.tsx", "TypeScript JSX", 0, 0, 53, 0, 0, 0, 0, 0, 0, 6, 59
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\select.tsx", "TypeScript JSX", 0, 0, 177, 0, 0, 0, 0, 0, 0, 14, 191
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\separator.tsx", "TypeScript JSX", 0, 0, 24, 0, 0, 0, 0, 0, 0, 4, 28
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\sheet.tsx", "TypeScript JSX", 0, 0, 157, 0, 0, 0, 0, 0, 28, 41, 226
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\skeleton.tsx", "TypeScript JSX", 0, 0, 11, 0, 0, 0, 0, 0, 0, 3, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\skeleton\table\admin-header-skeleton.tsx", "TypeScript JSX", 0, 0, 9, 0, 0, 0, 0, 0, 0, 2, 11
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\skeleton\table\table-cards-skeleton.tsx", "TypeScript JSX", 0, 0, 36, 0, 0, 0, 0, 0, 6, 9, 51
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\skeleton\table\table-skeleton.tsx", "TypeScript JSX", 0, 0, 41, 0, 0, 0, 0, 0, 0, 4, 45
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\slider.tsx", "TypeScript JSX", 0, 0, 58, 0, 0, 0, 0, 0, 0, 6, 64
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\sonner.tsx", "TypeScript JSX", 0, 0, 36, 0, 0, 0, 0, 0, 0, 5, 41
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\switch.tsx", "TypeScript JSX", 0, 0, 27, 0, 0, 0, 0, 0, 0, 5, 32
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\table.tsx", "TypeScript JSX", 0, 0, 105, 0, 0, 0, 0, 0, 0, 12, 117
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\tabs.tsx", "TypeScript JSX", 0, 0, 59, 0, 0, 0, 0, 0, 0, 8, 67
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\textarea.tsx", "TypeScript JSX", 0, 0, 15, 0, 0, 0, 0, 0, 0, 4, 19
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\theme-provider.tsx", "TypeScript JSX", 0, 0, 9, 0, 0, 0, 0, 0, 0, 3, 12
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\tooltip.tsx", "TypeScript JSX", 0, 0, 54, 0, 0, 0, 0, 0, 0, 8, 62
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\user-search-combobox\user-search-combobox.tsx", "TypeScript JSX", 0, 0, 116, 0, 0, 0, 0, 0, 2, 14, 132
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\user\avtar-uploader.tsx", "TypeScript JSX", 0, 0, 323, 0, 0, 0, 0, 0, 22, 50, 395
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\user\user-avtar.tsx", "TypeScript JSX", 0, 0, 20, 0, 0, 0, 0, 0, 0, 3, 23
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\user\user-menu-content.tsx", "TypeScript JSX", 0, 0, 41, 0, 0, 0, 0, 0, 0, 8, 49
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\user\user-menu-skeleton.tsx", "TypeScript JSX", 0, 0, 13, 0, 0, 0, 0, 0, 0, 1, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\user\user-menu.tsx", "TypeScript JSX", 0, 0, 81, 0, 0, 0, 0, 0, 9, 12, 102
+"c:\Users\maxvh\Desktop\infinity classes\src\components\ui\viewer-client.tsx", "TypeScript JSX", 0, 0, 59, 0, 0, 0, 0, 0, 2, 14, 75
+"c:\Users\maxvh\Desktop\infinity classes\src\hooks\use-debounce.ts", "TypeScript", 0, 11, 0, 0, 0, 0, 0, 0, 0, 5, 16
+"c:\Users\maxvh\Desktop\infinity classes\src\hooks\use-mounted.ts", "TypeScript", 0, 9, 0, 0, 0, 0, 0, 0, 7, 6, 22
+"c:\Users\maxvh\Desktop\infinity classes\src\hooks\use-rotating-message.ts", "TypeScript", 0, 23, 0, 0, 0, 0, 0, 0, 0, 8, 31
+"c:\Users\maxvh\Desktop\infinity classes\src\hooks\useIsTruncated.ts", "TypeScript", 0, 17, 0, 0, 0, 0, 0, 0, 0, 8, 25
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\actions\search-users.ts", "TypeScript", 0, 20, 0, 0, 0, 0, 0, 0, 0, 9, 29
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\constants\route-constants.ts", "TypeScript", 0, 5, 0, 0, 0, 0, 0, 0, 0, 2, 7
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\constants\rpc-constants.ts", "TypeScript", 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\date.ts", "TypeScript", 0, 40, 0, 0, 0, 0, 0, 0, 3, 14, 57
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\helper-functions\api-error-class.ts", "TypeScript", 0, 10, 0, 0, 0, 0, 0, 0, 0, 2, 12
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\helper-functions\attempt-expiry.ts", "TypeScript", 0, 51, 0, 0, 0, 0, 0, 0, 19, 18, 88
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\helper-functions\getCurrentAdmin.ts", "TypeScript", 0, 10, 0, 0, 0, 0, 0, 0, 0, 4, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\helper-functions\getCurrentStaff.ts", "TypeScript", 0, 10, 0, 0, 0, 0, 0, 0, 0, 4, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\helper-functions\getCurrentStudent.ts", "TypeScript", 0, 10, 0, 0, 0, 0, 0, 0, 0, 5, 15
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\helper-functions\getCurrentUser.ts", "TypeScript", 0, 38, 0, 0, 0, 0, 0, 0, 3, 10, 51
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\helper-functions\getCurrentUserOptimal.ts", "TypeScript", 0, 21, 0, 0, 0, 0, 0, 0, 1, 7, 29
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\helper-functions\requireStudent.ts", "TypeScript", 0, 4, 0, 0, 0, 0, 0, 0, 0, 3, 7
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\server\enrollment-access.ts", "TypeScript", 0, 54, 0, 0, 0, 0, 0, 0, 3, 13, 70
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\services\batches\get-batch-details.ts", "TypeScript", 0, 95, 0, 0, 0, 0, 0, 0, 12, 13, 120
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\services\courses\course-access.ts", "TypeScript", 0, 57, 0, 0, 0, 0, 0, 0, 8, 18, 83
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\services\courses\get-course-outline.ts", "TypeScript", 0, 88, 0, 0, 0, 0, 0, 0, 15, 23, 126
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\services\courses\get-course-unit-content.ts", "TypeScript", 0, 73, 0, 0, 0, 0, 0, 0, 13, 20, 106
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\services\courses\get-practice-set-content.ts", "TypeScript", 0, 95, 0, 0, 0, 0, 0, 0, 12, 20, 127
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\services\courses\resolve-course-slug.ts", "TypeScript", 0, 17, 0, 0, 0, 0, 0, 0, 0, 7, 24
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\supabase\admin.server.ts", "TypeScript", 0, 14, 0, 0, 0, 0, 0, 0, 0, 3, 17
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\supabase\supabase-client.ts", "TypeScript", 0, 6, 0, 0, 0, 0, 0, 0, 4, 4, 14
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\supabase\supabase-server.ts", "TypeScript", 0, 25, 0, 0, 0, 0, 0, 0, 1, 4, 30
+"c:\Users\maxvh\Desktop\infinity classes\src\lib\utils.ts", "TypeScript", 0, 5, 0, 0, 0, 0, 0, 0, 0, 2, 7
+"c:\Users\maxvh\Desktop\infinity classes\src\providers\react-query-provider.tsx", "TypeScript JSX", 0, 0, 28, 0, 0, 0, 0, 0, 0, 3, 31
+"c:\Users\maxvh\Desktop\infinity classes\src\types\batches.types.ts", "TypeScript", 0, 35, 0, 0, 0, 0, 0, 0, 0, 6, 41
+"c:\Users\maxvh\Desktop\infinity classes\src\types\course-outline.types.ts", "TypeScript", 0, 29, 0, 0, 0, 0, 0, 0, 0, 5, 34
+"c:\Users\maxvh\Desktop\infinity classes\src\types\tests.types.ts", "TypeScript", 0, 41, 0, 0, 0, 0, 0, 0, 0, 10, 51
+"c:\Users\maxvh\Desktop\infinity classes\src\types\user.ts", "TypeScript", 0, 17, 0, 0, 0, 0, 0, 0, 0, 5, 22
+"c:\Users\maxvh\Desktop\infinity classes\tsconfig.json", "JSON with Comments", 34, 0, 0, 0, 0, 0, 0, 0, 0, 1, 35
+"Total", "-", 34, 9773, 23200, 1711, 39, 11887, 76, 129, 2257, 6807, 55913

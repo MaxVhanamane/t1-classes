@@ -21,7 +21,7 @@ export default async function UsersPage() {
       </div>
 
       {/*  Desktop */}
-      <div className="hidden md:block rounded-lg border bg-background">
+      <div className="hidden md:block rounded-lg border ">
         <table className="w-full text-sm">
           <thead className="border-b">
             <tr className="text-left">
