@@ -1,3 +1,4 @@
+"use server"
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "./getCurrentUser";
 import { ROUTES } from "../constants/route-constants";

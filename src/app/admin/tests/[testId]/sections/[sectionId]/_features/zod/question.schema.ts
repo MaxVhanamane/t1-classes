@@ -1,13 +1,58 @@
 import { z } from "zod";
 
+/* -------------------------------------------- *
+ * Helpers
+ * ------------------------------------------*/
+
+function extractTextLength(node: unknown): number {
+  if (!node || typeof node !== "object") return 0;
+  const n = node as Record<string, unknown>;
+  let length = 0;
+
+  // Count text nodes
+  if (typeof n.text === "string") {
+    length += n.text.trim().length;
+  }
+
+  // Count math nodes by their latex content
+  if (
+    (n.type === "inlineMath" || n.type === "blockMath") &&
+    typeof n.attrs === "object" &&
+    n.attrs !== null
+  ) {
+    const attrs = n.attrs as Record<string, unknown>;
+    if (typeof attrs.latex === "string") {
+      length += attrs.latex.trim().length;
+    }
+  }
+
+  // Count table and image nodes as having content
+  if (n.type === "table" || n.type === "image") {
+    length += 10;
+  }
+
+  // Recurse into children
+  if (Array.isArray(n.content)) {
+    for (const child of n.content) {
+      length += extractTextLength(child);
+    }
+  }
+
+  return length;
+}
+/* -------------------------------------------- *
+ * Matrix schema
+ * ------------------------------------------*/
+
 const matrixSchema = z.object({
   left: z.array(z.string().min(1)),
   right: z.array(z.string().min(1)),
 });
 
-/* --------------------------------------------
- * Option schema
+/* -------------------------------------------- *
+ * Option schema (rich editor JSON)
  * ------------------------------------------*/
+
 const optionSchema = z.object({
   label: z
     .string()
@@ -15,55 +60,73 @@ const optionSchema = z.object({
     .max(5)
     .regex(/^[A-Z]+$/, "Label must be uppercase letters (A, B, C...)"),
 
-  text: z.string().min(1, "Option cannot be empty"),
+  text: z
+    .any()
+    .refine(
+      (val) => extractTextLength(val) > 0,
+      "Option cannot be empty",
+    ),
 });
 
-/* --------------------------------------------
+/* -------------------------------------------- *
+ * Question text validation
+ * ------------------------------------------*/
+
+const questionTextSchema = z.any().refine(
+  (val) => extractTextLength(val) >= 5,
+  "Question is too short",
+);
+
+/* -------------------------------------------- *
  * Main schema
  * ------------------------------------------*/
+
 export const createQuestionSchema = z.object({
-  // HTML string from rich editor
-  questionText: z.string().min(10, "Question is too short"),
+  questionText: questionTextSchema,
 
-  explanation: z.string().nullable(),
+  explanation: z.any().nullable(),
 
-  // Only required for MCQ + match matrix
   options: z.array(optionSchema).optional(),
+
   matrix: matrixSchema.optional(),
-  /*
-    Correct Answer Formats:
- 
-    single_select:
-      "A"
- 
-    multi_select:
-      ["A", "C"]
- 
-    numerical_input:
-      "42"
- 
-    match_matrix:
-      { "P": "B", "Q": "D" }
-  */
+
+  /* --------------------------------------------
+   Correct Answer Formats
+   --------------------------------------------
+
+   single_select   -> "A"
+   multi_select    -> ["A", "C"]
+   numerical_input -> { target, tolerance }
+   match_matrix    -> { "P": "B", "Q": "D" }
+
+  -------------------------------------------- */
+
   correctAnswer: z.union([
-    z.string(),                          // single_select, numerical_input
-    z.array(z.string()),               // multi_select
+    z.string(),                    // single_select
+    z.array(z.string()),           // multi_select
     z.record(z.string(), z.string()), // match_matrix
-    z.object({
-      target: z.number().optional(),
-      tolerance: z.number().optional(),
-    })
+
+    z
+      .object({
+        target: z.number().optional(),
+        tolerance: z.number().optional(),
+      })
       .refine(
         (val) =>
-          (val.target === undefined && val.tolerance === undefined) ||
-          (val.target !== undefined && val.tolerance !== undefined),
+          (val.target === undefined &&
+            val.tolerance === undefined) ||
+          (val.target !== undefined &&
+            val.tolerance !== undefined),
         {
           message: "Both target and tolerance must be filled",
-        }
-      )
-    // numerical input
+        },
+      ),
   ]),
 });
+
+/* -------------------------------------------- *
+ * Type
+ * ------------------------------------------*/
 
 export type CreateQuestionInput = z.infer<
   typeof createQuestionSchema

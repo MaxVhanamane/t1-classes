@@ -1,12 +1,14 @@
 "use client";
 
 import { cn } from "@/src/lib/utils";
+import { JSONContent } from "@tiptap/react";
 import { Badge } from "@/src/components/ui/badge";
+import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 
 type Option = {
   id: string;
   label: string;
-  text: string;
+  text: JSONContent;
   isCorrect: boolean;
   isSelected: boolean;
 };
@@ -70,10 +72,9 @@ export function OptionItem({ option }: { option: Option }) {
       )}
 
       {/* Text row */}
-      <div className="text-sm leading-relaxed wrap-break-word">
+      <div className="text-sm leading-relaxed wrap-break-word flex gap-1">
         <span className="font-medium mr-2">{option.label}.</span>
-
-        {option.text}
+        <RichTextRenderer content={option.text} />
       </div>
     </div>
   );

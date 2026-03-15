@@ -1,34 +1,23 @@
 import { ExploreBatchCard } from "./ExploreBatchCard";
-import { cookies } from "next/headers";
 import { SectionError } from "@/src/components/system/SectionError";
-import { ExploreBatch } from "@/src/app/api/explore-batches/types";
+
+import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { getAuth } from "@/src/lib/auth/get-auth";
+
+import type { ExploreBatch } from "@/src/app/api/explore-batches/types";
+import { getExploreBatchesService } from "@/src/lib/services/batches/get-explore-batches";
 
 export async function ExploreBatches() {
   let batches: ExploreBatch[] | null = null;
   let fetchError = false;
 
   try {
-    const cookieStore = await cookies();
+    const supabase = await createServerSupabaseClient();
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/explore-batches`,
-      {
-        method: "GET",
-        headers: {
-          cookie: cookieStore.toString(),
-        },
-        cache: "no-store",
-      },
-    );
+    const auth = await getAuth();
 
-    if (!res.ok) {
-      // console.error("Explore batches API failed:", res.status);
-      fetchError = true;
-    } else {
-      batches = await res.json();
-    }
+    batches = await getExploreBatchesService(supabase, auth?.userId);
   } catch {
-    // console.error("Explore batches fetch crashed:", error);
     fetchError = true;
   }
 

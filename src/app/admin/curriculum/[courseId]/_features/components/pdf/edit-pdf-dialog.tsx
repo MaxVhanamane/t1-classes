@@ -20,7 +20,7 @@ import { Switch } from "@/src/components/ui/switch";
 import { Separator } from "@/src/components/ui/separator";
 import { toast } from "sonner";
 import { PdfUnit } from "../../types/course-unit.types";
-import { createClient } from "@/src/lib/supabase/supabase-client";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 import { updatePdfUnit } from "../../actions/topic/pdf/update-pdf";
 import {
   EditPdfFormInput,
@@ -36,7 +36,7 @@ interface Props {
 export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
 
   const form = useForm<EditPdfFormInput>({
     resolver: zodResolver(editPdfFormSchema),

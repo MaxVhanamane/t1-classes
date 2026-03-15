@@ -26,37 +26,69 @@ async function getBatches(): Promise<BatchListItem[]> {
     .select(
       `
       id,
-      name,
+      title,
+      slug,
+      subtitle,
       description,
+      sale_price,
+      list_price,
+      thumbnail_image,
+      subjects,
+      class_level,
+      target_exam,
       mode,
-      status,
-      price,
-      is_active,
-      admission_open,
-      center_name,
-      batch_highlights,
+      location,
       languages,
+      is_active,
+      is_admission_open,
       start_date,
       end_date,
-      duration,
       capacity,
-      schedule,
+      learning_outcomes,
+      target_audience,
+
       courses:batch_courses (
         course:courses (
           id,
           title
         )
+      ),
+
+      batch_instructors (
+        instructors (
+          id,
+          full_name
+        )
       )
-    `
+      `,
     )
     .order("created_at", { ascending: false })
-    .overrideTypes<BatchListItem[], { merge: false }>();
+    .overrideTypes<
+      (BatchListItem & {
+        batch_instructors?: {
+          instructors: { id: string; full_name: string } | null;
+        }[];
+      })[],
+      { merge: false }
+    >();
 
   if (error) {
     throw new Error("Failed to load batches");
   }
 
-  return data;
+  if (!data) return [];
+
+  return data.map((batch) => {
+    const instructors =
+      batch.batch_instructors?.flatMap((bi) =>
+        bi.instructors ? [bi.instructors] : [],
+      ) ?? [];
+
+    return {
+      ...batch,
+      instructors,
+    };
+  });
 }
 
 export default async function AdminBatchesPage() {

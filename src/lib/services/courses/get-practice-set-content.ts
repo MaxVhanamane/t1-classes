@@ -25,6 +25,7 @@ type PracticeSetWithCourse = {
     title: string;
     description: string | null;
     is_published: boolean;
+    is_free_preview: boolean;
     topic: {
         course_id: string;
     } | null;
@@ -45,6 +46,7 @@ export async function getPracticeSetContent(practiceSetId: string): Promise<Prac
         title,
         description,
         is_published,
+        is_free_preview,
         topic:topic_id (
           course_id
         )
@@ -75,9 +77,11 @@ export async function getPracticeSetContent(practiceSetId: string): Promise<Prac
     // 2. Access check
     // -------------------------------------------------
     const access = await getCourseAccess(courseId);
+    const canAccess = access.hasAccess || ps.is_free_preview === true;
 
-    if (!access.hasAccess) {
-        throw new Error("You must be enrolled to access this practice set");
+
+    if (!canAccess) {
+        throw new Error("You do not have access to this content");
     }
 
     // -------------------------------------------------

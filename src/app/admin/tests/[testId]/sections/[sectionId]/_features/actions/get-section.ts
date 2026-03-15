@@ -1,34 +1,59 @@
 "use server"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff"
 import type { TestSection } from "../types/section.types"
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role"
+import { redirect } from "next/navigation"
+
+type SectionWithTest = {
+    id: string
+    test_id: string
+    title: string
+    description: string | null
+    answer_mode: string
+    full_marks: number
+    negative_marks: number
+    partial_marks: Record<number, number> | null
+    sort_order: number
+    subject_label: string
+    scoring_question_count: number | null
+    tests: {
+        is_locked: boolean
+    }
+}
 
 export async function getSectionById(
     testId: string,
     sectionId: string
 ): Promise<TestSection> {
     const supabase = await createServerSupabaseClient()
-    await getCurrentStaff()
+    const user = await getAuthIfHasRole(["admin", "teacher"])
+
+    if (!user) {
+        redirect("/login")
+    }
 
     const { data, error } = await supabase
         .from("test_sections")
         .select(`
-      id,
-      test_id,
-      title,
-      description,
-      answer_mode,
-      full_marks,
-      negative_marks,
-      partial_marks,
-      sort_order,
-      subject_label,
-      scoring_question_count
-    `)
+    id,
+    test_id,
+    title,
+    description,
+    answer_mode,
+    full_marks,
+    negative_marks,
+    partial_marks,
+    sort_order,
+    subject_label,
+    scoring_question_count,
+    tests (
+      is_locked
+    )
+  `)
         .eq("id", sectionId)
         .eq("test_id", testId)
-        .single()
+        .single<SectionWithTest>()
 
     if (error || !data) {
         throw new Error("SECTION_NOT_FOUND")
@@ -54,5 +79,6 @@ export async function getSectionById(
         subjectLabel: data.subject_label,
         scoringQuestionCount:
             data.scoring_question_count,
+        is_locked: data.tests.is_locked,
     }
 }

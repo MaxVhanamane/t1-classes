@@ -8,7 +8,7 @@ import { Badge } from "@/src/components/ui/badge";
 import { Input } from "@/src/components/ui/input";
 import { CalendarPlus } from "lucide-react";
 
-import { ScheduleTestDialog } from "../../_features/components/ScheduleTestDialog";
+import { ScheduleTestDialog } from "./schedule-test-dialog";
 import { PagedTests } from "../../_features/types/test-pagination.types";
 import { TestRow } from "../../../_features/types/test.types";
 
@@ -55,14 +55,12 @@ export function ScheduleTestsClient({ data, search }: Props) {
                 <div className="truncate font-medium">{test.title}</div>
                 <div className="flex gap-2 text-xs text-muted-foreground">
                   <Badge variant="outline">{test.test_type}</Badge>
-                  {test.is_locked && <Badge variant="secondary">Locked</Badge>}
                 </div>
               </div>
 
               <Button
                 size="sm"
                 variant="outline"
-                disabled={test.is_locked}
                 className="flex items-center gap-2"
                 onClick={() => setSelectedTest(test.id)}
               >

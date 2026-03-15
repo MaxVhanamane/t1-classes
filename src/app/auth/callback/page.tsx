@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/src/lib/supabase/supabase-client";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 import { Loader2 } from "lucide-react";
 
 function getHashParams() {
@@ -11,7 +11,7 @@ function getHashParams() {
 }
 
 export default function AuthCallbackPage() {
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
   const router = useRouter();
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FieldError, FieldErrors, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
@@ -9,11 +9,12 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogOverlay,
   DialogTitle,
 } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
 
-import { RichEditor } from "./rich-editor";
+import { RichTextEditor } from "./rich-text-editor";
 import {
   createQuestionSchema,
   CreateQuestionInput,
@@ -29,13 +30,14 @@ import { SingleSelectBuilder } from "./single-select-builder";
 import { MultiSelectBuilder } from "./multi-select-builder";
 import { NumericalInputBuilder } from "./numerical-input-builder";
 import { MatchMatrixBuilder } from "./match-matrix-builder";
-
+import { JSONContent } from "@tiptap/react";
+import { useQueryClient } from "@tanstack/react-query";
 /* --------------------------------------------
  * Types
  * ------------------------------------------*/
 type OptionForm = {
   label: string;
-  text: string;
+  text: JSONContent;
 };
 
 interface Props {
@@ -45,25 +47,34 @@ interface Props {
   editingQuestion: TestQuestion | null;
 }
 
+const emptyDoc = {
+  type: "doc",
+  content: [
+    {
+      type: "paragraph",
+      content: [],
+    },
+  ],
+};
 /* --------------------------------------------
  * Defaults
  * ------------------------------------------*/
 function createDefaultOptions(
-  mode: TestSection["answerMode"]
+  mode: TestSection["answerMode"],
 ): OptionForm[] | undefined {
   if (mode === "single_select" || mode === "multi_select") {
     return [
-      { label: "A", text: "" },
-      { label: "B", text: "" },
-      { label: "C", text: "" },
-      { label: "D", text: "" },
+      { label: "A", text: emptyDoc },
+      { label: "B", text: emptyDoc },
+      { label: "C", text: emptyDoc },
+      { label: "D", text: emptyDoc },
     ];
   }
   return undefined;
 }
 
 function isNumericRange(
-  value: unknown
+  value: unknown,
 ): value is { target?: number; tolerance?: number } {
   return (
     typeof value === "object" &&
@@ -78,7 +89,7 @@ function isNumericRange(
 }
 
 function createDefaultCorrectAnswer(
-  mode: TestSection["answerMode"]
+  mode: TestSection["answerMode"],
 ): CreateQuestionInput["correctAnswer"] {
   switch (mode) {
     case "multi_select":
@@ -100,7 +111,7 @@ function createDefaultCorrectAnswer(
 function mapCorrectAnswerToForm(
   mode: TestSection["answerMode"],
   answer: CorrectAnswer | null,
-  options?: { id: string; label: string }[]
+  options?: { id: string; label: string }[],
 ): CreateQuestionInput["correctAnswer"] {
   if (!answer) {
     return createDefaultCorrectAnswer(mode);
@@ -174,7 +185,7 @@ function mapCorrectAnswerToForm(
 function sanitizeCorrectAnswer(
   mode: TestSection["answerMode"],
   value: CreateQuestionInput["correctAnswer"],
-  options?: { label: string }[]
+  options?: { label: string }[],
 ): CreateQuestionInput["correctAnswer"] {
   if (!options) return value;
 
@@ -208,7 +219,7 @@ function sanitizeCorrectAnswer(
  * ------------------------------------------*/
 function hasValidCorrectAnswer(
   mode: TestSection["answerMode"],
-  value: CreateQuestionInput["correctAnswer"]
+  value: CreateQuestionInput["correctAnswer"],
 ): boolean {
   switch (mode) {
     case "single_select":
@@ -231,38 +242,6 @@ function hasValidCorrectAnswer(
   }
 }
 
-function buildMatrixHTML(left: string[], right: string[]) {
-  const rows = Math.max(left.length, right.length);
-
-  const body = Array.from({ length: rows })
-    .map((_, i) => {
-      const l = left[i] ?? "";
-      const r = right[i] ?? "";
-
-      return `
-        <tr>
-          <td>${l}</td>
-          <td>${r}</td>
-        </tr>
-      `;
-    })
-    .join("");
-
-  return `
-    <table>
-      <thead>
-        <tr>
-          <th>List-I</th>
-          <th>List-II</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${body}
-      </tbody>
-    </table>
-  `;
-}
-
 /* --------------------------------------------
  * Component
  * ------------------------------------------*/
@@ -273,12 +252,20 @@ export function QuestionBuilderDialog({
   editingQuestion,
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
-
+  const queryClient = useQueryClient();
   const form = useForm<CreateQuestionInput>({
     resolver: zodResolver(createQuestionSchema),
     defaultValues: {
-      questionText: "",
-      explanation: null,
+      questionText: {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [],
+          },
+        ],
+      },
+      explanation: emptyDoc,
       options: createDefaultOptions(section.answerMode),
       correctAnswer: createDefaultCorrectAnswer(section.answerMode),
     },
@@ -294,7 +281,7 @@ export function QuestionBuilderDialog({
       const mapped = mapCorrectAnswerToForm(
         section.answerMode,
         editingQuestion.correctAnswer,
-        editingQuestion.options
+        editingQuestion.options,
       );
 
       form.reset({
@@ -308,13 +295,13 @@ export function QuestionBuilderDialog({
         correctAnswer: sanitizeCorrectAnswer(
           section.answerMode,
           mapped,
-          editingQuestion.options
+          editingQuestion.options,
         ),
       });
     } else {
       form.reset({
-        questionText: "",
-        explanation: null,
+        questionText: emptyDoc,
+        explanation: emptyDoc,
         options: createDefaultOptions(section.answerMode),
         correctAnswer: createDefaultCorrectAnswer(section.answerMode),
       });
@@ -330,24 +317,11 @@ export function QuestionBuilderDialog({
       return;
     }
 
-    const finalValues = { ...values };
-
-    if (
-      section.answerMode === "match_matrix" &&
-      values.matrix &&
-      values.matrix.left.length > 0
-    ) {
-      const tableHTML = buildMatrixHTML(
-        values.matrix.left,
-        values.matrix.right
-      );
-
-      finalValues.questionText = values.questionText + "\n\n" + tableHTML;
-    }
+    const finalValues = JSON.stringify({ ...values });
 
     setSubmitting(true);
     const toastId = toast.loading(
-      editingQuestion ? "Updating question..." : "Saving question..."
+      editingQuestion ? "Updating question..." : "Saving question...",
     );
 
     try {
@@ -355,11 +329,14 @@ export function QuestionBuilderDialog({
         section.testId,
         section.id,
         finalValues,
-        editingQuestion?.id
+        editingQuestion?.id,
       );
 
       toast.success(editingQuestion ? "Question updated" : "Question added", {
         id: toastId,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["section-questions", section.id],
       });
 
       onOpenChange(false);
@@ -389,7 +366,12 @@ export function QuestionBuilderDialog({
    * ------------------------------------------*/
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl overflow-y-auto h-[90vh] bg-background">
+      <DialogOverlay className=" backdrop-blur-lg" />
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        className="sm:max-w-4xl overflow-y-auto h-[90vh] bg-background p-2 py-8 md:py-auto md:p-6 "
+      >
         <DialogHeader>
           <DialogTitle>
             {editingQuestion ? "Edit Question" : "Add Question"} —{" "}
@@ -397,11 +379,43 @@ export function QuestionBuilderDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <form
+          onSubmit={form.handleSubmit(
+            handleSubmit,
+            (errors: FieldErrors<CreateQuestionInput>) => {
+              const messages: string[] = [];
+
+              const extractErrors = (
+                obj: FieldErrors<CreateQuestionInput> | FieldError | unknown,
+              ) => {
+                if (!obj || typeof obj !== "object") return;
+
+                if ("message" in obj && typeof obj.message === "string") {
+                  messages.push(obj.message);
+                }
+
+                Object.values(obj).forEach((val) => {
+                  if (typeof val === "object" && val !== null) {
+                    extractErrors(val as FieldErrors<CreateQuestionInput>);
+                  }
+                });
+              };
+
+              extractErrors(errors);
+
+              if (messages.length > 0) {
+                toast.error(messages[0]);
+              } else {
+                toast.error("Form validation failed.");
+              }
+            },
+          )}
+          className="space-y-6"
+        >
           {/* Question */}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Question</label>
-            <RichEditor
+            <RichTextEditor
               value={form.watch("questionText")}
               onChange={(v) =>
                 form.setValue("questionText", v, { shouldDirty: true })
@@ -438,12 +452,13 @@ export function QuestionBuilderDialog({
             <label className="text-sm font-medium">
               Explanation (Optional)
             </label>
-            <RichEditor
-              value={form.watch("explanation") ?? ""}
+            <RichTextEditor
+              value={form.watch("explanation") ?? emptyDoc}
               onChange={(v) =>
                 form.setValue("explanation", v, { shouldDirty: true })
               }
               placeholder="Explain why this answer is correct (shown after test submission)"
+              toolbar="explanation"
             />
           </div>
 

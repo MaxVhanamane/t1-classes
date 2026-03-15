@@ -7,11 +7,9 @@ type DistributionRow = {
     id: string;
     test_id: string;
     batch_id: string | null;
-    course_id: string | null;
     starts_at: string;
     ends_at: string;
     duration_minutes: number;
-    max_attempts: number;
 };
 
 type AttemptRow = {
@@ -40,9 +38,9 @@ export async function POST(
         .from("test_distributions")
         .select(
             `
-      id, test_id, batch_id, course_id,
+      id, test_id, batch_id,
       starts_at, ends_at,
-      duration_minutes, max_attempts
+      duration_minutes
     `
         )
         .eq("id", distributionId)
@@ -61,39 +59,25 @@ export async function POST(
     /* 2. Enrollment gate                               */
     /* ------------------------------------------------ */
 
-    if (distribution.batch_id) {
-        const access = await getEnrollmentAccess(
-            supabase,
-            user.id,
-            { type: "batch", batchId: distribution.batch_id }
-        );
-
-        if (!access.hasAccess) {
-            return NextResponse.json(
-                { kind: "denied", reason: "not_enrolled" },
-                { status: 403 }
-            );
-        }
-    } else if (distribution.course_id) {
-        const access = await getEnrollmentAccess(
-            supabase,
-            user.id,
-            { type: "course", courseId: distribution.course_id }
-        );
-
-        if (!access.hasAccess) {
-            return NextResponse.json(
-                { kind: "denied", reason: "not_enrolled" },
-                { status: 403 }
-            );
-        }
-    } else {
+    if (!distribution.batch_id) {
         return NextResponse.json(
             { kind: "denied", reason: "not_enrolled" },
             { status: 403 }
         );
     }
 
+    const access = await getEnrollmentAccess(
+        supabase,
+        user.id,
+        { type: "batch", batchId: distribution.batch_id }
+    );
+
+    if (!access.hasAccess) {
+        return NextResponse.json(
+            { kind: "denied", reason: "not_enrolled" },
+            { status: 403 }
+        );
+    }
     /* ------------------------------------------------ */
     /* 3. Time gate                                     */
     /* ------------------------------------------------ */
@@ -145,27 +129,6 @@ export async function POST(
         });
     }
 
-    /* ------------------------------------------------ */
-    /* 5. Max attempts                                  */
-    /* ------------------------------------------------ */
-
-    const completedCount = typedAttempts.filter(
-        (a) =>
-            a.status === "submitted" ||
-            a.status === "expired"
-    ).length;
-
-    if (
-        completedCount >= distribution.max_attempts
-    ) {
-        return NextResponse.json(
-            {
-                kind: "denied",
-                reason: "max_attempts_reached",
-            },
-            { status: 403 }
-        );
-    }
 
     /* ------------------------------------------------ */
     /* 6. Create attempt                                */

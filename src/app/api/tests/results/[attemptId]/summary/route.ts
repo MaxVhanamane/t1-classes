@@ -8,7 +8,7 @@ import { TEST_GRACE_TIME_IN_SECONDS } from "@/src/lib/constants/rpc-constants";
 /* Response Types */
 /* --------------------------------------------- */
 
-type Performance = "Perfect" | "Excellent" | "Good" | "Average" | "Needs Improvement" | null;
+export type PerformanceLabelType = "Perfect" | "Excellent" | "Good" | "Average" | "Needs Improvement" | null;
 
 export type ResultSummaryResponse =
     | {
@@ -20,7 +20,7 @@ export type ResultSummaryResponse =
         totalMarks: number;
         totalParticipants: number | null;
         percentage: number;
-        performanceLabel: Performance;
+        performanceLabel: PerformanceLabelType;
         correctCount: number;
         partialCorrectCount: number;
         wrongCount: number;
@@ -58,7 +58,7 @@ type ResultRow = {
     correct_count: number;
     wrong_count: number;
     unanswered_count: number;
-    performance_label: Performance;
+    performance_label: PerformanceLabelType;
     total_participants: number;
     evaluated_at: string;
     rank: number | null;
@@ -67,7 +67,6 @@ type ResultRow = {
 type DistributionRow = {
     id: string;
     batch_id: string | null;
-    course_id: string | null;
 };
 
 /* --------------------------------------------- */
@@ -123,7 +122,7 @@ export async function GET(
 
     const { data: dist } = await supabase
         .from("test_distributions")
-        .select("id, batch_id, course_id")
+        .select("id, batch_id")
         .eq("id", typedAttempt.distribution_id)
         .single();
 
@@ -148,18 +147,6 @@ export async function GET(
                 { status: 403 }
             );
         }
-    } else if (distribution.course_id) {
-        const access = await getEnrollmentAccess(supabase, user.id, {
-            type: "course",
-            courseId: distribution.course_id,
-        });
-
-        if (!access.hasAccess) {
-            return NextResponse.json(
-                { kind: "denied", reason: "not_enrolled" },
-                { status: 403 }
-            );
-        }
     }
 
     /* ------------------------------------------- */
@@ -173,7 +160,6 @@ export async function GET(
         .single();
 
     if (!result) {
-        console.log("no result found")
         /**
          * ----------------------------------------------------------
          * SELF-HEALING AUTO GRADING

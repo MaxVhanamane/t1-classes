@@ -1,4 +1,4 @@
-import { getDistributionsByStatus } from "../actions/get-distributions-by-status";
+import { getDistributionsByStatus } from "../server/get-distributions-by-status";
 import { DistributionStatus } from "../types/distribution.types";
 import { DistributionRowCard } from "./distribution-row-card";
 

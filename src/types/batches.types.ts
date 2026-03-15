@@ -1,40 +1,59 @@
-export type BatchMode = "online" | "offline" | "hybrid"
+import { JSONContent } from "@tiptap/react";
 
-export type BatchStatus =
-    | "upcoming"
-    | "ongoing"
-    | "completed"
-    | "cancelled"
+/* ---------------- Core Enums ---------------- */
+
+export type BatchMode =
+    | "online"
+    | "offline"
+    | "hybrid";
 
 export type CourseType =
     | "academic"
     | "foundation"
     | "exam"
-    | "crash"
+    | "crash";
+
+/* ---------------- Batch Details ---------------- */
 
 export interface BatchDetails {
-    id: string
-    name: string
-    mode: BatchMode
-    status: BatchStatus
-    description: string | null
-    startDate: string | null
-    endDate: string | null
+    id: string;
+
+    /* Identity */
+    title: string;
+    subtitle: string | null;
+
+    /* Delivery */
+    mode: BatchMode;
+
+    /* Visibility */
+    is_active: boolean;
+    is_admission_open: boolean;
+
+    /* Content */
+    description: JSONContent | null;
+
+    /* Lifecycle */
+    start_date: string;
+    end_date: string;
 }
+
+/* ---------------- Batch Course ---------------- */
 
 export interface BatchCourse {
-    id: string
-    title: string
-    slug: string
-    description: string | null
-    thumbnailImage: string | null
-    courseType: CourseType
-    targetExam: string | null
-    classLevel: number | null
-    subjects: string[] | null
+    id: string;
+    title: string;
+    subtitle: string | null;
+    slug: string;
+    thumbnail_image: string | null;
+    course_type: CourseType;
+    target_exam: string | null;
+    class_level: number | null;
+    subjects: string[] | null;
 }
 
+/* ---------------- API Response ---------------- */
+
 export interface BatchDetailsResponse {
-    batch: BatchDetails
-    courses: BatchCourse[]
+    batch: BatchDetails;
+    courses: BatchCourse[];
 }

@@ -1,17 +1,12 @@
 import { z } from "zod";
 
 export const practiceSetSchema = z.object({
-    title: z
-        .string()
-        .min(1, "Title is required")
-        .max(100, "Title is too long"),
+    title: z.string().min(1, "Title is required").max(100, "Title is too long"),
 
-    description: z
-        .string()
-        .optional()
-        .nullable(),
+    description: z.string().optional().nullable(),
+
+    isFreePreview: z.boolean(),
 });
-
 export type PracticeSetInput = z.infer<typeof practiceSetSchema>;
 
 
@@ -19,8 +14,12 @@ export const updatePracticeSetSchema = z.object({
     courseId: z.uuid(),
     topicId: z.uuid(),
     practiceSetId: z.uuid(),
+
     title: z.string().min(1, "Title is required"),
+
     description: z.string().nullable(),
+
+    isFreePreview: z.boolean(),
 });
 
 export type UpdatePracticeSetInput = z.infer<

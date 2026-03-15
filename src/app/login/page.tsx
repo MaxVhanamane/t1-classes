@@ -5,13 +5,13 @@ import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createClient } from "@/src/lib/supabase/supabase-client";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 import Image from "next/image";
 import { Loader2, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { StatusCard } from "@/src/components/ui/common/StatusCard";
 
 export default function LoginPage() {
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -32,25 +32,54 @@ export default function LoginPage() {
       setLoading(true);
 
       try {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data?.error || "Login failed");
+        }
+
+        if (!data.access_token || !data.refresh_token) {
+          throw new Error("Invalid server response");
+        }
+
+        // store session inside Supabase client
+        const { error } = await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
         });
 
         if (error) {
-          toast.error(error.message || "Invalid email or password.");
-          setLoading(false);
-          return;
+          throw new Error(error.message || "Failed to establish session");
         }
 
         setRedirecting(true);
+
         router.replace("/");
-      } catch {
-        toast.error("Something went wrong. Please try again.");
+      } catch (err) {
+        console.error("Login error:", err);
+
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Something went wrong. Please try again.";
+
+        toast.error(message);
+      } finally {
         setLoading(false);
       }
     },
-    [email, password, router, supabase]
+    [email, password, router, supabase],
   );
 
   /* ---------------- Redirect Screen ---------------- */
@@ -90,8 +119,8 @@ export default function LoginPage() {
             {[
               "Concept to application",
               "Previous year questions",
-              "Structured practice",
               "Exam-focused learning",
+              "Structured practice",
             ].map((item) => (
               <div
                 key={item}
@@ -119,13 +148,14 @@ export default function LoginPage() {
       <div className="flex items-center justify-center px-4">
         <div className="w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-md border border-border">
           {/* Mobile illustration */}
-          <div className="flex justify-center rounded-t-2xl bg-muted py-6 md:hidden">
+          <div className="flex justify-center rounded-t-2xl bg-muted  md:hidden">
             <Image
               src="/school.svg"
               alt="Learning illustration"
-              width={160}
-              height={160}
+              width={200}
+              height={200}
               priority
+              className="mt-2"
             />
           </div>
 
@@ -181,7 +211,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button className="h-11 w-full" disabled={loading}>
+            <Button type="submit" className="h-11 w-full" disabled={loading}>
               {loading ? "Signing in…" : "Sign in"}
             </Button>
 

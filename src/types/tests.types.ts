@@ -21,7 +21,7 @@ export type StudentBatchTest = {
         attemptId?: string
         remainingSeconds?: number
         attemptsUsed: number
-        maxAttempts: number
+
     }
 }
 
@@ -42,7 +42,6 @@ export type StartTestResponse =
         | "batch_closed"
         | "not_started"
         | "ended"
-        | "max_attempts_reached"
     }
 
 

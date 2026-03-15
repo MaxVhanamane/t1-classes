@@ -1,16 +1,14 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "../lib/helper-functions/getCurrentUser";
+import { getAuth } from "@/src/lib/auth/get-auth";
 
 export default async function HomePage() {
-  let user;
+  const auth = await getAuth();
 
-  try {
-    user = await getCurrentUser();
-  } catch {
-    redirect("/login");
+  if (!auth) {
+    return redirect("/login");
   }
 
-  switch (user.role) {
+  switch (auth.role) {
     case "admin":
       redirect("/admin");
 

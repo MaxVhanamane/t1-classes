@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -12,45 +11,35 @@ import {
   SelectItem,
 } from "@/src/components/ui/select";
 import { Search } from "lucide-react";
+import { ResultsSort } from "../types/results.types";
 
 interface Props {
   search: string;
-  sort: string;
+  sort: ResultsSort;
   pageSize: number;
+  onSearch: (v: string) => void;
+  onSort: (v: ResultsSort) => void;
+  onPageSize: (v: number) => void;
 }
 
-export function ResultsToolbar({ search, sort, pageSize }: Props) {
-  const router = useRouter();
-  const params = useSearchParams();
-
+export function ResultsToolbar({
+  search,
+  sort,
+  pageSize,
+  onSearch,
+  onSort,
+  onPageSize,
+}: Props) {
   const [query, setQuery] = useState(search);
-
-  useEffect(() => {
-    setQuery(search);
-  }, [search]);
-
-  function updateParam(key: string, value: string) {
-    const p = new URLSearchParams(params.toString());
-
-    if (value) p.set(key, value);
-    else p.delete(key);
-
-    p.set("page", "1");
-    router.push(`?${p.toString()}`);
-  }
-
-  function applySearch() {
-    updateParam("q", query.trim());
-  }
 
   return (
     <div className="flex flex-col sm:flex-row gap-3 justify-between">
       <div className="flex gap-2">
-        {/* Sort */}
-        <Select value={sort} onValueChange={(v) => updateParam("sort", v)}>
+        <Select value={sort} onValueChange={(v) => onSort(v as ResultsSort)}>
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
+
           <SelectContent>
             <SelectItem value="name">Student Name</SelectItem>
             <SelectItem value="rank">Rank</SelectItem>
@@ -59,14 +48,14 @@ export function ResultsToolbar({ search, sort, pageSize }: Props) {
           </SelectContent>
         </Select>
 
-        {/* Page Size */}
         <Select
           value={pageSize.toString()}
-          onValueChange={(v) => updateParam("size", v)}
+          onValueChange={(v) => onPageSize(Number(v))}
         >
           <SelectTrigger className="w-28">
             <SelectValue />
           </SelectTrigger>
+
           <SelectContent>
             <SelectItem value="25">25</SelectItem>
             <SelectItem value="50">50</SelectItem>
@@ -75,7 +64,6 @@ export function ResultsToolbar({ search, sort, pageSize }: Props) {
         </Select>
       </div>
 
-      {/* Search */}
       <div className="relative sm:w-64">
         <Input
           placeholder="Search student..."
@@ -83,8 +71,7 @@ export function ResultsToolbar({ search, sort, pageSize }: Props) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              e.preventDefault();
-              applySearch();
+              onSearch(query.trim());
             }
           }}
           className="pr-9"
@@ -94,7 +81,7 @@ export function ResultsToolbar({ search, sort, pageSize }: Props) {
           size="icon"
           variant="ghost"
           className="absolute right-1 top-1 h-7 w-7"
-          onClick={applySearch}
+          onClick={() => onSearch(query.trim())}
         >
           <Search className="h-4 w-4" />
         </Button>

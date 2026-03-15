@@ -3,17 +3,17 @@
 import { useState } from "react";
 
 import { CoursesTable } from "./courses-table";
-import { CourseDialog } from "./course-dialog";
 import { Button } from "@/src/components/ui/button";
-import { Course } from "../actions/actions";
+import type { CourseRow } from "../actions/courses.actions";
+import { CourseDialog } from "./course-dialog";
 
 interface CoursesClientProps {
-  courses: Course[];
+  courses: CourseRow[];
 }
 
 export function CoursesClient({ courses }: CoursesClientProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<CourseRow | null>(null);
 
   return (
     <div className="space-y-6">
@@ -38,12 +38,19 @@ export function CoursesClient({ courses }: CoursesClientProps) {
           setDialogOpen(true);
         }}
       />
+      {dialogOpen && (
+        <CourseDialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
 
-      <CourseDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        course={selectedCourse}
-      />
+            if (!open) {
+              setSelectedCourse(null);
+            }
+          }}
+          course={selectedCourse}
+        />
+      )}
     </div>
   );
 }

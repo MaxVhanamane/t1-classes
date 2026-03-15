@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/src/components/ui/button";
 import { ROUTES } from "@/src/lib/constants/route-constants";
 import { useState } from "react";
-import { createClient } from "@/src/lib/supabase/supabase-client";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 
 export function LogoutButton() {
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 

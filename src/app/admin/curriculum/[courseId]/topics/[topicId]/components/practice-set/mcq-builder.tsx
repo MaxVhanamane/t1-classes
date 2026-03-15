@@ -7,7 +7,6 @@ import { Textarea } from "@/src/components/ui/textarea";
 import { Label } from "@/src/components/ui/label";
 import { Separator } from "@/src/components/ui/separator";
 import { toast } from "sonner";
-import { AddOptionDialog } from "./add-option-dialog";
 import { RadioGroup, RadioGroupItem } from "@/src/components/ui/radio-group";
 import { Trash2, Pencil, PlusSquare } from "lucide-react";
 import { updatePracticeQuestionWithOptions } from "../../actions/practice-set/update-practice-question-with-options";
@@ -17,7 +16,6 @@ interface Props {
   courseId: string;
   topicId: string;
   practiceSetId: string;
-
   mode?: "create" | "edit";
   initialData?: {
     questionId: string;
@@ -56,7 +54,7 @@ export function McqBuilder({
 
   const editRef = useRef<HTMLTextAreaElement | null>(null);
 
-  /* preload data for edit */
+  /* preload edit */
   useEffect(() => {
     if (mode === "edit" && initialData) {
       setQuestion(initialData.question);
@@ -65,7 +63,7 @@ export function McqBuilder({
         initialData.options.map((o) => ({
           id: o.id,
           option_text: o.option_text,
-        }))
+        })),
       );
       const correct = initialData.options.find((o) => o.is_correct);
       setCorrectOptionId(correct?.id ?? null);
@@ -84,20 +82,8 @@ export function McqBuilder({
     return options.some(
       (o) =>
         o.id !== excludeId &&
-        o.option_text.toLowerCase() === value.toLowerCase()
+        o.option_text.toLowerCase() === value.toLowerCase(),
     );
-  }
-
-  function addOption(data: { option_text: string }) {
-    const value = data.option_text.trim();
-    if (!value) return;
-
-    if (isDuplicate(value)) {
-      toast.error("Duplicate option");
-      return;
-    }
-
-    setOptions((prev) => [...prev, { id: nanoid(), option_text: value }]);
   }
 
   function addEmptyOption() {
@@ -127,7 +113,7 @@ export function McqBuilder({
     }
 
     setOptions((prev) =>
-      prev.map((o) => (o.id === optionId ? { ...o, option_text: value } : o))
+      prev.map((o) => (o.id === optionId ? { ...o, option_text: value } : o)),
     );
 
     setEditingOptionId(null);
@@ -141,7 +127,9 @@ export function McqBuilder({
       return;
     }
 
-    if (options.length < 2) {
+    const validOptions = options.filter((o) => o.option_text.trim());
+
+    if (validOptions.length < 2) {
       toast.error("Add at least two options");
       return;
     }
@@ -159,7 +147,7 @@ export function McqBuilder({
       practiceSetId,
       question,
       correct_answer_explanation: explanation || null,
-      options: options.map((o) => ({
+      options: validOptions.map((o) => ({
         option_text: o.option_text,
         is_correct: o.id === correctOptionId,
       })),
@@ -167,20 +155,14 @@ export function McqBuilder({
 
     try {
       if (mode === "edit") {
-        if (!initialData?.questionId) {
-          throw new Error("Missing question ID");
-        }
-
         await updatePracticeQuestionWithOptions({
           ...basePayload,
-          questionId: initialData.questionId,
+          questionId: initialData!.questionId,
         });
-
         toast.success("Question updated");
         onCancel?.();
       } else {
         await createPracticeQuestionWithOptions(basePayload);
-
         toast.success("Question added");
 
         setQuestion("");
@@ -188,10 +170,8 @@ export function McqBuilder({
         setCorrectOptionId(null);
         setExplanation("");
       }
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to save question"
-      );
+    } catch {
+      toast.error("Failed to save question");
     } finally {
       setSaving(false);
     }
@@ -199,6 +179,7 @@ export function McqBuilder({
 
   return (
     <div className="space-y-6 rounded-md border p-4">
+      {/* Question */}
       <div className="space-y-2">
         <Label>Question</Label>
         <Textarea
@@ -210,13 +191,18 @@ export function McqBuilder({
 
       <Separator />
 
+      {/* Options */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label>Options</Label>
-          <AddOptionDialog
-            canOpen={Boolean(question.trim())}
-            onAdd={addOption}
-          />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={addEmptyOption}
+            disabled={!question.trim()}
+          >
+            + Add option
+          </Button>
         </div>
 
         <RadioGroup
@@ -235,7 +221,7 @@ export function McqBuilder({
                 className={`relative flex items-center gap-3 rounded-md p-3 border cursor-pointer
                   ${
                     isCorrect
-                      ? "border-green-500 bg-green-50"
+                      ? "border-green-500 bg-green-50 dark:border-green-700 dark:bg-green-900/10"
                       : "hover:bg-muted"
                   }`}
               >
@@ -254,19 +240,16 @@ export function McqBuilder({
                       rows={2}
                       value={editingText}
                       onChange={(e) => setEditingText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          saveEdit(option.id);
-                        }
-                        if (e.key === "Escape") {
-                          setEditingOptionId(null);
-                        }
-                      }}
                       onBlur={() => saveEdit(option.id)}
                     />
                   ) : (
-                    <p className="text-sm">{option.option_text}</p>
+                    <p className="text-sm">
+                      {option.option_text || (
+                        <span className="text-muted-foreground italic">
+                          Empty option
+                        </span>
+                      )}
+                    </p>
                   )}
                 </div>
 
@@ -275,7 +258,6 @@ export function McqBuilder({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Button
-                    className="cursor-pointer"
                     size="icon"
                     variant="ghost"
                     onClick={() => {
@@ -286,19 +268,14 @@ export function McqBuilder({
                     <Pencil className="h-4 w-4" />
                   </Button>
 
-                  <Button
-                    className="cursor-pointer"
-                    size="icon"
-                    variant="ghost"
-                    onClick={addEmptyOption}
-                  >
+                  <Button size="icon" variant="ghost" onClick={addEmptyOption}>
                     <PlusSquare className="h-4 w-4" />
                   </Button>
 
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="text-destructive cursor-pointer"
+                    className="text-destructive"
                     onClick={() => removeOption(option.id)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -328,25 +305,17 @@ export function McqBuilder({
 
       <div className="flex justify-end gap-2">
         {mode === "edit" && onCancel && (
-          <Button
-            className="cursor-pointer"
-            variant="outline"
-            onClick={onCancel}
-          >
+          <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
         )}
 
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          className="min-w-32 cursor-pointer"
-        >
+        <Button onClick={handleSave} disabled={saving} className="min-w-32">
           {saving
             ? "Saving…"
             : mode === "edit"
-            ? "Save changes"
-            : "Save question"}
+              ? "Save changes"
+              : "Save question"}
         </Button>
       </div>
     </div>

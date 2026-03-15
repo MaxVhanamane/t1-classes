@@ -12,5 +12,4 @@ export interface ScheduleFormValues {
     endsAt: Date;
 
     durationMinutes: number;
-    maxAttempts: number;
 }

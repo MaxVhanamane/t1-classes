@@ -17,7 +17,6 @@ type AttemptRow = {
 type DistributionRow = {
     id: string;
     batch_id: string | null;
-    course_id: string | null;
 };
 export type PartialMarkingByCorrectCount = {
     type: "by_correct_count";
@@ -117,7 +116,7 @@ export async function GET(
 
     const { data: dist } = await supabase
         .from("test_distributions")
-        .select("id, batch_id, course_id")
+        .select("id, batch_id")
         .eq("id", typedAttempt.distribution_id)
         .single();
 
@@ -148,23 +147,7 @@ export async function GET(
         }
     }
 
-    if (distribution.course_id) {
-        const access = await getEnrollmentAccess(
-            supabase,
-            user.id,
-            {
-                type: "course",
-                courseId: distribution.course_id,
-            }
-        );
 
-        if (!access.hasAccess) {
-            return NextResponse.json<SectionsResponse>(
-                { kind: "denied", reason: "not_enrolled" },
-                { status: 403 }
-            );
-        }
-    }
 
     /* ------------------------------------------- */
     /* 3. Sections */

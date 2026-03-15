@@ -12,6 +12,7 @@ import {
 } from "@/src/components/ui/accordion";
 import { SectionItem } from "../hooks/use-get-sections";
 import { Meta } from "./section-meta";
+import { PerformanceLabelType } from "@/src/app/api/tests/results/[attemptId]/summary/route";
 
 /* ---------------------------------- */
 /* Types */
@@ -22,7 +23,7 @@ export type ResultSummary = {
   obtainedMarks: number;
   totalMarks: number;
   percentage: number;
-  performanceLabel: string;
+  performanceLabel: PerformanceLabelType;
   correctCount: number;
   partialCorrectCount: number;
   wrongCount: number;

@@ -17,11 +17,12 @@ export async function createPracticeSet(
      * 1. Validate input
      */
     const parsed = practiceSetSchema.safeParse(rawData);
+
     if (!parsed.success) {
         throw new Error("Invalid practice set data");
     }
 
-    const { title, description } = parsed.data;
+    const { title, description, isFreePreview } = parsed.data;
 
     const supabase = await createServerSupabaseClient();
     const staff = await getCurrentStaff();
@@ -85,6 +86,10 @@ export async function createPracticeSet(
             topic_id: topicId,
             title,
             description: description || null,
+
+
+            is_free_preview: isFreePreview,
+
             is_published: false,
             sort_order: nextSortOrder,
         });

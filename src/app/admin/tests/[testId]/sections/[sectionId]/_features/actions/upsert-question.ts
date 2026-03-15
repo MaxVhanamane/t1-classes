@@ -1,23 +1,32 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
 import {
-    CreateQuestionInput,
     createQuestionSchema,
 } from "../zod/question.schema";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { redirect } from "next/navigation";
 
 export async function upsertQuestion(
     testId: string,
     sectionId: string,
-    input: CreateQuestionInput,
+    rawInput: string,
     questionId?: string
 ) {
     // ----------------------------------
     // Auth
     // ----------------------------------
-    await getCurrentStaff();
+    // Parse the stringified input back to object
+    let input: unknown;
+    try {
+        input = JSON.parse(rawInput);
+    } catch {
+        throw new Error("INVALID_QUESTION_DATA");
+    }
+    const user = await getAuthIfHasRole(["admin", "teacher"]);
+    if (!user) {
+        redirect("/login")
+    }
     const supabase = await createServerSupabaseClient();
 
     // ----------------------------------
@@ -52,12 +61,13 @@ export async function upsertQuestion(
     // ----------------------------------
     const optionsPayload = values.options
         ? values.options.map((o, idx) => ({
-            label: o.label,   // "A", "B", "C", "D"
-            text: o.text,
+            label: o.label,
+            text: JSON.parse(JSON.stringify(
+                o.text ?? { type: "doc", content: [{ type: "paragraph" }] }
+            )),
             order: idx + 1,
         }))
         : null;
-
     // ----------------------------------
     // Build Correct Answer Payload
     // FRONTEND SENDS LABELS, RPC CONVERTS TO UUIDs
@@ -100,11 +110,16 @@ export async function upsertQuestion(
     const payload: Record<string, unknown> = {
         p_test_id: testId,
         p_section_id: sectionId,
-        p_question_text: values.questionText,
-        p_explanation: values.explanation,
+        p_question_text: JSON.parse(JSON.stringify(
+            values.questionText ?? { type: "doc", content: [{ type: "paragraph" }] }
+        )),
+        p_explanation: JSON.parse(JSON.stringify(
+            values.explanation ?? { type: "doc", content: [{ type: "paragraph" }] }
+        )),
         p_correct_answer: correctAnswerPayload,
         p_options: optionsPayload,
     };
+
 
     if (questionId) {
         payload.p_question_id = questionId;
@@ -122,10 +137,7 @@ export async function upsertQuestion(
         throw new Error(error?.message || "Failed to save question");
     }
 
-    // ----------------------------------
-    // Revalidate UI
-    // ----------------------------------
-    revalidatePath(`/admin/tests/${testId}/sections/${sectionId}`);
+
 
     return {
         success: true,

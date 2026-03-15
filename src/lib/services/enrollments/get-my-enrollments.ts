@@ -1,26 +1,22 @@
+import "server-only"
 import type {
     MyEnrollment,
     CourseEnrollment,
     BatchEnrollment,
     RawEnrollmentRow,
-    RawBatchCourseRow,
 } from "@/src/app/api/my-enrollments/types"
-
 import { SupabaseClient } from "@supabase/supabase-js"
 
 export async function getMyEnrollmentsService(
     supabase: SupabaseClient,
     userId: string
 ): Promise<MyEnrollment[]> {
+
     const nowIso = new Date().toISOString()
 
-    /**
-     * Fetch enrollments
-     */
     const { data, error } = await supabase
         .from("enrollments")
-        .select(
-            `
+        .select(`
       id,
       target_type,
       status,
@@ -30,114 +26,45 @@ export async function getMyEnrollmentsService(
         id,
         title,
         slug,
-        thumbnail_image,
-        course_type
+        course_type,
+        is_active
       ),
       batch:batch_id (
         id,
-        name,
+        title,
+        subtitle,
+        slug,
         mode,
-        schedule,
-        status
+        start_date,
+        end_date,
+        is_active
       )
-    `
-        )
+    `)
         .eq("user_id", userId)
         .eq("status", "ongoing")
         .lte("access_starts_at", nowIso)
         .or(`access_ends_at.is.null,access_ends_at.gte.${nowIso}`)
         .order("created_at", { ascending: false })
 
+
+
     if (error) {
         console.error("Error fetching enrollments:", error)
         throw new Error("Failed to fetch enrollments")
     }
 
-    if (!data) {
-        return []
-    }
+    if (!data) return []
 
-    const enrollments = data as unknown as RawEnrollmentRow[]
+    const enrollments = (data as unknown as RawEnrollmentRow[]).filter((e) => {
+        if (e.target_type === "course") return e.course?.is_active
+        if (e.target_type === "batch") return e.batch?.is_active
+        return false
+    })
 
-    /**
-     * Collect batch IDs
-     */
-    const batchIds = enrollments
-        .filter((e) => e.target_type === "batch")
-        .map((e) => e.batch?.id)
-        .filter((id): id is string => Boolean(id))
-
-    /**
-     * Fetch batch → courses mapping
-     */
-    const batchCoursesMap = new Map<
-        string,
-        { id: string; title: string }[]
-    >()
-
-    if (batchIds.length > 0) {
-        const {
-            data: rawBatchCourses,
-            error: batchCoursesError,
-        } = await supabase
-            .from("batch_courses")
-            .select(
-                `
-        batch_id,
-        course:course_id (
-          id,
-          title
-        )
-      `
-            )
-            .in("batch_id", batchIds)
-
-        if (batchCoursesError) {
-            console.error(
-                "Error fetching batch courses:",
-                batchCoursesError
-            )
-            throw new Error("Failed to fetch batch courses")
-        }
-
-        const batchCourses =
-            rawBatchCourses as unknown as RawBatchCourseRow[]
-
-        batchCourses?.forEach((row) => {
-            const course = row.course
-
-            /**
-             * Preserve invariant from original code
-             */
-            if (!course) {
-                throw new Error(
-                    `Invariant violation: batch_course ${row.batch_id} has no course`
-                )
-            }
-
-            const list = batchCoursesMap.get(row.batch_id) ?? []
-
-            list.push({
-                id: course.id,
-                title: course.title,
-            })
-
-            batchCoursesMap.set(row.batch_id, list)
-        })
-    }
-
-    /**
-     * Normalize into domain types
-     */
     const result: MyEnrollment[] = enrollments.map((e) => {
-        if (e.target_type === "course") {
-            const course = e.course
 
-            if (!course) {
-                throw new Error(
-                    `Invariant violation: course enrollment ${e.id} has no course`
-                )
-            }
+        if (e.target_type === "course") {
+            const course = e.course!
 
             const courseEnrollment: CourseEnrollment = {
                 enrollmentId: e.id,
@@ -149,7 +76,6 @@ export async function getMyEnrollmentsService(
                     id: course.id,
                     title: course.title,
                     slug: course.slug,
-                    thumbnailImage: course.thumbnail_image,
                     courseType: course.course_type,
                 },
             }
@@ -157,16 +83,7 @@ export async function getMyEnrollmentsService(
             return courseEnrollment
         }
 
-        /**
-         * Batch enrollment
-         */
-        const batch = e.batch
-
-        if (!batch) {
-            throw new Error(
-                `Invariant violation: batch enrollment ${e.id} has no batch`
-            )
-        }
+        const batch = e.batch!
 
         const batchEnrollment: BatchEnrollment = {
             enrollmentId: e.id,
@@ -176,11 +93,12 @@ export async function getMyEnrollmentsService(
             accessEndsAt: e.access_ends_at,
             batch: {
                 id: batch.id,
-                name: batch.name,
+                title: batch.title,
+                subtitle: batch.subtitle,
+                slug: batch.slug,
                 mode: batch.mode,
-                schedule: batch.schedule,
-                status: batch.status,
-                courses: batchCoursesMap.get(batch.id) ?? [],
+                start_date: batch.start_date,
+                end_date: batch.end_date,
             },
         }
 

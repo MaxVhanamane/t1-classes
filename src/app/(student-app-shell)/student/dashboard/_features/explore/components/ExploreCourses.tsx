@@ -1,40 +1,27 @@
 import { ExploreCourseCard } from "./ExploreCourseCard";
-import { cookies } from "next/headers";
 import { SectionError } from "@/src/components/system/SectionError";
-import { ExploreCourse } from "@/src/app/api/explore-batches/types";
+
+import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { getAuth } from "@/src/lib/auth/get-auth";
+
+import type { ExploreCourse } from "@/src/app/api/explore-batches/types";
+import { getExploreCoursesForUser } from "@/src/lib/services/courses/get-explore-courses-for-user";
 
 export async function ExploreCourses() {
   let courses: ExploreCourse[] | null = null;
   let fetchError = false;
 
   try {
-    const cookieStore = await cookies();
+    const supabase = await createServerSupabaseClient();
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/explore-courses`,
-      {
-        method: "GET",
-        headers: {
-          cookie: cookieStore.toString(),
-        },
-        cache: "no-store",
-      },
-    );
+    const auth = await getAuth();
 
-    if (!res.ok) {
-      // console.error("Explore courses API failed:", res.status);
-      fetchError = true;
-    } else {
-      courses = await res.json();
-    }
+    courses = await getExploreCoursesForUser(supabase, auth?.userId);
   } catch {
-    // console.error("Explore courses fetch crashed:", error);
     fetchError = true;
   }
 
-  /**
-   * Render phase (outside try/catch)
-   */
+  /** Render phase */
 
   if (fetchError) {
     return (

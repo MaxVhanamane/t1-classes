@@ -8,6 +8,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
  * Client-side Supabase client
  * Used inside React components
  */
-export function createClient() {
+export function createBrowserSupabaseClient() {
     return createBrowserClient(supabaseUrl, supabaseAnonKey);
 }

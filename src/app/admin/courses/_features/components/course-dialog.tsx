@@ -1,23 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { z } from "zod";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { toast } from "sonner";
-import { Course, createCourse, updateCourse } from "../actions/actions";
-import { createClient } from "@/src/lib/supabase/supabase-client";
-
-import { Button } from "@/src/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/src/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/src/components/ui/command";
+import { Badge } from "@/src/components/ui/badge";
+import { ChevronsUpDown } from "lucide-react";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { Textarea } from "@/src/components/ui/textarea";
-import { Label } from "@/src/components/ui/label";
-import { Switch } from "@/src/components/ui/switch";
+import { Button } from "@/src/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -26,480 +43,906 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 
-function parseNumber(value: string): number | undefined {
-  if (value === "") return undefined;
-  const n = Number(value);
-  return Number.isNaN(n) ? undefined : n;
-}
+import { courseSchema, CourseFormValues } from "../zod/course.schema";
 
-type FormType = {
-  title: string;
-  slug: string;
-  description: string;
-  thumbnail_image: string;
-  course_type: CourseType;
-  class_level: string;
-  board: string;
-  target_exam: string;
-  subjects: string;
-  price: string;
-  is_active: boolean;
-};
-export type CourseType = "academic" | "foundation" | "exam" | "crash";
-type ThumbnailUploadResult =
-  | { status: "skipped"; url?: string }
-  | { status: "success"; url: string; path: string }
-  | { status: "error" };
-/* ---------------- ZOD SCHEMA (DB-ALIGNED) ---------------- */
+import {
+  CourseRow,
+  createCourse,
+  updateCourse,
+  updateCourseThumbnail,
+} from "../actions/courses.actions";
 
-export const courseFormSchema = z
-  .object({
-    title: z.string().trim().min(1, "Title is required"),
+import { useR2Upload } from "@/src/hooks/use-r2-upload";
+import { TipTapEditor } from "./tiptap-editor";
+import { SIZE_LIMITS } from "@/src/app/api/uploads/signed-url/route";
+import { Switch } from "@/src/components/ui/switch";
+import { RemoveButton } from "./remove-button";
+import {
+  ALLOWED_IMAGE_EXTENSIONS,
+  ALLOWED_IMAGE_MIME_TYPES,
+} from "@/src/lib/constants/upload.constants";
+import { formatFileSize } from "@/src/lib/helper-functions/format-file-size";
+import { IMAGE_OUTPUTS } from "@/src/lib/constants/image-output.config";
+import { validateImage } from "@/src/lib/helper-functions/validate-image";
+import { ImageCropper } from "@/src/components/ui/media/ImageCropper";
+import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
+import { CourseTypeInfo } from "./course-type-info";
+import { MARKETING_LIMITS } from "@/src/lib/constants/marketing-limits";
+import { useQuery } from "@tanstack/react-query";
+import { InstructorOption } from "../types/course.types";
+import { extractFirstErrorMessage } from "../../../batches/_features/components/batch-dialog";
+import { Checkbox } from "@/src/components/ui/checkbox";
 
-    course_type: z.enum(["academic", "foundation", "exam", "crash"]),
+/* -------------------------------------------------- */
 
-    description: z.string().optional(),
-
-    price: z.number().min(1, "Price must be greater than 0"),
-
-    class_level: z.number().optional(),
-    board: z.string().optional(),
-
-    target_exam: z.string().optional(),
-
-    subjects: z.array(z.string()).optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.course_type === "academic" || data.course_type === "foundation") {
-      if (data.class_level == null) {
-        ctx.addIssue({
-          path: ["class_level"],
-          message: "Class level is required",
-          code: z.ZodIssueCode.custom,
-        });
-      }
-
-      if (!data.board?.trim()) {
-        ctx.addIssue({
-          path: ["board"],
-          message: "Board is required",
-          code: z.ZodIssueCode.custom,
-        });
-      }
-    }
-
-    if (data.course_type === "exam" || data.course_type === "crash") {
-      if (!data.target_exam?.trim()) {
-        ctx.addIssue({
-          path: ["target_exam"],
-          message: "Target exam is required",
-          code: z.ZodIssueCode.custom,
-        });
-      }
-    }
-  });
-
-/* ---------------- COMPONENT ---------------- */
-
-interface CourseDialogProps {
+type Props = {
+  course?: CourseRow | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  course?: Course | null;
+};
+const THUMBNAIL_MAX_SIZE = SIZE_LIMITS.course_thumbnail;
+
+/* -------------------------------------------------- */
+/* Mapper                                             */
+/* -------------------------------------------------- */
+
+function mapRowToForm(course: CourseRow): CourseFormValues {
+  return {
+    title: course.title,
+    subtitle: course.subtitle ?? "",
+    description: course.description ?? null,
+    thumbnail_image: course.thumbnail_image ?? undefined,
+    course_type: course.course_type,
+    class_level: course.class_level ?? undefined,
+    board: course.board ?? "",
+    target_exam: course.target_exam ?? "",
+    subjects: course.subjects?.length
+      ? course.subjects.map((v) => ({ value: v }))
+      : [],
+
+    list_price: course.list_price,
+    sale_price: course.sale_price,
+    languages: course.languages?.map((v) => ({ value: v })) ?? [],
+    instructor_ids: course.instructors?.map((i) => i.id) ?? [],
+    is_active: course.is_active,
+
+    learning_outcomes:
+      course.learning_outcomes?.map((v) => ({
+        value: v,
+      })) ?? [],
+
+    target_audience:
+      course.target_audience?.map((v) => ({
+        value: v,
+      })) ?? [],
+  };
 }
 
-function extractPathFromPublicUrl(url: string): string {
-  const parts = url.split("/course-thumbnails/");
-  return parts[1];
-}
+/* -------------------------------------------------- */
 
-export function CourseDialog({
-  open,
-  onOpenChange,
-  course,
-}: CourseDialogProps) {
+export function CourseDialog({ course, open, onOpenChange }: Props) {
   const isEdit = Boolean(course);
-  const supabase = createClient();
 
-  const [loading, setLoading] = useState(false);
+  const { uploadFile } = useR2Upload();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
-  const [form, setForm] = useState<FormType>({
-    title: "",
-    slug: "",
-    description: "",
-    thumbnail_image: "",
-    course_type: "academic",
-    class_level: "",
-    board: "",
-    target_exam: "",
-    subjects: "",
-    price: "",
-    is_active: true,
+  const { data: instructors } = useQuery<InstructorOption[]>({
+    queryKey: ["instructor-options"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/instructors/options");
+      if (!res.ok) throw new Error("Failed to load instructors");
+      return res.json() as Promise<InstructorOption[]>;
+    },
+  });
+  /* -------------------------------------------------- */
+  /* Form                                               */
+  /* -------------------------------------------------- */
+  const form = useForm({
+    resolver: zodResolver(courseSchema),
+    defaultValues: {
+      title: "",
+      subtitle: "",
+      description: null,
+      thumbnail_image: undefined,
+      course_type: "academic",
+      subjects: [],
+      list_price: 0,
+      sale_price: 0,
+      languages: [],
+      instructor_ids: [],
+      learning_outcomes: [],
+      target_audience: [],
+      is_active: true,
+      class_level: undefined,
+      board: "",
+      target_exam: "",
+    },
   });
 
-  async function deleteThumbnail(path?: string) {
-    if (!path) return;
+  const saving = form.formState.isSubmitting;
+  /* -------------------------------------------------- */
+  /* Field arrays                                       */
+  /* -------------------------------------------------- */
 
-    const { error } = await supabase.storage
-      .from("course-thumbnails")
-      .remove([path]);
+  const outcomes = useFieldArray({
+    control: form.control,
+    name: "learning_outcomes",
+  });
 
-    if (error) {
-      toast.error("Cleanup failed", {
-        description: "Old thumbnail could not be removed.",
-      });
-    }
-  }
+  const audience = useFieldArray({
+    control: form.control,
+    name: "target_audience",
+  });
 
-  /* -------- Keep form in sync when editing / reopening -------- */
+  const subjects = useFieldArray({
+    control: form.control,
+    name: "subjects",
+  });
+
+  const languages = useFieldArray({
+    control: form.control,
+    name: "languages",
+  });
+
+  const watchedOutcomes = useWatch({
+    control: form.control,
+    name: "learning_outcomes",
+  });
+
+  const watchedAudience = useWatch({
+    control: form.control,
+    name: "target_audience",
+  });
+  /* -------------------------------------------------- */
+  /* Prefill edit                                       */
+  /* -------------------------------------------------- */
 
   useEffect(() => {
-    setForm({
-      title: course?.title ?? "",
-      slug: course?.slug ?? "",
-      description: course?.description ?? "",
-      thumbnail_image: course?.thumbnail_image ?? "",
-      course_type: course?.course_type ?? "academic",
-      class_level: course?.class_level?.toString() ?? "",
-      board: course?.board ?? "",
-      target_exam: course?.target_exam ?? "",
-      subjects: course?.subjects?.join(", ") ?? "",
-      price: course?.price?.toString() ?? "",
-      is_active: course?.is_active ?? true,
-    });
+    if (course) {
+      form.reset(mapRowToForm(course));
+    }
+  }, [course, form]);
 
-    setThumbnailFile(null);
-  }, [course, open]);
+  /* -------------------------------------------------- */
 
-  function updateField<K extends keyof typeof form>(
-    key: K,
-    value: (typeof form)[K]
-  ) {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  }
+  /* -------------------------------------------------- */
+  /* Thumbnail preview                                  */
+  /* -------------------------------------------------- */
 
-  /* ---------------- Thumbnail Upload ---------------- */
-
-  async function uploadThumbnailIfNeeded(): Promise<ThumbnailUploadResult> {
-    if (!thumbnailFile) {
-      if (!form.thumbnail_image) {
-        toast.info("No thumbnail selected", {
-          description: "You can add a course thumbnail later from edit.",
-        });
-      }
-
-      return {
-        status: "skipped",
-        url: form.thumbnail_image || undefined,
-      };
+  const thumbnailPreview = useMemo(() => {
+    if (thumbnailFile) {
+      return URL.createObjectURL(thumbnailFile);
     }
 
-    /* Validation */
-    if (!thumbnailFile.type.startsWith("image/")) {
-      toast.error("Invalid file", {
-        description: "Only image files are allowed.",
-      });
-      return { status: "error" };
+    if (isEdit && course?.thumbnail_image) {
+      return `${R2_BUCKET_PUBLIC_URL}/${course.thumbnail_image}`;
     }
 
-    const mimeToExt: Record<string, string> = {
-      "image/jpeg": "jpg",
-      "image/png": "png",
-      "image/webp": "webp",
-      "image/avif": "avif",
+    return null;
+  }, [thumbnailFile, isEdit, course]);
+
+  useEffect(() => {
+    if (!thumbnailFile || !thumbnailPreview) return;
+
+    return () => {
+      URL.revokeObjectURL(thumbnailPreview);
     };
+  }, [thumbnailFile, thumbnailPreview]);
 
-    const ext = mimeToExt[thumbnailFile.type];
-    if (!ext) {
-      toast.error("Unsupported format", {
-        description: "Please upload JPG, PNG, WEBP, or AVIF images only.",
-      });
-      return { status: "error" };
-    }
+  useEffect(() => {
+    return () => {
+      if (cropSrc) URL.revokeObjectURL(cropSrc);
+    };
+  }, [cropSrc]);
 
-    const MAX_SIZE_MB = 1;
-    if (thumbnailFile.size > MAX_SIZE_MB * 1024 * 1024) {
-      toast.error("Image too large", {
-        description: `Maximum allowed size is ${MAX_SIZE_MB}MB.`,
-      });
-      return { status: "error" };
-    }
-
-    /* Loading toast */
-    const toastId = toast.loading("Uploading thumbnail...");
-
-    try {
-      const fileName = `${crypto.randomUUID()}.${ext}`;
-      const filePath = `courses/${fileName}`;
-
-      const { error } = await supabase.storage
-        .from("course-thumbnails")
-        .upload(filePath, thumbnailFile, {
-          contentType: thumbnailFile.type,
-          upsert: false,
-        });
-
-      if (error) {
-        toast.error("Upload failed", {
-          id: toastId,
-          description: "Could not upload thumbnail. Please try again.",
-        });
-        return { status: "error" };
-      }
-
-      const { data } = supabase.storage
-        .from("course-thumbnails")
-        .getPublicUrl(filePath);
-
-      toast.success("Thumbnail uploaded", { id: toastId });
-
-      return {
-        status: "success",
-        url: data.publicUrl,
-        path: filePath,
-      };
-    } catch {
-      toast.error("Upload failed", {
-        id: toastId,
-        description: "Unexpected error occurred.",
-      });
-      return { status: "error" };
-    }
-  }
-
-  /* ---------------- Submit ---------------- */
-
-  async function handleSubmit() {
-    if (loading) return;
-    setLoading(true);
-
-    try {
-      const parsedNumbers = {
-        price: parseNumber(form.price),
-        class_level: parseNumber(form.class_level),
-      };
-
-      const parsed = courseFormSchema.safeParse({
-        title: form.title,
-        description: form.description || undefined,
-        course_type: form.course_type,
-        price: parsedNumbers.price,
-        class_level: parsedNumbers.class_level,
-        board: form.board || undefined,
-        target_exam: form.target_exam || undefined,
-        subjects: form.subjects
-          ? form.subjects
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : undefined,
-      });
-
-      if (!parsed.success) {
-        toast.error("Invalid input", {
-          description: parsed.error.issues[0].message,
-        });
-        return;
-      }
-
-      const oldThumbnailUrl = course?.thumbnail_image;
-
-      const thumbnailResult = await uploadThumbnailIfNeeded();
-
-      if (thumbnailResult.status === "error") {
-        return;
-      }
-
-      const payload = {
-        title: form.title,
-        description: form.description || undefined,
-        thumbnail_image: thumbnailResult.url,
-        course_type: form.course_type,
-        class_level: parsedNumbers.class_level,
-        board: form.board || undefined,
-        target_exam: form.target_exam || undefined,
-        subjects: parsed.data.subjects,
-        price: parsedNumbers.price,
-        is_active: form.is_active,
-      };
+  /* -------------------------------------------------- */
+  /* Submit                                             */
+  /* -------------------------------------------------- */
+  const onSubmit = form.handleSubmit(
+    /* ------------------------------------------ */
+    /* VALID SUBMIT                              */
+    /* ------------------------------------------ */
+    async (values: CourseFormValues) => {
+      const toastId = toast.loading(
+        isEdit ? "Updating course..." : "Creating course...",
+      );
 
       try {
+        /* ---------- Create / Update ---------- */
+        let courseId: string;
+
         if (isEdit && course) {
-          await updateCourse(course.id, payload);
+          courseId = course.id;
+          await updateCourse(courseId, values);
         } else {
-          await createCourse(payload);
+          courseId = await createCourse(values);
         }
-      } catch (err) {
-        if (thumbnailResult.status === "success") {
-          await deleteThumbnail(thumbnailResult.path);
+
+        /* ---------- Thumbnail Upload ---------- */
+        if (thumbnailFile) {
+          toast.loading("Uploading thumbnail...", { id: toastId });
+
+          const upload = await uploadFile({
+            file: thumbnailFile,
+            assetType: "course_thumbnail",
+            courseId,
+          });
+
+          if (upload?.key) {
+            await updateCourseThumbnail(courseId, upload.key);
+          }
         }
-        throw err;
+
+        /* ---------- Success ---------- */
+        toast.success("Saved", { id: toastId });
+
+        onOpenChange(false);
+        form.reset();
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Save failed";
+
+        toast.error(message, { id: toastId });
       }
+    },
 
-      if (
-        isEdit &&
-        thumbnailResult.status === "success" &&
-        oldThumbnailUrl &&
-        oldThumbnailUrl !== thumbnailResult.url
-      ) {
-        const oldPath = extractPathFromPublicUrl(oldThumbnailUrl);
-        await deleteThumbnail(oldPath);
-      }
+    /* ------------------------------------------ */
+    /* INVALID SUBMIT (ZOD ERRORS)               */
+    /* ------------------------------------------ */
+    (errors) => {
+      const message = extractFirstErrorMessage(errors);
 
-      toast.success(isEdit ? "Course updated" : "Course created");
-      onOpenChange(false);
-    } catch {
-      toast.error(
-        isEdit ? "Failed to update course" : "Failed to create course",
-        {
-          description: "Please try again.",
-        }
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+      toast.dismiss(); // prevents stuck loading toast
+      toast.error(message ?? "Please fix the form errors");
+    },
+  );
 
-  /* ---------------- UI ---------------- */
+  /* -------------------------------------------------- */
+  /* UI                                                 */
+  /* -------------------------------------------------- */
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        if (!value) {
+          form.reset();
+          setThumbnailFile(null);
+          setCropSrc(null);
+        }
+
+        onOpenChange(value);
+      }}
+    >
+      <DialogContent
+        className="sm:max-w-150 max-h-[95vh] overflow-y-auto"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Course" : "Create Course"}</DialogTitle>
         </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={onSubmit} className="space-y-8 relative">
+            {/* ---------------- Title ---------------- */}
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Title</Label>
-            <Input
-              value={form.title}
-              onChange={(e) => updateField("title", e.target.value)}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Course Title</FormLabel>
+                  <FormControl>
+                    <Input {...field} disabled={saving} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-
-          {isEdit && (
-            <div className="space-y-2">
-              <Label>Slug</Label>
-              <Input value={form.slug} disabled />
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              value={form.description}
-              onChange={(e) => updateField("description", e.target.value)}
+            {/* ---------------- Subtitle ---------------- */}
+            <FormField
+              control={form.control}
+              name="subtitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Subtitle</FormLabel>
+                  <FormControl>
+                    <Input {...field} disabled={saving} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label>Thumbnail</Label>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)}
+            {/* ---------------- Description ---------------- */}
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+
+                  <TipTapEditor
+                    initialValue={course?.description ?? field.value ?? null}
+                    onChange={field.onChange}
+                    disabled={saving}
+                  />
+
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {form.thumbnail_image && !thumbnailFile && (
+
+            {/* ---------------- Thumbnail ---------------- */}
+
+            <div className="space-y-3">
+              <FormLabel>Thumbnail</FormLabel>
+
+              {thumbnailPreview && (
+                <div className="w-60 h-35 rounded border overflow-hidden bg-muted">
+                  <Image
+                    src={thumbnailPreview}
+                    alt="Thumbnail"
+                    width={240}
+                    height={140}
+                    className="w-full h-full object-cover object-center"
+                  />
+                </div>
+              )}
+
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept={ALLOWED_IMAGE_EXTENSIONS.join(",")}
+                disabled={saving}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  /* ---------- Validate ---------- */
+                  const url = await validateImage({
+                    file,
+                    maxSize: THUMBNAIL_MAX_SIZE,
+                    minWidth: 750,
+                    minHeight: 422,
+                    allowedTypes: ALLOWED_IMAGE_MIME_TYPES,
+                  });
+
+                  if (!url) {
+                    e.target.value = "";
+                    return;
+                  }
+
+                  /* ---------- Open cropper ---------- */
+                  setCropSrc(url);
+                }}
+              />
+
               <p className="text-xs text-muted-foreground">
-                Existing thumbnail will be kept
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Course Type</Label>
-            <Select
-              value={form.course_type}
-              onValueChange={(v) => updateField("course_type", v as CourseType)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="academic">Academic</SelectItem>
-                <SelectItem value="foundation">Foundation</SelectItem>
-                <SelectItem value="exam">Exam</SelectItem>
-                <SelectItem value="crash">Crash</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {(form.course_type === "academic" ||
-            form.course_type === "foundation") && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Class Level</Label>
-                <Input
-                  type="number"
-                  value={form.class_level}
-                  onChange={(e) => updateField("class_level", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Board</Label>
-                <Input
-                  value={form.board}
-                  onChange={(e) => updateField("board", e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-
-          {(form.course_type === "exam" || form.course_type === "crash") && (
-            <div className="space-y-2">
-              <Label>Target Exam</Label>
-              <Input
-                value={form.target_exam}
-                onChange={(e) => updateField("target_exam", e.target.value)}
-              />
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label>Subjects (comma separated)</Label>
-            <Input
-              value={form.subjects}
-              onChange={(e) => updateField("subjects", e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Price</Label>
-              <Input
-                type="number"
-                min={0}
-                step={1}
-                value={form.price}
-                onChange={(e) => updateField("price", e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between border rounded-lg p-3">
-            <div>
-              <Label>Active</Label>
-              <p className="text-sm text-muted-foreground">
-                Inactive courses cannot be enrolled
+                Upload an image at least{" "}
+                <span className="font-medium">750 × 422 px</span>. Max size{" "}
+                {formatFileSize(THUMBNAIL_MAX_SIZE)}.
               </p>
             </div>
-            <Switch
-              checked={form.is_active}
-              onCheckedChange={(v) => updateField("is_active", v)}
-            />
-          </div>
-        </div>
 
-        <DialogFooter>
-          <Button
-            className="cursor-pointer"
-            onClick={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? "Saving..." : isEdit ? "Save Changes" : "Create Course"}
-          </Button>
-        </DialogFooter>
+            <div className="space-y-4">
+              {/* ---------------- Type ---------------- */}
+              <div className="relative flex gap-2">
+                <FormField
+                  control={form.control}
+                  name="course_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Course Type</FormLabel>
+                      <Select
+                        key={field.value}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={saving}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+
+                        <SelectContent>
+                          <SelectItem value="academic">Academic</SelectItem>
+                          <SelectItem value="foundation">Foundation</SelectItem>
+                          <SelectItem value="exam">Exam</SelectItem>
+                          <SelectItem value="crash">Crash</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+                <CourseTypeInfo />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium">Academic Details</h3>
+                <p className="text-xs text-muted-foreground">
+                  Optional details to help categorize the course.
+                </p>
+              </div>
+              <FormField
+                control={form.control}
+                name="class_level"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>
+                      Class Level
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (Optional)
+                      </span>
+                    </FormLabel>
+
+                    <FormControl>
+                      <Input
+                        type="number"
+                        disabled={saving}
+                        placeholder="Enter class level"
+                        {...form.register("class_level", {
+                          setValueAs: (v) =>
+                            v === "" || v === null || Number.isNaN(v)
+                              ? undefined
+                              : Number(v),
+                        })}
+                      />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="board"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Board
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (Optional)
+                      </span>
+                    </FormLabel>
+
+                    <FormControl>
+                      <Input {...field} disabled={saving} />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="target_exam"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Target Exam
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (Optional)
+                      </span>
+                    </FormLabel>
+
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={saving}
+                        placeholder="e.g. NEET, JEE, SSC"
+                      />
+                    </FormControl>
+
+                    <p className="text-xs text-muted-foreground">
+                      Add only if this course prepares students for a specific
+                      exam.
+                    </p>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* ---------------- Subjects ---------------- */}
+
+              <FormLabel>Subjects</FormLabel>
+              {subjects.fields.map((f, i) => (
+                <div key={f.id} className="flex gap-2">
+                  <Input
+                    {...form.register(`subjects.${i}.value`)}
+                    disabled={saving}
+                  />
+                  <RemoveButton onClick={() => subjects.remove(i)} />
+                </div>
+              ))}
+
+              <Button
+                disabled={saving}
+                type="button"
+                variant="outline"
+                onClick={() => subjects.append({ value: "" })}
+              >
+                Add Subject
+              </Button>
+
+              {/* ---------------- Languages ---------------- */}
+              <FormField
+                control={form.control}
+                name="languages"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Languages</FormLabel>
+
+                    {languages.fields.map((f, i) => (
+                      <FormField
+                        key={f.id}
+                        control={form.control}
+                        name={`languages.${i}.value`}
+                        render={({ field }) => (
+                          <FormItem className="flex gap-2">
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <RemoveButton onClick={() => languages.remove(i)} />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-fit"
+                      onClick={() => languages.append({ value: "" })}
+                    >
+                      Add Language
+                    </Button>
+
+                    {/* THIS DISPLAYS THE .min(1) ERROR */}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* ---------------- Outcomes ---------------- */}
+            <div className="space-y-2">
+              <FormLabel>
+                Learning Outcomes
+                <span className="text-xs text-muted-foreground ml-1">
+                  (Up to {MARKETING_LIMITS.COURSE.MAX_ITEMS})
+                </span>
+                <span className="text-xs text-muted-foreground ml-2">
+                  {outcomes.fields.length}/{MARKETING_LIMITS.COURSE.MAX_ITEMS}{" "}
+                  added
+                </span>
+              </FormLabel>
+              {outcomes.fields.map((f, i) => {
+                const value = watchedOutcomes?.[i]?.value ?? "";
+                const LIMIT = MARKETING_LIMITS.COURSE.LEARNING_OUTCOME_MAX;
+
+                return (
+                  <div key={f.id} className="flex items-start gap-2">
+                    <div className="flex-1 space-y-1">
+                      <Input
+                        {...form.register(`learning_outcomes.${i}.value`)}
+                        maxLength={LIMIT}
+                        disabled={saving}
+                      />
+
+                      <p
+                        className={`
+            text-xs text-right
+            ${
+              value.length > LIMIT * 0.85
+                ? "text-destructive"
+                : "text-muted-foreground"
+            }
+          `}
+                      >
+                        {value.length}/{LIMIT}
+                      </p>
+                    </div>
+
+                    <RemoveButton onClick={() => outcomes.remove(i)} />
+                  </div>
+                );
+              })}
+              <Button
+                type="button"
+                variant="outline"
+                disabled={
+                  saving ||
+                  outcomes.fields.length >= MARKETING_LIMITS.COURSE.MAX_ITEMS
+                }
+                onClick={() => outcomes.append({ value: "" })}
+              >
+                Add Outcome
+              </Button>
+            </div>
+
+            {/* ---------------- Target Audience ---------------- */}
+            <div className="space-y-2">
+              <FormLabel>
+                Target Audience
+                <span className="text-xs text-muted-foreground ml-1">
+                  (Up to {MARKETING_LIMITS.COURSE.MAX_ITEMS})
+                </span>
+                <span className="text-xs text-muted-foreground ml-2">
+                  {audience.fields.length}/{MARKETING_LIMITS.COURSE.MAX_ITEMS}{" "}
+                  added
+                </span>
+              </FormLabel>
+
+              {audience.fields.map((f, i) => {
+                const value = watchedAudience?.[i]?.value ?? "";
+                const LIMIT = MARKETING_LIMITS.COURSE.TARGET_AUDIENCE_MAX;
+
+                return (
+                  <div key={f.id} className="flex items-start gap-2">
+                    <div className="flex-1 space-y-1">
+                      <Input
+                        {...form.register(`target_audience.${i}.value`)}
+                        maxLength={LIMIT}
+                        disabled={saving}
+                        placeholder="e.g. Class 10 students"
+                      />
+
+                      <p
+                        className={`
+            text-xs text-right
+            ${
+              value.length > LIMIT * 0.85
+                ? "text-destructive"
+                : "text-muted-foreground"
+            }
+          `}
+                      >
+                        {value.length}/{LIMIT}
+                      </p>
+                    </div>
+
+                    <RemoveButton onClick={() => audience.remove(i)} />
+                  </div>
+                );
+              })}
+              <Button
+                type="button"
+                variant="outline"
+                disabled={
+                  saving ||
+                  audience.fields.length >= MARKETING_LIMITS.COURSE.MAX_ITEMS
+                }
+                onClick={() => audience.append({ value: "" })}
+              >
+                Add Audience
+              </Button>
+            </div>
+            {/* ---------------- Price ---------------- */}
+            <FormField
+              control={form.control}
+              name="list_price"
+              render={() => (
+                <FormItem>
+                  <FormLabel>List Price</FormLabel>
+
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      disabled={saving}
+                      placeholder="Enter list price"
+                      {...form.register("list_price", {
+                        valueAsNumber: true,
+                        setValueAs: (v) =>
+                          v === "" || v === null || Number.isNaN(v)
+                            ? undefined
+                            : Number(v),
+                      })}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sale_price"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Sale Price</FormLabel>
+
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      disabled={saving}
+                      placeholder="Enter sale price"
+                      {...form.register("sale_price", {
+                        valueAsNumber: true,
+                        setValueAs: (v) =>
+                          v === "" || v === null || Number.isNaN(v)
+                            ? undefined
+                            : Number(v),
+                      })}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* ---------------- Active Status ---------------- */}
+            <FormField
+              control={form.control}
+              name="is_active"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center justify-between border rounded-lg p-3">
+                    <div>
+                      <FormLabel>Active</FormLabel>
+
+                      <p className="text-sm text-muted-foreground">
+                        Inactive courses cannot be enrolled
+                      </p>
+                    </div>
+
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={saving}
+                        className="
+
+    disabled:opacity-50
+  "
+                      />
+                    </FormControl>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="instructor_ids"
+              render={({ field }) => {
+                const selectedIds = field.value ?? [];
+
+                return (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Instructors</FormLabel>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="justify-between"
+                          >
+                            {selectedIds.length > 0
+                              ? `${selectedIds.length} instructor(s) selected`
+                              : "Select instructors"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+
+                      <PopoverContent className="p-0 w-75">
+                        <Command>
+                          <CommandInput placeholder="Search instructors..." />
+                          <CommandEmpty>No instructors found.</CommandEmpty>
+
+                          <CommandGroup className="max-h-64 overflow-auto">
+                            {instructors?.map((inst) => {
+                              const isSelected = selectedIds.includes(inst.id);
+
+                              return (
+                                <CommandItem
+                                  key={inst.id}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        field.onChange([
+                                          ...selectedIds,
+                                          inst.id,
+                                        ]);
+                                      } else {
+                                        field.onChange(
+                                          selectedIds.filter(
+                                            (id) => id !== inst.id,
+                                          ),
+                                        );
+                                      }
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+
+                                  <span>{inst.full_name}</span>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+
+                    {selectedIds.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {instructors
+                          ?.filter((inst) => selectedIds.includes(inst.id))
+                          .map((inst) => (
+                            <Badge
+                              key={inst.id}
+                              variant="secondary"
+                              className="cursor-pointer rounded-sm"
+                              onClick={() =>
+                                field.onChange(
+                                  selectedIds.filter((id) => id !== inst.id),
+                                )
+                              }
+                            >
+                              {inst.full_name}
+                            </Badge>
+                          ))}
+                      </div>
+                    )}
+
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+
+            {/* ---------------- Submit ---------------- */}
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                disabled={saving}
+                onClick={() => onOpenChange(false)}
+              >
+                Close
+              </Button>
+              <Button type="submit" disabled={saving}>
+                Save & Continue
+              </Button>
+            </div>
+          </form>
+          <ImageCropper
+            open={!!cropSrc}
+            src={cropSrc}
+            aspect={16 / 9}
+            output={IMAGE_OUTPUTS.THUMBNAIL}
+            maxSize={THUMBNAIL_MAX_SIZE}
+            onCancel={() => {
+              if (cropSrc) URL.revokeObjectURL(cropSrc);
+              setCropSrc(null);
+
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
+            }}
+            onComplete={(file) => {
+              setThumbnailFile(file);
+
+              if (cropSrc) URL.revokeObjectURL(cropSrc);
+              setCropSrc(null);
+            }}
+          />
+        </Form>
       </DialogContent>
     </Dialog>
   );

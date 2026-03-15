@@ -1,0 +1,65 @@
+Date : 2026-03-02 18:57:07
+Directory : c:\Users\maxvh\Desktop\infinity classes\src
+Total : 30 files,  -15563 codes, -2 comments, -938 blanks, all -16503 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| TypeScript         |          1 |        -18 |          0 |         -3 |        -21 |
+| JSON with Comments |          1 |        -34 |          0 |         -1 |        -35 |
+| JavaScript         |          2 |        -39 |         -2 |         -5 |        -46 |
+| XML                |          6 |        -76 |          0 |         -1 |        -77 |
+| Markdown           |         17 |     -1,711 |          0 |       -925 |     -2,636 |
+| JSON               |          3 |    -13,685 |          0 |         -3 |    -13,688 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                             | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                |         30 |    -15,563 |         -2 |       -938 |    -16,503 |
+| ..                                                                                                               |         30 |    -15,563 |         -2 |       -938 |    -16,503 |
+| .. (Files)                                                                                                       |          8 |    -13,799 |         -2 |        -26 |    -13,827 |
+| ..\docs                                                                                                          |         16 |     -1,688 |          0 |       -911 |     -2,599 |
+| ..\docs (Files)                                                                                                  |          1 |        -75 |          0 |        -44 |       -119 |
+| ..\docs\adr                                                                                                      |         15 |     -1,613 |          0 |       -867 |     -2,480 |
+| ..\public                                                                                                        |          6 |        -76 |          0 |         -1 |        -77 |
++------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                                                         | language           | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| c:\Users\maxvh\Desktop\infinity classes\README.md                                                                | Markdown           |        -23 |          0 |        -14 |        -37 |
+| c:\Users\maxvh\Desktop\infinity classes\components.json                                                          | JSON               |        -22 |          0 |         -1 |        -23 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\README.md                                                           | Markdown           |        -75 |          0 |        -44 |       -119 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\001-enrollment-controls-access.md                               | Markdown           |        -90 |          0 |        -47 |       -137 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\002-payments-reference-enrollment-not-fee-plan.md               | Markdown           |        -90 |          0 |        -51 |       -141 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\003-fee-plans-are-immutable-after-payments.md                   | Markdown           |        -79 |          0 |        -48 |       -127 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\004-payments-are-immutable-ledger-entries.md                    | Markdown           |        -84 |          0 |        -53 |       -137 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\005-snapshot-user-data-in-financial-records.md                  | Markdown           |        -81 |          0 |        -52 |       -133 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\006-no-hard-deletes-in-financial-data.md                        | Markdown           |        -99 |          0 |        -56 |       -155 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\007-fee-plans-are-contracts-not-prices.md                       | Markdown           |       -114 |          0 |        -56 |       -170 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\008-payments-do-not-control-access.md                           | Markdown           |       -110 |          0 |        -59 |       -169 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\009-admin-actions-are-explicit-and-intentional.md               | Markdown           |       -108 |          0 |        -57 |       -165 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\010-offline-first-system-design.md                              | Markdown           |        -98 |          0 |        -55 |       -153 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\011-derived-views-over-mutable-state.md                         | Markdown           |        -97 |          0 |        -59 |       -156 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\012-rls-first-security-model.md                                 | Markdown           |       -105 |          0 |        -57 |       -162 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\013-audit-columns-are-not-foreign-keys.md                       | Markdown           |        -95 |          0 |        -62 |       -157 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\014-server-actions-only-no-client-mutations.md                  | Markdown           |        -95 |          0 |        -56 |       -151 |
+| c:\Users\maxvh\Desktop\infinity classes\docs\adr\015-Course Content Structure, Publishing Model, and Ordering.md | Markdown           |       -268 |          0 |        -99 |       -367 |
+| c:\Users\maxvh\Desktop\infinity classes\eslint.config.mjs                                                        | JavaScript         |        -33 |         -2 |         -3 |        -38 |
+| c:\Users\maxvh\Desktop\infinity classes\next.config.ts                                                           | TypeScript         |        -18 |          0 |         -3 |        -21 |
+| c:\Users\maxvh\Desktop\infinity classes\package-lock.json                                                        | JSON               |    -13,573 |          0 |         -1 |    -13,574 |
+| c:\Users\maxvh\Desktop\infinity classes\package.json                                                             | JSON               |        -90 |          0 |         -1 |        -91 |
+| c:\Users\maxvh\Desktop\infinity classes\postcss.config.mjs                                                       | JavaScript         |         -6 |          0 |         -2 |         -8 |
+| c:\Users\maxvh\Desktop\infinity classes\public\file.svg                                                          | XML                |         -1 |          0 |          0 |         -1 |
+| c:\Users\maxvh\Desktop\infinity classes\public\globe.svg                                                         | XML                |         -1 |          0 |          0 |         -1 |
+| c:\Users\maxvh\Desktop\infinity classes\public\next.svg                                                          | XML                |         -1 |          0 |          0 |         -1 |
+| c:\Users\maxvh\Desktop\infinity classes\public\school.svg                                                        | XML                |        -71 |          0 |         -1 |        -72 |
+| c:\Users\maxvh\Desktop\infinity classes\public\vercel.svg                                                        | XML                |         -1 |          0 |          0 |         -1 |
+| c:\Users\maxvh\Desktop\infinity classes\public\window.svg                                                        | XML                |         -1 |          0 |          0 |         -1 |
+| c:\Users\maxvh\Desktop\infinity classes\tsconfig.json                                                            | JSON with Comments |        -34 |          0 |         -1 |        -35 |
+| Total                                                                                                            |                    |    -15,563 |         -2 |       -938 |    -16,503 |
++------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

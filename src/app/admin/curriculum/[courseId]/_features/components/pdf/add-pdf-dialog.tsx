@@ -24,7 +24,7 @@ import {
   AddPdfFormInput,
   MAX_PDF_SIZE_MB,
 } from "../../zod-schema/pdf.schema";
-import { createClient } from "@/src/lib/supabase/supabase-client";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 import { toast } from "sonner";
 import { createPdf } from "../../actions/topic/pdf/create-pdf";
 
@@ -52,7 +52,7 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
     if (loading) return;
     setLoading(true);
 
-    const supabase = createClient();
+    const supabase = createBrowserSupabaseClient();
     let uploadedPath: string | null = null;
 
     try {

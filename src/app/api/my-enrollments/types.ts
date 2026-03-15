@@ -1,24 +1,34 @@
+/* -------------------------------------------------------------------------- */
+/*                               Raw DB Rows                                  */
+/* -------------------------------------------------------------------------- */
+
+import { BatchMode } from "../explore-batches/types"
+
 export type RawEnrollmentRow = {
     id: string
     target_type: "course" | "batch"
     status: "ongoing" | "paused" | "completed" | "cancelled"
     access_starts_at: string
-    access_ends_at: string | null
+    access_ends_at: string
 
     course: {
         id: string
         title: string
         slug: string
-        thumbnail_image: string | null
         course_type: string
+        is_active: boolean
     } | null
 
     batch: {
         id: string
-        name: string
+        title: string
+        subtitle: string | null
+        slug: string
         mode: "online" | "offline" | "hybrid"
-        schedule: string | null
-        status: "upcoming" | "ongoing" | "completed" | "cancelled"
+        start_date: string
+        end_date: string
+        admission_open: boolean
+        is_active: boolean
     } | null
 }
 
@@ -27,56 +37,61 @@ export type RawBatchCourseRow = {
     course: {
         id: string
         title: string
+        slug: string
+        is_active: boolean
     } | null
 }
 
-
-// Enrollment target types
+/* -------------------------------------------------------------------------- */
+/*                             Enrollment Domain                              */
+/* -------------------------------------------------------------------------- */
 
 export type EnrollmentTargetType = "course" | "batch"
 
-// Common enrollment fields
 interface BaseEnrollment {
     enrollmentId: string
     targetType: EnrollmentTargetType
     accessStartsAt: string
-    accessEndsAt: string | null
+    accessEndsAt: string
     status: "ongoing" | "paused" | "completed" | "cancelled"
 }
 
-/**
- * Course enrollment card
- */
+/* -------------------------------------------------------------------------- */
+/*                           Course Enrollment                                */
+/* -------------------------------------------------------------------------- */
+
 export interface CourseEnrollment extends BaseEnrollment {
     targetType: "course"
     course: {
         id: string
         title: string
         slug: string
-        thumbnailImage: string | null
         courseType: string
     }
 }
 
-/**
- * Batch enrollment card
- */
-export interface BatchEnrollment extends BaseEnrollment {
+/* -------------------------------------------------------------------------- */
+/*                           Batch Enrollment                                 */
+/* -------------------------------------------------------------------------- */
+export interface BatchEnrollment {
+    enrollmentId: string
     targetType: "batch"
+    status: string
+    accessStartsAt: string
+    accessEndsAt: string
     batch: {
         id: string
-        name: string
-        mode: "online" | "offline" | "hybrid"
-        schedule: string | null
-        status: "upcoming" | "ongoing" | "completed" | "cancelled"
-        courses: {
-            id: string
-            title: string
-        }[]
+        title: string
+        subtitle: string | null
+        slug: string
+        mode: BatchMode
+        start_date: string
+        end_date: string
     }
 }
 
-/**
- * Union used by UI
- */
+/* -------------------------------------------------------------------------- */
+/*                              UI Union Type                                 */
+/* -------------------------------------------------------------------------- */
+
 export type MyEnrollment = CourseEnrollment | BatchEnrollment

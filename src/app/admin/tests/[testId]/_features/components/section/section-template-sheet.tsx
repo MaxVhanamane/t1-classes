@@ -25,7 +25,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 
 import type { SectionTemplate } from "../../types/section-template.types";
 import { SectionTemplateCard } from "./section-template-card";
-import { getSectionTemplates } from "../../actions/sections/get-section-templates";
+import { getSectionTemplates } from "../../server/sections/get-section-templates";
 import { addTestSectionFromTemplate } from "../../actions/sections/add-test-section";
 import { TestType } from "../../../../create/_features/types/create-test.types";
 

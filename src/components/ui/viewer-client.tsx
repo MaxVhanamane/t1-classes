@@ -5,10 +5,10 @@ import { PdfViewer } from "./pdf-viewer";
 import { ErrorScreen } from "./error-screen";
 import { LoadingScreen } from "./loading";
 import { useSearchParams } from "next/navigation";
-import { createClient } from "@/src/lib/supabase/supabase-client";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 
 export default function ViewerClient() {
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
 
   const searchParams = useSearchParams();
   const cls = searchParams.get("class");

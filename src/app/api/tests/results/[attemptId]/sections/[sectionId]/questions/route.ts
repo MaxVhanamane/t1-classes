@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getCurrentStudent } from "@/src/lib/helper-functions/getCurrentStudent";
 import { getEnrollmentAccess } from "@/src/lib/server/enrollment-access";
-
+import { JSONContent } from "@tiptap/react"
 /* =========================================================
    FRONTEND-ALIGNED EXPORTED TYPES (UNCHANGED + ADDITION)
 ========================================================= */
@@ -10,14 +10,14 @@ import { getEnrollmentAccess } from "@/src/lib/server/enrollment-access";
 export type OptionReview = {
     id: string;
     label: string;
-    text: string;
+    text: JSONContent;
     isCorrect: boolean;
     isSelected: boolean;
 };
 
 export type QuestionReview = {
     id: string;
-    questionText: string;
+    questionText: JSONContent;
     explanation: string | null;
     options: OptionReview[];
     marksAwarded: number;
@@ -57,7 +57,6 @@ type AttemptRow = {
 type DistributionRow = {
     id: string;
     batch_id: string | null;
-    course_id: string | null;
 };
 
 type SectionRow = {
@@ -80,7 +79,7 @@ type SectionRow = {
 
 type QuestionRow = {
     id: string;
-    question_text: string;
+    question_text: JSONContent;
     explanation: string | null;
     correct_answer: unknown;
     sort_order: number;
@@ -95,7 +94,7 @@ type OptionRow = {
     id: string;
     question_id: string;
     option_label: string;
-    option_text: string;
+    option_text: JSONContent;
     sort_order: number;
 };
 
@@ -348,7 +347,7 @@ export async function GET(
         await supabase
             .from("test_distributions")
             .select(
-                "id, batch_id, course_id"
+                "id, batch_id"
             )
             .eq(
                 "id",
@@ -593,7 +592,7 @@ export async function GET(
                         ]
                         : [];
 
-            /* ✅ ONLY NEW ADDITION */
+            /*ONLY NEW ADDITION */
 
             let numericalMeta:
                 | {

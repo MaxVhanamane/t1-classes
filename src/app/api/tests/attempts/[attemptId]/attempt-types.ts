@@ -1,3 +1,5 @@
+import { JSONContent } from "@tiptap/react"
+
 export type AnswerMode =
     | "single_select"
     | "multi_select"
@@ -7,12 +9,12 @@ export type AnswerMode =
 export type QuestionOption = {
     id: string
     label: string
-    text: string
+    text: JSONContent
 }
 
 export type Question = {
     id: string
-    questionText: string
+    questionText: JSONContent
     options: QuestionOption[]
 }
 

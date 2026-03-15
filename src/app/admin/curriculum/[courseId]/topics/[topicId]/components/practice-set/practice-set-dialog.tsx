@@ -26,6 +26,7 @@ import {
 import { createPracticeSet } from "../../actions/practice-set/create-practice-set";
 import { updatePracticeSet } from "../../actions/practice-set/update-practice-set";
 import { cn } from "@/src/lib/utils";
+import { Switch } from "@/src/components/ui/switch";
 
 interface Props {
   courseId: string;
@@ -35,6 +36,7 @@ interface Props {
     practiceSetId: string;
     title: string;
     description: string | null;
+    isFreePreview: boolean;
   };
 }
 
@@ -53,6 +55,7 @@ export function PracticeSetDialog({
     defaultValues: {
       title: "",
       description: "",
+      isFreePreview: false,
     },
   });
 
@@ -65,6 +68,7 @@ export function PracticeSetDialog({
       form.reset({
         title: "",
         description: "",
+        isFreePreview: false,
       });
       return;
     }
@@ -74,11 +78,13 @@ export function PracticeSetDialog({
       form.reset({
         title: initialData.title,
         description: initialData.description ?? "",
+        isFreePreview: initialData.isFreePreview ?? false,
       });
     } else {
       form.reset({
         title: "",
         description: "",
+        isFreePreview: false,
       });
     }
   }, [open, mode, initialData, form]);
@@ -95,6 +101,7 @@ export function PracticeSetDialog({
           practiceSetId: initialData.practiceSetId,
           title: data.title.trim(),
           description: data.description?.trim() || null,
+          isFreePreview: data.isFreePreview,
         });
 
         toast.success("Practice set updated");
@@ -102,6 +109,7 @@ export function PracticeSetDialog({
         await createPracticeSet(courseId, topicId, {
           title: data.title.trim(),
           description: data.description?.trim() || undefined,
+          isFreePreview: data.isFreePreview ?? false,
         });
 
         toast.success("Practice set created");
@@ -110,7 +118,7 @@ export function PracticeSetDialog({
       setOpen(false);
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to save practice set"
+        err instanceof Error ? err.message : "Failed to save practice set",
       );
     } finally {
       setSubmitting(false);
@@ -124,7 +132,7 @@ export function PracticeSetDialog({
           variant={mode === "edit" ? "ghost" : "outline"}
           className={cn(
             "justify-start cursor-pointer",
-            mode === "edit" ? "w-full" : "w-fit"
+            mode === "edit" ? "w-full" : "w-fit",
           )}
         >
           {mode === "edit" ? (
@@ -158,7 +166,21 @@ export function PracticeSetDialog({
             <Label>Description (optional)</Label>
             <Textarea rows={3} {...form.register("description")} />
           </div>
+          <div className="flex items-center justify-between rounded-md border p-3">
+            <div>
+              <p className="text-sm font-medium">Free preview</p>
+              <p className="text-xs text-muted-foreground">
+                Allow students to try this practice before enrolling
+              </p>
+            </div>
 
+            <Switch
+              checked={form.watch("isFreePreview")}
+              onCheckedChange={(v) =>
+                form.setValue("isFreePreview", v, { shouldDirty: true })
+              }
+            />
+          </div>
           <DialogFooter>
             <Button
               className="cursor-pointer"
@@ -178,8 +200,8 @@ export function PracticeSetDialog({
               {submitting
                 ? "Saving..."
                 : mode === "edit"
-                ? "Save changes"
-                : "Create Practice"}
+                  ? "Save changes"
+                  : "Create Practice"}
             </Button>
           </DialogFooter>
         </form>

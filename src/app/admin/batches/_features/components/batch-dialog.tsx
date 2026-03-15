@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm, useWatch, FormProvider, FieldErrors } from "react-hook-form";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useForm,
+  useWatch,
+  FormProvider,
+  FieldErrors,
+  useFieldArray,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ChevronDown, Loader } from "lucide-react";
-
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +23,6 @@ import { Input } from "@/src/components/ui/input";
 import { Switch } from "@/src/components/ui/switch";
 import { Label } from "@/src/components/ui/label";
 import { Checkbox } from "@/src/components/ui/checkbox";
-import { Textarea } from "@/src/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,27 +35,117 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/src/components/ui/collapsible";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/components/ui/popover";
 
-import { batchSchema } from "../zod-schema/schema";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/src/components/ui/command";
+
+import { Badge } from "@/src/components/ui/badge";
+import { ChevronsUpDown } from "lucide-react";
+import { BatchFormValues, batchSchema } from "../zod-schema/schema";
 import { BatchDialogProps, BatchListItem } from "../types/types";
 import { createBatch } from "../actions/create-batch";
 import { updateBatch } from "../actions/update-batch";
-import { BatchHighlightsEditor } from "./batch-highlight-editor";
 import { getBatchEditState } from "../actions/get-batch-edit-state";
 import { cn } from "@/src/lib/utils";
+import { useR2Upload } from "@/src/hooks/use-r2-upload";
+import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
+import Image from "next/image";
+import {
+  ALLOWED_IMAGE_EXTENSIONS,
+  ALLOWED_IMAGE_MIME_TYPES,
+} from "@/src/lib/constants/upload.constants";
+import { validateImage } from "@/src/lib/helper-functions/validate-image";
+import { MARKETING_LIMITS } from "@/src/lib/constants/marketing-limits";
+import { RemoveButton } from "../../../courses/_features/components/remove-button";
+import { SIZE_LIMITS } from "@/src/app/api/uploads/signed-url/route";
+import { ImageCropper } from "@/src/components/ui/media/ImageCropper";
+import { IMAGE_OUTPUTS } from "@/src/lib/constants/image-output.config";
+import { updateBatchThumbnail } from "../actions/update-batch-thumbnail";
+import { TipTapEditor } from "../../../courses/_features/components/tiptap-editor";
+import { FormField } from "@/src/components/ui/form";
 
 const LANGUAGES = ["english", "hindi", "marathi"] as const;
-
+type InstructorOption = {
+  id: string;
+  full_name: string;
+};
 /* ---------------- helpers ---------------- */
+
+function mapBatchToForm(batch: BatchListItem): BatchFormValues {
+  return {
+    course_ids: batch.courses.map((c) => c.course.id),
+
+    title: batch.title,
+    subtitle: batch.subtitle ?? "",
+    description: batch.description ?? null,
+
+    sale_price: batch.sale_price,
+    list_price: batch.list_price,
+    thumbnail_image: batch.thumbnail_image ?? undefined,
+
+    /* Marketing */
+    learning_outcomes:
+      batch.learning_outcomes?.map((v) => ({ value: v })) ?? [],
+
+    target_audience: batch.target_audience?.map((v) => ({ value: v })) ?? [],
+
+    subjects: batch.subjects?.map((v) => ({ value: v })) ?? [],
+    instructor_ids: batch.instructors?.map((i) => i.id) ?? [],
+    /* Academic */
+    class_level: batch.class_level ?? null,
+    target_exam: batch.target_exam ?? null,
+
+    /* Delivery */
+    mode: batch.mode,
+    languages: batch.languages.length ? batch.languages : ["english"],
+
+    location: batch.location ?? null,
+
+    /* Lifecycle */
+    start_date: toDateInput(batch.start_date),
+    end_date: toDateInput(batch.end_date),
+
+    /* Ops */
+    capacity: batch.capacity ?? null,
+    is_admission_open: batch.is_admission_open,
+    is_active: batch.is_active,
+  };
+}
+
+export function extractFirstErrorMessage(errors: FieldErrors): string | null {
+  for (const key in errors) {
+    const value = errors[key];
+
+    if (!value) continue;
+
+    if ("message" in value && typeof value.message === "string") {
+      return value.message;
+    }
+
+    if (typeof value === "object") {
+      const nested = extractFirstErrorMessage(value as FieldErrors);
+      if (nested) return nested;
+    }
+  }
+
+  return null;
+}
 
 function toDateInput(v?: string | null) {
   return v ? v.slice(0, 10) : "";
 }
 
-function fromDateInput(v?: string | null) {
-  return v ? v : null;
-}
-
+const THUMBNAIL_MAX_SIZE = SIZE_LIMITS.batch_thumbnail;
 /* ---------------- component ---------------- */
 
 export function BatchDialog({
@@ -59,33 +154,92 @@ export function BatchDialog({
   batch,
   courses,
 }: BatchDialogProps) {
+  const isEdit = Boolean(batch);
+  const { uploadFile } = useR2Upload();
   const [editLocked, setEditLocked] = useState<boolean>(false);
   const [checkingLock, setCheckingLock] = useState<boolean>(false);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const { data: instructors } = useQuery<InstructorOption[]>({
+    queryKey: ["instructor-options"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/instructors/options");
+
+      if (!res.ok) {
+        throw new Error("Failed to load instructors");
+      }
+
+      return res.json();
+    },
+  });
 
   const form = useForm({
     resolver: zodResolver(batchSchema),
     defaultValues: {
+      /* Relations */
       course_ids: [],
-      name: "",
-      description: null,
-      batch_highlights: null,
-      price: 0,
+      instructor_ids: [],
+      /* Basic */
+      title: "",
+      subtitle: "",
+      description: null, // JSON from TipTap
+      thumbnail_image: undefined,
+
+      /* Pricing */
+      sale_price: 0,
+      list_price: 0,
+
+      /* Academic */
+      subjects: [],
+      class_level: null,
+      target_exam: null,
+
+      /* Marketing */
+      learning_outcomes: [],
+      target_audience: [],
+
+      /* Delivery */
       languages: ["english"],
-      center_name: null,
-      admission_open: true,
+      location: null,
       mode: "offline",
-      status: "upcoming",
-      is_active: true,
-      start_date: null,
-      end_date: null,
-      duration: null,
+
+      /* Lifecycle */
+      start_date: "",
+      end_date: "",
+
+      /* Capacity */
       capacity: null,
-      schedule: null,
-      meeting_link: null,
+
+      /* Visibility */
+      is_admission_open: true,
+      is_active: true,
     },
   });
 
+  const outcomes = useFieldArray({
+    control: form.control,
+    name: "learning_outcomes",
+  });
+
+  const audience = useFieldArray({
+    control: form.control,
+    name: "target_audience",
+  });
+
+  const subjects = useFieldArray({
+    control: form.control,
+    name: "subjects",
+  });
+
   /* ---------------- watched values ---------------- */
+  const titleValue = useWatch({ control: form.control, name: "title" });
+
+  const subtitleValue = useWatch({
+    control: form.control,
+    name: "subtitle",
+  });
 
   const courseIds = useWatch({
     control: form.control,
@@ -102,53 +256,22 @@ export function BatchDialog({
     name: "mode",
   });
 
-  const status = useWatch({
-    control: form.control,
-    name: "status",
-  });
-
   const isActive = useWatch({
     control: form.control,
     name: "is_active",
   });
 
-  const admissionOpen = useWatch({
+  const isAdmissionOpen = useWatch({
     control: form.control,
-    name: "admission_open",
+    name: "is_admission_open",
   });
-
-  const durationValue = useWatch({
-    control: form.control,
-    name: "duration",
-  });
-
-  const durationMode: "dates" | "duration" =
-    durationValue != null ? "duration" : "dates";
 
   /* ---------------- reset on open ---------------- */
   useEffect(() => {
     if (!open) return;
 
     if (batch) {
-      form.reset({
-        course_ids: batch.courses.map((c) => c.course.id),
-        name: batch.name,
-        description: batch.description,
-        batch_highlights: batch.batch_highlights,
-        price: batch.price,
-        languages: batch.languages.length ? batch.languages : ["english"],
-        center_name: batch.center_name,
-        admission_open: batch.admission_open,
-        mode: batch.mode,
-        status: batch.status,
-        is_active: batch.is_active,
-        start_date: toDateInput(batch.start_date),
-        end_date: toDateInput(batch.end_date),
-        duration: batch.duration,
-        capacity: batch.capacity,
-        schedule: batch.schedule,
-        meeting_link: null,
-      });
+      form.reset(mapBatchToForm(batch));
     } else {
       form.reset();
     }
@@ -192,73 +315,111 @@ export function BatchDialog({
     };
   }, [open, batch]);
 
-  /* ---------------- duration cleanup ---------------- */
-
-  useEffect(() => {
-    if (durationMode === "dates") {
-      form.setValue("duration", null);
-    } else {
-      form.setValue("start_date", null);
-      form.setValue("end_date", null);
+  const thumbnailPreview = useMemo(() => {
+    if (thumbnailFile) {
+      return URL.createObjectURL(thumbnailFile);
     }
-  }, [durationMode, form]);
-
-  function extractFirstErrorMessage(errors: FieldErrors): string | null {
-    for (const key in errors) {
-      const value = errors[key];
-
-      if (!value) continue;
-
-      if ("message" in value && typeof value.message === "string") {
-        return value.message;
-      }
-
-      if (typeof value === "object") {
-        const nested = extractFirstErrorMessage(value as FieldErrors);
-        if (nested) return nested;
-      }
+    if (isEdit && batch?.thumbnail_image) {
+      return `${R2_BUCKET_PUBLIC_URL}/${batch.thumbnail_image}`;
     }
-
     return null;
-  }
+  }, [thumbnailFile, isEdit, batch]);
 
   /* ---------------- submit ---------------- */
 
   const onSubmit = form.handleSubmit(
-    async (values) => {
+    async (values: BatchFormValues) => {
+      /* -------------------------------------------------- */
+      /* Loading toast (always create first)                */
+      /* -------------------------------------------------- */
+      const toastId = toast.loading(
+        isEdit ? "Updating batch..." : "Creating batch...",
+      );
+
       try {
+        /* -------------------------------------------------- */
+        /* Price validation                                  */
+        /* -------------------------------------------------- */
+        if (values.list_price < values.sale_price) {
+          toast.error(
+            "List price must be greater than or equal to sale price",
+            { id: toastId },
+          );
+          return;
+        }
+        /* -------------------------------------------------- */
+        /* Payload transform                                 */
+        /* -------------------------------------------------- */
         const payload = {
           ...values,
-          start_date: fromDateInput(values.start_date),
-          end_date: fromDateInput(values.end_date),
         };
 
-        if (batch) {
-          await updateBatch(batch.id, payload);
-          toast.success("Batch updated");
+        let batchId: string;
+
+        /* -------------------------------------------------- */
+        /* Create / Update                                   */
+        /* -------------------------------------------------- */
+        if (isEdit && batch) {
+          batchId = batch.id;
+          await updateBatch(batchId, payload);
         } else {
-          await createBatch(payload);
-          toast.success("Batch created");
+          batchId = await createBatch(payload);
         }
+
+        /* -------------------------------------------------- */
+        /* Thumbnail upload                                  */
+        /* -------------------------------------------------- */
+        if (thumbnailFile) {
+          toast.loading("Uploading thumbnail...", { id: toastId });
+
+          const upload = await uploadFile({
+            file: thumbnailFile,
+            assetType: "batch_thumbnail",
+            batchId,
+          });
+
+          if (upload?.key) {
+            await updateBatchThumbnail(batchId, upload.key);
+          }
+        }
+
+        /* -------------------------------------------------- */
+        /* Success                                           */
+        /* -------------------------------------------------- */
+        toast.success("Saved", { id: toastId });
 
         onOpenChange(false);
         form.reset();
       } catch (e) {
-        const message = e instanceof Error ? e.message : "Something went wrong";
-        toast.error(message);
+        /* -------------------------------------------------- */
+        /* Server / RPC errors                               */
+        /* -------------------------------------------------- */
+        const message = e instanceof Error ? e.message : "Save failed";
+
+        toast.error(message, { id: toastId });
       }
     },
+
+    /* -------------------------------------------------- */
+    /* Zod / RHF validation errors                        */
+    /* -------------------------------------------------- */
     (errors) => {
       const message = extractFirstErrorMessage(errors);
-      toast.error(message ?? "Please fix the form errors");
-    }
-  );
 
+      toast.dismiss(); // prevents stuck loading toast
+      toast.error(message ?? "Please fix the form errors");
+    },
+  );
   /* ---------------- render ---------------- */
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        className="sm:max-w-150 max-h-[90vh] overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle>{batch ? "Edit Batch" : "Create Batch"}</DialogTitle>
         </DialogHeader>
@@ -281,15 +442,15 @@ export function BatchDialog({
                       "w-full flex items-center justify-between rounded-md border px-3 py-2 text-sm",
                       editLocked || checkingLock
                         ? "cursor-not-allowed bg-muted text-muted-foreground"
-                        : "hover:bg-muted cursor-pointer"
+                        : "hover:bg-muted cursor-pointer",
                     )}
                   >
                     <span className="truncate">
                       {courseIds.length === 0
                         ? "Select courses"
                         : courseIds.length === 1
-                        ? courses.find((c) => c.id === courseIds[0])?.title
-                        : `${courseIds.length} courses selected`}
+                          ? courses.find((c) => c.id === courseIds[0])?.title
+                          : `${courseIds.length} courses selected`}
                     </span>
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </button>
@@ -305,7 +466,7 @@ export function BatchDialog({
                         key={c.id}
                         className={cn(
                           "flex items-center gap-2",
-                          !c.is_active && "opacity-60"
+                          !c.is_active && "opacity-60",
                         )}
                       >
                         <Checkbox
@@ -357,41 +518,133 @@ export function BatchDialog({
             </div>
 
             {/* NAME */}
-            <div className="space-y-1">
+            <div className="space-y-3 relative">
               <Label>Batch Name</Label>
-              <Input {...form.register("name")} />
+
+              <Input maxLength={120} {...form.register("title")} />
+
+              <p className="absolute -bottom-2 right-0 text-xs text-muted-foreground">
+                {titleValue?.length ?? 0}/120
+              </p>
+            </div>
+            {/* SUBTITLE */}
+            <div className="space-y-3 ">
+              <Label>Subtitle</Label>
+
+              <Input
+                maxLength={120}
+                placeholder="Short supporting line"
+                {...form.register("subtitle")}
+              />
+
+              <p className="text-xs text-right text-muted-foreground">
+                {subtitleValue?.length ?? 0}/120
+              </p>
             </div>
 
             {/* DESCRIPTION */}
-            <div className="space-y-1">
+            <div className="space-y-3">
               <Label>Description</Label>
-              <Textarea
-                placeholder="Shown to students (optional)"
-                {...form.register("description")}
+
+              <TipTapEditor
+                initialValue={form.getValues("description")}
+                onChange={(val) => form.setValue("description", val)}
+              />
+
+              <p className="text-xs text-muted-foreground">
+                Supports bold, italic, lists
+              </p>
+            </div>
+
+            {/* Thumbnail */}
+            <div className="space-y-3">
+              <Label>Thumbnail</Label>
+
+              {thumbnailPreview && (
+                <div className="w-60 h-35 rounded border overflow-hidden bg-muted">
+                  <Image
+                    src={thumbnailPreview}
+                    alt="Thumbnail"
+                    width={240}
+                    height={140}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept={ALLOWED_IMAGE_EXTENSIONS.join(",")}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  const url = await validateImage({
+                    file,
+                    maxSize: THUMBNAIL_MAX_SIZE,
+                    minWidth: 750,
+                    minHeight: 422,
+                    allowedTypes: ALLOWED_IMAGE_MIME_TYPES,
+                  });
+
+                  if (!url) {
+                    e.target.value = "";
+                    return;
+                  }
+                  setCropSrc(url);
+                }}
               />
             </div>
 
-            {/* HIGHLIGHTS */}
-            <BatchHighlightsEditor />
-
-            {/* PRICE */}
-            <div className="space-y-1">
-              <Label>Batch Price (₹)</Label>
+            {/* Original Price */}
+            <div className="space-y-3">
+              <Label>List Price (₹)</Label>
               <Input
                 type="number"
                 min={0}
-                {...form.register("price", {
+                {...form.register("list_price", { valueAsNumber: true })}
+              />
+            </div>
+
+            {/* PRICE */}
+            <div className="space-y-3">
+              <Label>Sale Price (₹)</Label>
+              <Input
+                type="number"
+                min={0}
+                {...form.register("sale_price", { valueAsNumber: true })}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label>Class Level</Label>
+
+              <Input
+                type="number"
+                placeholder="e.g. 11"
+                {...form.register("class_level", {
                   valueAsNumber: true,
                 })}
               />
             </div>
 
-            {/* CENTER */}
-            <div className="space-y-1">
-              <Label>Center</Label>
+            <div className="space-y-3">
+              <Label>Target Exam</Label>
+
               <Input
-                placeholder="e.g. Solapur, Pune - Wakad"
-                {...form.register("center_name")}
+                placeholder="e.g. NEET 2027"
+                {...form.register("target_exam")}
+              />
+            </div>
+
+            {/* Location */}
+            <div className="space-y-3">
+              <Label>Location</Label>
+
+              <Input
+                placeholder="e.g. Solapur, Pune"
+                {...form.register("location")}
               />
             </div>
 
@@ -420,13 +673,13 @@ export function BatchDialog({
             <div className="flex items-center justify-between">
               <Label>Admission Open</Label>
               <Switch
-                checked={admissionOpen}
-                onCheckedChange={(v) => form.setValue("admission_open", v)}
+                checked={isAdmissionOpen}
+                onCheckedChange={(v) => form.setValue("is_admission_open", v)}
               />
             </div>
 
             {/* MODE */}
-            <div className="space-y-1">
+            <div className="space-y-3">
               <Label>Batch Mode</Label>
               <Select
                 value={mode}
@@ -445,69 +698,21 @@ export function BatchDialog({
               </Select>
             </div>
 
-            {mode !== "offline" && (
-              <div className="space-y-1">
-                <Label>Meeting Link</Label>
-                <Input {...form.register("meeting_link")} />
-              </div>
-            )}
-
             {/* DURATION */}
-            <div className="space-y-3">
-              <Label>Batch Duration</Label>
-
-              <div className="flex gap-2">
-                <Button
-                  className="cursor-pointer"
-                  type="button"
-                  variant={durationMode === "dates" ? "default" : "outline"}
-                  onClick={() => form.setValue("duration", null)}
-                >
-                  Fixed Dates
-                </Button>
-
-                <span className="self-center text-muted-foreground">OR</span>
-
-                <Button
-                  className="cursor-pointer"
-                  type="button"
-                  variant={durationMode === "duration" ? "default" : "outline"}
-                  onClick={() => {
-                    form.setValue("start_date", null);
-                    form.setValue("end_date", null);
-                    form.setValue("duration", 1);
-                  }}
-                >
-                  Duration (months)
-                </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label>Start Date</Label>
+                <Input type="date" {...form.register("start_date")} />
               </div>
 
-              {durationMode === "dates" ? (
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label>Start Date</Label>
-                    <Input type="date" {...form.register("start_date")} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>End Date</Label>
-                    <Input type="date" {...form.register("end_date")} />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  <Label>Duration (months)</Label>
-                  <Input
-                    type="number"
-                    {...form.register("duration", {
-                      valueAsNumber: true,
-                    })}
-                  />
-                </div>
-              )}
+              <div className="space-y-1">
+                <Label>End Date</Label>
+                <Input type="date" {...form.register("end_date")} />
+              </div>
             </div>
 
             {/* CAPACITY */}
-            <div className="space-y-1">
+            <div className="space-y-3">
               <Label>Capacity</Label>
               <Input
                 type="number"
@@ -517,26 +722,273 @@ export function BatchDialog({
               />
             </div>
 
-            {/* STATUS */}
-            <div className="space-y-1">
-              <Label>Status</Label>
-              <Select
-                value={status}
-                onValueChange={(v) =>
-                  form.setValue("status", v as BatchListItem["status"])
-                }
+            {/* Subjects */}
+            <div className="space-y-2">
+              <Label>Subjects</Label>
+              {subjects.fields.map((f, i) => (
+                <div key={f.id} className="flex gap-2">
+                  <Input
+                    {...form.register(`subjects.${i}.value`)}
+                    placeholder="e.g. Physics"
+                    onBlur={() => {
+                      const current = form.getValues("subjects");
+
+                      if (!current) return;
+
+                      const isEmpty = !current[i]?.value?.trim();
+
+                      if (isEmpty && current.length > 1) {
+                        subjects.remove(i);
+                      }
+                    }}
+                  />
+                  <RemoveButton onClick={() => subjects.remove(i)} />
+                </div>
+              ))}
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const last = form.getValues(
+                    `subjects.${subjects.fields.length - 1}.value`,
+                  );
+
+                  if (subjects.fields.length > 0 && !last?.trim()) {
+                    toast.error("Please enter subject before adding another");
+                    return;
+                  }
+
+                  subjects.append({ value: "" });
+                }}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="upcoming">Upcoming</SelectItem>
-                  <SelectItem value="ongoing">Ongoing</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+                Add Subject
+              </Button>
             </div>
+
+            {/* Learning Outcomes */}
+            <div className="space-y-2">
+              <Label>
+                Learning Outcomes
+                <span className="text-xs text-muted-foreground ml-2">
+                  {outcomes.fields.length}/{MARKETING_LIMITS.COURSE.MAX_ITEMS}{" "}
+                  added
+                </span>
+              </Label>
+
+              {outcomes.fields.map((f, i) => {
+                const value = form.watch(`learning_outcomes.${i}.value`) ?? "";
+                const LIMIT = MARKETING_LIMITS.COURSE.LEARNING_OUTCOME_MAX;
+
+                return (
+                  <div key={f.id} className="flex items-start gap-2">
+                    <div className="flex-1 space-y-1">
+                      <Input
+                        {...form.register(`learning_outcomes.${i}.value`)}
+                        maxLength={LIMIT}
+                        onBlur={() => {
+                          const current = form.getValues("learning_outcomes");
+
+                          if (!current) return;
+
+                          const isEmpty = !current[i]?.value?.trim();
+
+                          if (isEmpty && current.length > 1) {
+                            outcomes.remove(i);
+                          }
+                        }}
+                      />
+                      <p className="text-xs text-right text-muted-foreground">
+                        {value.length}/{LIMIT}
+                      </p>
+                    </div>
+                    <RemoveButton onClick={() => outcomes.remove(i)} />
+                  </div>
+                );
+              })}
+              <Button
+                type="button"
+                variant="outline"
+                disabled={
+                  outcomes.fields.length >= MARKETING_LIMITS.COURSE.MAX_ITEMS
+                }
+                onClick={() => {
+                  const last = form.getValues(
+                    `learning_outcomes.${outcomes.fields.length - 1}.value`,
+                  );
+
+                  if (outcomes.fields.length > 0 && !last?.trim()) {
+                    toast.error(
+                      "Please enter learning outcome before adding another",
+                    );
+                    return;
+                  }
+
+                  outcomes.append({ value: "" });
+                }}
+              >
+                Add Outcome
+              </Button>
+            </div>
+
+            {/* Target Audience */}
+            <div className="space-y-2">
+              <Label>
+                Target Audience
+                <span className="text-xs text-muted-foreground ml-2">
+                  {audience.fields.length}/{MARKETING_LIMITS.COURSE.MAX_ITEMS}{" "}
+                  added
+                </span>
+              </Label>
+
+              {audience.fields.map((f, i) => {
+                const value = form.watch(`target_audience.${i}.value`) ?? "";
+                const LIMIT = MARKETING_LIMITS.COURSE.TARGET_AUDIENCE_MAX;
+
+                return (
+                  <div key={f.id} className="flex items-start gap-2">
+                    <div className="flex-1 space-y-1">
+                      <Input
+                        {...form.register(`target_audience.${i}.value`)}
+                        maxLength={LIMIT}
+                        onBlur={() => {
+                          const current = form.getValues("target_audience");
+
+                          if (!current) return;
+
+                          const isEmpty = !current[i]?.value?.trim();
+
+                          if (isEmpty && current.length > 1) {
+                            audience.remove(i);
+                          }
+                        }}
+                      />
+                      <p className="text-xs text-right text-muted-foreground">
+                        {value.length}/{LIMIT}
+                      </p>
+                    </div>
+                    <RemoveButton onClick={() => audience.remove(i)} />
+                  </div>
+                );
+              })}
+
+              <Button
+                type="button"
+                variant="outline"
+                disabled={
+                  audience.fields.length >= MARKETING_LIMITS.COURSE.MAX_ITEMS
+                }
+                onClick={() => {
+                  const last = form.getValues(
+                    `target_audience.${audience.fields.length - 1}.value`,
+                  );
+
+                  if (audience.fields.length > 0 && !last?.trim()) {
+                    toast.error(
+                      "Please enter audience item before adding another",
+                    );
+                    return;
+                  }
+
+                  audience.append({ value: "" });
+                }}
+              >
+                Add Audience
+              </Button>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="instructor_ids"
+              render={({ field }) => {
+                const selectedIds = field.value ?? [];
+
+                return (
+                  <div className="flex flex-col space-y-2">
+                    <Label>Instructors</Label>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          role="combobox"
+                          className="justify-between"
+                        >
+                          {selectedIds.length > 0
+                            ? `${selectedIds.length} instructor(s) selected`
+                            : "Select instructors"}
+
+                          <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+
+                      <PopoverContent className="p-0 w-75">
+                        <Command>
+                          <CommandInput placeholder="Search instructors..." />
+                          <CommandEmpty>No instructors found.</CommandEmpty>
+
+                          <CommandGroup className="max-h-64 overflow-auto">
+                            {instructors?.map((inst) => {
+                              const isSelected = selectedIds.includes(inst.id);
+
+                              return (
+                                <CommandItem
+                                  key={inst.id}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        field.onChange([
+                                          ...selectedIds,
+                                          inst.id,
+                                        ]);
+                                      } else {
+                                        field.onChange(
+                                          selectedIds.filter(
+                                            (id) => id !== inst.id,
+                                          ),
+                                        );
+                                      }
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+
+                                  <span>{inst.full_name}</span>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+
+                    {selectedIds.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {instructors
+                          ?.filter((inst) => selectedIds.includes(inst.id))
+                          .map((inst) => (
+                            <Badge
+                              key={inst.id}
+                              variant="secondary"
+                              className="cursor-pointer rounded-sm"
+                              onClick={() =>
+                                field.onChange(
+                                  selectedIds.filter((id) => id !== inst.id),
+                                )
+                              }
+                            >
+                              {inst.full_name}
+                            </Badge>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }}
+            />
 
             {/* ACTIVE */}
             <div className="flex items-center justify-between">
@@ -548,21 +1000,50 @@ export function BatchDialog({
             </div>
 
             {/* SUBMIT */}
-            <Button
-              type="submit"
-              disabled={form.formState.isSubmitting}
-              className="w-full cursor-pointer "
-            >
-              {form.formState.isSubmitting
-                ? batch
-                  ? "Updating..."
-                  : "Creating..."
-                : batch
-                ? "Update Batch"
-                : "Create Batch"}
-            </Button>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                disabled={form.formState.isSubmitting}
+                onClick={() => onOpenChange(false)}
+              >
+                Close
+              </Button>
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className=" cursor-pointer "
+              >
+                {form.formState.isSubmitting
+                  ? batch
+                    ? "Updating..."
+                    : "Creating..."
+                  : batch
+                    ? "Update Batch"
+                    : "Create Batch"}
+              </Button>
+            </div>
           </form>
         </FormProvider>
+        <ImageCropper
+          open={!!cropSrc}
+          src={cropSrc}
+          aspect={16 / 9}
+          output={IMAGE_OUTPUTS.THUMBNAIL}
+          maxSize={THUMBNAIL_MAX_SIZE}
+          onCancel={() => {
+            if (cropSrc) URL.revokeObjectURL(cropSrc);
+            setCropSrc(null);
+
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+          }}
+          onComplete={(file) => {
+            setThumbnailFile(file);
+            if (cropSrc) URL.revokeObjectURL(cropSrc);
+            setCropSrc(null);
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

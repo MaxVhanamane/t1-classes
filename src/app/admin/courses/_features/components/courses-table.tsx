@@ -1,8 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-
 import {
   Table,
   TableBody,
@@ -13,97 +10,28 @@ import {
 } from "@/src/components/ui/table";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import { Course } from "../actions/actions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
 import { useRouter } from "nextjs-toploader/app";
-
-//  Thumbnail Component (Single Source of Truth)
-
-function CourseThumbnail({
-  src,
-  title,
-  onFix,
-  enableHoverPreview = false,
-}: {
-  src?: string | null;
-  title: string;
-  onFix?: () => void;
-  enableHoverPreview?: boolean;
-}) {
-  const [failed, setFailed] = useState(false);
-  const [hovered, setHovered] = useState(false);
-
-  // No thumbnail configured
-  if (!src) {
-    return (
-      <div className="flex h-full w-full items-center justify-center bg-muted text-xs text-muted-foreground">
-        —
-      </div>
-    );
-  }
-
-  // Thumbnail configured but broken
-  if (failed) {
-    return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-destructive/10 text-[10px] text-destructive">
-        <span>Broken image</span>
-        {onFix && (
-          <button
-            type="button"
-            onClick={onFix}
-            className="text-[10px] underline hover:opacity-80"
-          >
-            Fix thumbnail
-          </button>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="relative h-full w-full"
-      onMouseEnter={() => enableHoverPreview && setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <Image
-        src={src}
-        alt={title}
-        fill
-        sizes="(max-width: 768px) 64px, 40px"
-        className="object-cover"
-        onError={() => setFailed(true)}
-      />
-
-      {/* Desktop hover preview */}
-      {enableHoverPreview && hovered && (
-        <div className="absolute left-full top-1/2 z-50 ml-3 hidden -translate-y-1/2 md:block">
-          <div className="relative h-32 w-32 overflow-hidden rounded-md border bg-background shadow-lg">
-            <Image
-              src={src}
-              alt={title}
-              fill
-              sizes="128px"
-              className="object-cover"
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Courses Table
+import { CourseRow } from "../actions/courses.actions";
+import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
+import { TableThumbnailPreview } from "./Table-thumbnail-preview";
+import { TitleSubtitleTooltip } from "@/src/components/ui/common/title-subtitle-tooltip";
 
 interface CoursesTableProps {
-  data: Course[];
-  onEdit: (course: Course) => void;
+  data: CourseRow[];
+  onEdit: (course: CourseRow) => void;
 }
 
 export function CoursesTable({ data, onEdit }: CoursesTableProps) {
   const router = useRouter();
+
   return (
-    <>
-      {/* Desktop Table */}
+    <TooltipProvider>
       <div className="hidden md:block rounded-lg border">
         <Table>
           <TableHeader>
@@ -111,8 +39,13 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
               <TableHead>Thumbnail</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Class / Exam</TableHead>
+              <TableHead>Class</TableHead>
+              <TableHead>Target Exam</TableHead>
+              <TableHead>Board</TableHead>
+              <TableHead>Languages</TableHead>
               <TableHead>Subjects</TableHead>
+              <TableHead>Outcomes</TableHead>
+              <TableHead>Audience</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Action</TableHead>
@@ -121,20 +54,17 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
 
           <TableBody>
             {data.map((course) => {
-              const classOrExam =
-                course.course_type === "academic" ||
-                course.course_type === "foundation"
-                  ? course.class_level
-                    ? `Class ${course.class_level}`
-                    : "—"
-                  : course.target_exam ?? "—";
+              const thumbnailSrc = course.thumbnail_image
+                ? `${R2_BUCKET_PUBLIC_URL}/${course.thumbnail_image}`
+                : null;
 
               return (
                 <TableRow key={course.id}>
+                  {/* Thumbnail */}
                   <TableCell>
                     <div className="relative h-10 w-10 overflow-visible rounded-md border">
-                      <CourseThumbnail
-                        src={course.thumbnail_image}
+                      <TableThumbnailPreview
+                        src={thumbnailSrc}
                         title={course.title}
                         enableHoverPreview
                         onFix={() => onEdit(course)}
@@ -142,34 +72,175 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
                     </div>
                   </TableCell>
 
-                  <TableCell className="font-medium">{course.title}</TableCell>
+                  {/* Title */}
+                  <TableCell className="font-medium">
+                    {course.title ? (
+                      <TitleSubtitleTooltip
+                        title={course.title}
+                        subtitle={course.subtitle}
+                      />
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
 
+                  {/* Type */}
                   <TableCell className="capitalize">
-                    {course.course_type}
+                    {course.course_type ?? "—"}
                   </TableCell>
 
-                  <TableCell>{classOrExam}</TableCell>
-
+                  {/* Class */}
                   <TableCell>
-                    {course.subjects?.length ? course.subjects.join(", ") : "—"}
+                    {course.class_level ? `Class ${course.class_level}` : "—"}
                   </TableCell>
 
+                  {/* Target Exam */}
+                  <TableCell>{course.target_exam ?? "—"}</TableCell>
+
+                  {/* Board (Tooltip if long) */}
                   <TableCell>
-                    {course.price !== null && course.price !== undefined
-                      ? `₹${course.price}`
-                      : "—"}
+                    {course.board ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="truncate max-w-30 inline-block cursor-help">
+                            {course.board}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent align="start">
+                          {course.board}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
                   </TableCell>
 
+                  {/* Languages */}
+                  <TableCell>
+                    {course.languages?.length ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary">
+                            {course.languages.slice(0, 2).join(", ")}
+                            {course.languages.length > 2 &&
+                              ` +${course.languages.length - 2}`}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {course.languages.join(", ")}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+
+                  {/* Subjects */}
+                  <TableCell>
+                    {course.subjects?.length ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary">
+                            {course.subjects.length}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent align="start">
+                          <ul className="list-disc pl-4 space-y-1">
+                            {course.subjects.map((s) => (
+                              <li key={s}>{s}</li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+
+                  {/* Outcomes */}
+                  <TableCell>
+                    {course.learning_outcomes?.length ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary">
+                            {course.learning_outcomes.length}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent align="start">
+                          <ul className="list-disc pl-4 space-y-1">
+                            {course.learning_outcomes.map((o) => (
+                              <li key={o}>{o}</li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+
+                  {/* Audience */}
+                  <TableCell>
+                    {course.target_audience?.length ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary">
+                            {course.target_audience.length}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent align="start">
+                          <ul className="list-disc pl-4 space-y-1">
+                            {course.target_audience.map((a) => (
+                              <li key={a}>{a}</li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+
+                  {/* Price */}
+                  <TableCell>
+                    {course.sale_price ? (
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">
+                          ₹{course.sale_price}
+                        </span>
+
+                        {course.list_price > course.sale_price && (
+                          <>
+                            <span className="text-xs line-through text-muted-foreground">
+                              ₹{course.list_price}
+                            </span>
+                            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                              {Math.round(
+                                ((course.list_price - course.sale_price) /
+                                  course.list_price) *
+                                  100,
+                              )}
+                              % off
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+
+                  {/* Status */}
                   <TableCell>
                     <Badge variant={course.is_active ? "default" : "secondary"}>
                       {course.is_active ? "Active" : "Inactive"}
                     </Badge>
                   </TableCell>
 
-                  <TableCell className="text-right ">
+                  {/* Actions */}
+                  <TableCell className="text-right">
                     <div className="flex items-center gap-2">
                       <Button
-                        className="cursor-pointer"
                         variant="outline"
                         size="sm"
                         onClick={() => onEdit(course)}
@@ -177,7 +248,6 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
                         Edit
                       </Button>
                       <Button
-                        className="cursor-pointer"
                         variant="outline"
                         size="sm"
                         onClick={() =>
@@ -195,7 +265,7 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
             {!data.length && (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={13}
                   className="text-center text-muted-foreground"
                 >
                   No courses found
@@ -205,99 +275,6 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
           </TableBody>
         </Table>
       </div>
-
-      {/* Mobile Cards */}
-      <div className="space-y-4 md:hidden">
-        {data.map((course) => {
-          const classOrExam =
-            course.course_type === "academic" ||
-            course.course_type === "foundation"
-              ? course.class_level
-                ? `Class ${course.class_level}`
-                : "—"
-              : course.target_exam ?? "—";
-
-          return (
-            <div key={course.id} className="rounded-lg border p-4 space-y-4">
-              {/* Header */}
-              <div className="flex items-start gap-3">
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border">
-                  <CourseThumbnail
-                    src={course.thumbnail_image}
-                    title={course.title}
-                    onFix={() => onEdit(course)}
-                  />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold leading-tight truncate">
-                    {course.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground capitalize">
-                    {course.course_type}
-                  </p>
-                </div>
-
-                <Badge
-                  variant={course.is_active ? "default" : "secondary"}
-                  className="shrink-0"
-                >
-                  {course.is_active ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-
-              {/* Details */}
-              <div className="text-sm text-muted-foreground space-y-1">
-                <div>
-                  <span className="font-medium text-foreground">
-                    Class / Exam:{" "}
-                  </span>
-                  {classOrExam}
-                </div>
-
-                <div>
-                  <span className="font-medium text-foreground">
-                    Subjects:{" "}
-                  </span>
-                  {course.subjects?.length ? course.subjects.join(", ") : "—"}
-                </div>
-
-                <div>
-                  <span className="font-medium text-foreground">Price: </span>
-                  {course.price !== null && course.price !== undefined
-                    ? `₹${course.price}`
-                    : "—"}
-                </div>
-              </div>
-
-              {/* Action */}
-              <div className="flex gap-2 justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(course)}
-                >
-                  Edit Course
-                </Button>
-                <Button
-                  className="cursor-pointer"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/admin/curriculum/${course.id}`)}
-                >
-                  Curriculum
-                </Button>
-              </div>
-            </div>
-          );
-        })}
-
-        {!data.length && (
-          <div className="text-center text-muted-foreground text-sm">
-            No courses found
-          </div>
-        )}
-      </div>
-    </>
+    </TooltipProvider>
   );
 }

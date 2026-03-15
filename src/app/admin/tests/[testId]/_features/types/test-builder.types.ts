@@ -2,6 +2,7 @@ export type TestBuilderTest = {
     id: string;
     title: string;
     description: string | null;
-    testType: "standard" | "sectioned";
-    isActive: boolean;
+    test_type: "standard" | "sectioned";
+    is_active: boolean;
+    is_locked: boolean;
 };

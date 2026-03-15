@@ -1,10 +1,16 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function deleteTest(testId: string) {
-    const staff = await getCurrentStaff();
+    const user = await getAuthIfHasRole(["admin", "teacher"]);
+    if (!user) {
+        redirect("/login");
+    }
+
     const supabase = await createServerSupabaseClient();
 
     // Fetch test
@@ -24,7 +30,7 @@ export async function deleteTest(testId: string) {
     }
 
     // Teacher can only delete own tests
-    if (staff.role !== "admin" && test.created_by !== staff.id) {
+    if (user.role !== "admin" && test.created_by !== user.userId) {
         throw new Error("NOT_AUTHORIZED");
     }
 
@@ -38,6 +44,6 @@ export async function deleteTest(testId: string) {
         console.error("[DELETE_TEST_ERROR]", deleteError);
         throw new Error("FAILED_TO_DELETE_TEST");
     }
-
+    revalidatePath("/admin/tests")
     return { success: true };
 }

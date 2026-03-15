@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStudent } from "@/src/lib/helper-functions/getCurrentStudent";
 import { getEnrollmentAccess } from "@/src/lib/server/enrollment-access";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
 
 type AttemptStatus =
     | "none"
@@ -15,7 +15,6 @@ export type TestDistributionRow = {
     starts_at: string;
     ends_at: string;
     duration_minutes: number;
-    max_attempts: number;
 
     test: {
         id: string;
@@ -38,8 +37,15 @@ export async function GET(
     _req: Request,
     { params }: { params: Promise<{ batchId: string }> }
 ) {
+    console.log("request received in the route")
     const supabase = await createServerSupabaseClient();
-    const user = await getCurrentStudent();
+    const user = await getAuthIfHasRole(["student"]);
+    if (!user) {
+        return NextResponse.json(
+            { error: "Unauthorized" },
+            { status: 401 }
+        );
+    }
     const batchId = (await params).batchId;
 
     /* -------------------------------------------- */
@@ -48,7 +54,7 @@ export async function GET(
 
     const enrollment = await getEnrollmentAccess(
         supabase,
-        user.id,
+        user.userId,
         { type: "batch", batchId }
     );
 
@@ -71,7 +77,6 @@ export async function GET(
       starts_at,
       ends_at,
       duration_minutes,
-      max_attempts,
       test:tests (
         id,
         title,
@@ -87,8 +92,10 @@ export async function GET(
     `)
         .eq("batch_id", batchId)
         .eq("test.is_active", true)
-        .eq("attempts.user_id", user.id)
+        .eq("attempts.user_id", user.userId)
         .order("starts_at", { ascending: true });
+
+
 
     if (error || !data) {
         return NextResponse.json(
@@ -128,7 +135,6 @@ export async function GET(
                     attempt?.time_limit_seconds,
 
                 attemptsUsed: attempt ? 1 : 0,
-                maxAttempts: row.max_attempts,
             },
         };
     });

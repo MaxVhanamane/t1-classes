@@ -2,9 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { differenceInMinutes, isBefore, startOfDay } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-
+import { differenceInMinutes, format, isBefore } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -13,16 +11,10 @@ import {
   DialogFooter,
 } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Calendar } from "@/src/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/src/components/ui/popover";
 import { toast } from "sonner";
-
 import { extendDistribution } from "../actions/extend-distribution";
+import { ISODatePicker } from "./iso-date-picker";
+import { dateToISO } from "../../../schedule/_features/components/schedule-test-dialog";
 
 interface Props {
   open: boolean;
@@ -32,11 +24,10 @@ interface Props {
 }
 
 interface FormValues {
-  date: Date;
-  time: string; // HH:mm
+  ends_at: string;
 }
 
-/* ---------------- Helpers ---------------- */
+/* ---------- helper ---------- */
 
 function formatDelta(totalMinutes: number) {
   const days = Math.floor(totalMinutes / 1440);
@@ -51,82 +42,79 @@ function formatDelta(totalMinutes: number) {
   return parts.join(" ");
 }
 
-/* ---------------- Component ---------------- */
-
 export function ExtendDistributionDialog({
   open,
   onOpenChange,
   distributionId,
   currentEndsAt,
 }: Props) {
-  const currentEndDate = useMemo(
-    () => new Date(currentEndsAt),
-    [currentEndsAt]
-  );
-
   const form = useForm<FormValues>({
     defaultValues: {
-      date: currentEndDate,
-      time: currentEndDate.toTimeString().slice(0, 5),
+      ends_at: dateToISO(new Date(currentEndsAt)),
     },
   });
 
-  const selectedDate = useWatch({
+  const endsAt = useWatch({
     control: form.control,
-    name: "date",
+    name: "ends_at",
   });
 
-  const selectedTime = useWatch({
-    control: form.control,
-    name: "time",
-  });
-
-  /* ---------------- Reset On Close ---------------- */
   useEffect(() => {
     if (!open) {
-      form.reset({
-        date: currentEndDate,
-        time: currentEndDate.toTimeString().slice(0, 5),
-      });
+      form.reset();
     }
-  }, [open, currentEndDate, form]);
+  }, [open, form]);
 
-  /* ---------------- Compute Preview ---------------- */
   const extensionPreview = useMemo(() => {
-    if (!selectedDate || !selectedTime) return null;
+    if (!endsAt) return null;
 
-    const [h, m] = selectedTime.split(":").map(Number);
-    const newEnd = new Date(selectedDate);
-    newEnd.setHours(h, m, 0, 0);
+    const current = new Date(currentEndsAt);
+    const next = new Date(endsAt);
 
-    if (isBefore(newEnd, currentEndDate)) return null;
+    if (isBefore(next, current)) return null;
 
-    const diffMinutes = differenceInMinutes(newEnd, currentEndDate);
+    const diff = differenceInMinutes(next, current);
+    return diff > 0 ? formatDelta(diff) : null;
+  }, [endsAt, currentEndsAt]);
 
-    return diffMinutes > 0 ? formatDelta(diffMinutes) : null;
-  }, [selectedDate, selectedTime, currentEndDate]);
-
-  /* ---------------- Submit ---------------- */
   async function onSubmit(values: FormValues) {
-    const [h, m] = values.time.split(":").map(Number);
-    const newEnd = new Date(values.date);
-    newEnd.setHours(h, m, 0, 0);
+    const newEnd = new Date(values.ends_at);
+    const current = new Date(currentEndsAt);
+    if (isBefore(newEnd, current)) {
+      const formattedCurrent = format(current, "PPP p");
 
-    if (isBefore(newEnd, currentEndDate)) {
-      toast.error("New end time must be after the current end time");
+      toast.error(
+        `New end time must be after the current end time (${formattedCurrent})`,
+      );
+      return;
+    }
+
+    if (newEnd.getTime() === current.getTime()) {
+      toast.message(
+        "The selected end time is the same as the current end time.",
+      );
       return;
     }
 
     try {
-      await extendDistribution(distributionId, newEnd.toISOString());
+      await extendDistribution(distributionId, values.ends_at);
       toast.success("Test duration extended");
       onOpenChange(false);
-    } catch {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        error.message.includes("no_overlapping_tests_per_batch")
+      ) {
+        toast.error(
+          "Cannot extend — another test is scheduled in this time window.",
+        );
+        return;
+      }
+
       toast.error("Failed to extend test");
     }
   }
 
-  /* ---------------- Render ---------------- */
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -135,48 +123,14 @@ export function ExtendDistributionDialog({
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Date Picker */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">New End Date</label>
+          <ISODatePicker
+            label="New End Time"
+            value={endsAt}
+            onChange={(v) =>
+              form.setValue("ends_at", v, { shouldValidate: true })
+            }
+          />
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-start gap-2 font-normal"
-                >
-                  <CalendarIcon className="h-4 w-4" />
-                  {selectedDate
-                    ? selectedDate.toLocaleDateString()
-                    : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-
-              <PopoverContent className="p-0">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(d) => {
-                    if (d) {
-                      form.setValue("date", d);
-                    }
-                  }}
-                  disabled={(date) =>
-                    isBefore(date, startOfDay(currentEndDate))
-                  }
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Time */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">New End Time</label>
-            <Input type="time" {...form.register("time")} />
-          </div>
-
-          {/* Preview */}
           {extensionPreview && (
             <div className="rounded-md bg-muted px-3 py-2 text-sm">
               Extending by{" "}

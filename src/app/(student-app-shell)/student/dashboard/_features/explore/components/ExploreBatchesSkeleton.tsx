@@ -6,32 +6,43 @@ export function ExploreBatchesSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="flex h-96 flex-col rounded-xl border bg-background"
+          className="flex h-115 flex-col overflow-hidden rounded-2xl border bg-background gap-3"
         >
-          <div className="flex flex-1 flex-col gap-3 px-4 py-4">
-            {/* Title */}
-            <Skeleton className="h-5 w-4/5" />
-            <Skeleton className="h-5 w-3/5" />
-
-            {/* Badges */}
-            <Skeleton className="h-4 w-32 rounded-full" />
-
-            {/* Date */}
-            <Skeleton className="h-3 w-40" />
-
-            {/* Course count */}
-            <Skeleton className="h-4 w-44 rounded-full" />
-
-            {/* Description (5 lines) */}
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-4 w-4/6" />
-            <Skeleton className="h-4 w-3/6" />
+          {/* IMAGE */}
+          <div className="relative aspect-video w-full overflow-hidden shrink-0">
+            <Skeleton className="h-full w-full rounded-br-none rounded-bl-none" />
+            {/* badge placeholder
+            <div className="absolute bottom-2 right-2">
+              <Skeleton className="h-6 w-24 rounded-full" />
+            </div> */}
           </div>
 
-          {/* Footer */}
-          <div className="px-4 pb-4 pt-2">
+          {/* CONTENT */}
+          <div className="flex flex-1 flex-col gap-2 px-4 pt-0">
+            {/* Title */}
+            <Skeleton className="h-5 w-4/5" />
+
+            {/* Subtitle */}
+            <Skeleton className="h-4 w-3/5" />
+
+            {/* Meta row */}
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-20 " />
+            </div>
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Pricing */}
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+          </div>
+
+          {/* FOOTER */}
+          <div className="p-4 pt-0">
             <Skeleton className="h-10 w-full rounded-md" />
           </div>
         </div>

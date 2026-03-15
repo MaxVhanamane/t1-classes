@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
+
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -23,7 +24,9 @@ import { DistributionItem } from "../types/distribution.types";
 import { computeDistributionStatus } from "../helpers/compute-distribution-status";
 import { ExtendDistributionDialog } from "./extend-distribution-dialog";
 import { deleteDistribution } from "../actions/delete-distribution";
-import { ScheduleTestDialog } from "../../../schedule/_features/components/ScheduleTestDialog";
+import { ScheduleTestDialog } from "../../../schedule/_features/components/schedule-test-dialog";
+import { DangerConfirmInput } from "@/src/components/ui/danger-confirm-input";
+import Link from "next/link";
 
 interface Props {
   item: DistributionItem;
@@ -36,26 +39,45 @@ export function DistributionRowCard({ item }: Props) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
 
-  const scopeLabel =
-    item.audience === "batch"
-      ? item.batch_name
-      : item.audience === "course"
-      ? item.course_title
-      : "Marketing";
-
+  const scopeLabel = item.batch_name;
   const status = computeDistributionStatus(item.starts_at, item.ends_at);
+
+  let deleteTitle = "";
+  let deleteDescription = "";
+
+  if (status === "scheduled") {
+    deleteTitle = "Delete scheduled test?";
+    deleteDescription =
+      "This will permanently remove this test distribution. Students will no longer be able to attempt it.";
+  }
+
+  if (status === "ongoing") {
+    deleteTitle = "Delete ongoing test?";
+    deleteDescription =
+      "This test is currently in progress. Deleting it will immediately stop the test for all students who are attempting it and their attempts may be lost.";
+  }
+
+  if (status === "completed") {
+    deleteTitle = "Delete completed test distribution?";
+    deleteDescription =
+      "This will permanently delete the distribution and all associated student attempts and results. This action cannot be undone.";
+  }
 
   async function handleDelete() {
     try {
       setDeleting(true);
+
       await deleteDistribution(item.id);
+
       toast.success("Distribution deleted");
 
       setDeleteOpen(false);
+      setCanDelete(false);
+
       router.refresh();
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Failed to delete distribution");
     } finally {
       setDeleting(false);
@@ -71,19 +93,38 @@ export function DistributionRowCard({ item }: Props) {
             {item.test_title}
           </div>
 
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <Badge variant="outline">{item.audience}</Badge>
-
+          <div className="flex flex-col gap-1 text-xs text-muted-foreground">
             {scopeLabel && (
               <span className="truncate max-w-56 sm:max-w-none">
                 {scopeLabel}
               </span>
             )}
 
-            <span className="whitespace-nowrap">
-              {new Date(item.starts_at).toLocaleString()} →{" "}
-              {new Date(item.ends_at).toLocaleString()}
-            </span>
+            <div className="flex gap-3 whitespace-nowrap">
+              <span>
+                Starts:{" "}
+                {new Date(item.starts_at).toLocaleString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })}
+              </span>
+
+              <span>
+                Ends:{" "}
+                {new Date(item.ends_at).toLocaleString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -92,43 +133,13 @@ export function DistributionRowCard({ item }: Props) {
           <Badge variant="secondary">{status}</Badge>
 
           {status === "scheduled" && (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setEditOpen(true)}
-              >
-                Edit
-              </Button>
-
-              <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-                <AlertDialogTrigger asChild>
-                  <Button size="sm" variant="outline">
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete scheduled test?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently remove this test distribution.
-                      Students will no longer be able to attempt it.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-
-                  <AlertDialogFooter>
-                    <AlertDialogCancel disabled={deleting}>
-                      Cancel
-                    </AlertDialogCancel>
-
-                    <Button onClick={handleDelete} disabled={deleting}>
-                      {deleting ? "Deleting..." : "Delete"}
-                    </Button>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setEditOpen(true)}
+            >
+              Edit
+            </Button>
           )}
 
           {status === "ongoing" && (
@@ -138,16 +149,58 @@ export function DistributionRowCard({ item }: Props) {
           )}
 
           {status === "completed" && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                router.push(`/admin/tests/distributions/${item.id}/results`)
-              }
-            >
-              Results
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/admin/tests/distributions/${item.id}/results`}>
+                Results
+              </Link>
             </Button>
           )}
+
+          {/* Delete */}
+          <AlertDialog
+            open={deleteOpen}
+            onOpenChange={(v) => {
+              setDeleteOpen(v);
+              if (!v) setCanDelete(false);
+            }}
+          >
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="destructive">
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{deleteTitle}</AlertDialogTitle>
+
+                <AlertDialogDescription asChild>
+                  <div className="space-y-4">
+                    <p>{deleteDescription}</p>
+
+                    <DangerConfirmInput
+                      confirmText="DELETE"
+                      onValidChange={setCanDelete}
+                    />
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleting}>
+                  Cancel
+                </AlertDialogCancel>
+
+                <Button
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={!canDelete || deleting}
+                >
+                  {deleting ? "Deleting..." : "Delete"}
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
@@ -158,13 +211,10 @@ export function DistributionRowCard({ item }: Props) {
         testId={item.test_id}
         distribution={{
           id: item.id,
-          audience: item.audience,
           batch_id: item.batch_id,
-          course_id: item.course_id,
           starts_at: item.starts_at,
           ends_at: item.ends_at,
           duration_minutes: item.duration_minutes,
-          max_attempts: item.max_attempts,
         }}
       />
 

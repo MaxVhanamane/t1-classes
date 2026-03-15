@@ -46,7 +46,6 @@ export async function GET(
         .select("id, ends_at, ranks_computed")
         .eq("id", distributionId)
         .single();
-    console.log("distribution data", dist)
     if (!dist) {
         return NextResponse.json(
             { kind: "not_attempted", message: "Distribution not found" },
@@ -95,7 +94,6 @@ export async function GET(
         });
 
         if (error) {
-            console.log("errrrrrr", error)
             return NextResponse.json({
                 kind: "pending",
                 message: "Ranking is being finalized. Please refresh shortly.",

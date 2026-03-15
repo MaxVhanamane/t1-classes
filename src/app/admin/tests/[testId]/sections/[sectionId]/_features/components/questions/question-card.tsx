@@ -8,7 +8,7 @@ import { RichTextRenderer } from "./rich-text-renderer";
 import { cn } from "@/src/lib/utils";
 import { CorrectAnswer } from "../../types/correct-answer.types";
 import { QuestionActionsMenu } from "./question-actions-menu";
-
+import { JSONContent } from "@tiptap/react";
 interface Props {
   question: TestQuestion;
   index: number;
@@ -19,13 +19,13 @@ interface Props {
 /* ------------------ Answer Type Guards ------------------ */
 
 function isSingleSelect(
-  answer: CorrectAnswer
+  answer: CorrectAnswer,
 ): answer is { option_id: string } {
   return typeof answer === "object" && answer !== null && "option_id" in answer;
 }
 
 function isMultiSelect(
-  answer: CorrectAnswer
+  answer: CorrectAnswer,
 ): answer is { option_ids: string[] } {
   return (
     typeof answer === "object" &&
@@ -36,7 +36,7 @@ function isMultiSelect(
 }
 
 function isNumericRange(
-  answer: CorrectAnswer
+  answer: CorrectAnswer,
 ): answer is { target: number; tolerance: number } {
   return (
     typeof answer === "object" &&
@@ -48,11 +48,38 @@ function isNumericRange(
   );
 }
 
+function hasRichTextContent(
+  content: JSONContent | null | undefined,
+): content is JSONContent {
+  if (!content || typeof content !== "object") return false;
+
+  const nodes = content.content;
+
+  if (!Array.isArray(nodes)) return false;
+
+  for (const node of nodes) {
+    if (!node) continue;
+
+    if (node.type === "paragraph" && Array.isArray(node.content)) {
+      for (const child of node.content) {
+        if (child?.type === "text" && child.text?.trim()) {
+          return true;
+        }
+      }
+    }
+
+    if (node.type !== "paragraph") {
+      return true;
+    }
+  }
+
+  return false;
+}
 /* ------------------ Helpers ------------------ */
 
 function isOptionCorrect(
   answer: CorrectAnswer | null,
-  optionId: string
+  optionId: string,
 ): boolean {
   if (!answer) return false;
 
@@ -91,7 +118,7 @@ export function QuestionCard({ question, index, section, onEdit }: Props) {
           <span className="font-medium">Q{index + 1}.</span>
 
           <div className="flex flex-col gap-1">
-            <RichTextRenderer content={question.questionText} />
+            <RichTextRenderer content={question.questionText} variant="prose" />
           </div>
         </div>
 
@@ -100,6 +127,7 @@ export function QuestionCard({ question, index, section, onEdit }: Props) {
           onEdit={() => onEdit(question)}
           sectionId={section.id}
           testId={section.testId}
+          is_locked={section.is_locked}
         />
       </div>
 
@@ -116,11 +144,13 @@ export function QuestionCard({ question, index, section, onEdit }: Props) {
                   "flex gap-2 rounded-md border px-3 py-2 text-sm transition",
                   correctOption
                     ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                    : "border-muted"
+                    : "border-muted",
                 )}
               >
                 <span className="font-medium w-6">{opt.label}.</span>
-                <span className="flex-1">{opt.text}</span>
+                <div className="flex-1">
+                  <RichTextRenderer content={opt.text} />
+                </div>
 
                 {correctOption && (
                   <Badge variant="success" className="ml-auto">
@@ -138,6 +168,18 @@ export function QuestionCard({ question, index, section, onEdit }: Props) {
           </div>
         </div>
       ) : null}
+
+      {hasRichTextContent(question.explanation) && (
+        <div className="mt-4 rounded-md border border-muted bg-muted/40 px-3 py-3">
+          <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+            Explanation
+          </div>
+
+          <div className="text-sm text-foreground/90">
+            <RichTextRenderer content={question.explanation} />
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

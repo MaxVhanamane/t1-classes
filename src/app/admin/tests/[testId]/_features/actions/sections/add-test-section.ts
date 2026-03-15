@@ -1,8 +1,9 @@
 "use server"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff"
 import { revalidatePath } from "next/cache"
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role"
+import { redirect } from "next/navigation"
 
 export async function addTestSectionFromTemplate(
     testId: string,
@@ -10,18 +11,20 @@ export async function addTestSectionFromTemplate(
     subjectLabel: string,
     scoringQuestionCount: number | null
 ) {
+    const user = await getAuthIfHasRole(["admin", "teacher"])
+    if (!user) redirect("/login")
+
     const supabase = await createServerSupabaseClient()
-    await getCurrentStaff()
 
     /* -------------------------------------------- */
     /* Validate Subject */
     /* -------------------------------------------- */
 
-    if (!subjectLabel || subjectLabel.trim().length < 2) {
+    const cleanSubject = subjectLabel?.trim()
+
+    if (!cleanSubject || cleanSubject.length < 2) {
         throw new Error("INVALID_SUBJECT_LABEL")
     }
-
-    const cleanSubject = subjectLabel.trim()
 
     /* -------------------------------------------- */
     /* Validate Scoring Rule */
@@ -29,21 +32,19 @@ export async function addTestSectionFromTemplate(
 
     if (
         scoringQuestionCount !== null &&
-        (!Number.isInteger(scoringQuestionCount) ||
-            scoringQuestionCount < 1)
+        (!Number.isInteger(scoringQuestionCount) || scoringQuestionCount < 1)
     ) {
         throw new Error("INVALID_SCORING_COUNT")
     }
 
     /* -------------------------------------------- */
-    /* 1. Fetch template */
+    /* Fetch template + test lock in parallel */
     /* -------------------------------------------- */
 
-    const { data: template, error: templateError } =
-        await supabase
+    const [templateRes, testRes] = await Promise.all([
+        supabase
             .from("test_section_templates")
-            .select(
-                `
+            .select(`
         id,
         name,
         description,
@@ -52,18 +53,47 @@ export async function addTestSectionFromTemplate(
         default_full_marks,
         default_negative_marks,
         default_partial_marks
-      `
-            )
+      `)
             .eq("id", templateId)
             .eq("is_active", true)
-            .single()
+            .single(),
 
-    if (templateError || !template) {
+        supabase
+            .from("tests")
+            .select("is_locked, created_by")
+            .eq("id", testId)
+            .single(),
+    ])
+
+    const template = templateRes.data
+    const test = testRes.data
+
+    if (templateRes.error || !template) {
         throw new Error("TEMPLATE_NOT_FOUND")
     }
 
+    if (testRes.error || !test) {
+        throw new Error("TEST_NOT_FOUND")
+    }
+
     /* -------------------------------------------- */
-    /* 2. Compute next sort_order */
+    /* Ownership check */
+    /* -------------------------------------------- */
+
+    if (user.role === "teacher" && test.created_by !== user.userId) {
+        throw new Error("UNAUTHORIZED")
+    }
+
+    /* -------------------------------------------- */
+    /* Lock check */
+    /* -------------------------------------------- */
+
+    if (test.is_locked) {
+        throw new Error("TEST_LOCKED")
+    }
+
+    /* -------------------------------------------- */
+    /* Compute next sort_order */
     /* -------------------------------------------- */
 
     const { data: lastSection } = await supabase
@@ -74,11 +104,10 @@ export async function addTestSectionFromTemplate(
         .limit(1)
         .maybeSingle()
 
-    const nextSortOrder =
-        (lastSection?.sort_order ?? 0) + 1
+    const nextSortOrder = (lastSection?.sort_order ?? 0) + 1
 
     /* -------------------------------------------- */
-    /* 3. Create section */
+    /* Insert section */
     /* -------------------------------------------- */
 
     const { error: insertError } = await supabase
@@ -90,15 +119,11 @@ export async function addTestSectionFromTemplate(
             answer_mode: template.answer_mode,
             max_selections: template.max_selections,
             full_marks: template.default_full_marks,
-            negative_marks:
-                template.default_negative_marks,
-            partial_marks:
-                template.default_partial_marks,
+            negative_marks: template.default_negative_marks,
+            partial_marks: template.default_partial_marks,
             sort_order: nextSortOrder,
-
             subject_label: cleanSubject,
-            scoring_question_count:
-                scoringQuestionCount,
+            scoring_question_count: scoringQuestionCount,
         })
 
     if (insertError) {
@@ -106,7 +131,7 @@ export async function addTestSectionFromTemplate(
     }
 
     /* -------------------------------------------- */
-    /* 4. Revalidate test builder */
+    /* Revalidate */
     /* -------------------------------------------- */
 
     revalidatePath(`/admin/tests/${testId}`)

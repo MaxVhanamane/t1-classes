@@ -62,7 +62,7 @@ export default function QuestionBody({
             >
               <RadioGroupItem value={opt.id} id={opt.id} />
               <Label htmlFor={opt.id}>
-                {opt.label}. {opt.text}
+                {opt.label}. <RichTextRenderer content={opt.text} />
               </Label>
             </div>
           ))}
@@ -86,7 +86,7 @@ export default function QuestionBody({
                   onCheckedChange={() => toggleMulti(opt.id)}
                 />
                 <Label htmlFor={opt.id}>
-                  {opt.label}. {opt.text}
+                  {opt.label}. <RichTextRenderer content={opt.text} />
                 </Label>
               </div>
             );

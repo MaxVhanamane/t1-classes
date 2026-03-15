@@ -1,4 +1,4 @@
-import { createAdminSupabaseClient } from "@/src/lib/supabase/admin.server";
+import { createAdminSupabaseClient } from "@/src/lib/supabase/supabase-admin";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { NextResponse } from "next/server";
 
@@ -16,7 +16,7 @@ export async function POST() {
     }
 
     // 2 Use service role to update status safely
-    const adminSupabase = createAdminSupabaseClient();
+    const adminSupabase = await createAdminSupabaseClient();
 
     const { error } = await adminSupabase
         .from("users")

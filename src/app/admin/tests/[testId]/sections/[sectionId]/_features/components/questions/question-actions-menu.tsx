@@ -20,7 +20,7 @@ import {
 
 import { Button } from "@/src/components/ui/button";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { TestQuestion } from "../../types/question.types";
@@ -31,16 +31,20 @@ interface Props {
   testId: string;
   sectionId: string;
   onEdit: () => void;
+  is_locked: boolean;
 }
 
 export function QuestionActionsMenu({
   question,
   testId,
   sectionId,
+  is_locked,
   onEdit,
 }: Props) {
+  console.log("isLocked", is_locked);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   async function handleDelete() {
     setLoading(true);
@@ -58,6 +62,22 @@ export function QuestionActionsMenu({
     }
   }
 
+  function handleDeleteBtnClick() {
+    if (is_locked) {
+      toast.info(
+        "This test is locked because it has already been scheduled or attempted. Delete the distribution to enable editing if the test has not started.",
+      );
+      return;
+    }
+
+    setConfirmOpen(true);
+  }
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
   return (
     <>
       <DropdownMenu>
@@ -81,7 +101,7 @@ export function QuestionActionsMenu({
 
           <DropdownMenuItem
             className="text-destructive cursor-pointer"
-            onClick={() => setConfirmOpen(true)}
+            onClick={handleDeleteBtnClick}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete

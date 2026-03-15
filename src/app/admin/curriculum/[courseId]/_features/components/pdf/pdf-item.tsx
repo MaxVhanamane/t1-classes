@@ -112,12 +112,21 @@ export function PdfItem({ pdf, courseId, topicId }: Props) {
                   <span className="text-green-600">Free preview</span>
                 </>
               )}
+
+              {!pdf.is_published && (
+                <>
+                  <span>·</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
+                    Unpublished
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 w-32 justify-between shrink-0">
+        <div className="flex items-center gap-1 w-28 md:w-32 justify-between shrink-0">
           <Button
             size="sm"
             variant="outline"
@@ -156,13 +165,13 @@ export function PdfItem({ pdf, courseId, topicId }: Props) {
                         publish: !pdf.is_published,
                       });
                       toast.success(
-                        pdf.is_published ? "pdf unpublished" : "pdf published"
+                        pdf.is_published ? "pdf unpublished" : "pdf published",
                       );
                     } catch (err) {
                       toast.error(
                         err instanceof Error
                           ? err.message
-                          : "Failed to publish pdf"
+                          : "Failed to publish pdf",
                       );
                     }
                   }}

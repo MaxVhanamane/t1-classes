@@ -2,20 +2,10 @@ export type TestType = "standard" | "sectioned";
 
 
 export interface TestRow {
-    id: string; // uuid
+    id: string;
     title: string;
     description: string | null;
-
-    test_type: TestType;
-
-    shuffle_questions: boolean;
-    shuffle_options: boolean;
-
-    created_by: string; // uuid (users.id FK)
-
-    is_active: boolean;
+    test_type: string;
+    created_at: string;
     is_locked: boolean;
-
-    created_at: string; // ISO timestamp
-    updated_at: string; // ISO timestamp
 }

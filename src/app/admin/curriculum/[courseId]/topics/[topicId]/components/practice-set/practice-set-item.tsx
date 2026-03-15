@@ -21,6 +21,7 @@ interface Props {
     title: string;
     description: string | null;
     is_published: boolean;
+    is_free_preview: boolean;
   };
   courseId: string;
   topicId: string;
@@ -29,20 +30,36 @@ interface Props {
 export function PracticeSetItem({ practiceSet, courseId, topicId }: Props) {
   return (
     <div className="flex items-center justify-between rounded-md border p-3">
-      <div className="flex items-center gap-3">
-        <ClipboardList className="h-5 w-5 text-muted-foreground" />
+      <div className="flex items-start gap-3 min-w-0">
+        <ClipboardList className="h-5 w-5 text-muted-foreground shrink-0" />
 
-        <div>
-          <p className="text-sm font-medium">{practiceSet.title}</p>
+        <div className="min-w-0">
+          <p className="text-sm font-medium truncate">{practiceSet.title}</p>
+
           {practiceSet.description && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground line-clamp-2">
               {practiceSet.description}
             </p>
           )}
+
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
+            {practiceSet.is_free_preview && (
+              <span className="text-green-600 text-xs">Free preview</span>
+            )}
+
+            {!practiceSet.is_published && (
+              <>
+                <span>·</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
+                  Unpublished
+                </span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 w-32 justify-between">
+      <div className="flex items-center gap-1 w-28 md:w-32 justify-between">
         {/* Open */}
         <Button size="sm" variant="outline" asChild>
           <Link
@@ -86,13 +103,13 @@ export function PracticeSetItem({ practiceSet, courseId, topicId }: Props) {
                     toast.success(
                       practiceSet.is_published
                         ? "practice set unpublished"
-                        : "practice set published"
+                        : "practice set published",
                     );
                   } catch (err) {
                     toast.error(
                       err instanceof Error
                         ? err.message
-                        : "Failed to publish practice set"
+                        : "Failed to publish practice set",
                     );
                   }
                 }}
@@ -124,6 +141,7 @@ export function PracticeSetItem({ practiceSet, courseId, topicId }: Props) {
                   practiceSetId: practiceSet.id,
                   title: practiceSet.title,
                   description: practiceSet.description,
+                  isFreePreview: practiceSet.is_free_preview,
                 }}
               />
             </DropdownMenuItem>

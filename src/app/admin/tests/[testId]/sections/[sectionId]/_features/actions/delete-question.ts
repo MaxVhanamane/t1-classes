@@ -1,15 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { redirect } from "next/navigation";
 
 export async function deleteQuestion(
     questionId: string,
     testId: string,
     sectionId: string
 ) {
-    await getCurrentStaff();
+    const user = await getAuthIfHasRole(["admin", "teacher"]);
+    if (!user) {
+        redirect("/login")
+    }
     const supabase = await createServerSupabaseClient();
 
     const { error } = await supabase.rpc("rpc_delete_test_question", {

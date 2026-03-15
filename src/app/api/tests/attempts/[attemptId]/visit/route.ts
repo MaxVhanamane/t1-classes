@@ -25,7 +25,6 @@ type AttemptRow = {
 type DistributionRow = {
     id: string;
     batch_id: string | null;
-    course_id: string | null;
     starts_at: string;
     ends_at: string;
 };
@@ -131,7 +130,7 @@ export async function POST(
         await supabase
             .from("test_distributions")
             .select(
-                ` id, batch_id, course_id, starts_at, ends_at `
+                ` id, batch_id, starts_at, ends_at `
             )
             .eq(
                 "id",
@@ -165,24 +164,6 @@ export async function POST(
                     type: "batch",
                     batchId:
                         distribution.batch_id,
-                }
-            );
-
-        if (!access.hasAccess) {
-            return NextResponse.json(
-                { error: "Not enrolled" },
-                { status: 403 }
-            );
-        }
-    } else if (distribution.course_id) {
-        const access =
-            await getEnrollmentAccess(
-                supabase,
-                user.id,
-                {
-                    type: "course",
-                    courseId:
-                        distribution.course_id,
                 }
             );
 

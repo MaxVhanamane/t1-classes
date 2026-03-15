@@ -1,13 +1,81 @@
 @import "tailwindcss";
+@import "katex/dist/katex.min.css";
 @import "tw-animate-css";
 @import "react-pdf/dist/Page/TextLayer.css";
 @import "react-pdf/dist/Page/AnnotationLayer.css";
 @plugin "@tailwindcss/typography";
+@import "./rich-content.css";
 
 @layer utilities {
   .scrollbar-gutter-stable {
     scrollbar-gutter: stable;
   }
+
+  /* ── Table styles — work with both rich-content and prose variants ── */
+  .tiptap-table {
+    border-collapse: collapse;
+    width: 60% !important;
+    min-width: unset !important;
+    margin: 0.5rem 0;
+    table-layout: fixed;
+  }
+
+  @media (max-width: 640px) {
+    .tiptap-table {
+      width: 100% !important;
+    }
+  }
+
+  .tiptap-table td,
+  .tiptap-table th {
+    border: 1px solid var(--border);
+    padding: 5px 8px;
+    width: 50%;
+    min-width: unset !important;
+    vertical-align: middle;
+    position: relative;
+    line-height: 1.4;
+  }
+
+  .tiptap-table th {
+    background: var(--muted);
+    font-weight: 600;
+    text-align: left;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .tiptap-table td {
+    text-align: left;
+  }
+
+  .tiptap-table .selectedCell::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: color-mix(in oklch, var(--primary) 10%, transparent);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Fix prose li spacing for TipTap */
+  .prose.tiptap li>p,
+  .prose li>p {
+    margin-top: 0.1rem !important;
+    margin-bottom: 0.1rem !important;
+  }
+
+  /* Fix math size in prose too */
+  .prose .tiptap-mathematics-render .katex {
+    font-size: 1em;
+  }
+
+  .rich-content p:last-child:has(.ProseMirror-trailingBreak),
+  .prose p:last-child:has(.ProseMirror-trailingBreak) {
+    display: none;
+  }
+
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -130,7 +198,15 @@
     @apply border-border outline-ring/50;
   }
 
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-200%);
+    }
 
+    100% {
+      transform: translateX(200%);
+    }
+  }
 
   body {
     @apply bg-background text-foreground;

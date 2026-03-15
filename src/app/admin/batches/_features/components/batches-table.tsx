@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -14,44 +16,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
-
-import { ModeBadge, StatusBadge } from "./batch-badges";
-import { BatchDuration } from "./batch-duration";
+import { LifecycleBadge, ModeBadge } from "./batch-badges";
 import { BatchListItem } from "../types/types";
 import { BatchActiveSwitch } from "./batch-active-switch";
 import { Badge } from "@/src/components/ui/badge";
-import { truncateWords } from "../helper-functions/functions";
+
+import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
+import { RichTextRenderer } from "../../../tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
+import { TableThumbnailPreview } from "../../../courses/_features/components/Table-thumbnail-preview";
+import { TitleSubtitleTooltip } from "@/src/components/ui/common/title-subtitle-tooltip";
+
 type Props = {
   batches: BatchListItem[];
   onEdit: (batch: BatchListItem) => void;
 };
-export function getHighlightPreview(
-  highlights: BatchListItem["batch_highlights"] | null,
-  maxItemsPerSection = 3
-) {
-  if (!highlights || !Array.isArray(highlights.sections)) {
-    return [];
-  }
-
-  return highlights.sections
-    .filter(
-      (section) =>
-        section &&
-        typeof section.title === "string" &&
-        Array.isArray(section.items) &&
-        section.items.length > 0
-    )
-    .map((section) => {
-      const shown = section.items.slice(0, maxItemsPerSection);
-      const hiddenCount = section.items.length - shown.length;
-
-      return {
-        title: section.title,
-        shown,
-        hiddenCount,
-      };
-    });
-}
 
 export function BatchesTable({ batches, onEdit }: Props) {
   return (
@@ -60,216 +38,324 @@ export function BatchesTable({ batches, onEdit }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-16">Thumbnail</TableHead>
               <TableHead>Batch</TableHead>
               <TableHead>Description</TableHead>
-              <TableHead>Course</TableHead>
+              <TableHead>Courses</TableHead>
               <TableHead>Price</TableHead>
-              <TableHead>Center</TableHead>
+              <TableHead>Location</TableHead>
               <TableHead>Languages</TableHead>
               <TableHead>Admission</TableHead>
               <TableHead className="text-center">Mode</TableHead>
-              <TableHead className="text-center">Status</TableHead>
-              <TableHead>Duration</TableHead>
+              <TableHead className="text-center">Lifecycle</TableHead>
               <TableHead className="text-center">Capacity</TableHead>
+              <TableHead>Subjects</TableHead>
+              <TableHead>Outcomes</TableHead>
+              <TableHead>Audience</TableHead>
               <TableHead className="text-center">Active</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {batches.map((batch) => (
-              <TableRow key={batch.id}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span>{batch.name}</span>
+            {batches.map((batch) => {
+              const thumbnailSrc = batch.thumbnail_image
+                ? `${R2_BUCKET_PUBLIC_URL}/${batch.thumbnail_image}`
+                : null;
 
-                    {batch.batch_highlights &&
-                      getHighlightPreview(batch.batch_highlights).length >
-                        0 && (
-                        <Tooltip delayDuration={200}>
-                          <TooltipTrigger asChild>
-                            <Badge
-                              variant="secondary"
-                              className="text-xs cursor-help"
-                            >
-                              Highlights
-                            </Badge>
-                          </TooltipTrigger>
+              return (
+                <TableRow key={batch.id}>
+                  {/* ---------------------------------- */}
+                  {/* Thumbnail */}
+                  {/* ---------------------------------- */}
+                  <TableCell>
+                    <div className="relative h-10 w-10 overflow-visible rounded-md border">
+                      <TableThumbnailPreview
+                        src={thumbnailSrc}
+                        title={batch.title}
+                        enableHoverPreview
+                      />
+                    </div>
+                  </TableCell>
 
-                          <TooltipContent
-                            align="start"
-                            className="max-w-sm space-y-2"
-                          >
-                            {getHighlightPreview(batch.batch_highlights).map(
-                              (section) => (
-                                <div key={section.title}>
-                                  <p className="text-xs font-semibold text-muted-foreground">
-                                    {section.title}
-                                  </p>
+                  {/* ---------------------------------- */}
+                  {/* Name + Subtitle */}
+                  {/* ---------------------------------- */}
+                  <TableCell className="font-medium">
+                    {batch.title ? (
+                      <TitleSubtitleTooltip
+                        title={batch.title}
+                        subtitle={batch.subtitle}
+                      />
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
 
-                                  <ul className="list-disc pl-4 text-xs space-y-0.5">
-                                    {section.shown.map((item) => (
-                                      <li key={item}>{item}</li>
-                                    ))}
-                                  </ul>
+                  {/* ---------------------------------- */}
+                  {/* Description (TipTap JSON) */}
+                  {/* ---------------------------------- */}
+                  <TableCell>
+                    {batch.description ? (
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <div className="cursor-help max-w-xs ">
+                            <RichTextRenderer
+                              content={batch.description}
+                              clamp
+                            />
+                          </div>
+                        </TooltipTrigger>
 
-                                  {section.hiddenCount > 0 && (
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                      +{section.hiddenCount} more
-                                    </p>
-                                  )}
-                                </div>
-                              )
+                        <TooltipContent
+                          align="start"
+                          className="max-w-md text-inherit"
+                        >
+                          <div className="max-h-64 overflow-y-auto pr-2">
+                            <RichTextRenderer
+                              content={batch.description}
+                              proseStyle
+                              className="text-white dark:text-gray-900"
+                            />
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+
+                  {/* ---------------------------------- */}
+                  {/* Courses */}
+                  {/* ---------------------------------- */}
+                  <TableCell>
+                    {batch.courses.length === 0 ? (
+                      <span className="text-xs text-destructive font-medium">
+                        No courses
+                      </span>
+                    ) : batch.courses.length === 1 ? (
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <p className="max-w-55 truncate cursor-help">
+                            {batch.courses[0].course.title}
+                          </p>
+                        </TooltipTrigger>
+
+                        <TooltipContent align="start" className="max-w-xs">
+                          {batch.courses[0].course.title}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="underline cursor-help">
+                            {batch.courses.length} courses
+                          </span>
+                        </TooltipTrigger>
+
+                        <TooltipContent align="start">
+                          <ul className="space-y-1">
+                            {batch.courses.map(({ course }) => (
+                              <li key={course.id}>• {course.title}</li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </TableCell>
+
+                  {/* ---------------------------------- */}
+                  {/* Price + Discount */}
+                  {/* ---------------------------------- */}
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {/* Sale Price */}
+                      <span className="font-semibold text-base">
+                        ₹{batch.sale_price}
+                      </span>
+
+                      {/* List Price (only if discounted) */}
+                      {batch.list_price > batch.sale_price && (
+                        <>
+                          <span className="text-xs line-through text-muted-foreground">
+                            ₹{batch.list_price}
+                          </span>
+
+                          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                            {Math.round(
+                              ((batch.list_price - batch.sale_price) /
+                                batch.list_price) *
+                                100,
                             )}
-                          </TooltipContent>
-                        </Tooltip>
+                            % off
+                          </span>
+                        </>
                       )}
-                  </div>
-                </TableCell>
+                    </div>
+                  </TableCell>
 
-                <TableCell className="font-medium">
-                  {batch.description ? (
-                    <Tooltip delayDuration={200}>
-                      <TooltipTrigger asChild>
-                        <p className="text-xs text-muted-foreground cursor-default">
-                          {truncateWords(batch.description, 3)}
-                        </p>
-                      </TooltipTrigger>
+                  {/* ---------------------------------- */}
+                  {/* Location */}
+                  {/* ---------------------------------- */}
+                  <TableCell>{batch.location ?? "—"}</TableCell>
 
-                      <TooltipContent align="start" className="max-w-xs">
-                        <p className="text-sm">{batch.description}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-
-                <TableCell>
-                  {batch.courses.length === 0 ? (
-                    <span className="text-xs text-destructive font-medium">
-                      No courses
-                    </span>
-                  ) : batch.courses.length === 1 ? (
-                    <span className="text-muted-foreground">
-                      {batch.courses[0].course.title}
-                    </span>
-                  ) : (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-muted-foreground cursor-help underline-offset-4 hover:underline">
-                          {batch.courses.length} courses
-                        </span>
-                      </TooltipTrigger>
-
-                      <TooltipContent align="start" className="max-w-xs">
-                        <ul className="space-y-1">
-                          {batch.courses.map(({ course }) => (
-                            <li key={course.id} className="text-sm">
-                              • {course.title}
-                            </li>
-                          ))}
-                        </ul>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </TableCell>
-                {/* Price */}
-                <TableCell>
-                  {batch.price ?? (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-
-                {/* Center */}
-                <TableCell>
-                  {batch.center_name ?? (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-
-                {/* Languages */}
-                <TableCell>
-                  {batch.languages.length === 0 ? (
-                    <span className="text-muted-foreground">—</span>
-                  ) : (
-                    <Tooltip delayDuration={200}>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1 cursor-default">
-                          <Badge variant="secondary" className="capitalize">
+                  {/* ---------------------------------- */}
+                  {/* Languages */}
+                  {/* ---------------------------------- */}
+                  <TableCell>
+                    {batch.languages?.length ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary">
                             {batch.languages[0]}
+                            {batch.languages.length > 1 &&
+                              ` +${batch.languages.length - 1}`}
                           </Badge>
+                        </TooltipTrigger>
 
-                          {batch.languages.length > 1 && (
-                            <span className="text-xs text-muted-foreground">
-                              +{batch.languages.length - 1} more
-                            </span>
-                          )}
-                        </div>
-                      </TooltipTrigger>
+                        <TooltipContent>
+                          {batch.languages.join(", ")}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
 
-                      <TooltipContent align="start">
-                        <div className="space-y-1">
-                          {batch.languages.map((lang) => (
-                            <div key={lang} className="capitalize text-sm">
-                              {lang}
-                            </div>
-                          ))}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </TableCell>
+                  {/* ---------------------------------- */}
+                  {/* Admission */}
+                  {/* ---------------------------------- */}
+                  <TableCell>
+                    <Badge
+                      variant={
+                        batch.is_admission_open ? "outline" : "secondary"
+                      }
+                    >
+                      {batch.is_admission_open ? "Open" : "Closed"}
+                    </Badge>
+                  </TableCell>
 
-                {/* Admission */}
-                <TableCell>
-                  {batch.admission_open ? (
-                    <Badge variant="outline">Open</Badge>
-                  ) : (
-                    <Badge variant="secondary">Closed</Badge>
-                  )}
-                </TableCell>
+                  {/* ---------------------------------- */}
+                  {/* Mode */}
+                  {/* ---------------------------------- */}
+                  <TableCell className="text-center">
+                    <ModeBadge mode={batch.mode} />
+                  </TableCell>
 
-                <TableCell className="text-center">
-                  <ModeBadge mode={batch.mode} />
-                </TableCell>
+                  {/* ---------------------------------- */}
+                  {/* Lifecycle */}
+                  {/* ---------------------------------- */}
+                  <TableCell className="text-center">
+                    <LifecycleBadge batch={batch} />
+                  </TableCell>
 
-                <TableCell className="text-center">
-                  <StatusBadge status={batch.status} />
-                </TableCell>
+                  {/* ---------------------------------- */}
+                  {/* Capacity */}
+                  {/* ---------------------------------- */}
+                  <TableCell className="text-center">
+                    {batch.capacity ?? "Unlimited"}
+                  </TableCell>
 
-                <TableCell>
-                  <BatchDuration {...batch} />
-                </TableCell>
+                  {/* ---------------------------------- */}
+                  {/* Subjects */}
+                  {/* ---------------------------------- */}
+                  <TableCell>
+                    {batch.subjects?.length ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary">
+                            {batch.subjects.length}
+                          </Badge>
+                        </TooltipTrigger>
 
-                <TableCell className="text-center">
-                  {batch.capacity ?? "Unlimited"}
-                </TableCell>
+                        <TooltipContent align="start">
+                          <ul className="list-disc pl-4 space-y-1">
+                            {batch.subjects.map((s) => (
+                              <li key={s}>{s}</li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
 
-                <TableCell className="text-center">
-                  <BatchActiveSwitch
-                    batchId={batch.id}
-                    initialValue={batch.is_active}
-                  />
-                </TableCell>
+                  {/* ---------------------------------- */}
+                  {/* Outcomes */}
+                  {/* ---------------------------------- */}
+                  <TableCell>
+                    {batch.learning_outcomes?.length ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary">
+                            {batch.learning_outcomes.length}
+                          </Badge>
+                        </TooltipTrigger>
 
-                <TableCell className="text-right">
-                  <Tooltip delayDuration={200}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="cursor-pointer"
-                        onClick={() => onEdit(batch)}
-                      >
-                        <SquarePen className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Edit batch</TooltipContent>
-                  </Tooltip>
-                </TableCell>
-              </TableRow>
-            ))}
+                        <TooltipContent align="start">
+                          <ul className="list-disc pl-4 space-y-1">
+                            {batch.learning_outcomes.map((o) => (
+                              <li key={o}>{o}</li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+
+                  {/* ---------------------------------- */}
+                  {/* Audience */}
+                  {/* ---------------------------------- */}
+                  <TableCell>
+                    {batch.target_audience?.length ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary">
+                            {batch.target_audience.length}
+                          </Badge>
+                        </TooltipTrigger>
+
+                        <TooltipContent align="start">
+                          <ul className="list-disc pl-4 space-y-1">
+                            {batch.target_audience.map((a) => (
+                              <li key={a}>{a}</li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+
+                  {/* ---------------------------------- */}
+                  {/* Active */}
+                  {/* ---------------------------------- */}
+                  <TableCell className="text-center">
+                    <BatchActiveSwitch
+                      batchId={batch.id}
+                      initialValue={batch.is_active}
+                    />
+                  </TableCell>
+
+                  {/* ---------------------------------- */}
+                  {/* Edit */}
+                  {/* ---------------------------------- */}
+                  <TableCell className="text-right">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => onEdit(batch)}
+                    >
+                      <SquarePen className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

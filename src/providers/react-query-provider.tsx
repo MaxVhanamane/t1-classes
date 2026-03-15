@@ -14,7 +14,7 @@ export default function ReactQueryProvider({
         defaultOptions: {
           queries: {
             staleTime: 30 * 1000, // 30s cache — good for tests + batch status
-            refetchOnWindowFocus: true,
+            refetchOnWindowFocus: false,
             retry: 1,
           },
         },

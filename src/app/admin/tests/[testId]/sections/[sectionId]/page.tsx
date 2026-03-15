@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { getSectionById } from "./_features/actions/get-section";
-import { getQuestionsForSection } from "./_features/actions/get-questions";
-import { SectionBuilderClient } from "./_features/components/section-builder-client";
+import { QuestionBuilderClient } from "./_features/components/question-builder-client";
 
 type Props = {
   params: Promise<{
@@ -14,20 +13,12 @@ export default async function SectionBuilderPage({ params }: Props) {
   const { testId, sectionId } = await params;
 
   let section;
-  let questions;
 
   try {
     section = await getSectionById(testId, sectionId);
-    questions = await getQuestionsForSection(sectionId);
   } catch {
     notFound();
   }
 
-  return (
-    <SectionBuilderClient
-      testId={testId}
-      section={section}
-      questions={questions}
-    />
-  );
+  return <QuestionBuilderClient testId={testId} section={section} />;
 }

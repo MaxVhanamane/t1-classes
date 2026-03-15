@@ -1,38 +1,32 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 import { ScheduleTestInput } from "../zod/schedule-test.schema";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { redirect } from "next/navigation";
 
-export async function createTestDistribution(
-    input: ScheduleTestInput
-) {
-    const staff = await getCurrentStaff();
+export async function createTestDistribution(input: ScheduleTestInput) {
+    const user = await getAuthIfHasRole(["admin", "teacher"]);
+    if (!user) {
+        redirect("/login")
+    }
     const supabase = await createServerSupabaseClient();
 
-
-    const { error } = await supabase
-        .from("test_distributions")
-        .insert({
-            test_id: input.test_id,
-            audience: input.audience,
-
-            batch_id: input.batch_id,
-            course_id: input.course_id,
-
-            starts_at: input.starts_at,
-            ends_at: input.ends_at,
-
-            duration_minutes: input.duration_minutes,
-            max_attempts: input.max_attempts,
-
-            created_by: staff.id,
-        });
-
-    if (error) {
-
-        throw new Error("FAILED_TO_CREATE_DISTRIBUTION");
+    if (!input.batch_id) {
+        throw new Error("Batch is required");
     }
 
-    return { success: true };
+    const { data, error } = await supabase.rpc("rpc_create_test_distribution", {
+        p_test_id: input.test_id,
+        p_batch_id: input.batch_id,
+        p_starts_at: input.starts_at,
+        p_ends_at: input.ends_at,
+        p_duration_minutes: input.duration_minutes,
+        p_created_by: user.userId,
+    });
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return { success: true, distributionId: data };
 }

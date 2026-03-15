@@ -31,9 +31,15 @@ interface Props {
   testId: string;
   testType: "standard" | "sectioned";
   sections: TestSection[];
+  isLocked: boolean;
 }
 
-export function TestSectionsList({ testId, testType, sections }: Props) {
+export function TestSectionsList({
+  testId,
+  testType,
+  sections,
+  isLocked,
+}: Props) {
   const router = useRouter();
 
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -42,9 +48,16 @@ export function TestSectionsList({ testId, testType, sections }: Props) {
 
   const isStandard = testType === "standard";
   const hasSectionAlready = sections.length > 0;
-  const disableAddSection = isStandard && hasSectionAlready;
+  const disableAddSection = isLocked || (isStandard && hasSectionAlready);
 
   const handleDisabledClick = () => {
+    if (isLocked) {
+      toast.info(
+        "This test is locked because it has already been scheduled or attempted. Sections cannot be modified.",
+      );
+      return;
+    }
+
     toast.info(
       "Standard tests can have only one section. Use a sectioned test to add more.",
     );
@@ -171,12 +184,18 @@ export function TestSectionsList({ testId, testType, sections }: Props) {
                   )}
                 </div>
 
-                {/* Delete Button */}
                 <Button
                   size="icon"
                   variant="ghost"
+                  className={isLocked ? "opacity-50" : ""}
                   onClick={(e) => {
                     e.stopPropagation();
+
+                    if (isLocked) {
+                      toast.info("Locked tests cannot be modified.");
+                      return;
+                    }
+
                     setDeleteTarget(section);
                   }}
                 >

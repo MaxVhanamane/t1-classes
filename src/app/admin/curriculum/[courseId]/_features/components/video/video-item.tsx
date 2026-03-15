@@ -88,11 +88,19 @@ export function VideoItem({ video, courseId, topicId }: VideoItemProps) {
                     <span className="text-green-600">Free preview</span>
                   </>
                 )}
+                {!video.is_published && (
+                  <>
+                    <span>·</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
+                      Unpublished
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 w-32 justify-between shrink-0">
+          <div className="flex items-center gap-1 w-28 lg:w-32 justify-between shrink-0">
             {/* Play toggle */}
             <Button
               size="sm"
@@ -137,13 +145,13 @@ export function VideoItem({ video, courseId, topicId }: VideoItemProps) {
                         toast.success(
                           video.is_published
                             ? "Video unpublished"
-                            : "Video published"
+                            : "Video published",
                         );
                       } catch (err) {
                         toast.error(
                           err instanceof Error
                             ? err.message
-                            : "Failed to publish video"
+                            : "Failed to publish video",
                         );
                       }
                     }}

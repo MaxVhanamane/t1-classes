@@ -11,13 +11,13 @@ export default async function CoursePage({ params }: Props) {
 
   const cookieStore = await cookies();
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/courses/${awaitedParams.slug}/outline`,
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/learning/courses/${awaitedParams.slug}/outline`,
     {
       cache: "no-store", // important for auth-based data
       headers: {
         cookie: cookieStore.toString(),
       },
-    }
+    },
   );
 
   if (!res.ok) {

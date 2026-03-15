@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import type { CourseOutline } from "@/src/types/course-outline.types";
 import { CourseStructureTree } from "./course-structure-tree";
 import { PlayerSkeleton } from "./player-skeleton";
@@ -26,6 +21,7 @@ import {
   getFirstPlayableUnit,
 } from "../helper-functions/course-progress";
 import { PracticeSetDialog } from "./practice-set/practice-set-dialog";
+import PlayerErrorState from "./player-error-state";
 
 export type UnitType = "pdf" | "video";
 
@@ -34,29 +30,40 @@ type CoursePlayerProps = {
   mode?: "learn" | "preview";
 };
 
+/* ========================================================= */
+/* Player State Machine                                      */
+/* ========================================================= */
+
+type PlayerState =
+  | { status: "idle" }
+  | { status: "initial-loading" }
+  | { status: "loading"; unitId: string; unitType: UnitType }
+  | { status: "ready"; unit: CourseUnitContent }
+  | { status: "error"; message: string; unitId: string; unitType: UnitType }
+  | { status: "pdf-dialog-closed" };
+
 export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
-  const [unitContent, setUnitContent] = useState<CourseUnitContent | null>(
-    null,
-  );
+  const [playerState, setPlayerState] = useState<PlayerState>({
+    status: "initial-loading",
+  });
 
   const [activePracticeSetId, setActivePracticeSetId] = useState<string | null>(
     null,
   );
+
   const [hasPreviewUnit, setHasPreviewUnit] = useState(true);
-
   const [activeUnitId, setActiveUnitId] = useState("");
-  const [unitType, setUnitType] = useState<UnitType | null>(null);
-
-  const [loading, setLoading] = useState<
-    UnitType | "pdf-dialog-closed" | "initial" | null
-  >("initial");
 
   const didHydrateRef = useRef(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileMode, setMobileMode] = useState<"inline" | "drawer">("inline");
+  const [mobileMode, setMobileMode] = useState<"inline" | "drawer">(() => {
+    if (typeof window === "undefined") return "inline";
+
+    const saved = localStorage.getItem("mobileCourseContentMode");
+    return saved === "drawer" ? "drawer" : "inline";
+  });
 
   const [openChapterIds, setOpenChapterIds] = useState<Set<string>>(new Set());
-
   const [openTopicIds, setOpenTopicIds] = useState<Set<string>>(new Set());
 
   const abortRef = useRef<AbortController | null>(null);
@@ -64,14 +71,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   /* -------------------------------------------------- */
   /* Hydration                                           */
   /* -------------------------------------------------- */
-
-  useLayoutEffect(() => {
-    const saved = localStorage.getItem("mobileCourseContentMode");
-    if (saved === "inline" || saved === "drawer") {
-      setMobileMode(saved);
-    }
-    didHydrateRef.current = true;
-  }, []);
 
   useEffect(() => {
     if (!didHydrateRef.current) return;
@@ -84,61 +83,75 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
 
   const loadUnit = useCallback(
     async (unitId: string, unitType: UnitType) => {
-      // Abort previous request
       abortRef.current?.abort();
-
       const controller = new AbortController();
       abortRef.current = controller;
 
-      setLoading(unitType);
       setActiveUnitId(unitId);
-      setUnitType(unitType);
 
-      // Save progress only in learn mode
+      setPlayerState({
+        status: "loading",
+        unitId,
+        unitType,
+      });
+
       if (mode === "learn") {
         localStorage.setItem("lastCourseUnitId", unitId);
       }
 
       try {
-        const res = await fetch(`/api/courses/units/${unitId}`, {
+        const res = await fetch(`/api/learning/courses/units/${unitId}`, {
           cache: "no-store",
           signal: controller.signal,
         });
 
         if (!res.ok) {
-          setUnitContent(null);
+          setPlayerState({
+            status: "error",
+            message: "Something went wrong on our side. Please try again.",
+            unitId,
+            unitType,
+          });
+
           return;
         }
 
         const data: CourseUnitContent = await res.json();
 
         if (!controller.signal.aborted) {
-          setUnitContent(data);
+          setPlayerState({
+            status: "ready",
+            unit: data,
+          });
         }
       } catch (e) {
         if (!(e instanceof DOMException && e.name === "AbortError")) {
-          setUnitContent(null);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(null);
+          setPlayerState({
+            status: "error",
+            message: "Something went wrong. Please try again.",
+            unitId,
+            unitType,
+          });
         }
       }
     },
-    [mode], //  dependency
+    [mode],
   );
+
   /* -------------------------------------------------- */
   /* Restore last unit                                   */
   /* -------------------------------------------------- */
+
   useEffect(() => {
     if (mode === "learn") {
       const savedUnitId = localStorage.getItem("lastCourseUnitId");
       const unitId = savedUnitId ?? getFirstPlayableUnit(outline);
 
       if (unitId) {
+        /* eslint-disable react-hooks/set-state-in-effect */
         void loadUnit(unitId, "video");
       } else {
-        setLoading(null);
+        setPlayerState({ status: "idle" });
       }
     }
 
@@ -153,7 +166,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         void loadUnit(previewUnit.id, previewUnit.unitType);
       } else {
         setHasPreviewUnit(false);
-        setLoading(null); // stop skeleton
+        setPlayerState({ status: "idle" });
       }
     }
   }, [outline, mode, loadUnit]);
@@ -161,9 +174,9 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   /* -------------------------------------------------- */
   /* Auto-open path                                      */
   /* -------------------------------------------------- */
-  useEffect(() => {
-    if (mode !== "learn") return; // Disable for preview
 
+  useEffect(() => {
+    if (mode !== "learn") return;
     if (!activeUnitId) return;
 
     const path = findUnitPath(outline, activeUnitId);
@@ -176,13 +189,12 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   /* ================================================== */
   /* Layout                                             */
   /* ================================================== */
-  console.log("loading", loading);
-  console.log("unitType", unitType);
+
   return (
     <div
       className={cn(
         "flex w-full flex-col lg:flex-row",
-        mode === "learn" && "lg:px-7 lg:pr-119", // unchanged
+        mode === "learn" && "lg:px-7 lg:pr-119",
         mode === "preview" && "gap-6",
       )}
     >
@@ -198,26 +210,47 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
             mode === "preview" && "relative",
           )}
         >
-          {loading && unitType === "video" && <PlayerSkeleton />}
-          {loading === "initial" && hasPreviewUnit && <PlayerSkeleton />}
-
-          {!loading && unitContent?.unitType === "video" && (
-            <VideoPlayer unit={unitContent} />
-          )}
-          {/* No preview fallback */}
-          {!loading && mode === "preview" && !hasPreviewUnit && (
-            <EmptyPlayerState message="Preview content is not available for this course. Enroll to unlock full curriculum." />
+          {playerState.status === "initial-loading" && hasPreviewUnit && (
+            <PlayerSkeleton />
           )}
 
-          {loading === "pdf-dialog-closed" && (
+          {playerState.status === "loading" &&
+            playerState.unitType === "video" && <PlayerSkeleton />}
+
+          {playerState.status === "ready" &&
+            playerState.unit.unitType === "video" && (
+              <VideoPlayer unit={playerState.unit} />
+            )}
+
+          {playerState.status === "error" && (
+            <PlayerErrorState
+              message={playerState.message}
+              onRetry={() => {
+                if (playerState.status === "error") {
+                  void loadUnit(playerState.unitId, playerState.unitType);
+                }
+              }}
+            />
+          )}
+
+          {playerState.status === "pdf-dialog-closed" && (
             <EmptyPlayerState message="This item opens in a separate viewer. Select another unit to continue, or select this one again to reopen it." />
           )}
+
+          {!(
+            playerState.status === "loading" ||
+            playerState.status === "ready" ||
+            playerState.status === "error"
+          ) &&
+            mode === "preview" &&
+            !hasPreviewUnit && (
+              <EmptyPlayerState message="Preview content is not available for this course. Enroll to unlock full curriculum." />
+            )}
         </div>
 
         {/* Mobile toggle — unchanged */}
         <div className="lg:hidden px-4 flex justify-between items-center border-t border-b py-2">
           <span className="text-sm text-muted-foreground">Course content</span>
-
           <div className="flex rounded-lg border p-1 text-xs">
             <button
               onClick={() => setMobileMode("inline")}
@@ -228,7 +261,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
             >
               Inline
             </button>
-
             <button
               onClick={() => setMobileMode("drawer")}
               className={cn(
@@ -282,10 +314,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         )}
       </div>
 
-      {/* ================================================= */}
-      {/* RIGHT — SIDEBAR                                  */}
-      {/* ================================================= */}
-
+      {/* RIGHT SIDEBAR unchanged */}
       <aside
         className={cn(
           "hidden lg:block",
@@ -311,7 +340,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
             <h1 className="px-4 py-3 text-lg font-semibold shrink-0">
               Course Content
             </h1>
-
             <div className="flex-1 overflow-y-auto scrollbar-gutter-stable">
               <CourseStructureTree
                 chapters={outline.chapters}
@@ -342,16 +370,12 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         </div>
       </aside>
 
-      {/* ================================================= */}
-      {/* DRAWER — unchanged                               */}
-      {/* ================================================= */}
-
+      {/* Drawer unchanged */}
       <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
         <DrawerContent className="h-[85vh]">
           <DrawerHeader className="border-b">
             <DrawerTitle>Course Content</DrawerTitle>
           </DrawerHeader>
-
           <div className="flex-1 overflow-y-auto">
             <CourseStructureTree
               chapters={outline.chapters}
@@ -384,20 +408,17 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         </DrawerContent>
       </Drawer>
 
-      {/* Dialogs — unchanged */}
+      {/* PDF Dialog */}
+      {playerState.status === "ready" &&
+        playerState.unit.unitType === "pdf" && (
+          <PdfViewerDialog
+            unit={playerState.unit}
+            loading={false}
+            onClose={() => setPlayerState({ status: "pdf-dialog-closed" })}
+          />
+        )}
 
-      {unitType === "pdf" && (
-        <PdfViewerDialog
-          unit={unitContent}
-          loading={loading === "pdf"}
-          onClose={() => {
-            setUnitContent(null);
-            setUnitType(null);
-            setLoading("pdf-dialog-closed");
-          }}
-        />
-      )}
-
+      {/* Practice Dialog unchanged */}
       {activePracticeSetId && (
         <PracticeSetDialog
           practiceSetId={activePracticeSetId}

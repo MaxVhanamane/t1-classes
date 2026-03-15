@@ -1,14 +1,18 @@
 "use server"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff"
 import { revalidatePath } from "next/cache"
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { redirect } from "next/navigation";
 
 export async function extendDistribution(
     distributionId: string,
     newEndsAtISO: string
 ) {
-    const staff = await getCurrentStaff()
+    const user = await getAuthIfHasRole(["admin", "teacher"]);
+    if (!user) {
+        redirect("/login")
+    }
     const supabase = await createServerSupabaseClient()
 
     // Fetch distribution
@@ -23,7 +27,7 @@ export async function extendDistribution(
     }
 
     // Teacher can only extend their own
-    if (staff.role !== "admin" && data.created_by !== staff.id) {
+    if (user.role !== "admin" && data.created_by !== user.userId) {
         throw new Error("NOT_AUTHORIZED")
     }
 
@@ -49,8 +53,7 @@ export async function extendDistribution(
         .eq("id", distributionId)
 
     if (updateError) {
-        console.error("[EXTEND_DISTRIBUTION]", updateError)
-        throw new Error("FAILED_TO_EXTEND")
+        throw new Error(updateError.message);
     }
     revalidatePath("/admin/tests/distributions")
     return { success: true }

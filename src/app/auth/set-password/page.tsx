@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
-import { createClient } from "@/src/lib/supabase/supabase-client";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 
 export default function SetPasswordPage() {
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
   const router = useRouter();
 
   const [password, setPassword] = useState("");
@@ -70,7 +70,7 @@ export default function SetPasswordPage() {
 
     if (!res.ok) {
       setError(
-        "Password was set, but account activation failed. Please contact support."
+        "Password was set, but account activation failed. Please contact support.",
       );
       setLoading(false);
       return;

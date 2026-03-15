@@ -1,7 +1,8 @@
 "use server";
 
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { redirect } from "next/navigation";
 
 
 
@@ -12,10 +13,15 @@ export async function updateTest(
         description: string | null;
     }
 ) {
-    const user = await getCurrentStaff();
+    const user = await getAuthIfHasRole(["admin", "teacher"]);
+
+    if (!user) {
+        redirect("/login");
+    }
+
     const supabase = await createServerSupabaseClient();
 
-    // Optional: Only allow editing your own test unless admin
+    //Only allow editing your own test unless admin
     const query = supabase
         .from("tests")
         .update({
@@ -26,7 +32,7 @@ export async function updateTest(
         .eq("id", testId);
 
     if (user.role !== "admin") {
-        query.eq("created_by", user.id);
+        query.eq("created_by", user.userId);
     }
 
     const { error, data: result } = await query.select().single();

@@ -1,61 +1,61 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-
-import { Table } from "@tiptap/extension-table";
-import TableRow from "@tiptap/extension-table-row";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-
+import Subscript from "@tiptap/extension-subscript";
+import Superscript from "@tiptap/extension-superscript";
+import Mathematics from "@tiptap/extension-mathematics";
+import Image from "@tiptap/extension-image";
 import { cn } from "@/src/lib/utils";
+import { TableKit } from "@tiptap/extension-table";
+import { useEffect, useRef } from "react";
 
-/* ---------------------------------- */
-/* Props                              */
-/* ---------------------------------- */
+type StyleVariant = "rich-content" | "prose";
 
 interface Props {
-  content: string;
+  content: JSONContent;
   clamp?: boolean;
-
-  /** Enables prose typography styles */
-  proseStyle?: boolean;
-
-  /** Optional wrapper classes */
+  variant?: StyleVariant;
   className?: string;
 }
-
-/* ---------------------------------- */
-/* Component                          */
-/* ---------------------------------- */
 
 export function RichTextRenderer({
   content,
   clamp = false,
-  proseStyle = false,
+  variant = "rich-content", // default
   className,
 }: Props) {
-  const lastContentRef = useRef<string>("");
+  const lastContentRef = useRef<JSONContent | null>(null);
+  const isProse = variant === "prose";
 
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Table.configure({
-        resizable: false,
+      Image,
+      Subscript,
+      Superscript,
+      Mathematics,
+      TableKit.configure({
+        table: {
+          HTMLAttributes: { class: "tiptap-table" },
+        },
       }),
-      TableRow,
-      TableHeader,
-      TableCell,
     ],
-    content,
+    content: content ?? {
+      type: "doc",
+      content: [{ type: "paragraph" }],
+    },
     editable: false,
     immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class: cn(
+          "max-w-none cursor-default",
+          isProse ? "prose prose-sm dark:prose-invert" : "rich-content",
+        ),
+      },
+    },
   });
-
-  /* ---------------------------------- */
-  /* Sync content updates               */
-  /* ---------------------------------- */
 
   useEffect(() => {
     if (!editor) return;
@@ -71,29 +71,8 @@ export function RichTextRenderer({
 
   if (!editor) return null;
 
-  /* ---------------------------------- */
-  /* Classes                            */
-  /* ---------------------------------- */
-
-  const wrapperClass = cn(
-    "max-w-none",
-
-    // prose styles
-    proseStyle && "prose prose-sm dark:prose-invert",
-
-    // clamp
-    clamp && "line-clamp-2",
-
-    // external override
-    className,
-  );
-
-  /* ---------------------------------- */
-  /* Render                             */
-  /* ---------------------------------- */
-
   return (
-    <div className={wrapperClass}>
+    <div className={cn(clamp && "line-clamp-2", className)}>
       <EditorContent editor={editor} />
     </div>
   );

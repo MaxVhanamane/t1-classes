@@ -1,4 +1,4 @@
-import { getCourses } from "./_features/actions/actions";
+import { getCourses } from "./_features/actions/courses.actions";
 import { CoursesClient } from "./_features/components/courses-client";
 
 export default async function CoursesPage() {

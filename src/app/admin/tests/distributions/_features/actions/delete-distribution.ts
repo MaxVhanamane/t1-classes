@@ -1,45 +1,27 @@
-"use server"
+"use server";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff"
+import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { redirect } from "next/navigation";
 
 export async function deleteDistribution(distributionId: string) {
-    const staff = await getCurrentStaff()
-    const supabase = await createServerSupabaseClient()
+    const user = await getAuthIfHasRole(["admin", "teacher"]);
+    if (!user) redirect("/login");
 
-    // Fetch distribution
-    const { data, error: fetchError } = await supabase
-        .from("test_distributions")
-        .select("id, created_by, starts_at, ends_at")
-        .eq("id", distributionId)
-        .maybeSingle()
+    const supabase = await createServerSupabaseClient();
 
-    if (fetchError || !data) {
-        throw new Error("DISTRIBUTION_NOT_FOUND")
-    }
+    // delete distribution and unlock test if there is no other distribution using this test
 
-    // Only allow delete if still scheduled
-    const now = Date.now()
-    const start = new Date(data.starts_at).getTime()
-
-    if (now >= start) {
-        throw new Error("DISTRIBUTION_ALREADY_STARTED")
-    }
-
-    // Teacher can only delete their own
-    if (staff.role !== "admin" && data.created_by !== staff.id) {
-        throw new Error("NOT_AUTHORIZED")
-    }
-
-    const { error } = await supabase
-        .from("test_distributions")
-        .delete()
-        .eq("id", distributionId)
+    const { error } = await supabase.rpc("rpc_delete_test_distribution", {
+        p_distribution_id: distributionId,
+        p_user_id: user.userId,
+        p_user_role: user.role,
+    });
 
     if (error) {
-        console.error("[DELETE_DISTRIBUTION]", error)
-        throw new Error("FAILED_TO_DELETE_DISTRIBUTION")
+        console.error("[DELETE_DISTRIBUTION]", error);
+        throw new Error(error.message);
     }
 
-    return { success: true }
+    return { success: true };
 }

@@ -5,7 +5,7 @@ export async function getPracticeSetsByTopic(topicId: string) {
 
     const { data, error } = await supabase
         .from("practice_sets")
-        .select("id, title, description, is_published, created_at")
+        .select("id, title, description, is_published, created_at,is_free_preview")
         .eq("topic_id", topicId)
         .order("created_at", { ascending: true });
 

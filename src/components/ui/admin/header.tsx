@@ -2,10 +2,10 @@
 
 import { Menu, LogOut } from "lucide-react";
 import { Button } from "../button";
-import { createClient } from "@/src/lib/supabase/supabase-client";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 import { ThemeToggle } from "../Theme-toggle";
 
-const supabase = createClient();
+const supabase = createBrowserSupabaseClient();
 
 export default function AdminHeader({
   userName,

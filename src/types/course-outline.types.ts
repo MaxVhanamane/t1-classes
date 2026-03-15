@@ -3,6 +3,11 @@ export type CourseOutline = {
     hasAccess: boolean;
     chapters: CourseChapter[];
 };
+export type CourseOutlineMarketing = {
+    courseId: string;
+    chapters: CourseChapter[];
+};
+
 
 export type CourseChapter = {
     id: string;

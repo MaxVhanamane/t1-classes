@@ -4,9 +4,10 @@ import { AddSectionButton } from "./add-section-button";
 interface Props {
   testType: "standard" | "sectioned";
   testId: string;
+  isLocked: boolean;
 }
 
-export function SectionsEmptyState({ testType, testId }: Props) {
+export function SectionsEmptyState({ testType, testId, isLocked }: Props) {
   return (
     <Card className="p-6 text-center space-y-3">
       <h2 className="text-base font-medium">No sections added yet</h2>
@@ -16,8 +17,13 @@ export function SectionsEmptyState({ testType, testId }: Props) {
           ? "Add one section to define how questions will be evaluated."
           : "Add sections to define different marking schemes for this test."}
       </p>
-      <div className="w-full flex justify-center ">
-        <AddSectionButton testId={testId} testType={testType} />
+
+      <div className="w-full flex justify-center">
+        <AddSectionButton
+          testId={testId}
+          testType={testType}
+          isLocked={isLocked}
+        />
       </div>
     </Card>
   );

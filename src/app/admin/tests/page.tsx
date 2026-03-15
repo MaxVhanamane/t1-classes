@@ -10,7 +10,7 @@ import {
 } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Separator } from "@/src/components/ui/separator";
-import { FileText, CalendarDays } from "lucide-react";
+import { FileText, CalendarDays, ClipboardList } from "lucide-react";
 
 import { TestsList } from "./_features/components/test-list";
 import { getTests } from "./_features/actions/get-tests";
@@ -38,14 +38,20 @@ function TestsListSkeleton() {
   );
 }
 
-/* ---------------- Page ---------------- */
+async function TestsListLoader({ page }: { page: number }) {
+  const { tests, totalPages } = await getTests(page);
 
-async function TestsListLoader() {
-  const tests = await getTests();
-  return <TestsList tests={tests} />;
+  return <TestsList tests={tests} currentPage={page} totalPages={totalPages} />;
 }
 
-export default function AdminTestsPage() {
+/* ---------------- Page ---------------- */
+
+export default async function AdminTestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const page = Math.max(1, Number((await searchParams).page) || 1);
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-6">
       {/* Header */}
@@ -91,7 +97,27 @@ export default function AdminTestsPage() {
 
           <CardContent>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/admin/tests/schedule">View scheduled tests</Link>
+              <Link href="/admin/tests/schedule">Schedule tests</Link>
+            </Button>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-sm transition">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 text-muted-foreground" />
+              <CardTitle className="text-base">View Scheduled Tests</CardTitle>
+            </div>
+            <CardDescription>
+              View all scheduled, ongoing, and completed test distributions.
+              Monitor progress, review results, or extend time for active tests.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <Button asChild variant="outline">
+              <Link href="/admin/tests/distributions">
+                View Scheduled Tests
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -99,7 +125,7 @@ export default function AdminTestsPage() {
 
       {/* Tests */}
       <Suspense fallback={<TestsListSkeleton />}>
-        <TestsListLoader />
+        <TestsListLoader page={page} />
       </Suspense>
     </div>
   );

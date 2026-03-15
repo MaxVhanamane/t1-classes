@@ -21,6 +21,7 @@ const navItems = [
   { label: "Batches", href: "/admin/batches", icon: Layers },
   { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
   { label: "Tests", href: "/admin/tests", icon: NotepadText },
+  { label: "Instructors", href: "/admin/instructors", icon: NotepadText },
 ];
 
 export default function AdminSidebar({
@@ -35,7 +36,7 @@ export default function AdminSidebar({
     <aside
       className={cn(
         "fixed z-50 inset-y-0 left-0 w-64 bg-sidebar border-r transition-transform md:static md:translate-x-0",
-        open ? "translate-x-0" : "-translate-x-full"
+        open ? "translate-x-0" : "-translate-x-full",
       )}
     >
       <div className="flex items-center justify-between p-4 md:p-6">
@@ -59,7 +60,7 @@ export default function AdminSidebar({
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition",
                 isActive
                   ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted"
+                  : "hover:bg-muted",
               )}
             >
               <Icon className="h-4 w-4" />

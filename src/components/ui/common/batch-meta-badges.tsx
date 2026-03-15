@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Badge } from "@/src/components/ui/badge";
 import { cn } from "@/src/lib/utils";
 import {
@@ -6,66 +9,107 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
+
+import { BatchMode } from "@/src/app/admin/batches/_features/types/types";
 import {
-  BatchMode,
-  BatchStatus,
-} from "@/src/app/admin/batches/_features/types/types";
+  BatchLifecycle,
+  getBatchLifecycle,
+} from "@/src/lib/helper-functions/get-batch-lifecycle";
+
+/* ------------------------------------------------ */
+/* Types */
+/* ------------------------------------------------ */
 
 interface BatchMetaBadgesProps {
-  mode: BatchMode;
-  status: BatchStatus;
+  batch: {
+    mode: BatchMode;
+    start_date: string;
+    end_date: string;
+    is_active: boolean;
+  };
   size?: "sm" | "md";
 }
 
-export function BatchMetaBadges({
-  mode,
-  status,
-  size = "sm",
-}: BatchMetaBadgesProps) {
+/* ------------------------------------------------ */
+/* Component */
+/* ------------------------------------------------ */
+
+export function BatchMetaBadges({ batch, size = "sm" }: BatchMetaBadgesProps) {
+  const lifecycle = getBatchLifecycle(batch);
+
   const sizeClasses =
     size === "md" ? "text-sm px-2.5 py-0.5" : "text-xs px-2 py-0.5";
 
-  return (
-    <TooltipProvider>
-      <div className="flex flex-wrap gap-1.5">
-        {/* MODE */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge variant="outline" className={cn("cursor-help", sizeClasses)}>
-              {BATCH_MODE_UI_LABELS[mode]}
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-xs">{BATCH_MODE_EXPLANATION[mode]}</p>
-          </TooltipContent>
-        </Tooltip>
+  const badges = [
+    {
+      key: "mode",
+      label: BATCH_MODE_UI_LABELS[batch.mode],
+      description: BATCH_MODE_EXPLANATION[batch.mode],
+      className: "text-white",
+    },
+    {
+      key: "status",
+      label: BATCH_STATUS_UI_LABELS[lifecycle],
+      description: BATCH_STATUS_EXPLANATION[lifecycle],
+      className: getStatusStyles(lifecycle),
+    },
+  ];
 
-        {/* STATUS */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge
-              variant="outline"
-              className={cn(
-                "cursor-help",
-                sizeClasses,
-                getStatusStyles(status)
-              )}
-            >
-              {BATCH_STATUS_UI_LABELS[status]}
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-xs">{BATCH_STATUS_EXPLANATION[status]}</p>
-          </TooltipContent>
-        </Tooltip>
+  return (
+    <TooltipProvider delayDuration={150}>
+      <div className="flex flex-wrap gap-1.5">
+        {badges.map((badge) => (
+          <BadgeWithTooltip
+            key={badge.key}
+            label={badge.label}
+            description={badge.description}
+            className={cn(sizeClasses, badge.className)}
+          />
+        ))}
       </div>
     </TooltipProvider>
   );
 }
 
-/* ---------- styles ---------- */
+/* ------------------------------------------------ */
+/* Reusable Badge With Tooltip */
+/* ------------------------------------------------ */
 
-function getStatusStyles(status: BatchStatus) {
+function BadgeWithTooltip({
+  label,
+  description,
+  className,
+}: {
+  label: string;
+  description: string;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Tooltip open={open} onOpenChange={setOpen}>
+      <TooltipTrigger asChild>
+        <Badge
+          variant="outline"
+          className={cn("cursor-pointer select-none", className)}
+          onClick={() => setOpen((prev) => !prev)}
+        >
+          {label}
+        </Badge>
+      </TooltipTrigger>
+
+      <TooltipContent side="top">
+        <p className="text-xs">{description}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+/* ------------------------------------------------ */
+/* Styles */
+/* ------------------------------------------------ */
+
+function getStatusStyles(status: BatchLifecycle) {
   switch (status) {
     case "upcoming":
       return `
@@ -85,7 +129,7 @@ function getStatusStyles(status: BatchStatus) {
         dark:bg-muted dark:text-muted-foreground dark:border-border
       `;
 
-    case "cancelled":
+    case "inactive":
       return `
         bg-red-100 text-red-800 border-red-200
         dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/50
@@ -99,7 +143,9 @@ function getStatusStyles(status: BatchStatus) {
   }
 }
 
-/* ---------- labels (shown on badge) ---------- */
+/* ------------------------------------------------ */
+/* Labels */
+/* ------------------------------------------------ */
 
 export const BATCH_MODE_UI_LABELS: Record<BatchMode, string> = {
   online: "Live Online",
@@ -107,14 +153,16 @@ export const BATCH_MODE_UI_LABELS: Record<BatchMode, string> = {
   hybrid: "Hybrid",
 };
 
-export const BATCH_STATUS_UI_LABELS: Record<BatchStatus, string> = {
+export const BATCH_STATUS_UI_LABELS: Record<BatchLifecycle, string> = {
   upcoming: "Starting Soon",
   ongoing: "Classes Ongoing",
   completed: "Completed",
-  cancelled: "Cancelled",
+  inactive: "Inactive",
 };
 
-/* ---------- explanations (shown in tooltip) ---------- */
+/* ------------------------------------------------ */
+/* Explanations */
+/* ------------------------------------------------ */
 
 export const BATCH_MODE_EXPLANATION: Record<BatchMode, string> = {
   online: "Live classes conducted online",
@@ -122,9 +170,9 @@ export const BATCH_MODE_EXPLANATION: Record<BatchMode, string> = {
   hybrid: "Combination of online and classroom sessions",
 };
 
-export const BATCH_STATUS_EXPLANATION: Record<BatchStatus, string> = {
+export const BATCH_STATUS_EXPLANATION: Record<BatchLifecycle, string> = {
   upcoming: "Classes for this batch will begin soon",
   ongoing: "Classes for this batch are currently running",
   completed: "Classes for this batch have been completed",
-  cancelled: "This batch has been cancelled",
+  inactive: "This batch is currently inactive and not open for enrollment",
 };

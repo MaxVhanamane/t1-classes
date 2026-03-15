@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
-import { UpdatePracticeSetInput, updatePracticeSetSchema } from "../../zod-schema/practice-set/practice-set";
-
+import {
+    UpdatePracticeSetInput,
+    updatePracticeSetSchema,
+} from "../../zod-schema/practice-set/practice-set";
 
 export async function updatePracticeSet(
     rawData: UpdatePracticeSetInput
@@ -13,6 +15,7 @@ export async function updatePracticeSet(
      * 1. Validate input
      */
     const parsed = updatePracticeSetSchema.safeParse(rawData);
+
     if (!parsed.success) {
         throw new Error("Invalid practice set data");
     }
@@ -23,6 +26,7 @@ export async function updatePracticeSet(
         practiceSetId,
         title,
         description,
+        isFreePreview,
     } = parsed.data;
 
     const supabase = await createServerSupabaseClient();
@@ -90,6 +94,8 @@ export async function updatePracticeSet(
         .update({
             title: title.trim(),
             description: description?.trim() || null,
+
+            is_free_preview: isFreePreview,
         })
         .eq("id", practiceSetId);
 

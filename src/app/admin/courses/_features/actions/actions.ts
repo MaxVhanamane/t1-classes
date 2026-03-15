@@ -4,8 +4,10 @@
 
 import { revalidatePath } from "next/cache"
 
-import { CourseType } from "../components/course-dialog"
+
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
+import { CourseFormValueTypes } from "../types/course.types"
+import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff"
 
 
 
@@ -13,9 +15,11 @@ export type Course = {
     id: string
     title: string
     slug: string
-    description: string | null
+    description: {
+        [x: string]: unknown;
+    } | null | undefined;
     thumbnail_image: string | null
-    course_type: CourseType
+    course_type: CourseFormValueTypes
     class_level: number | null
     board: string | null
     target_exam: string | null
@@ -68,12 +72,7 @@ export async function createCourse(input: {
 }) {
     const supabase = await createServerSupabaseClient()
 
-    const { data: auth } = await supabase.auth.getUser()
-
-    if (!auth?.user) {
-        throw new Error('Unauthorized')
-    }
-
+    const auth = await getCurrentStaff()
     const slug = input.title
         .toLowerCase()
         .trim()
@@ -82,7 +81,7 @@ export async function createCourse(input: {
     const { error } = await supabase.from('courses').insert({
         ...input,
         slug,
-        created_by: auth.user.id,
+        created_by: auth.id,
     })
 
     if (error) {
@@ -107,17 +106,15 @@ export async function updateCourse(
 ) {
     const supabase = await createServerSupabaseClient()
 
-    const { data: auth } = await supabase.auth.getUser()
+    const auth = await getCurrentStaff()
 
-    if (!auth?.user) {
-        throw new Error('Unauthorized')
-    }
+
 
     const { error } = await supabase
         .from('courses')
         .update({
             ...updates,
-            updated_by: auth.user.id,
+            updated_by: auth.id,
             updated_at: new Date().toISOString(),
         })
         .eq('id', courseId)

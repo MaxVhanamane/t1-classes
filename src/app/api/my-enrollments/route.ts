@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
-import { getCurrentUser } from "@/src/lib/helper-functions/getCurrentUser"
 import { getMyEnrollmentsService } from "@/src/lib/services/enrollments/get-my-enrollments"
+import { getAuth } from "@/src/lib/auth/get-auth"
+
 
 export async function GET() {
-    const supabase = await createServerSupabaseClient()
-    const user = await getCurrentUser()
-    console.log("userrrrrrrrrr", user)
-    if (!user) {
-        return NextResponse.json([], { status: 200 })
+    const auth = await getAuth()
+
+    if (!auth) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const supabase = await createServerSupabaseClient()
 
     const enrollments = await getMyEnrollmentsService(
         supabase,
-        user.id
+        auth.userId
     )
 
     return NextResponse.json(enrollments)

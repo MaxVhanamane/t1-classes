@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { UserRole } from "@/src/types/user";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { createAdminSupabaseClient } from "@/src/lib/supabase/admin.server";
+import { createAdminSupabaseClient } from "@/src/lib/supabase/supabase-admin";
 import { getCurrentAdmin } from "@/src/lib/helper-functions/getCurrentAdmin";
 
 export async function updateUserProfile(
@@ -11,7 +11,7 @@ export async function updateUserProfile(
   data: {
     full_name?: string;
     phone?: string;
-  }
+  },
 ) {
   const supabase = await createServerSupabaseClient();
 
@@ -27,7 +27,7 @@ export async function updateUserProfile(
 
 export async function updateUserRole(
   userId: string,
-  role: "student" | "teacher" | "admin"
+  role: "student" | "teacher" | "admin",
 ) {
   const supabase = await createServerSupabaseClient();
 
@@ -38,7 +38,7 @@ export async function updateUserRole(
 
 export async function updateUserStatus(
   userId: string,
-  status: "active" | "inactive" | "blocked"
+  status: "active" | "inactive" | "blocked",
 ) {
   const supabase = await createServerSupabaseClient();
 
@@ -56,7 +56,7 @@ export async function createUserAdmin(data: {
   // 1 Verify caller is admin
   await getCurrentAdmin();
 
-  const adminSupabase = createAdminSupabaseClient();
+  const adminSupabase = await createAdminSupabaseClient();
 
   // 2 Normalize email
   const email = data.email.trim().toLowerCase();
@@ -140,11 +140,10 @@ export async function resendInvite(userId: string) {
   }
 
   // 2 Get target user's email from auth
-  const adminSupabase = createAdminSupabaseClient();
+  const adminSupabase = await createAdminSupabaseClient();
 
-  const { data: authUser, error } = await adminSupabase.auth.admin.getUserById(
-    userId
-  );
+  const { data: authUser, error } =
+    await adminSupabase.auth.admin.getUserById(userId);
 
   if (error || !authUser.user?.email) {
     throw new Error("User email not found");

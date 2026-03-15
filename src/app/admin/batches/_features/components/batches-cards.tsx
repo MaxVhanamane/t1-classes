@@ -1,17 +1,21 @@
+"use client";
+
 import { Button } from "@/src/components/ui/button";
-import { ModeBadge, StatusBadge } from "./batch-badges";
-import { BatchDuration } from "./batch-duration";
-import { ChevronDown, Pencil } from "lucide-react";
+import { LifecycleBadge, ModeBadge } from "./batch-badges";
+import { Pencil, ChevronDown } from "lucide-react";
 import { BatchListItem } from "../types/types";
 import { BatchActiveSwitch } from "./batch-active-switch";
 import { Badge } from "@/src/components/ui/badge";
-import { useEffect, useRef, useState } from "react";
-import { getHighlightPreview } from "./batches-table";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/src/components/ui/collapsible";
+
+import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
+import { RichTextRenderer } from "../../../tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
+import { TableThumbnailPreview } from "../../../courses/_features/components/Table-thumbnail-preview";
+
 type Props = {
   batches: BatchListItem[];
   onEdit: (batch: BatchListItem) => void;
@@ -20,177 +24,251 @@ type Props = {
 export function BatchesCards({ batches, onEdit }: Props) {
   return (
     <div className="md:hidden space-y-4">
-      {batches.map((batch) => (
-        <div key={batch.id} className="border rounded-lg p-4 space-y-4">
-          {/* HEADER */}
-          <div className="flex items-start justify-between">
-            <div className="space-y-0.5">
-              <h3 className="font-semibold text-base">{batch.name}</h3>
+      {batches.map((batch) => {
+        const thumbnailSrc = batch.thumbnail_image
+          ? `${R2_BUCKET_PUBLIC_URL}/${batch.thumbnail_image}`
+          : null;
 
-              {/* COURSES */}
-              {batch.courses.length === 0 ? (
-                <p className="text-sm text-destructive font-medium">
-                  No courses linked
-                </p>
-              ) : batch.courses.length === 1 ? (
-                <p className="text-sm text-muted-foreground">
-                  Course: {batch.courses[0].course.title}
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Courses:{" "}
-                  {batch.courses.map(({ course }) => course.title).join(", ")}
-                </p>
-              )}
+        return (
+          <div key={batch.id} className="border rounded-lg p-4 space-y-4">
+            {/* ---------------------------------- */}
+            {/* HEADER */}
+            {/* ---------------------------------- */}
+            <div className="flex items-start gap-3">
+              {/* Thumbnail */}
+              <div className="w-16 h-16 shrink-0">
+                <TableThumbnailPreview src={thumbnailSrc} title={batch.title} />
+              </div>
+
+              {/* Title */}
+              <div className="flex-1 space-y-1">
+                <h3 className="font-semibold text-base leading-tight">
+                  {batch.title}
+                </h3>
+
+                {batch.subtitle && (
+                  <p className="text-xs text-muted-foreground">
+                    {batch.subtitle}
+                  </p>
+                )}
+
+                {/* Courses */}
+                {batch.courses.length === 0 ? (
+                  <p className="text-sm text-destructive font-medium">
+                    No courses linked
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {batch.courses.length === 1
+                      ? `Course: ${batch.courses[0].course.title}`
+                      : `Courses: ${batch.courses
+                          .map((c) => c.course.title)
+                          .join(", ")}`}
+                  </p>
+                )}
+              </div>
+
+              {/* Edit */}
+              <Button size="icon" variant="ghost" onClick={() => onEdit(batch)}>
+                <Pencil className="h-4 w-4" />
+              </Button>
             </div>
 
-            <Button size="icon" variant="ghost" onClick={() => onEdit(batch)}>
-              <Pencil className="h-4 w-4" />
-            </Button>
-          </div>
+            {/* ---------------------------------- */}
+            {/* Description (TipTap) */}
+            {/* ---------------------------------- */}
+            {batch.description && (
+              <div className="text-sm">
+                <RichTextRenderer content={batch.description} clamp />
+              </div>
+            )}
 
-          {/* DESCRIPTION */}
-          {batch.description && <MobileDescription text={batch.description} />}
+            {/* ---------------------------------- */}
+            {/* Price */}
+            {/* ---------------------------------- */}
+            <div className="flex flex-col gap-1 text-sm">
+              {batch.list_price > batch.sale_price && (
+                <span className="text-xs line-through text-muted-foreground">
+                  ₹{batch.list_price.toLocaleString("en-IN")}
+                </span>
+              )}
 
-          {batch.batch_highlights &&
-            getHighlightPreview(batch.batch_highlights).length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-base">
+                  ₹{batch.sale_price.toLocaleString("en-IN")}
+                </span>
+
+                {batch.list_price > batch.sale_price && (
+                  <Badge variant="secondary" className="text-xs">
+                    {Math.round(
+                      ((batch.list_price - batch.sale_price) /
+                        batch.list_price) *
+                        100,
+                    )}
+                    % OFF
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* ---------------------------------- */}
+            {/* Admission */}
+            {/* ---------------------------------- */}
+            <Badge
+              variant={batch.is_admission_open ? "outline" : "secondary"}
+              className="w-fit"
+            >
+              {batch.is_admission_open ? "Admission Open" : "Admission Closed"}
+            </Badge>
+
+            {/* ---------------------------------- */}
+            {/* Mode + Lifecycle */}
+            {/* ---------------------------------- */}
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Mode:</span>
+                <ModeBadge mode={batch.mode} />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Lifecycle:</span>
+                <LifecycleBadge batch={batch} />
+              </div>
+            </div>
+
+            {/* ---------------------------------- */}
+            {/* Dates */}
+            {/* ---------------------------------- */}
+            <div className="text-sm">
+              <span className="text-muted-foreground">Dates:</span>{" "}
+              {new Date(batch.start_date).toLocaleDateString()} –{" "}
+              {new Date(batch.end_date).toLocaleDateString()}
+            </div>
+
+            {/* ---------------------------------- */}
+            {/* Location */}
+            {/* ---------------------------------- */}
+            <div className="text-sm">
+              <span className="text-muted-foreground">Location:</span>{" "}
+              {batch.location ?? "—"}
+            </div>
+
+            {/* ---------------------------------- */}
+            {/* Languages */}
+            {/* ---------------------------------- */}
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">Languages:</span>
+
+              <div className="flex flex-wrap gap-1">
+                {batch.languages.length > 0 ? (
+                  batch.languages.map((lang) => (
+                    <Badge
+                      key={lang}
+                      variant="secondary"
+                      className="capitalize"
+                    >
+                      {lang}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-sm">—</span>
+                )}
+              </div>
+            </div>
+
+            {/* ---------------------------------- */}
+            {/* Subjects */}
+            {/* ---------------------------------- */}
+            {batch.subjects?.length ? (
               <Collapsible>
                 <CollapsibleTrigger asChild>
                   <button
                     type="button"
-                    className="text-sm text-primary font-medium flex items-center gap-1"
+                    className="text-sm text-primary flex items-center gap-1"
                   >
-                    View highlights
+                    Subjects
                     <ChevronDown className="h-4 w-4" />
                   </button>
                 </CollapsibleTrigger>
 
-                <CollapsibleContent className="mt-2 space-y-3">
-                  {getHighlightPreview(batch.batch_highlights).map(
-                    (section) => (
-                      <div key={section.title}>
-                        <p className="text-sm font-semibold text-muted-foreground">
-                          {section.title}
-                        </p>
-
-                        <ul className="list-disc pl-4 text-sm space-y-0.5">
-                          {section.shown.map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ul>
-
-                        {section.hiddenCount > 0 && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            +{section.hiddenCount} more
-                          </p>
-                        )}
-                      </div>
-                    )
-                  )}
+                <CollapsibleContent className="mt-2">
+                  <ul className="list-disc pl-4 text-sm space-y-1">
+                    {batch.subjects.map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
                 </CollapsibleContent>
               </Collapsible>
-            )}
+            ) : null}
 
-          {/* PRICE + ADMISSION */}
-          <div className="flex flex-wrap gap-2 text-sm">
-            <Badge variant="secondary">₹ {batch.price}</Badge>
+            {/* ---------------------------------- */}
+            {/* Learning Outcomes */}
+            {/* ---------------------------------- */}
+            {batch.learning_outcomes?.length ? (
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="text-sm text-primary flex items-center gap-1"
+                  >
+                    Learning Outcomes
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </CollapsibleTrigger>
 
-            <Badge variant="outline">
-              {batch.admission_open ? "Admission Open" : "Admission Closed"}
-            </Badge>
-          </div>
+                <CollapsibleContent className="mt-2">
+                  <ul className="list-disc pl-4 text-sm space-y-1">
+                    {batch.learning_outcomes.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </CollapsibleContent>
+              </Collapsible>
+            ) : null}
 
-          {/* MODE + STATUS */}
-          <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">Mode:</span>
-              <ModeBadge mode={batch.mode} />
+            {/* ---------------------------------- */}
+            {/* Target Audience */}
+            {/* ---------------------------------- */}
+            {batch.target_audience?.length ? (
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="text-sm text-primary flex items-center gap-1"
+                  >
+                    Target Audience
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </CollapsibleTrigger>
+
+                <CollapsibleContent className="mt-2">
+                  <ul className="list-disc pl-4 text-sm space-y-1">
+                    {batch.target_audience.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </CollapsibleContent>
+              </Collapsible>
+            ) : null}
+
+            {/* ---------------------------------- */}
+            {/* Footer */}
+            {/* ---------------------------------- */}
+            <div className="flex items-center justify-between text-sm border-t pt-3">
+              <span>Capacity: {batch.capacity ?? "Unlimited"}</span>
+
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Active</span>
+
+                <BatchActiveSwitch
+                  batchId={batch.id}
+                  initialValue={batch.is_active}
+                />
+              </div>
             </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">Status:</span>
-              <StatusBadge status={batch.status} />
-            </div>
           </div>
-
-          {/* DURATION */}
-          <div className="text-sm">
-            <span className="text-muted-foreground">Duration:</span>{" "}
-            <BatchDuration {...batch} />
-          </div>
-
-          {/* CENTER */}
-          <div className="text-sm">
-            <span className="text-muted-foreground">Center:</span>{" "}
-            {batch.center_name ?? "—"}
-          </div>
-
-          {/* LANGUAGES */}
-          <div className="space-y-1">
-            <span className="text-sm text-muted-foreground">Languages:</span>
-
-            <div className="flex flex-wrap gap-1">
-              {batch.languages.length > 0 ? (
-                batch.languages.map((lang) => (
-                  <Badge key={lang} variant="secondary" className="capitalize">
-                    {lang}
-                  </Badge>
-                ))
-              ) : (
-                <span className="text-sm">—</span>
-              )}
-            </div>
-          </div>
-
-          {/* FOOTER */}
-          <div className="flex items-center justify-between text-sm border-t pt-3">
-            <span>Capacity: {batch.capacity ?? "Unlimited"}</span>
-
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">Active</span>
-              <BatchActiveSwitch
-                batchId={batch.id}
-                initialValue={batch.is_active}
-              />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function MobileDescription({ text }: { text: string }) {
-  const [expanded, setExpanded] = useState(false);
-  const [isTruncated, setIsTruncated] = useState(false);
-  const ref = useRef<HTMLParagraphElement>(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-
-    const el = ref.current;
-
-    // Only check truncation when collapsed
-    if (!expanded) {
-      setIsTruncated(el.scrollHeight > el.clientHeight);
-    }
-  }, [text, expanded]);
-
-  return (
-    <div className="text-sm text-muted-foreground space-y-1">
-      <p ref={ref} className={expanded ? "" : "line-clamp-2"}>
-        {text.trim()}
-      </p>
-
-      {isTruncated && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="text-xs text-primary hover:underline"
-        >
-          {expanded ? "Show less" : "Read more"}
-        </button>
-      )}
+        );
+      })}
     </div>
   );
 }

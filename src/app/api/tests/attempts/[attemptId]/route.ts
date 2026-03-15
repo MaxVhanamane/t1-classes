@@ -23,7 +23,6 @@ type AttemptRow = {
 type DistributionRow = {
     id: string;
     batch_id: string | null;
-    course_id: string | null;
     starts_at: string;
     ends_at: string;
 };
@@ -110,7 +109,6 @@ export async function GET(
                 `
         id,
         batch_id,
-        course_id,
         starts_at,
         ends_at
       `
@@ -138,22 +136,6 @@ export async function GET(
             {
                 type: "batch",
                 batchId: distribution.batch_id,
-            }
-        );
-
-        if (!access.hasAccess) {
-            return NextResponse.json(
-                { kind: "denied", reason: "not_enrolled" } satisfies LoadAttemptResponse,
-                { status: 200 }
-            );
-        }
-    } else if (distribution.course_id) {
-        const access = await getEnrollmentAccess(
-            supabase,
-            user.id,
-            {
-                type: "course",
-                courseId: distribution.course_id,
             }
         );
 

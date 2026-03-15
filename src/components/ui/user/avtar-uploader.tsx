@@ -18,7 +18,7 @@ import {
   DialogFooter,
 } from "@/src/components/ui/dialog";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { createClient } from "@/src/lib/supabase/supabase-client";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 
 type UserRow = {
   id: string;
@@ -35,7 +35,7 @@ const MAX_INITIAL_SIZE = 5 * 1024 * 1024;
 const MAX_FINAL_SIZE = 200 * 1024;
 
 export function AvatarUploader({ user, onAvatarUpdated }: Props) {
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -47,7 +47,7 @@ export function AvatarUploader({ user, onAvatarUpdated }: Props) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(user.profile_image);
   const [optimisticPreview, setOptimisticPreview] = useState<string | null>(
-    null
+    null,
   );
 
   // -------------------------
@@ -385,7 +385,7 @@ async function getCroppedImage(imageSrc: string, crop: Area): Promise<Blob> {
     0,
     0,
     crop.width,
-    crop.height
+    crop.height,
   );
 
   return new Promise((resolve) => {
