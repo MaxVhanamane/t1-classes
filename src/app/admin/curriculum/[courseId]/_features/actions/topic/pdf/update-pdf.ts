@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
+import { deleteR2Object } from "@/src/lib/r2/deleteObject";
 import { EditPdfFormInput, editPdfFormSchema } from "../../../zod-schema/pdf.schema";
 
+const R2_PRIVATE_BUCKET_NAME = process.env.R2_PRIVATE_BUCKET_NAME!;
 
 export async function updatePdfUnit(
     courseId: string,
@@ -16,7 +18,7 @@ export async function updatePdfUnit(
     }
 ) {
     /**
-     * 1. Validate input (EDIT schema)
+     * 1. Validate input
      */
     const parsed = editPdfFormSchema.safeParse(payload.form);
     if (!parsed.success) {
@@ -27,7 +29,7 @@ export async function updatePdfUnit(
     const staff = await getCurrentStaff();
 
     /**
-     * 2. Fetch existing PDF (strict)
+     * 2. Fetch existing PDF
      */
     const { data: pdf, error: pdfError } = await supabase
         .from("course_units")
@@ -87,19 +89,30 @@ export async function updatePdfUnit(
         })
         .eq("id", pdfId);
 
+    /**
+     * If DB update fails → rollback uploaded file
+     */
     if (updateError) {
-        // rollback newly uploaded file if DB write fails
         if (newFilePath) {
-            await supabase.storage.from("course-pdfs").remove([newFilePath]);
+            try {
+                await deleteR2Object(R2_PRIVATE_BUCKET_NAME, newFilePath);
+            } catch (err) {
+                console.error("[R2_ROLLBACK_FAILED]", err);
+            }
         }
+
         throw new Error(updateError.message);
     }
 
     /**
-     * 5. Cleanup old file (best-effort)
+     * 5. Delete old file (ONLY if replaced)
      */
     if (newFilePath && oldFilePath && newFilePath !== oldFilePath) {
-        await supabase.storage.from("course-pdfs").remove([oldFilePath]);
+        try {
+            await deleteR2Object(R2_PRIVATE_BUCKET_NAME, oldFilePath);
+        } catch (err) {
+            console.error("[R2_OLD_FILE_DELETE_FAILED]", err);
+        }
     }
 
     /**

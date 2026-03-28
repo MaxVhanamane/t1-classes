@@ -1,4 +1,4 @@
-import "server-only"
+"use server"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { SectionTemplate } from "../../types/section-template.types";

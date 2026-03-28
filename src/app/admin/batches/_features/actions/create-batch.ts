@@ -43,13 +43,18 @@ export async function createBatch(
     /* ---------------- RPC ---------------- */
     const supabase = await createServerSupabaseClient();
 
-    const { data: batchId, error } =
-        await supabase.rpc("create_batch_with_courses", {
+    const { data: batchId, error } = await supabase.rpc(
+        "create_batch_with_courses",
+        {
             /* ---------- Basic ---------- */
             p_title: data.title,
             p_slug: slug,
             p_subtitle: data.subtitle ?? null,
             p_description: data.description ?? null,
+
+            /* ---------- Category ---------- */
+            p_category: data.category,
+            p_board: data.board ?? null,
 
             /* ---------- Academic ---------- */
             p_subjects: subjects,
@@ -72,7 +77,10 @@ export async function createBatch(
             p_is_active: data.is_active,
             p_is_admission_open: data.is_admission_open,
             p_languages: data.languages,
+
+            /* ---------- Location ---------- */
             p_location: data.location ?? null,
+            p_address: data.address ?? null,
 
             /* ---------- Lifecycle ---------- */
             p_start_date: data.start_date,
@@ -83,7 +91,8 @@ export async function createBatch(
 
             /* ---------- Relations ---------- */
             p_course_ids: data.course_ids,
-        });
+        }
+    );
 
     if (error) {
         throw new Error(error.message);
@@ -92,17 +101,18 @@ export async function createBatch(
     if (!batchId) {
         throw new Error("Failed to create batch");
     }
+
     /* ---------- sync instructors ---------- */
     if (data.instructor_ids?.length) {
         await supabase.from("batch_instructors").insert(
             data.instructor_ids.map((id) => ({
                 batch_id: batchId,
                 instructor_id: id,
-            })),
+            }))
         );
     }
 
-
+    /* ---------------- Revalidate ---------------- */
     revalidatePath("/admin/batches");
 
     return batchId;

@@ -26,7 +26,7 @@ import { ExtendDistributionDialog } from "./extend-distribution-dialog";
 import { deleteDistribution } from "../actions/delete-distribution";
 import { ScheduleTestDialog } from "../../../schedule/_features/components/schedule-test-dialog";
 import { DangerConfirmInput } from "@/src/components/ui/danger-confirm-input";
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 
 interface Props {
   item: DistributionItem;

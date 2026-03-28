@@ -67,31 +67,39 @@ export default function QuestionWorkspace({
         onRetry={submit.submit}
       />
 
-      <Card className="flex h-auto flex-col lg:h-full">
+      <Card className="flex h-auto flex-col pt-7 lg:h-full relative  ">
+        <div className="absolute top-2 right-2 flex items-center justify-start min-w-18.75 ">
+          <SyncDot status={syncStatus} />
+        </div>
         {/* HEADER */}
-        <CardHeader className="shrink-0 space-y-2">
+        <CardHeader className="shrink-0 space-y-2 px-4 sm:px-6 ">
           <div className="flex items-center justify-between">
-            <div className="truncate text-sm font-semibold">
+            <div className="line-clamp-2 text-sm font-semibold ">
               {session.current.section.title}
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-xs text-muted-foreground">
-                +{session.current.section.fullMarks} /{" "}
-                {session.current.section.negativeMarks}
-              </div>
-              <SyncDot status={syncStatus} />
-            </div>
           </div>
-
-          <div className="text-xs text-muted-foreground">
-            Question {session.index + 1} of {session.flat.length}
+          <div className="flex justify-between">
+            <div className="text-xs text-muted-foreground">
+              Question {session.index + 1} of {session.flat.length}
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-xs flex items-center gap-2">
+                <span className="">
+                  +{session.current.section.fullMarks} correct
+                </span>
+                <span className="text-muted-foreground">•</span>
+                <span className="">
+                  {session.current.section.negativeMarks} wrong
+                </span>
+              </div>
+            </div>
           </div>
         </CardHeader>
 
         <Separator />
 
         {/* BODY */}
-        <CardContent className="flex min-h-0 flex-1 flex-col pt-4">
+        <CardContent className="flex min-h-0 flex-1 flex-col px-4 sm:px-6 ">
           <div className="flex-1 overflow-y-auto pr-1">
             <QuestionBody
               question={session.current}

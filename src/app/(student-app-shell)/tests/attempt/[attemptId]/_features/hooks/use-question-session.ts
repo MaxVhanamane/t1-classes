@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { StateItem } from "../types/workspace.types";
 import { useQuestionNavigator } from "./use-question-navigator";
-import { useQuestionVisit } from "./use-question-visit";
 import { useAnswerSave } from "./use-answer-save";
 import { Section } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
 import { normalizeStudentAnswer } from "../helpers/normalize-student-answer";
@@ -42,13 +41,7 @@ export function useQuestionSession({
         onNavigate,
     });
 
-    // =========================================
-    // VISIT TRACKING
-    // =========================================
-    useQuestionVisit({
-        attemptId,
-        questionId: nav.current?.id,
-    });
+
 
     // =========================================
     // SAVE LAYER
@@ -150,6 +143,7 @@ export function useQuestionSession({
             answer: normalized,
             markedForReview: true,
         });
+        nav.goNext();
     }
 
     // =========================================

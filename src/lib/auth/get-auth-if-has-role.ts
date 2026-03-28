@@ -9,7 +9,7 @@ export interface AuthContext {
 }
 
 export async function getAuthIfHasRole(
-    allowedRoles: UserRole[]
+    allowedRoles: readonly UserRole[]
 ): Promise<AuthContext | null> {
 
     const auth = await getAuth()

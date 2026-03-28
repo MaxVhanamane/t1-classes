@@ -1,12 +1,17 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 import { revalidatePath } from "next/cache";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { ROLE_GROUPS } from "@/src/lib/auth/role-groups";
+import { redirect } from "next/navigation";
 
 export async function deleteChapter(chapterId: string, courseId: string) {
     const supabase = await createServerSupabaseClient();
-    const staff = await getCurrentStaff(); // admin OR teacher
+    const staff = await getAuthIfHasRole(ROLE_GROUPS.STAFF); // admin OR teacher
+    if (!staff) {
+        redirect("/login")
+    }
 
     // 1. Fetch chapter + ownership
     const { data: chapter, error: chapterError } = await supabase
@@ -30,8 +35,8 @@ export async function deleteChapter(chapterId: string, courseId: string) {
         throw new Error("Course not found");
     }
 
-    const isOwner = course.created_by === staff.id;
-    if (!staff.is_admin && !isOwner) {
+    const isOwner = course.created_by === staff.userId;
+    if (staff.role !== "admin" && !isOwner) {
         throw new Error("You are not allowed to delete this chapter");
     }
 

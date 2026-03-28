@@ -33,7 +33,7 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
         let extraCoursesText: string | null = null;
 
         if (enrollment.target_type === "batch" && batch) {
-          primaryTitle = batch.name;
+          primaryTitle = batch.title;
 
           if (batch.courses.length > 0) {
             extraCoursesText = batch.courses.map((c) => c.title).join(", ");
@@ -132,7 +132,7 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
                   <span className="font-medium">
                     {format(
                       new Date(enrollment.access_starts_at),
-                      "dd MMM yyyy"
+                      "dd MMM yyyy",
                     )}
                   </span>
                   <span className="mx-1 text-muted-foreground">→</span>
@@ -140,7 +140,7 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
                     {enrollment.access_ends_at
                       ? format(
                           new Date(enrollment.access_ends_at),
-                          "dd MMM yyyy"
+                          "dd MMM yyyy",
                         )
                       : "Unlimited"}
                   </span>

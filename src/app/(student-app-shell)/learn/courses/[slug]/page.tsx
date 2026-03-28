@@ -1,41 +1,29 @@
-import { cookies } from "next/headers";
 import { CoursePlayer } from "./_features/components/course-player";
 import { CourseErrorState } from "./_features/components/course-error-state";
+import { getCourseOutlineForPlayer } from "./_features/helper-functions/get-course-outline";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 export default async function CoursePage({ params }: Props) {
-  const awaitedParams = await params;
-
-  const cookieStore = await cookies();
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/learning/courses/${awaitedParams.slug}/outline`,
-    {
-      cache: "no-store", // important for auth-based data
-      headers: {
-        cookie: cookieStore.toString(),
-      },
-    },
-  );
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => null);
-
-    return (
-      <CourseErrorState
-        status={res.status}
-        message={error?.message ?? "Something went wrong"}
-      />
-    );
+  const { slug: rawSlug } = await params;
+  let slug: string;
+  try {
+    slug = decodeURIComponent(rawSlug);
+  } catch {
+    return <CourseErrorState status={400} message="Invalid course URL" />;
   }
-
-  const outline = await res.json();
+  const result = await getCourseOutlineForPlayer(slug);
+  if (!result.success) {
+    return <CourseErrorState status={result.status} message={result.message} />;
+  }
 
   return (
     <div className="pb-36">
-      <CoursePlayer outline={outline} />
+      <CoursePlayer outline={result.outline} />
     </div>
   );
 }
+
+// mr-(--removed-body-scroll-bar-size) shadcn adds this when dialog,popover etc opens we can use this to avoid layout shift

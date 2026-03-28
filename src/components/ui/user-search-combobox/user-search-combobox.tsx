@@ -33,7 +33,7 @@ export function UserSearchCombobox({
 }: UserSearchComboboxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce(query, 300);
+  const debouncedQuery = useDebounce(query, 1000);
 
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [pickedUser, setPickedUser] = useState<UserSearchResult | null>(null);
@@ -108,7 +108,7 @@ export function UserSearchCombobox({
                       "h-2.5 w-2.5 rounded-full border",
                       user.id === value
                         ? "bg-primary border-primary"
-                        : "border-muted-foreground"
+                        : "border-muted-foreground",
                     )}
                   />
                 </div>

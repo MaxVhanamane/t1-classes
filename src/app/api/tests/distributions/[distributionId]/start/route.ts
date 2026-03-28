@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStudent } from "@/src/lib/helper-functions/getCurrentStudent";
-import { getEnrollmentAccess } from "@/src/lib/server/enrollment-access";
+import { hasActiveBatchEnrollment } from "@/src/lib/server/enrollment-access";
+import { getAuth } from "@/src/lib/auth/get-auth";
 
 type DistributionRow = {
     id: string;
@@ -12,19 +12,25 @@ type DistributionRow = {
     duration_minutes: number;
 };
 
-type AttemptRow = {
-    id: string;
-    status: "in_progress" | "submitted" | "expired";
-    started_at: string;
-    time_limit_seconds: number;
-};
-
 export async function POST(
     _req: Request,
     { params }: { params: Promise<{ distributionId: string }> }
 ) {
     const supabase = await createServerSupabaseClient();
-    const user = await getCurrentStudent();
+
+    /* ------------------------------------------------ */
+    /* 0. Auth                                          */
+    /* ------------------------------------------------ */
+
+    const user = await getAuth();
+
+    if (!user) {
+        return NextResponse.json(
+            { kind: "error", reason: "unauthorized" },
+            { status: 401 }
+        );
+    }
+
     const distributionId = (await params).distributionId;
 
     const now = Date.now();
@@ -34,21 +40,17 @@ export async function POST(
     /* 1. Load distribution                             */
     /* ------------------------------------------------ */
 
-    const { data: dist, error } = await supabase
+    const { data: dist } = await supabase
         .from("test_distributions")
         .select(
-            `
-      id, test_id, batch_id,
-      starts_at, ends_at,
-      duration_minutes
-    `
+            "id, test_id, batch_id, starts_at, ends_at, duration_minutes"
         )
         .eq("id", distributionId)
-        .single();
+        .maybeSingle();
 
-    if (error || !dist) {
+    if (!dist) {
         return NextResponse.json(
-            { kind: "denied", reason: "not_started" },
+            { kind: "denied", reason: "not_found" },
             { status: 404 }
         );
     }
@@ -66,131 +68,101 @@ export async function POST(
         );
     }
 
-    const access = await getEnrollmentAccess(
+    const hasAccess = await hasActiveBatchEnrollment(
         supabase,
-        user.id,
-        { type: "batch", batchId: distribution.batch_id }
+        user.userId,
+        distribution.batch_id
     );
 
-    if (!access.hasAccess) {
+    if (!hasAccess) {
         return NextResponse.json(
             { kind: "denied", reason: "not_enrolled" },
             { status: 403 }
         );
     }
+
     /* ------------------------------------------------ */
     /* 3. Time gate                                     */
     /* ------------------------------------------------ */
 
-    const startsAt = new Date(distribution.starts_at).getTime();
-    const endsAt = new Date(distribution.ends_at).getTime();
+    const startsAt = Date.parse(distribution.starts_at);
+    const endsAt = Date.parse(distribution.ends_at);
 
     if (now < startsAt) {
         return NextResponse.json(
-            { kind: "denied", reason: "Test has not started yet!" },
+            { kind: "denied", reason: "not_started" },
             { status: 403 }
         );
     }
 
     if (now >= endsAt) {
         return NextResponse.json(
-            { kind: "denied", reason: "Test has ended!" },
+            { kind: "denied", reason: "ended" },
             { status: 403 }
         );
     }
 
     /* ------------------------------------------------ */
-    /* 4. Existing attempts                             */
+    /* 4. Check existing attempt (FAST + INDEXED)       */
     /* ------------------------------------------------ */
 
-    const { data: attempts } = await supabase
+    const { data: existingAttempt } = await supabase
         .from("test_attempts")
-        .select(
-            `id, status, started_at, time_limit_seconds`
-        )
+        .select("id")
         .eq("distribution_id", distributionId)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .eq("user_id", user.userId)
+        .maybeSingle();
 
-    const typedAttempts = (attempts ?? []) as AttemptRow[];
-
-    const inProgress = typedAttempts.find(
-        (a) => a.status === "in_progress"
-    );
-
-    /* ------------------------------------------------ */
-    /* Resume                                           */
-    /* ------------------------------------------------ */
-
-    if (inProgress) {
+    if (existingAttempt) {
         return NextResponse.json({
             kind: "resumed",
-            attemptId: inProgress.id,
+            attemptId: existingAttempt.id,
         });
     }
 
-
     /* ------------------------------------------------ */
-    /* 6. Create attempt                                */
+    /* 5. Create attempt                                */
     /* ------------------------------------------------ */
 
-    const timeLimitSeconds =
-        distribution.duration_minutes * 60;
+    const timeLimitSeconds = distribution.duration_minutes * 60;
 
-    const { data: created, error: createError } =
-        await supabase
+    const { data: created, error } = await supabase
+        .from("test_attempts")
+        .insert({
+            test_id: distribution.test_id,
+            distribution_id: distribution.id,
+            user_id: user.userId,
+            started_at: nowIso,
+            time_limit_seconds: timeLimitSeconds,
+            status: "in_progress",
+        })
+        .select("id")
+        .single();
+
+    if (error || !created) {
+        // Try to fetch existing attempt (race condition safe)
+        const { data: fallback } = await supabase
             .from("test_attempts")
-            .insert({
-                test_id: distribution.test_id,
-                distribution_id: distribution.id,
-                user_id: user.id,
-                started_at: nowIso,
-                last_activity_at: nowIso,
-                time_limit_seconds: timeLimitSeconds,
-                status: "in_progress",
-            })
-            .select(
-                `id, started_at, time_limit_seconds`
-            )
-            .single();
+            .select("id")
+            .eq("distribution_id", distributionId)
+            .eq("user_id", user.userId)
+            .maybeSingle();
 
-    /* ------------------------------------------------ */
-    /* Fallback resume                                  */
-    /* ------------------------------------------------ */
-
-    if (createError || !created) {
-        const { data: fallback } =
-            await supabase
-                .from("test_attempts")
-                .select(
-                    `id, started_at, time_limit_seconds`
-                )
-                .eq(
-                    "distribution_id",
-                    distributionId
-                )
-                .eq("user_id", user.id)
-                .eq("status", "in_progress")
-                .single();
-
-        if (!fallback) {
-            return NextResponse.json(
-                {
-                    kind: "denied",
-                    reason: "not_started",
-                },
-                { status: 500 }
-            );
+        if (fallback) {
+            return NextResponse.json({
+                kind: "resumed",
+                attemptId: fallback.id,
+            });
         }
 
-        return NextResponse.json({
-            kind: "resumed",
-            attemptId: fallback.id,
-        });
+        return NextResponse.json(
+            { kind: "error", reason: "failed_to_start" },
+            { status: 500 }
+        );
     }
 
     /* ------------------------------------------------ */
-    /* 7. Success                                       */
+    /* 6. Success                                       */
     /* ------------------------------------------------ */
 
     return NextResponse.json({

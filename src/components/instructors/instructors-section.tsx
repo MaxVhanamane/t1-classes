@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { CourseInstructorType } from "@/src/app/api/course-instructors/[courseId]/route";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
-import { SectionDivider } from "@/src/app/(student-app-shell)/courses/[slug]/_features/components/section-divider";
+import { SectionDivider } from "@/src/app/(marketing)/courses/[slug]/_features/components/section-divider";
 
 type Props = {
   id: string;

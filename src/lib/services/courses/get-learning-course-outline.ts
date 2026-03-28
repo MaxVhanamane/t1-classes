@@ -118,6 +118,7 @@ export async function getLearningCourseOutline(
                         hasAccess || ps.is_free_preview
                             ? "accessible"
                             : "locked",
+                    isFreePreview: ps.is_free_preview
                 }));
 
             return {

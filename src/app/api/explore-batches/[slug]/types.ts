@@ -1,6 +1,6 @@
-import { ExploreCourse } from "../types"
+import { ExploreCourseMarketing } from "../types"
 import { JSONContent } from "@tiptap/react"
-export type ExploreCourseForBatch = ExploreCourse
+export type ExploreCourseForBatch = ExploreCourseMarketing
 
 export type ExploreBatchDetail = {
     id: string;

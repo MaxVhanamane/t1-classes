@@ -2,7 +2,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 
 export default function LoadingCoursePlayer() {
   return (
-    <div className="flex w-full flex-col lg:flex-row lg:px-7 lg:pr-119">
+    <div className="flex w-full flex-col lg:flex-row lg:px-7 lg:pr-119 pb-36">
       {/* ================= LEFT ================= */}
       <div className="flex flex-col lg:flex-1">
         <div className="sticky top-14 z-20 bg-background lg:static lg:mt-3">

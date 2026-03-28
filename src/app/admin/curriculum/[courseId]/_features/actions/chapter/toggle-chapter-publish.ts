@@ -2,11 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 import {
     toggleChapterPublishSchema,
     ToggleChapterPublishInput,
 } from "../../zod-schema/chapter.schema";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { ROLE_GROUPS } from "@/src/lib/auth/role-groups";
+import { redirect } from "next/navigation";
 
 
 export async function toggleChapterPublish(
@@ -23,7 +25,11 @@ export async function toggleChapterPublish(
     const { courseId, chapterId, publish } = parsed.data;
 
     const supabase = await createServerSupabaseClient();
-    const staff = await getCurrentStaff();
+    const staff = await getAuthIfHasRole(ROLE_GROUPS.STAFF); // admin OR teacher
+    if (!staff) {
+        redirect("/login")
+    }
+
 
     /**
      * 2. Fetch chapter
@@ -60,7 +66,7 @@ export async function toggleChapterPublish(
     }
 
     const isAdmin = staff.role === "admin";
-    const isOwner = course.created_by === staff.id;
+    const isOwner = course.created_by === staff.userId;
 
     if (!isAdmin && !isOwner) {
         throw new Error("You are not allowed to update publish state");

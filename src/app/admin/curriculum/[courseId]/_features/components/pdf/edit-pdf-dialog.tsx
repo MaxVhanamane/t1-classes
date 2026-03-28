@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, FileText } from "lucide-react";
-
 import { Button } from "@/src/components/ui/button";
 import {
   Dialog,
@@ -19,13 +18,15 @@ import { Textarea } from "@/src/components/ui/textarea";
 import { Switch } from "@/src/components/ui/switch";
 import { Separator } from "@/src/components/ui/separator";
 import { toast } from "sonner";
+
 import { PdfUnit } from "../../types/course-unit.types";
-import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 import { updatePdfUnit } from "../../actions/topic/pdf/update-pdf";
 import {
   EditPdfFormInput,
   editPdfFormSchema,
 } from "../../zod-schema/pdf.schema";
+
+import { useR2Upload } from "@/src/hooks/use-r2-upload";
 
 interface Props {
   pdf: PdfUnit;
@@ -36,7 +37,8 @@ interface Props {
 export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const supabase = createBrowserSupabaseClient();
+
+  const { uploadFile } = useR2Upload();
 
   const form = useForm<EditPdfFormInput>({
     resolver: zodResolver(editPdfFormSchema),
@@ -59,7 +61,9 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
     let newFilePath: string | undefined;
 
     try {
-      // 1. Upload new file if replaced
+      /**
+       * 1 Upload new file (if replaced)
+       */
       if (data.file) {
         if (
           data.file.type !== "application/pdf" &&
@@ -68,27 +72,26 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
           throw new Error("Only PDF files are allowed");
         }
 
-        // Create SAFE storage path (NO user input)
-        const safeFileName = `${crypto.randomUUID()}.pdf`;
-        newFilePath = `courses/${courseId}/topics/${topicId}/${safeFileName}`;
+        const upload = await uploadFile({
+          file: data.file,
+          assetType: "course_pdf",
+          courseId,
+          topicId,
+        });
 
-        const { error } = await supabase.storage
-          .from("course-pdfs")
-          .upload(newFilePath, data.file, {
-            contentType: "application/pdf",
-            upsert: false,
-          });
-
-        if (error) throw new Error(error.message);
+        newFilePath = upload.key;
       }
 
-      // 2. Update DB (now receives correct path)
+      /**
+       * 2 Update DB
+       */
       await updatePdfUnit(courseId, topicId, pdf.id, {
         form: data,
         newFilePath,
       });
 
       toast.success("PDF updated");
+
       setOpen(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Update failed");
@@ -99,6 +102,7 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
 
   function handleOpenChange(value: boolean) {
     setOpen(value);
+
     if (!value) {
       form.reset();
     }
@@ -106,7 +110,7 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
 
   return (
     <>
-      {/* Trigger (dropdown-friendly) */}
+      {/* Trigger */}
       <Button
         variant="ghost"
         size="sm"
@@ -132,6 +136,7 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
             {/* Replace file */}
             <div className="space-y-2">
               <Label>Replace PDF (optional)</Label>
+
               <Input
                 type="file"
                 accept="application/pdf"
@@ -142,6 +147,7 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
                   })
                 }
               />
+
               {selectedFile && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <FileText className="h-3 w-3" />
@@ -175,6 +181,7 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
                   Allow students to view before enrolling
                 </p>
               </div>
+
               <Switch
                 checked={form.watch("isFreePreview")}
                 onCheckedChange={(v) =>

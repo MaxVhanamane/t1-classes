@@ -19,7 +19,7 @@ import {
   XCircle,
   Loader,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 import { useParams } from "next/navigation";
 import { motion } from "motion/react";
 import { StatCard } from "./_features/components/stat-card";

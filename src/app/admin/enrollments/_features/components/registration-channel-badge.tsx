@@ -8,14 +8,26 @@ function RegistrationChannelBadge({
   switch (channel) {
     case "online":
       return (
-        <Badge variant="outline" className="border-sky-500 text-sky-600">
+        <Badge
+          variant="outline"
+          className="   bg-emerald-500/10
+        text-emerald-600
+        border-emerald-500/20
+        dark:text-emerald-400"
+        >
           Online
         </Badge>
       );
 
     case "offline":
       return (
-        <Badge variant="outline" className="border-amber-500 text-amber-600">
+        <Badge
+          variant="outline"
+          className="    bg-blue-500/10
+        text-blue-600
+        border-blue-500/20
+        dark:text-blue-400"
+        >
           Offline
         </Badge>
       );

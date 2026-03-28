@@ -193,7 +193,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   return (
     <div
       className={cn(
-        "flex w-full flex-col lg:flex-row",
+        "flex w-full flex-col lg:flex-row ",
         mode === "learn" && "lg:px-7 lg:pr-119",
         mode === "preview" && "gap-6",
       )}
@@ -202,7 +202,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
       {/* LEFT — PLAYER                                    */}
       {/* ================================================= */}
 
-      <div className="flex lg:flex-1 flex-col">
+      <div className="flex lg:flex-1 flex-col ">
         <div
           className={cn(
             "bg-background",

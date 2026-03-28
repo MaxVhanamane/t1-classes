@@ -35,4 +35,5 @@ export type PracticeSetOutline = {
     id: string;
     title: string;
     access: "accessible" | "locked";
+    isFreePreview: boolean;
 };

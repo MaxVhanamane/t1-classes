@@ -2,10 +2,10 @@ import { ExploreCourseCard } from "./ExploreCourseCard";
 import { SectionError } from "@/src/components/system/SectionError";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuth } from "@/src/lib/auth/get-auth";
 
 import type { ExploreCourse } from "@/src/app/api/explore-batches/types";
 import { getExploreCoursesForUser } from "@/src/lib/services/courses/get-explore-courses-for-user";
+import { Link } from "@/src/components/ui/link";
 
 export async function ExploreCourses() {
   let courses: ExploreCourse[] | null = null;
@@ -14,9 +14,7 @@ export async function ExploreCourses() {
   try {
     const supabase = await createServerSupabaseClient();
 
-    const auth = await getAuth();
-
-    courses = await getExploreCoursesForUser(supabase, auth?.userId);
+    courses = await getExploreCoursesForUser(supabase, 6);
   } catch {
     fetchError = true;
   }
@@ -43,10 +41,23 @@ export async function ExploreCourses() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {courses.map((course) => (
-        <ExploreCourseCard key={course.id} course={course} />
-      ))}
+    <div className="space-y-6">
+      {/* Grid */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {courses.map((course) => (
+          <ExploreCourseCard key={course.id} course={course} />
+        ))}
+      </div>
+
+      {/*  View All CTA */}
+      <div className="flex justify-center">
+        <Link
+          href="/courses"
+          className="group inline-flex items-center gap-3 rounded-xl border bg-muted/40 px-5 py-3 text-sm font-medium transition hover:bg-muted"
+        >
+          <span>View all courses</span>
+        </Link>
+      </div>
     </div>
   );
 }

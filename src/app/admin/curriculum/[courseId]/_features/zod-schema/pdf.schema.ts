@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const MAX_PDF_SIZE_MB = 5;
+export const MAX_PDF_SIZE_MB = 2;
 const MAX_PDF_SIZE = MAX_PDF_SIZE_MB * 1024 * 1024;
 
 /**

@@ -24,9 +24,9 @@ import {
   AddPdfFormInput,
   MAX_PDF_SIZE_MB,
 } from "../../zod-schema/pdf.schema";
-import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 import { toast } from "sonner";
 import { createPdf } from "../../actions/topic/pdf/create-pdf";
+import { useR2Upload } from "@/src/hooks/use-r2-upload";
 
 interface Props {
   courseId: string;
@@ -34,6 +34,7 @@ interface Props {
 }
 
 export function AddPdfDialog({ courseId, topicId }: Props) {
+  const { uploadFile } = useR2Upload();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -50,13 +51,14 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
 
   async function onSubmit(data: AddPdfFormInput) {
     if (loading) return;
+
     setLoading(true);
 
-    const supabase = createBrowserSupabaseClient();
     let uploadedPath: string | null = null;
 
     try {
-      //Validate file
+      /* Validate file */
+
       if (!data.file) {
         throw new Error("Please select a PDF file");
       }
@@ -72,25 +74,20 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
         throw new Error(`PDF must be smaller than ${MAX_PDF_SIZE_MB}MB`);
       }
 
-      //Create SAFE storage path (NO user input)
-      const safeFileName = `${crypto.randomUUID()}.pdf`;
-      const filePath = `courses/${courseId}/topics/${topicId}/${safeFileName}`;
+      /* Upload to R2 */
 
-      const { error: uploadError } = await supabase.storage
-        .from("course-pdfs")
-        .upload(filePath, data.file, {
-          contentType: "application/pdf",
-          upsert: false,
-        });
+      const upload = await uploadFile({
+        file: data.file,
+        assetType: "course_pdf",
+        courseId,
+        topicId,
+      });
 
-      if (uploadError) {
-        throw new Error(uploadError.message);
-      }
+      uploadedPath = upload.key;
 
-      uploadedPath = filePath;
+      /* Save DB record */
 
-      //Save DB record
-      await createPdf(courseId, topicId, filePath, data);
+      await createPdf(courseId, topicId, uploadedPath, data);
 
       toast.success("PDF added", {
         description: "PDF has been added as a draft.",
@@ -99,11 +96,6 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
       setOpen(false);
       form.reset();
     } catch (err) {
-      /* Cleanup orphaned upload */
-      if (uploadedPath) {
-        await supabase.storage.from("course-pdfs").remove([uploadedPath]);
-      }
-
       toast.error(err instanceof Error ? err.message : "Failed to add PDF");
     } finally {
       setLoading(false);
@@ -127,7 +119,11 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent>
+        <DialogContent
+          onInteractOutside={(e) => {
+            e.preventDefault();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Add PDF</DialogTitle>
           </DialogHeader>

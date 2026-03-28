@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 import Image from "next/image";
 
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";

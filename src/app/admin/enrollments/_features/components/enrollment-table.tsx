@@ -62,8 +62,8 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
               isBatch && batch
                 ? batch.courses.map((c) => c.title)
                 : course
-                ? [course.title]
-                : [];
+                  ? [course.title]
+                  : [];
 
             const primaryTitle = courseTitles[0];
             const extraCount = courseTitles.length - 1;
@@ -102,7 +102,7 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                     {isBatch && batch ? (
                       <>
                         <TruncatedWithTooltip
-                          text={batch.name}
+                          text={batch.title}
                           className="font-medium"
                         />
                         {primaryTitle && (
@@ -161,7 +161,7 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                       <span className="font-medium text-foreground">
                         {format(
                           new Date(enrollment.access_starts_at),
-                          "dd MMM yyyy"
+                          "dd MMM yyyy",
                         )}
                       </span>
                     </div>
@@ -171,7 +171,7 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                         {enrollment.access_ends_at
                           ? format(
                               new Date(enrollment.access_ends_at),
-                              "dd MMM yyyy"
+                              "dd MMM yyyy",
                             )
                           : "Unlimited"}
                       </span>

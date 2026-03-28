@@ -1,4 +1,4 @@
-"use server"
+import "server-only"
 
 import type { SupabaseClient } from "@supabase/supabase-js"
 
@@ -66,4 +66,32 @@ export async function getEnrollmentAccess(
         courseId: data.course_id ?? undefined,
         batchId: data.batch_id ?? undefined,
     }
+}
+
+
+
+
+// quick version
+export async function hasActiveBatchEnrollment(
+    supabase: SupabaseClient,
+    userId: string,
+    batchId: string
+): Promise<boolean> {
+    const nowIso = new Date().toISOString();
+
+    const { data, error } = await supabase
+        .from("enrollments")
+        .select("id") // minimal payload
+        .eq("user_id", userId)
+        .eq("target_type", "batch")
+        .eq("batch_id", batchId)
+        .eq("is_active", true)
+        .in("status", ["ongoing"]) // only valid state
+        .lte("access_starts_at", nowIso)
+        .or(`access_ends_at.is.null,access_ends_at.gte.${nowIso}`)
+        .maybeSingle();
+
+    if (error || !data) return false;
+
+    return true;
 }

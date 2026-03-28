@@ -41,6 +41,33 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
 
   const [activeId, setActiveId] = useState(flat[0]?.id);
 
+  const handleNavigate = (id: string) => {
+    setActiveId(id);
+
+    const key = ["attempt-state", attemptId];
+
+    queryClient.setQueryData<StateItem[]>(key, (prev = []) => {
+      const exists = prev.find((item) => item.questionId === id);
+
+      // if already exists → update
+      if (exists) {
+        return prev.map((item) =>
+          item.questionId === id ? { ...item, visited: true } : item,
+        );
+      }
+
+      // if NOT exists → ADD it
+      return [
+        ...prev,
+        {
+          questionId: id,
+          answer: null,
+          visited: true,
+          markedForReview: false,
+        },
+      ];
+    });
+  };
   return (
     <div className="flex h-[calc(100vh-109.6px)] flex-col lg:flex-row">
       {/* MAIN */}
@@ -49,7 +76,7 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
           attemptId={attemptId}
           sections={sections}
           activeQuestionId={activeId}
-          onNavigate={setActiveId}
+          onNavigate={handleNavigate}
           state={state}
         />
 
@@ -57,11 +84,9 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
         <div className="lg:hidden">
           <QuestionGrid
             attemptId={attemptId}
-            sections={sections.map((s) => ({
-              id: s.id,
-              title: s.title,
-            }))}
-            onJump={setActiveId}
+            sections={sections}
+            onJump={handleNavigate}
+            activeId={activeId}
           />
         </div>
       </main>
@@ -71,11 +96,9 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
         <div className="sticky top-0 h-full overflow-y-auto p-4">
           <QuestionGrid
             attemptId={attemptId}
-            sections={sections.map((s) => ({
-              id: s.id,
-              title: s.title,
-            }))}
-            onJump={setActiveId}
+            sections={sections}
+            onJump={handleNavigate}
+            activeId={activeId}
           />
         </div>
       </aside>

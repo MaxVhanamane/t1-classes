@@ -1,21 +1,45 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 import { Button } from "@/src/components/ui/button";
 import { useParams } from "next/navigation";
 import { cn } from "@/src/lib/utils";
 import { ThemeToggle } from "@/src/components/ui/Theme-toggle";
 import { UserMenu } from "@/src/components/ui/user/user-menu";
 import dynamic from "next/dynamic";
+import { Bell } from "lucide-react";
+
+const NotificationPopover = dynamic(
+  () => import("./notification-popover").then((m) => m.NotificationPopover),
+  {
+    ssr: false,
+    loading: () => (
+      <Button variant="ghost" size="icon" disabled>
+        <Bell className="h-5 w-5 opacity-50" />
+      </Button>
+    ),
+  },
+);
 
 const AnimatedLogo = dynamic(
   () => import("./animated-logo").then((m) => m.AnimatedLogo),
   { ssr: false },
 );
 
-export function StudentNavbar() {
+type NavbarVariant = "authenticated" | "marketing";
+
+interface StudentNavbarProps {
+  variant?: NavbarVariant;
+}
+
+export function StudentNavbar({
+  variant = "authenticated",
+}: StudentNavbarProps) {
   const params = useParams();
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
+
+  const isApp = variant === "authenticated";
+
   return (
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
       <div className="flex h-14 items-center justify-between px-4 sm:px-7">
@@ -29,36 +53,57 @@ export function StudentNavbar() {
               T<sub>1</sub> Classes
             </span>
           </Link>
-          <p
-            className={cn(
-              slug &&
-                "border-l px-2 text-sm  line-clamp-1 max-w-65 lg:max-w-md",
-            )}
-          >
-            {slug && decodeURIComponent(slug)}
-          </p>
+          {isApp && (
+            <p
+              className={cn(
+                slug &&
+                  "border-l px-2 text-sm line-clamp-1 max-w-65 lg:max-w-md",
+              )}
+            >
+              {slug && decodeURIComponent(slug)}
+            </p>
+          )}
         </div>
+
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
-          <Button
-            asChild
-            variant="ghost"
-            className="hidden sm:inline-flex h-9 px-3"
-          >
-            <Link href="/dashboard">My Learning</Link>
-          </Button>
+          {isApp ? (
+            <>
+              <Button
+                asChild
+                variant="ghost"
+                className="hidden sm:inline-flex h-9 px-3"
+              >
+                <Link href="/dashboard">My Learning</Link>
+              </Button>
 
-          <Button
-            asChild
-            variant="ghost"
-            className="hidden sm:inline-flex h-9 px-3"
-          >
-            <Link href="/courses">Explore</Link>
-          </Button>
+              <Button
+                asChild
+                variant="ghost"
+                className="hidden sm:inline-flex h-9 px-3"
+              >
+                <Link href="/courses">Explore</Link>
+              </Button>
 
-          <ThemeToggle />
+              <ThemeToggle />
+              <NotificationPopover />
+              <UserMenu />
+            </>
+          ) : (
+            <>
+              <Button
+                asChild
+                variant="ghost"
+                className="hidden sm:inline-flex h-9 px-3"
+              >
+                <Link href="/courses">Explore</Link>
+              </Button>
 
-          <UserMenu />
+              <ThemeToggle />
+              <UserMenu />
+              {/* UserMenu handles both logged-in and logged-out states internally */}
+            </>
+          )}
         </div>
       </div>
     </header>

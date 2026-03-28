@@ -2,9 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 import { z } from "zod";
 import { addChapterFormSchema } from "../../zod-schema/chapter.schema";
+import { redirect } from "next/navigation";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { ROLE_GROUPS } from "@/src/lib/auth/role-groups";
 
 export async function createChapter(
     courseId: string,
@@ -21,7 +23,11 @@ export async function createChapter(
     const { title } = parsed.data;
 
     // 2. Auth: admin OR teacher
-    const user = await getCurrentStaff();
+    const user = await getAuthIfHasRole(ROLE_GROUPS.STAFF); // admin OR teacher
+    if (!user) {
+        redirect("/login")
+    }
+
     const supabase = await createServerSupabaseClient();
 
     // 3. Fetch course + ownership check
@@ -36,7 +42,7 @@ export async function createChapter(
     }
 
     // Teachers can only modify their own courses
-    if (user.role === "teacher" && course.created_by !== user.id) {
+    if (user.role === "teacher" && course.created_by !== user.userId) {
         throw new Error("You are not allowed to modify this course");
     }
 

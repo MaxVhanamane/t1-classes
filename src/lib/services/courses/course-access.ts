@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentUser } from "@/src/lib/helper-functions/getCurrentUser";
+import { getAuth } from "../../auth/get-auth";
 
 export type CourseAccess = {
     hasAccess: boolean;
@@ -10,7 +10,7 @@ export type CourseAccess = {
 
 export async function getCourseAccess(courseId: string): Promise<CourseAccess> {
     const supabase = await createServerSupabaseClient();
-    const user = await getCurrentUser();
+    const user = await getAuth();
 
     if (!user) {
         return { hasAccess: false, via: null };
@@ -24,7 +24,7 @@ export async function getCourseAccess(courseId: string): Promise<CourseAccess> {
     const { count: courseCount, error: courseError } = await supabase
         .from("enrollments")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
+        .eq("user_id", user.userId)
         .eq("target_type", "course")
         .eq("course_id", courseId)
         .in("status", ["ongoing", "paused"])
@@ -63,7 +63,7 @@ export async function getCourseAccess(courseId: string): Promise<CourseAccess> {
     const { count: batchCount, error: batchEnrollError } = await supabase
         .from("enrollments")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
+        .eq("user_id", user.userId)
         .eq("target_type", "batch")
         .in("batch_id", batchIds)
         .in("status", ["ongoing", "paused"])

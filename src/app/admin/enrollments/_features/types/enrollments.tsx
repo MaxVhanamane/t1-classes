@@ -24,8 +24,7 @@ export type EnrollmentSupabaseRow = {
 
   batch: {
     id: string;
-    name: string;
-    status: "upcoming" | "ongoing" | "completed" | "cancelled";
+    title: string;
     batch_courses: {
       course: {
         id: string;
@@ -37,13 +36,11 @@ export type EnrollmentSupabaseRow = {
 
 export type BatchSupabaseRow = {
   id: string;
-  name: string;
-  status: "upcoming" | "ongoing" | "completed" | "cancelled";
+  title: string;
   is_active: boolean;
   start_date: string | null;
   end_date: string | null;
-  duration: number | null;
-  admission_open: boolean;
+  is_admission_open: boolean;
   batch_courses: {
     course: {
       id: string;
@@ -88,8 +85,7 @@ export type EnrollmentRow = {
 
   batch: {
     id: string;
-    name: string;
-    status: "upcoming" | "ongoing" | "completed" | "cancelled";
+    title: string;
     courses: {
       id: string;
       title: string;
@@ -120,12 +116,10 @@ export type CreateEnrollmentInput = {
 
 export type BatchOption = {
   id: string;
-  name: string;
-  status: "upcoming" | "ongoing" | "completed" | "cancelled";
+  title: string;
 
   start_date: string | null;
   end_date: string | null;
-  duration: number | null;
 
   // many-to-many
   course: {
@@ -133,7 +127,7 @@ export type BatchOption = {
   }[];
 
   is_active?: boolean;
-  admission_open?: boolean;
+  is_admission_open?: boolean;
 };
 
 export type CourseOption = {

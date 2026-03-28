@@ -11,10 +11,16 @@ import {
 import { deleteR2Object } from "@/src/lib/r2/deleteObject";
 import { generateBatchSlug } from "@/src/lib/helper-functions/generate-slug";
 import { revalidatePath } from "next/cache";
+import {
+    Board, Category, TargetExam,
+    Subject,
+    Language,
+} from "../../../batches/_features/zod-schema/schema";
 
 /* -------------------------------------------------- */
 /* Types                                              */
 /* -------------------------------------------------- */
+
 
 export type CourseRow = {
     id: string;
@@ -24,29 +30,31 @@ export type CourseRow = {
 
     thumbnail_image: string | null;
 
-    course_type:
-    | "academic"
-    | "foundation"
-    | "exam"
-    | "crash";
+    /* ---------- Category ---------- */
+    category: Category;
 
+    /* ---------- Academic ---------- */
     class_level: number | null;
-    board: string | null;
-    target_exam: string | null;
+    board: Board | null;
+    target_exam: TargetExam | null;
 
-    subjects: string[] | null;
-    languages: string[];
+    subjects: Subject[] | null;
+    languages: Language[];
 
+    /* ---------- Pricing ---------- */
     list_price: number;
     sale_price: number;
 
+    /* ---------- Status ---------- */
     is_active: boolean;
 
+    /* ---------- Content ---------- */
     description: CourseDescription;
 
     learning_outcomes: string[] | null;
     target_audience: string[] | null;
 
+    /* ---------- Relations ---------- */
     instructors?: {
         id: string;
         full_name: string;
@@ -54,7 +62,6 @@ export type CourseRow = {
 
     created_at: string;
 };
-
 /* -------------------------------------------------- */
 /* Helpers                                            */
 /* -------------------------------------------------- */
@@ -64,6 +71,7 @@ export type CourseRow = {
 /* -------------------------------------------------- */
 export async function getCourses(): Promise<CourseRow[]> {
     const supabase = await createServerSupabaseClient();
+
     await getCurrentStaff();
 
     const { data, error } = await supabase
@@ -74,14 +82,13 @@ export async function getCourses(): Promise<CourseRow[]> {
       slug,
       subtitle,
       thumbnail_image,
-      course_type,
+      category,
       class_level,
       board,
       target_exam,
       subjects,
       list_price,
       sale_price,
-      currency,
       languages,
       is_active,
       description,
@@ -95,7 +102,18 @@ export async function getCourses(): Promise<CourseRow[]> {
         )
       )
     `)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .overrideTypes<
+            (CourseRow & {
+                course_instructors?: {
+                    instructors: {
+                        id: string;
+                        full_name: string;
+                    } | null;
+                }[];
+            })[],
+            { merge: false }
+        >();
 
     if (error) throw new Error(error.message);
     if (!data) return [];
@@ -103,7 +121,7 @@ export async function getCourses(): Promise<CourseRow[]> {
     return data.map((course) => {
         const instructors =
             course.course_instructors?.flatMap((ci) =>
-                ci.instructors ?? []
+                ci.instructors ? [ci.instructors] : []
             ) ?? [];
 
         return {
@@ -117,12 +135,23 @@ export async function getCourses(): Promise<CourseRow[]> {
 /* Create Course                                      */
 /* -------------------------------------------------- */
 
-export async function createCourse(input: unknown): Promise<string> {
+export async function createCourse(
+    input: unknown
+): Promise<string> {
+    /* ---------- validate ---------- */
     const parsed = courseSchema.safeParse(input);
-    if (!parsed.success) throw new Error("Invalid course data");
+
+    if (!parsed.success) {
+        throw new Error(
+            parsed.error.issues[0]?.message ?? "Invalid course data"
+        );
+    }
 
     const values = parsed.data;
+
+    /* ---------- auth ---------- */
     const staff = await getCurrentStaff();
+
     const supabase = await createServerSupabaseClient();
 
     /* ---------- slug ---------- */
@@ -130,9 +159,22 @@ export async function createCourse(input: unknown): Promise<string> {
 
     /* ---------- description ---------- */
     const description =
-        values.description && Object.keys(values.description).length
+        values.description &&
+            Object.keys(values.description).length
             ? values.description
             : null;
+
+    /* ---------- transforms ---------- */
+    const subjects =
+        values.subjects?.map((s) => s.value) ?? null;
+
+    const learningOutcomes =
+        values.learning_outcomes?.map((o) => o.value) ?? null;
+
+    const targetAudience =
+        values.target_audience?.map((a) => a.value) ?? null;
+
+    const languages = values.languages;
 
     /* ---------- insert course ---------- */
     const { data, error } = await supabase
@@ -141,28 +183,43 @@ export async function createCourse(input: unknown): Promise<string> {
             title: values.title,
             subtitle: values.subtitle ?? null,
             slug,
-            thumbnail_image: null,
-            course_type: values.course_type,
-            class_level: values.class_level ?? null,
+
+            thumbnail_image: values.thumbnail_image ?? null,
+
+            /* ---------- category ---------- */
+            category: values.category,
             board: values.board ?? null,
+
+            /* ---------- academic ---------- */
+            class_level: values.class_level ?? null,
             target_exam: values.target_exam ?? null,
-            subjects: values.subjects?.map((s) => s.value) ?? null,
+            subjects,
+
+            /* ---------- pricing ---------- */
             list_price: values.list_price,
             sale_price: values.sale_price,
-            languages: values.languages.map((l) => l.value),
+
+            /* ---------- delivery ---------- */
+            languages,
             currency: "INR",
+
+            /* ---------- status ---------- */
             is_active: values.is_active,
+
+            /* ---------- content ---------- */
             description,
-            learning_outcomes:
-                values.learning_outcomes?.map((o) => o.value) ?? null,
-            target_audience:
-                values.target_audience?.map((a) => a.value) ?? null,
+            learning_outcomes: learningOutcomes,
+            target_audience: targetAudience,
+
+            /* ---------- meta ---------- */
             created_by: staff.id,
         })
         .select("id")
         .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+        throw new Error(error.message);
+    }
 
     const courseId = data.id;
 
@@ -175,7 +232,10 @@ export async function createCourse(input: unknown): Promise<string> {
             }))
         );
     }
+
+    /* ---------- revalidate ---------- */
     revalidatePath("/admin/courses");
+
     return courseId;
 }
 
@@ -185,13 +245,22 @@ export async function createCourse(input: unknown): Promise<string> {
 
 export async function updateCourse(
     courseId: string,
-    input: unknown,
+    input: unknown
 ): Promise<string> {
+    /* ---------- validate ---------- */
     const parsed = courseSchema.safeParse(input);
-    if (!parsed.success) throw new Error("Invalid course data");
+
+    if (!parsed.success) {
+        throw new Error(
+            parsed.error.issues[0]?.message ?? "Invalid course data"
+        );
+    }
 
     const values = parsed.data;
+
+    /* ---------- auth ---------- */
     const staff = await getCurrentStaff();
+
     const supabase = await createServerSupabaseClient();
 
     const { data: course } = await supabase
@@ -206,10 +275,24 @@ export async function updateCourse(
         throw new Error("Unauthorized");
     }
 
+    /* ---------- description ---------- */
     const description =
-        values.description && Object.keys(values.description).length
+        values.description &&
+            Object.keys(values.description).length
             ? values.description
             : null;
+
+    /* ---------- transforms ---------- */
+    const subjects =
+        values.subjects?.map((s) => s.value) ?? null;
+
+    const learningOutcomes =
+        values.learning_outcomes?.map((o) => o.value) ?? null;
+
+    const targetAudience =
+        values.target_audience?.map((a) => a.value) ?? null;
+
+    const languages = values.languages;
 
     /* ---------- update course ---------- */
     const { error } = await supabase
@@ -217,39 +300,59 @@ export async function updateCourse(
         .update({
             title: values.title,
             subtitle: values.subtitle ?? null,
-            course_type: values.course_type,
-            class_level: values.class_level ?? null,
+
+            /* ---------- category ---------- */
+            category: values.category,
             board: values.board ?? null,
+
+            /* ---------- academic ---------- */
+            class_level: values.class_level ?? null,
             target_exam: values.target_exam ?? null,
-            subjects: values.subjects?.map((s) => s.value) ?? null,
+            subjects,
+
+            /* ---------- pricing ---------- */
             list_price: values.list_price,
             sale_price: values.sale_price,
-            languages: values.languages.map((l) => l.value),
+
+            /* ---------- delivery ---------- */
+            languages,
+
+            /* ---------- status ---------- */
             is_active: values.is_active,
+
+            /* ---------- content ---------- */
             description,
-            learning_outcomes:
-                values.learning_outcomes?.map((o) => o.value) ?? null,
-            target_audience:
-                values.target_audience?.map((a) => a.value) ?? null,
+            learning_outcomes: learningOutcomes,
+            target_audience: targetAudience,
+
+            /* ---------- meta ---------- */
             updated_by: staff.id,
             updated_at: new Date().toISOString(),
         })
         .eq("id", courseId);
 
-    if (error) throw new Error(error.message);
+    if (error) {
+        throw new Error(error.message);
+    }
 
     /* ---------- sync instructors ---------- */
-
     const { data: existing } = await supabase
         .from("course_instructors")
         .select("instructor_id")
         .eq("course_id", courseId);
 
-    const existingIds = existing?.map((i) => i.instructor_id) ?? [];
+    const existingIds =
+        existing?.map((i) => i.instructor_id) ?? [];
+
     const newIds = values.instructor_ids ?? [];
 
-    const toInsert = newIds.filter((id) => !existingIds.includes(id));
-    const toDelete = existingIds.filter((id) => !newIds.includes(id));
+    const toInsert = newIds.filter(
+        (id) => !existingIds.includes(id)
+    );
+
+    const toDelete = existingIds.filter(
+        (id) => !newIds.includes(id)
+    );
 
     if (toInsert.length) {
         await supabase.from("course_instructors").insert(
@@ -267,6 +370,8 @@ export async function updateCourse(
             .eq("course_id", courseId)
             .in("instructor_id", toDelete);
     }
+
+    /* ---------- revalidate ---------- */
     revalidatePath("/admin/courses");
 
     return courseId;

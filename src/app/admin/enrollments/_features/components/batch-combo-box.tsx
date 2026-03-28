@@ -31,7 +31,7 @@ export function BatchCombobox({
 }: BatchComboboxProps) {
   const selected = useMemo(
     () => batches.find((b) => b.id === value),
-    [batches, value]
+    [batches, value],
   );
 
   return (
@@ -46,7 +46,7 @@ export function BatchCombobox({
             className="w-full justify-between truncate"
           >
             <span className="truncate">
-              {selected ? selected.name : "Select batch"}
+              {selected ? selected.title : "Select batch"}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -66,7 +66,7 @@ export function BatchCombobox({
                 return (
                   <CommandItem
                     key={batch.id}
-                    value={`${batch.name} ${courseTitles.join(" ")}`}
+                    value={`${batch.title} ${courseTitles.join(" ")}`}
                     onSelect={() => onChange(batch.id)}
                     className="cursor-pointer"
                   >
@@ -77,14 +77,16 @@ export function BatchCombobox({
                           "h-2.5 w-2.5 rounded-full border",
                           batch.id === value
                             ? "bg-primary border-primary"
-                            : "border-muted-foreground"
+                            : "border-muted-foreground",
                         )}
                       />
                     </div>
 
                     <div className="flex flex-col gap-0.5 max-w-65">
                       {/* Batch name */}
-                      <span className="truncate font-medium">{batch.name}</span>
+                      <span className="truncate font-medium">
+                        {batch.title}
+                      </span>
 
                       {/* Course summary */}
                       <span className="truncate text-xs text-muted-foreground">

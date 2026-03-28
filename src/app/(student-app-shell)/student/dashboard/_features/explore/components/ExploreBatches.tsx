@@ -2,10 +2,10 @@ import { ExploreBatchCard } from "./ExploreBatchCard";
 import { SectionError } from "@/src/components/system/SectionError";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuth } from "@/src/lib/auth/get-auth";
 
 import type { ExploreBatch } from "@/src/app/api/explore-batches/types";
 import { getExploreBatchesService } from "@/src/lib/services/batches/get-explore-batches";
+import { Link } from "@/src/components/ui/link";
 
 export async function ExploreBatches() {
   let batches: ExploreBatch[] | null = null;
@@ -14,9 +14,7 @@ export async function ExploreBatches() {
   try {
     const supabase = await createServerSupabaseClient();
 
-    const auth = await getAuth();
-
-    batches = await getExploreBatchesService(supabase, auth?.userId);
+    batches = await getExploreBatchesService(supabase);
   } catch {
     fetchError = true;
   }
@@ -41,10 +39,21 @@ export async function ExploreBatches() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {batches.map((batch) => (
-        <ExploreBatchCard key={batch.id} batch={batch} />
-      ))}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {batches.map((batch) => (
+          <ExploreBatchCard key={batch.id} batch={batch} />
+        ))}
+      </div>
+      {/*  View All CTA */}
+      <div className="flex justify-center">
+        <Link
+          href="/batches"
+          className="group inline-flex items-center gap-3 rounded-xl border bg-muted/40 px-5 py-3 text-sm font-medium transition hover:bg-muted"
+        >
+          <span>View all batches</span>
+        </Link>
+      </div>
     </div>
   );
 }

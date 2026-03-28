@@ -26,9 +26,9 @@ import { formatFileSize } from "@/src/lib/helper-functions/format-file-size";
 import {
   ALLOWED_IMAGE_EXTENSIONS,
   ALLOWED_IMAGE_MIME_TYPES,
+  SIZE_LIMITS,
 } from "@/src/lib/constants/upload.constants";
 import { IMAGE_OUTPUTS } from "@/src/lib/constants/image-output.config";
-import { SIZE_LIMITS } from "@/src/app/api/uploads/signed-url/route";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 
 import {

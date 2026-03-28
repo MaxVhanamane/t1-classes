@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";

@@ -96,7 +96,7 @@ export function PdfItem({ pdf, courseId, topicId }: Props) {
               )}
             </Popover>
 
-            <div className="flex gap-2 text-xs text-muted-foreground">
+            <div className="flex gap-2 text-xs text-muted-foreground mt-0.5">
               <span>PDF</span>
 
               {pdf.duration_minutes && (

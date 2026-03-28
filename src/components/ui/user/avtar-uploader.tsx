@@ -1,14 +1,10 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import Cropper, { type Area } from "react-easy-crop";
-import imageCompression from "browser-image-compression";
 import { User, Camera } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/src/components/ui/button";
-import { Slider } from "@/src/components/ui/slider";
 import {
   Dialog,
   DialogContent,
@@ -17,9 +13,21 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/src/components/ui/dialog";
+import { Button } from "@/src/components/ui/button";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
 
+import { ImageCropper } from "@/src/components/ui/media/ImageCropper";
+import { useR2Upload } from "@/src/hooks/use-r2-upload";
+import { validateImage } from "@/src/lib/helper-functions/validate-image";
+
+import { IMAGE_OUTPUTS } from "@/src/lib/constants/image-output.config";
+
+import {
+  ALLOWED_IMAGE_MIME_TYPES,
+  SIZE_LIMITS,
+} from "@/src/lib/constants/upload.constants";
+import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
+const USER_AVATAR_UPLOAD_LIMIT = 500 * 1024; // 500KB
 type UserRow = {
   id: string;
   profile_image: string | null;
@@ -30,190 +38,135 @@ type Props = {
   onAvatarUpdated: (url: string | null) => void;
 };
 
-const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-const MAX_INITIAL_SIZE = 5 * 1024 * 1024;
-const MAX_FINAL_SIZE = 200 * 1024;
-
 export function AvatarUploader({ user, onAvatarUpdated }: Props) {
-  const supabase = createBrowserSupabaseClient();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, uploading } = useR2Upload();
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedArea, setCroppedArea] = useState<Area | null>(null);
-
-  const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState(user.profile_image);
-  const [optimisticPreview, setOptimisticPreview] = useState<string | null>(
-    null,
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(
+    user.profile_image ? `${R2_BUCKET_PUBLIC_URL}/${user.profile_image}` : null,
   );
 
-  // -------------------------
-  // Reset everything
-  // -------------------------
-  const resetState = () => {
-    setImageSrc(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedArea(null);
-    setUploading(false);
-    setOptimisticPreview(null);
+  const disabled = uploading;
 
-    if (inputRef.current) {
-      inputRef.current.value = "";
+  function resetState() {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+
+    setCropSrc(null);
+    setLocalPreview(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
-  };
+  }
 
-  const removeAvatar = async () => {
-    setUploading(true);
+  /* ---------------------------------- */
+  /* File selection                     */
+  /* ---------------------------------- */
 
-    try {
-      const filePath = `users/${user.id}.jpg`;
-
-      // 1. Delete from storage (idempotent)
-      const { error: storageError } = await supabase.storage
-        .from("avatars")
-        .remove([filePath]);
-
-      if (storageError) {
-        toast.error("Failed to remove photo", {
-          description: storageError.message,
-        });
-        return;
-      }
-
-      // 2. Clear DB column via SECURITY DEFINER
-      await supabase.rpc("remove_avatar");
-
-      // 3. Update UI
-      setPreview(null);
-      onAvatarUpdated(null);
-      toast.success("Profile photo removed");
-
-      // 4. Close + reset dialog
-      setDialogOpen(false);
-      resetState();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to remove photo");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // -------------------------
-  // File selection
-  // -------------------------
-  const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Unsupported file type", {
-        description: "Please choose a JPG, PNG, or WebP image.",
-      });
+    const url = await validateImage({
+      file,
+      maxSize: USER_AVATAR_UPLOAD_LIMIT,
+      minWidth: 200,
+      minHeight: 200,
+      allowedTypes: ALLOWED_IMAGE_MIME_TYPES,
+    });
+
+    if (!url) {
+      e.target.value = "";
       return;
     }
 
-    if (file.size > MAX_INITIAL_SIZE) {
-      toast.error("Image too large", {
-        description: "Please choose an image under 5MB.",
-      });
-      return;
-    }
+    setCropSrc(url);
+  }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImageSrc(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
+  /* ---------------------------------- */
+  /* Upload avatar                      */
+  /* ---------------------------------- */
 
-  // -------------------------
-  // Crop callback
-  // -------------------------
-  const onCropComplete = useCallback((_: Area, cropped: Area) => {
-    setCroppedArea(cropped);
-  }, []);
+  async function uploadAvatar() {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
 
-  // -------------------------
-  // Upload logic
-  // -------------------------
-  const uploadAvatar = async () => {
-    if (!imageSrc || !croppedArea) return;
-
-    setUploading(true);
+    const toastId = toast.loading("Uploading avatar...");
 
     try {
-      const croppedBlob = await getCroppedImage(imageSrc, croppedArea);
-
-      const croppedFile = new File([croppedBlob], "avatar.jpg", {
-        type: "image/jpeg",
+      const upload = await uploadFile({
+        file,
+        assetType: "user_avatar",
       });
 
-      const compressed = await imageCompression(croppedFile, {
-        maxSizeMB: 0.15,
-        maxWidthOrHeight: 256,
-        useWebWorker: true,
-      });
-
-      if (compressed.size > MAX_FINAL_SIZE) {
-        toast.error("Image is still too large", {
-          description:
-            "Profile photos must be under 200 KB. Try cropping tighter or choose a different image.",
-        });
-        setUploading(false);
-        return;
+      if (!upload?.key) {
+        throw new Error("Upload failed");
       }
 
-      const optimisticUrl = URL.createObjectURL(compressed);
-      setOptimisticPreview(optimisticUrl);
-
-      const filePath = `users/${user.id}.jpg`;
-
-      const { error } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, compressed, {
-          upsert: true,
-          contentType: "image/jpeg",
-        });
-
-      if (error) {
-        toast.error("Image upload failed", {
-          description: error.message,
-        });
-        return;
-      }
-
-      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      const versionedUrl = `${data.publicUrl}?v=${Date.now()}`;
-
-      await supabase.rpc("update_profile_image", {
-        url: versionedUrl,
+      const res = await fetch("/api/user/avatar", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profile_image: upload.key,
+        }),
       });
+
+      if (!res.ok) {
+        throw new Error("Failed to update avatar");
+      }
+      const versionedUrl = `${R2_BUCKET_PUBLIC_URL}/${upload.key}?v=${Date.now()}`;
 
       setPreview(versionedUrl);
-      onAvatarUpdated(versionedUrl);
-      toast.success("Profile photo updated");
+      onAvatarUpdated(upload.key);
+      toast.success("Profile photo updated", { id: toastId });
 
       setDialogOpen(false);
       resetState();
-    } catch (err) {
-      console.error(err);
-      toast.error("Upload failed", {
-        description: "Please try again.",
-      });
-    } finally {
-      setUploading(false);
-      setOptimisticPreview(null);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update avatar", { id: toastId });
     }
-  };
+  }
 
-  // -------------------------
-  // UI
-  // -------------------------
+  /* ---------------------------------- */
+  /* Delete avatar                      */
+  /* ---------------------------------- */
+
+  async function removeAvatar() {
+    const toastId = toast.loading("Removing avatar...");
+
+    try {
+      const res = await fetch("/api/user/avatar", {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete avatar");
+      }
+
+      setPreview(null);
+      onAvatarUpdated(null);
+
+      toast.success("Profile photo removed", { id: toastId });
+
+      setDialogOpen(false);
+      resetState();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to remove avatar", { id: toastId });
+    }
+  }
+
+  const displayAvatar = localPreview ?? preview;
+
+  /* ---------------------------------- */
+  /* UI                                 */
+  /* ---------------------------------- */
+
   return (
     <>
       <Dialog
@@ -224,21 +177,12 @@ export function AvatarUploader({ user, onAvatarUpdated }: Props) {
         }}
       >
         <DialogTrigger asChild>
-          <button
-            className="
-    relative h-9 w-9 rounded-full shrink-0
-    overflow-visible
-    bg-muted flex items-center justify-center
-    ring-1 ring-border
-    transition
-  "
-          >
-            {/* Avatar image */}
-            <span className="relative h-full w-full rounded-full overflow-hidden">
-              {optimisticPreview || preview ? (
+          <button className="relative h-9 w-9 rounded-full shrink-0 overflow-visible bg-muted flex items-center justify-center ring-1 ring-border transition">
+            <span className="relative h-full w-full rounded-full overflow-hidden flex items-center justify-center">
+              {displayAvatar ? (
                 <Image
-                  src={optimisticPreview || preview!}
-                  alt="Edit avatar"
+                  src={displayAvatar}
+                  alt="Avatar"
                   fill
                   className="object-cover"
                 />
@@ -247,101 +191,70 @@ export function AvatarUploader({ user, onAvatarUpdated }: Props) {
               )}
             </span>
 
-            {/* Camera badge (half outside) */}
-            <span
-              className="
-      absolute -bottom-1 -right-1
-      h-4.5 w-4.5
-      rounded-full
-      bg-background
-      border border-border
-      flex items-center justify-center
-      shadow-sm
-    "
-            >
+            <span className="absolute -bottom-1 -right-1 h-4.5 w-4.5 rounded-full bg-background border border-border flex items-center justify-center shadow-sm">
               <Camera className="h-2.5 w-2.5 text-muted-foreground" />
             </span>
           </button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className="sm:max-w-md"
+        >
           <DialogHeader>
             <DialogTitle>Update profile photo</DialogTitle>
           </DialogHeader>
 
-          {!imageSrc ? (
-            <div className="flex flex-col items-center gap-4 py-6">
-              <div className="relative h-24 w-24 rounded-full overflow-hidden bg-muted">
-                {preview ? (
-                  <Image src={preview} alt="Avatar" fill />
-                ) : (
-                  <Skeleton className="h-full w-full rounded-full" />
-                )}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => inputRef.current?.click()}
-              >
-                <Camera className="mr-2 h-4 w-4" />
-                Choose photo
-              </Button>
+          <div className="flex flex-col items-center gap-4 py-6">
+            <div className="relative h-24 w-24 rounded-full overflow-hidden bg-muted">
+              {displayAvatar ? (
+                <Image src={displayAvatar} alt="Avatar" fill />
+              ) : (
+                <Skeleton className="h-full w-full rounded-full" />
+              )}
             </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="relative h-72 w-full rounded-md overflow-hidden bg-black">
-                <Cropper
-                  image={imageSrc}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={1}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={onCropComplete}
-                />
-              </div>
 
-              <Slider
-                value={[zoom]}
-                min={1}
-                max={3}
-                step={0.05}
-                onValueChange={([z]) => setZoom(z)}
-              />
-            </div>
-          )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={disabled}
+            >
+              <Camera className="mr-2 h-4 w-4" />
+              Choose photo
+            </Button>
+          </div>
 
           <DialogFooter>
-            <div className={"flex items-center justify-between w-full"}>
+            <div className="flex items-center justify-between w-full">
               <div>
-                {preview && !imageSrc && (
+                {preview && (
                   <Button
                     variant="ghost"
-                    className="text-destructive cursor-pointer"
+                    className="text-destructive"
                     onClick={removeAvatar}
-                    disabled={uploading}
+                    disabled={disabled}
                   >
                     Remove photo
                   </Button>
                 )}
               </div>
-              <div className="flex items-center justify-between gap-2">
+
+              <div className="flex gap-2">
                 <Button
                   variant="ghost"
+                  disabled={disabled}
                   onClick={() => {
                     setDialogOpen(false);
                     resetState();
                   }}
-                  disabled={uploading}
-                  className="cursor-pointer"
                 >
                   Cancel
                 </Button>
+
                 <Button
-                  className="cursor-pointer"
+                  disabled={!localPreview || disabled}
                   onClick={uploadAvatar}
-                  disabled={!imageSrc || !croppedArea || uploading}
                 >
                   {uploading ? "Saving…" : "Save"}
                 </Button>
@@ -351,44 +264,56 @@ export function AvatarUploader({ user, onAvatarUpdated }: Props) {
         </DialogContent>
       </Dialog>
 
+      {/* Hidden file input */}
+
       <input
-        ref={inputRef}
+        ref={fileInputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp"
         hidden
-        onChange={onSelectFile}
+        onChange={handleFileChange}
+      />
+
+      {/* Cropper */}
+
+      <ImageCropper
+        open={!!cropSrc}
+        src={cropSrc}
+        aspect={1}
+        shape="round"
+        output={IMAGE_OUTPUTS.USER_AVATAR}
+        maxSize={SIZE_LIMITS.user_avatar}
+        onCancel={() => {
+          if (cropSrc) URL.revokeObjectURL(cropSrc);
+
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+
+          setCropSrc(null);
+        }}
+        onComplete={(file) => {
+          if (file.size > SIZE_LIMITS.user_avatar) {
+            toast.error(
+              "Image is too large after compression. Try cropping tighter.",
+            );
+            return;
+          }
+          const previewUrl = URL.createObjectURL(file);
+
+          setLocalPreview(previewUrl);
+
+          if (fileInputRef.current) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInputRef.current.files = dt.files;
+          }
+
+          if (cropSrc) URL.revokeObjectURL(cropSrc);
+
+          setCropSrc(null);
+        }}
       />
     </>
   );
-}
-
-// -------------------------
-async function getCroppedImage(imageSrc: string, crop: Area): Promise<Blob> {
-  const image = document.createElement("img");
-  image.src = imageSrc;
-
-  await new Promise((resolve) => {
-    image.onload = resolve;
-  });
-
-  const canvas = document.createElement("canvas");
-  canvas.width = crop.width;
-  canvas.height = crop.height;
-
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(
-    image,
-    crop.x,
-    crop.y,
-    crop.width,
-    crop.height,
-    0,
-    0,
-    crop.width,
-    crop.height,
-  );
-
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob!), "image/jpeg", 0.9);
-  });
 }

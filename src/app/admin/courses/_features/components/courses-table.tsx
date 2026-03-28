@@ -21,6 +21,7 @@ import { CourseRow } from "../actions/courses.actions";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { TableThumbnailPreview } from "./Table-thumbnail-preview";
 import { TitleSubtitleTooltip } from "@/src/components/ui/common/title-subtitle-tooltip";
+import { BOARD_LABELS } from "../../../batches/_features/zod-schema/schema";
 
 interface CoursesTableProps {
   data: CourseRow[];
@@ -32,13 +33,15 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
 
   return (
     <TooltipProvider>
-      <div className="hidden md:block rounded-lg border">
+      <div className="rounded-lg border ">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Thumbnail</TableHead>
+              <TableHead className="sticky left-0 z-20 bg-muted-soft">
+                Thumbnail
+              </TableHead>
               <TableHead>Title</TableHead>
-              <TableHead>Type</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Class</TableHead>
               <TableHead>Target Exam</TableHead>
               <TableHead>Board</TableHead>
@@ -59,10 +62,10 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
                 : null;
 
               return (
-                <TableRow key={course.id}>
+                <TableRow key={course.id} className="group">
                   {/* Thumbnail */}
-                  <TableCell>
-                    <div className="relative h-10 w-10 overflow-visible rounded-md border">
+                  <TableCell className="sticky left-0 z-20 font-medium bg-muted-soft after:absolute after:inset-0 after:bg-muted/50 after:opacity-0 after:content-[''] after:transition-opacity group-hover:after:opacity-100">
+                    <div className="relative h-10 w-10 z-20 overflow-visible rounded-md border">
                       <TableThumbnailPreview
                         src={thumbnailSrc}
                         title={course.title}
@@ -73,7 +76,7 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
                   </TableCell>
 
                   {/* Title */}
-                  <TableCell className="font-medium">
+                  <TableCell>
                     {course.title ? (
                       <TitleSubtitleTooltip
                         title={course.title}
@@ -86,7 +89,7 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
 
                   {/* Type */}
                   <TableCell className="capitalize">
-                    {course.course_type ?? "—"}
+                    {course.category ?? "—"}
                   </TableCell>
 
                   {/* Class */}
@@ -99,19 +102,19 @@ export function CoursesTable({ data, onEdit }: CoursesTableProps) {
 
                   {/* Board (Tooltip if long) */}
                   <TableCell>
-                    {course.board ? (
-                      <Tooltip>
+                    {course.category === "boards" && course.board ? (
+                      <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
-                          <span className="truncate max-w-30 inline-block cursor-help">
-                            {course.board}
-                          </span>
+                          <p className="max-w-30 truncate cursor-help">
+                            {BOARD_LABELS[course.board]}
+                          </p>
                         </TooltipTrigger>
-                        <TooltipContent align="start">
-                          {course.board}
+                        <TooltipContent className="max-w-xs">
+                          {BOARD_LABELS[course.board]}
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      "—"
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
 

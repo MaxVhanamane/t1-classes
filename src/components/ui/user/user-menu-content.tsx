@@ -27,8 +27,11 @@ export function UserMenuContent({ user, onUserUpdate }: Props) {
       <div className="flex items-center gap-3">
         <AvatarUploader
           user={user}
-          onAvatarUpdated={(newUrl) =>
-            onUserUpdate({ ...user, profile_image: newUrl })
+          onAvatarUpdated={(newKey) =>
+            onUserUpdate({
+              ...user,
+              profile_image: newKey ? `${newKey}?v=${Date.now()}` : null,
+            })
           }
         />
 

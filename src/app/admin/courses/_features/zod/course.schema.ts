@@ -1,6 +1,14 @@
 import { MARKETING_LIMITS } from "@/src/lib/constants/marketing-limits";
 import { z } from "zod";
 
+import {
+    BOARDS,
+    CATEGORIES,
+    TARGET_EXAMS,
+    SUBJECTS,
+    LANGUAGES,
+} from "../../../batches/_features/zod-schema/schema";
+
 /* -------------------------------------------------- */
 /* Helpers                                            */
 /* -------------------------------------------------- */
@@ -11,17 +19,6 @@ const optionalString = z
     .min(1)
     .optional()
     .or(z.literal("").transform(() => undefined));
-
-/* -------------------------------------------------- */
-/* Enums                                              */
-/* -------------------------------------------------- */
-
-export const courseTypeEnum = z.enum([
-    "academic",
-    "foundation",
-    "exam",
-    "crash",
-]);
 
 /* -------------------------------------------------- */
 /* TipTap JSON                                        */
@@ -46,57 +43,74 @@ export const courseSchema = z
 
         description: descriptionSchema,
 
-        course_type: courseTypeEnum,
+        /* -------------------------------------------------- */
+        /* Category                                           */
+        /* -------------------------------------------------- */
+
+        category: z.enum(CATEGORIES, {
+            message: "Please select a category",
+        }),
+
+        /* -------------------------------------------------- */
+        /* Board (only for boards category)                   */
+        /* -------------------------------------------------- */
+
+        board: z.enum(BOARDS).nullable().optional(),
+
+        /* -------------------------------------------------- */
+        /* Academic metadata                                  */
+        /* -------------------------------------------------- */
 
         class_level: z
             .coerce.number()
             .int()
-            .positive("Class level must be greater than 0")
-            .optional()
-            .nullable(),
+            .min(6, "Class level must be between 6 and 12")
+            .max(12, "Class level must be between 6 and 12")
+            .nullable()
+            .optional(),
 
-        board: optionalString,
-
-        target_exam: optionalString,
+        target_exam: z.enum(TARGET_EXAMS).nullable().optional(),
 
         subjects: z
             .array(
                 z.object({
-                    value: z.string().trim().min(1),
+                    value: z.enum(SUBJECTS),
                 })
             )
             .optional()
             .nullable(),
 
-        /* ---------- Pricing ---------- */
+        /* -------------------------------------------------- */
+        /* Pricing                                            */
+        /* -------------------------------------------------- */
 
-        list_price: z
-            .coerce.number()
+        list_price: z.coerce
+            .number()
             .min(0, "List price cannot be negative"),
 
-        sale_price: z
-            .coerce.number()
+        sale_price: z.coerce
+            .number()
             .min(0, "Sale price cannot be negative"),
 
-        /* ---------- Languages ---------- */
+        /* -------------------------------------------------- */
+        /* Languages                                          */
+        /* -------------------------------------------------- */
 
         languages: z
-            .array(
-                z.object({
-                    value: z.string().trim().min(1),
-                })
-            )
+            .array(z.enum(LANGUAGES))
             .min(1, "At least one language is required"),
 
-        /* ---------- Instructors ---------- */
+        /* -------------------------------------------------- */
+        /* Instructors                                        */
+        /* -------------------------------------------------- */
 
-        instructor_ids: z
-            .array(z.string().uuid())
-            .optional(),
+        instructor_ids: z.array(z.uuid()).optional(),
 
         is_active: z.boolean(),
 
-        /* ---------- Marketing Fields ---------- */
+        /* -------------------------------------------------- */
+        /* Marketing Fields                                   */
+        /* -------------------------------------------------- */
 
         learning_outcomes: z
             .array(
@@ -111,10 +125,7 @@ export const courseSchema = z
                         ),
                 })
             )
-            .max(
-                MARKETING_LIMITS.COURSE.MAX_ITEMS,
-                `Maximum ${MARKETING_LIMITS.COURSE.MAX_ITEMS} learning outcomes allowed`
-            )
+            .max(MARKETING_LIMITS.COURSE.MAX_ITEMS)
             .optional()
             .nullable(),
 
@@ -131,14 +142,15 @@ export const courseSchema = z
                         ),
                 })
             )
-            .max(
-                MARKETING_LIMITS.COURSE.MAX_ITEMS,
-                `Maximum ${MARKETING_LIMITS.COURSE.MAX_ITEMS} target audience entries allowed`
-            )
+            .max(MARKETING_LIMITS.COURSE.MAX_ITEMS)
             .optional()
             .nullable(),
     })
-    /* ---------- Cross-field Validation ---------- */
+
+    /* -------------------------------------------------- */
+    /* Cross-field validation                             */
+    /* -------------------------------------------------- */
+
     .superRefine((data, ctx) => {
         if (data.sale_price > data.list_price) {
             ctx.addIssue({
@@ -147,7 +159,24 @@ export const courseSchema = z
                 path: ["sale_price"],
             });
         }
+
+        if (data.category === "boards" && !data.board) {
+            ctx.addIssue({
+                code: "custom",
+                message: "Board is required for board category",
+                path: ["board"],
+            });
+        }
+
+        if (data.category === "boards" && data.target_exam) {
+            ctx.addIssue({
+                code: "custom",
+                message: "Target exam is not allowed for boards category",
+                path: ["target_exam"],
+            });
+        }
     });
+
 /* -------------------------------------------------- */
 /* Types                                              */
 /* -------------------------------------------------- */

@@ -46,7 +46,10 @@ async function getBatches(): Promise<BatchListItem[]> {
       capacity,
       learning_outcomes,
       target_audience,
-
+      location,
+      address,
+      category,
+      board,
       courses:batch_courses (
         course:courses (
           id,

@@ -40,8 +40,7 @@ export default async function AdminEnrollmentsPage() {
 
     batch:batches (
       id,
-      name,
-      status,
+      title,
       batch_courses (
         course:courses (
           id,
@@ -49,7 +48,7 @@ export default async function AdminEnrollmentsPage() {
         )
       )
     )
-    `
+    `,
     )
     .order("enrolled_at", { ascending: false })
     .limit(50)
@@ -82,8 +81,7 @@ export default async function AdminEnrollmentsPage() {
       batch: e.batch
         ? {
             id: e.batch.id,
-            name: e.batch.name,
-            status: e.batch.status,
+            title: e.batch.title,
             courses: e.batch.batch_courses.map((bc) => ({
               id: bc.course.id,
               title: bc.course.title,
@@ -92,30 +90,32 @@ export default async function AdminEnrollmentsPage() {
         : null,
     })) ?? [];
 
+  const today = new Date().toISOString();
+
   const [{ data: batches }, { data: courses }] = await Promise.all([
     supabase
       .from("batches")
       .select(
         `
-      id,
-      name,
-      status,
-      is_active,
-      start_date,
-      end_date,
-      duration,
-      admission_open,
-      batch_courses (
-        course:courses (
-          id,
-          title
-        )
+    id,
+    title,
+    is_active,
+    start_date,
+    end_date,
+    is_admission_open,
+    batch_courses (
+      course:courses (
+        id,
+        title
       )
-      `
+    )
+  `,
       )
       .eq("is_active", true)
-      .eq("admission_open", true)
-      .in("status", ["upcoming", "ongoing"])
+      .eq("is_admission_open", true)
+      .or(
+        `start_date.gt.${today},and(start_date.lte.${today},end_date.gte.${today})`,
+      )
       .order("start_date", { ascending: true })
       .overrideTypes<BatchSupabaseRow[], { merge: false }>(),
 
@@ -126,7 +126,7 @@ export default async function AdminEnrollmentsPage() {
       id,
       title,
       is_active
-      `
+      `,
       )
       .eq("is_active", true)
       .order("title")
@@ -135,19 +135,17 @@ export default async function AdminEnrollmentsPage() {
 
   const batchOptions: BatchOption[] = (batches ?? []).map((b) => ({
     id: b.id,
-    name: b.name,
-    status: b.status,
+    title: b.title,
 
     start_date: b.start_date,
     end_date: b.end_date,
-    duration: b.duration,
 
     course: b.batch_courses.map((bc) => ({
       title: bc.course.title,
     })),
 
     is_active: b.is_active,
-    admission_open: b.admission_open,
+    is_admission_open: b.is_admission_open,
   }));
 
   return (

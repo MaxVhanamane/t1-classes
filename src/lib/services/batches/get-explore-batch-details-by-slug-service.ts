@@ -44,7 +44,7 @@ export async function getExploreBatchDetailBySlugService(
         .single();
 
     if (batchError) {
-        console.error("Error fetching batch:", batchError);
+
         throw new Error("Failed to fetch batch");
     }
 

@@ -14,7 +14,7 @@ export default function AdminShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-muted/40">
+    <div className="flex h-screen bg-muted-soft">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div

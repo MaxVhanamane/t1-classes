@@ -33,12 +33,7 @@ import { createEnrollmentSchema } from "../zod-schema/enrollments";
 import { toast } from "sonner";
 import { updateEnrollment } from "../actions/update-enrollment";
 import { UserSearchCombobox } from "@/src/components/ui/user-search-combobox/user-search-combobox";
-import {
-  addDaysFromTodayEndOfDayISO,
-  localDateTimeToUTCISO,
-  startOfTodayISO,
-  toDateTimeLocal,
-} from "@/src/lib/date";
+import { localDateTimeToUTCISO, toDateTimeLocal } from "@/src/lib/date";
 import { BatchCombobox } from "./batch-combo-box";
 import { CourseCombobox } from "./course-combo-box";
 
@@ -55,6 +50,7 @@ export function EnrollmentDialog({
   enrollment,
   onClose,
 }: CreateEnrollmentDialogProps) {
+  console.log("batches", batches);
   const isEdit = Boolean(enrollment);
   const [isPending, startTransition] = useTransition();
   const [accessTouched, setAccessTouched] = useState(false);
@@ -113,14 +109,6 @@ export function EnrollmentDialog({
       form.setValue("access_ends_at", `${batch.end_date}T23:59`);
       return;
     }
-
-    if (batch.duration) {
-      form.setValue("access_starts_at", startOfTodayISO());
-      form.setValue(
-        "access_ends_at",
-        addDaysFromTodayEndOfDayISO(batch.duration)
-      );
-    }
   }, [batchId, batches, isEdit, accessTouched, form]);
 
   async function onSubmit(values: CreateEnrollmentInput) {
@@ -143,7 +131,9 @@ export function EnrollmentDialog({
         onClose();
       } catch {
         toast.error(
-          isEdit ? "Failed to update enrollment" : "Failed to create enrollment"
+          isEdit
+            ? "Failed to update enrollment"
+            : "Failed to create enrollment",
         );
       }
     });
@@ -219,7 +209,7 @@ export function EnrollmentDialog({
               onValueChange={(v) =>
                 form.setValue(
                   "enrollment_type",
-                  v as CreateEnrollmentInput["enrollment_type"]
+                  v as CreateEnrollmentInput["enrollment_type"],
                 )
               }
             >
@@ -243,7 +233,7 @@ export function EnrollmentDialog({
               onValueChange={(v) =>
                 form.setValue(
                   "registration_channel",
-                  v as CreateEnrollmentInput["registration_channel"]
+                  v as CreateEnrollmentInput["registration_channel"],
                 )
               }
             >
@@ -336,8 +326,8 @@ export function EnrollmentDialog({
                   ? "Saving..."
                   : "Creating..."
                 : isEdit
-                ? "Save Changes"
-                : "Create"}
+                  ? "Save Changes"
+                  : "Create"}
             </Button>
           </div>
         </form>

@@ -14,6 +14,7 @@ import { useMounted } from "@/src/hooks/use-mounted";
 import { UserMenuSkeleton } from "./user-menu-skeleton";
 import { UserMenuContent } from "./user-menu-content";
 import { getUserForMenu } from "@/src/lib/helper-functions/getCurrentUserOptimal";
+import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 
 type UserType = {
   id: string;
@@ -24,10 +25,8 @@ type UserType = {
 
 export function UserMenu() {
   const mounted = useMounted();
-
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (!mounted) return;
 
@@ -39,7 +38,6 @@ export function UserMenu() {
 
     void fetchUser();
   }, [mounted]);
-
   /**
    *  EARLY RETURN
    * Server + First Client Paint → Static button
@@ -74,7 +72,7 @@ export function UserMenu() {
           <div className="relative h-8 w-8 rounded-full overflow-hidden">
             {user?.profile_image ? (
               <Image
-                src={user.profile_image}
+                src={`${R2_BUCKET_PUBLIC_URL}/${user.profile_image}`}
                 alt={user.full_name}
                 fill
                 sizes="36px"

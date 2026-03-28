@@ -15,7 +15,13 @@ import {
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { RichTextRenderer } from "../../../tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 import { TableThumbnailPreview } from "../../../courses/_features/components/Table-thumbnail-preview";
+import { CATEGORY_LABELS, BOARD_LABELS } from "../zod-schema/schema";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
 type Props = {
   batches: BatchListItem[];
   onEdit: (batch: BatchListItem) => void;
@@ -51,6 +57,30 @@ export function BatchesCards({ batches, onEdit }: Props) {
                     {batch.subtitle}
                   </p>
                 )}
+
+                {/* ---------------------------------- */}
+                {/* Category + Board */}
+                {/* ---------------------------------- */}
+                <div className="flex flex-wrap gap-2">
+                  {/* Category */}
+                  <Badge variant="outline">
+                    {CATEGORY_LABELS[batch.category] ?? batch.category}
+                  </Badge>
+
+                  {/* Board */}
+                  {batch.category === "boards" && batch.board && (
+                    <Tooltip delayDuration={200}>
+                      <TooltipTrigger asChild>
+                        <Badge variant="secondary" className="cursor-help">
+                          {batch.board.toUpperCase()}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {BOARD_LABELS[batch.board]}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
 
                 {/* Courses */}
                 {batch.courses.length === 0 ? (
@@ -152,6 +182,19 @@ export function BatchesCards({ batches, onEdit }: Props) {
               <span className="text-muted-foreground">Location:</span>{" "}
               {batch.location ?? "—"}
             </div>
+            {/* Address */}
+            {batch.address && (
+              <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild>
+                  <p className="text-xs text-muted-foreground truncate cursor-help max-w-55">
+                    {batch.address}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  {batch.address}
+                </TooltipContent>
+              </Tooltip>
+            )}
 
             {/* ---------------------------------- */}
             {/* Languages */}

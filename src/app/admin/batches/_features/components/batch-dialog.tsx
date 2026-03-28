@@ -51,7 +51,21 @@ import {
 
 import { Badge } from "@/src/components/ui/badge";
 import { ChevronsUpDown } from "lucide-react";
-import { BatchFormValues, batchSchema } from "../zod-schema/schema";
+import {
+  BatchFormValues,
+  batchSchema,
+  BOARDS,
+  BOARD_LABELS,
+  CATEGORIES,
+  CATEGORY_LABELS,
+  LOCATIONS,
+  LOCATION_LABELS,
+  SUBJECTS,
+  LANGUAGES,
+  LANGUAGE_LABELS,
+  TARGET_EXAM_LABELS,
+  CATEGORY_TARGET_EXAMS,
+} from "../zod-schema/schema";
 import { BatchDialogProps, BatchListItem } from "../types/types";
 import { createBatch } from "../actions/create-batch";
 import { updateBatch } from "../actions/update-batch";
@@ -63,18 +77,19 @@ import Image from "next/image";
 import {
   ALLOWED_IMAGE_EXTENSIONS,
   ALLOWED_IMAGE_MIME_TYPES,
+  SIZE_LIMITS,
 } from "@/src/lib/constants/upload.constants";
 import { validateImage } from "@/src/lib/helper-functions/validate-image";
 import { MARKETING_LIMITS } from "@/src/lib/constants/marketing-limits";
 import { RemoveButton } from "../../../courses/_features/components/remove-button";
-import { SIZE_LIMITS } from "@/src/app/api/uploads/signed-url/route";
 import { ImageCropper } from "@/src/components/ui/media/ImageCropper";
 import { IMAGE_OUTPUTS } from "@/src/lib/constants/image-output.config";
 import { updateBatchThumbnail } from "../actions/update-batch-thumbnail";
 import { TipTapEditor } from "../../../courses/_features/components/tiptap-editor";
 import { FormField } from "@/src/components/ui/form";
 
-const LANGUAGES = ["english", "hindi", "marathi"] as const;
+const CLASS_LEVELS = [6, 7, 8, 9, 10, 11, 12] as const;
+
 type InstructorOption = {
   id: string;
   full_name: string;
@@ -119,6 +134,10 @@ function mapBatchToForm(batch: BatchListItem): BatchFormValues {
     capacity: batch.capacity ?? null,
     is_admission_open: batch.is_admission_open,
     is_active: batch.is_active,
+
+    category: batch.category,
+    board: batch.board ?? null,
+    address: batch.address ?? "",
   };
 }
 
@@ -215,6 +234,10 @@ export function BatchDialog({
       /* Visibility */
       is_admission_open: true,
       is_active: true,
+
+      category: "boards",
+      address: "",
+      board: null,
     },
   });
 
@@ -228,11 +251,12 @@ export function BatchDialog({
     name: "target_audience",
   });
 
-  const subjects = useFieldArray({
+  const category = useWatch({
     control: form.control,
-    name: "subjects",
+    name: "category",
   });
 
+  const availableExams = CATEGORY_TARGET_EXAMS[category] ?? [];
   /* ---------------- watched values ---------------- */
   const titleValue = useWatch({ control: form.control, name: "title" });
 
@@ -283,6 +307,21 @@ export function BatchDialog({
       setCheckingLock(false);
     }
   }, [open]);
+
+  useEffect(() => {
+    const allowed = CATEGORY_TARGET_EXAMS[category] ?? [];
+    const current = form.getValues("target_exam");
+
+    if (current && !allowed.includes(current)) {
+      form.setValue("target_exam", null);
+    }
+  }, [category, form]);
+
+  useEffect(() => {
+    if (category !== "boards") {
+      form.setValue("board", null);
+    }
+  }, [category, form]);
 
   useEffect(() => {
     if (!open) return;
@@ -361,7 +400,7 @@ export function BatchDialog({
         /* -------------------------------------------------- */
         if (isEdit && batch) {
           batchId = batch.id;
-          await updateBatch(batchId, payload);
+          await updateBatch(batchId, batch.slug, payload);
         } else {
           batchId = await createBatch(payload);
         }
@@ -516,7 +555,6 @@ export function BatchDialog({
                 </p>
               )}
             </div>
-
             {/* NAME */}
             <div className="space-y-3 relative">
               <Label>Batch Name</Label>
@@ -541,6 +579,51 @@ export function BatchDialog({
                 {subtitleValue?.length ?? 0}/120
               </p>
             </div>
+            {/* Category */}
+            <div className="space-y-3 -mt-2">
+              <Label>Category</Label>
+              <Select
+                value={form.watch("category")}
+                onValueChange={(v) =>
+                  form.setValue("category", v as BatchFormValues["category"])
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {CATEGORY_LABELS[cat]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Board */}
+            {category === "boards" && (
+              <div className="space-y-3">
+                <Label>Board</Label>
+                <Select
+                  value={form.watch("board") ?? ""}
+                  onValueChange={(v) =>
+                    form.setValue("board", v as BatchFormValues["board"])
+                  }
+                >
+                  <SelectTrigger disabled={!category || category !== "boards"}>
+                    <SelectValue placeholder="Select board" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BOARDS.map((b) => (
+                      <SelectItem key={b} value={b}>
+                        {BOARD_LABELS[b]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* DESCRIPTION */}
             <div className="space-y-3">
@@ -555,7 +638,6 @@ export function BatchDialog({
                 Supports bold, italic, lists
               </p>
             </div>
-
             {/* Thumbnail */}
             <div className="space-y-3">
               <Label>Thumbnail</Label>
@@ -596,7 +678,6 @@ export function BatchDialog({
                 }}
               />
             </div>
-
             {/* Original Price */}
             <div className="space-y-3">
               <Label>List Price (₹)</Label>
@@ -606,7 +687,6 @@ export function BatchDialog({
                 {...form.register("list_price", { valueAsNumber: true })}
               />
             </div>
-
             {/* PRICE */}
             <div className="space-y-3">
               <Label>Sale Price (₹)</Label>
@@ -616,44 +696,92 @@ export function BatchDialog({
                 {...form.register("sale_price", { valueAsNumber: true })}
               />
             </div>
-
             <div className="space-y-3">
               <Label>Class Level</Label>
-
-              <Input
-                type="number"
-                placeholder="e.g. 11"
-                {...form.register("class_level", {
-                  valueAsNumber: true,
-                })}
-              />
+              <Select
+                value={form.watch("class_level")?.toString() ?? ""}
+                onValueChange={(v) => form.setValue("class_level", Number(v))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CLASS_LEVELS.map((level) => (
+                    <SelectItem key={level} value={String(level)}>
+                      Class {level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            {category !== "boards" && availableExams.length > 0 && (
+              <div className="space-y-3">
+                <Label>Target Exam</Label>
+                <Select
+                  value={form.watch("target_exam") ?? ""}
+                  onValueChange={(v) =>
+                    form.setValue(
+                      "target_exam",
+                      v as BatchFormValues["target_exam"],
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select exam" />
+                  </SelectTrigger>
 
-            <div className="space-y-3">
-              <Label>Target Exam</Label>
-
-              <Input
-                placeholder="e.g. NEET 2027"
-                {...form.register("target_exam")}
-              />
-            </div>
-
+                  <SelectContent>
+                    {availableExams.map((exam) => (
+                      <SelectItem key={exam} value={exam}>
+                        {TARGET_EXAM_LABELS[exam]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             {/* Location */}
             <div className="space-y-3">
               <Label>Location</Label>
+              <Select
+                value={form.watch("location") ?? ""}
+                onValueChange={(v) =>
+                  form.setValue("location", v as BatchFormValues["location"])
+                }
+              >
+                <SelectTrigger disabled={mode === "online"}>
+                  <SelectValue placeholder="Select location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LOCATIONS.map((loc) => (
+                    <SelectItem key={loc} value={loc}>
+                      {LOCATION_LABELS[loc]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
+            {/* Address  */}
+
+            <div className="space-y-3">
+              <Label>Address</Label>
               <Input
-                placeholder="e.g. Solapur, Pune"
-                {...form.register("location")}
+                placeholder="Enter full address"
+                maxLength={200}
+                {...form.register("address")}
               />
+              <p className="text-xs text-muted-foreground text-right">
+                {(form.watch("address") ?? "").length}/200
+              </p>
             </div>
 
             {/* LANGUAGES */}
             <div className="space-y-2">
               <Label>Teaching Languages</Label>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-3">
                 {LANGUAGES.map((lang) => (
-                  <div key={lang} className="flex items-center gap-2">
+                  <div key={lang} className="flex items-center gap-2 min-w-36">
                     <Checkbox
                       checked={languages.includes(lang)}
                       onCheckedChange={(v) => {
@@ -663,12 +791,11 @@ export function BatchDialog({
                         form.setValue("languages", next);
                       }}
                     />
-                    <span className="capitalize">{lang}</span>
+                    <span>{LANGUAGE_LABELS[lang]}</span>
                   </div>
                 ))}
               </div>
             </div>
-
             {/* ADMISSION */}
             <div className="flex items-center justify-between">
               <Label>Admission Open</Label>
@@ -677,7 +804,6 @@ export function BatchDialog({
                 onCheckedChange={(v) => form.setValue("is_admission_open", v)}
               />
             </div>
-
             {/* MODE */}
             <div className="space-y-3">
               <Label>Batch Mode</Label>
@@ -697,7 +823,6 @@ export function BatchDialog({
                 </SelectContent>
               </Select>
             </div>
-
             {/* DURATION */}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
@@ -710,7 +835,6 @@ export function BatchDialog({
                 <Input type="date" {...form.register("end_date")} />
               </div>
             </div>
-
             {/* CAPACITY */}
             <div className="space-y-3">
               <Label>Capacity</Label>
@@ -721,51 +845,38 @@ export function BatchDialog({
                 })}
               />
             </div>
-
             {/* Subjects */}
             <div className="space-y-2">
-              <Label>Subjects</Label>
-              {subjects.fields.map((f, i) => (
-                <div key={f.id} className="flex gap-2">
-                  <Input
-                    {...form.register(`subjects.${i}.value`)}
-                    placeholder="e.g. Physics"
-                    onBlur={() => {
-                      const current = form.getValues("subjects");
+              <Label>Subjects Covered</Label>
 
-                      if (!current) return;
+              <div className="flex flex-wrap gap-3">
+                {SUBJECTS.map((sub) => {
+                  const current = form.watch("subjects") ?? [];
+                  const selected = current.map((s) => s.value);
 
-                      const isEmpty = !current[i]?.value?.trim();
+                  const checked = selected.includes(sub);
 
-                      if (isEmpty && current.length > 1) {
-                        subjects.remove(i);
-                      }
-                    }}
-                  />
-                  <RemoveButton onClick={() => subjects.remove(i)} />
-                </div>
-              ))}
+                  return (
+                    <div key={sub} className="flex items-center gap-2">
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(v) => {
+                          const next = v
+                            ? [...selected, sub]
+                            : selected.filter((s) => s !== sub);
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  const last = form.getValues(
-                    `subjects.${subjects.fields.length - 1}.value`,
+                          form.setValue(
+                            "subjects",
+                            next.map((value) => ({ value })),
+                          );
+                        }}
+                      />
+                      <span>{sub}</span>
+                    </div>
                   );
-
-                  if (subjects.fields.length > 0 && !last?.trim()) {
-                    toast.error("Please enter subject before adding another");
-                    return;
-                  }
-
-                  subjects.append({ value: "" });
-                }}
-              >
-                Add Subject
-              </Button>
+                })}
+              </div>
             </div>
-
             {/* Learning Outcomes */}
             <div className="space-y-2">
               <Label>
@@ -830,7 +941,6 @@ export function BatchDialog({
                 Add Outcome
               </Button>
             </div>
-
             {/* Target Audience */}
             <div className="space-y-2">
               <Label>
@@ -896,7 +1006,6 @@ export function BatchDialog({
                 Add Audience
               </Button>
             </div>
-
             <FormField
               control={form.control}
               name="instructor_ids"
@@ -989,7 +1098,6 @@ export function BatchDialog({
                 );
               }}
             />
-
             {/* ACTIVE */}
             <div className="flex items-center justify-between">
               <Label>Active</Label>
@@ -998,7 +1106,6 @@ export function BatchDialog({
                 onCheckedChange={(v) => form.setValue("is_active", v)}
               />
             </div>
-
             {/* SUBMIT */}
             <div className="flex justify-end gap-2">
               <Button

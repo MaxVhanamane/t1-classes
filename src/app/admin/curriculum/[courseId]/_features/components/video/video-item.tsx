@@ -72,7 +72,7 @@ export function VideoItem({ video, courseId, topicId }: VideoItemProps) {
                 )}
               </Popover>
 
-              <div className="flex gap-2 text-xs text-muted-foreground">
+              <div className="flex gap-2 text-xs text-muted-foreground mt-0.5">
                 <span className="capitalize">{video.video_provider}</span>
 
                 {video.duration_minutes && (

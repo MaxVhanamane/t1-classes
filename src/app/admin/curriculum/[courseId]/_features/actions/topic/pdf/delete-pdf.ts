@@ -1,8 +1,13 @@
 "use server";
 
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { deleteR2Object } from "@/src/lib/r2/deleteObject";
 import { revalidatePath } from "next/cache";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { ROLE_GROUPS } from "@/src/lib/auth/role-groups";
+import { redirect } from "next/navigation";
+
+const R2_PRIVATE_BUCKET_NAME = process.env.R2_PRIVATE_BUCKET_NAME!;
 
 export async function deletePdf(
     courseId: string,
@@ -10,7 +15,11 @@ export async function deletePdf(
     pdfId: string
 ) {
     const supabase = await createServerSupabaseClient();
-    const staff = await getCurrentStaff(); // admin OR teacher
+    const staff = await getAuthIfHasRole(ROLE_GROUPS.STAFF); // admin OR teacher
+
+    if (!staff) {
+        redirect("/login")
+    }
 
     /**
      * 1. Fetch PDF unit
@@ -39,7 +48,7 @@ export async function deletePdf(
         .single();
 
     const isAdmin = staff.role === "admin";
-    const isOwner = course?.created_by === staff.id;
+    const isOwner = course?.created_by === staff.userId;
 
     if (!isAdmin && !isOwner) {
         throw new Error("You are not allowed to delete this PDF");
@@ -47,7 +56,7 @@ export async function deletePdf(
 
     /**
      * 3. Delete DB row
-     * (this triggers reorder_course_units_after_delete)
+     * (triggers reorder_course_units_after_delete)
      */
     const { error: deleteError } = await supabase
         .from("course_units")
@@ -59,16 +68,22 @@ export async function deletePdf(
     }
 
     /**
-     * 4. Cleanup storage (best effort)
+     * 4. Cleanup R2 object (best effort)
      */
     if (pdf.file_path) {
-        await supabase.storage
-            .from("course-pdfs")
-            .remove([pdf.file_path]);
+        try {
+            await deleteR2Object(
+                R2_PRIVATE_BUCKET_NAME,
+                pdf.file_path
+            );
+        } catch (err) {
+            console.error("[R2_PDF_DELETE_FAILED]", err);
+            // Do not throw → DB already updated
+        }
     }
 
     /**
-     * 5. Revalidate
+     * 5. Revalidate UI
      */
     revalidatePath(`/admin/curriculum/${courseId}/topics/${topicId}`);
 }

@@ -17,6 +17,14 @@ export const IMAGE_OUTPUTS = {
         fileName: "avatar",
     },
 
+    USER_AVATAR: {
+        width: 256,
+        height: 256,
+        format: "image/webp",
+        quality: 0.9,
+        fileName: "avatar",
+    },
+
     BANNER: {
         width: 1600,
         height: 900,

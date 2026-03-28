@@ -2,8 +2,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { optimisticUpdateGrid } from "../helpers/grid-optimistic";
-import { GridItem, GridState } from "../types/grid.types";
 import { StateItem } from "../types/workspace.types";
 
 export type SavePayload = {
@@ -40,21 +38,12 @@ export function useAnswerSave({ attemptId }: { attemptId: string }) {
         },
 
         retry: 3,
-        retryDelay: 1000,
+        retryDelay: (attemptIndex) => Math.min(800 * 2 ** attemptIndex, 4000),
 
         // =========================================
         // OPTIMISTIC UPDATE
         // =========================================
         onMutate: async (payload) => {
-            await queryClient.cancelQueries({
-                queryKey: ["grid", attemptId],
-            });
-
-            const previousGrid =
-                queryClient.getQueryData<GridItem[]>([
-                    "grid",
-                    attemptId,
-                ]);
 
             const previousState =
                 queryClient.getQueryData<StateItem[]>([
@@ -62,27 +51,6 @@ export function useAnswerSave({ attemptId }: { attemptId: string }) {
                     attemptId,
                 ]) ?? [];
 
-            // -----------------------------
-            // GRID
-            // -----------------------------
-            const nextGridState: GridState = payload.markedForReview
-                ? payload.answer
-                    ? "answered_review"
-                    : "review"
-                : payload.answer
-                    ? "answered"
-                    : "not_answered";
-
-            if (Array.isArray(previousGrid)) {
-                queryClient.setQueryData<GridItem[]>(
-                    ["grid", attemptId],
-                    optimisticUpdateGrid(
-                        previousGrid,
-                        payload.questionId,
-                        nextGridState
-                    )
-                );
-            }
 
             // -----------------------------
             // ATTEMPT STATE
@@ -112,7 +80,6 @@ export function useAnswerSave({ attemptId }: { attemptId: string }) {
             );
 
             return {
-                previousGrid,
                 previousState,
             };
         },
@@ -121,12 +88,6 @@ export function useAnswerSave({ attemptId }: { attemptId: string }) {
         // ROLLBACK
         // =========================================
         onError: (_err, _vars, ctx) => {
-            if (ctx?.previousGrid) {
-                queryClient.setQueryData(
-                    ["grid", attemptId],
-                    ctx.previousGrid
-                );
-            }
 
             if (ctx?.previousState) {
                 queryClient.setQueryData(
@@ -135,17 +96,10 @@ export function useAnswerSave({ attemptId }: { attemptId: string }) {
                 );
             }
 
-            toast.error("Save failed — reconnecting…");
+            toast.error("Unable to save your answer. Please check your connection and try again.");
         },
 
-        // =========================================
-        // RECONCILE
-        // =========================================
-        onSettled: () => {
-            void queryClient.invalidateQueries({
-                queryKey: ["grid", attemptId],
-            });
-        },
+
     });
 
     return {

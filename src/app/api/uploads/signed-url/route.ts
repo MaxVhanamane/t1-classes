@@ -4,10 +4,12 @@ import {
     PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 import {
     flexibleChecksumsMiddlewareOptions,
 } from "@aws-sdk/middleware-flexible-checksums";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { ROLE_GROUPS } from "@/src/lib/auth/role-groups";
+import { AssetType, SIZE_LIMITS, VALID_ASSET_TYPES } from "@/src/lib/constants/upload.constants";
 
 /* ================================================== */
 /* ENV                                                */
@@ -43,12 +45,6 @@ s3.middlewareStack.remove(
 /* TYPES                                              */
 /* ================================================== */
 
-type AssetType =
-    | "course_thumbnail"
-    | "instructor_avatar"
-    | "user_avatar"
-    | "course_pdf"
-    | "batch_thumbnail"
 
 /* ================================================== */
 /* MIME MAPS                                          */
@@ -65,20 +61,7 @@ const PDF_TYPES = {
     "application/pdf": "pdf",
 };
 
-/* ================================================== */
-/* SIZE LIMITS                                        */
-/* ================================================== */
 
-export const SIZE_LIMITS: Record<
-    AssetType,
-    number
-> = {
-    course_thumbnail: 500 * 1024, // 500KB
-    batch_thumbnail: 500 * 1024,
-    instructor_avatar: 500 * 1024,
-    user_avatar: 200 * 1024,
-    course_pdf: 5 * 1024 * 1024, // 5MB
-};
 
 /* ================================================== */
 /* POST                                               */
@@ -88,8 +71,14 @@ export async function POST(req: NextRequest) {
     try {
         /* ---------------- Auth ---------------- */
 
-        await getCurrentStaff();
+        const user = await getAuthIfHasRole(ROLE_GROUPS.ALL);
 
+        if (!user) {
+            return NextResponse.json(
+                { message: "Unauthorized" },
+                { status: 401 }
+            );
+        }
         /* ---------------- Body ---------------- */
 
         const body = await req.json().catch(() => null);
@@ -107,11 +96,25 @@ export async function POST(req: NextRequest) {
 
         const courseId: string | undefined =
             body.courseId;
+        const topicId: string | undefined =
+            body.topicId;
         const instructorId: string | undefined =
             body.instructorId;
-        const userId: string | undefined =
-            body.userId;
         const batchId: string | undefined = body.batchId;
+
+        if (!fileType) {
+            return NextResponse.json(
+                { message: "fileType required" },
+                { status: 400 }
+            );
+        }
+
+        if (!VALID_ASSET_TYPES.includes(assetType)) {
+            return NextResponse.json(
+                { message: "Invalid asset type" },
+                { status: 400 }
+            );
+        }
 
         if (!assetType) {
             return NextResponse.json(
@@ -120,6 +123,12 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        if (user.role === "student" && assetType !== "user_avatar") {
+            return NextResponse.json(
+                { message: "Students can only upload avatars" },
+                { status: 403 }
+            );
+        }
         /* ================================================== */
         /* Extension validation                               */
         /* ================================================== */
@@ -202,30 +211,21 @@ export async function POST(req: NextRequest) {
                 key = `instructors/${instructorId}/avatar_${timestamp}_${uuid}.${ext}`;
                 break;
             }
-
             case "user_avatar": {
-                if (!userId) {
-                    return NextResponse.json(
-                        { message: "userId required" },
-                        { status: 400 }
-                    );
-                }
-
-                key = `users/${userId}/avatar_${timestamp}_${uuid}.${ext}`;
+                key = `users/${user.userId}/avatar.${ext}`;
                 break;
             }
-
             case "course_pdf": {
-                if (!courseId) {
+                if (!courseId || !topicId) {
                     return NextResponse.json(
-                        { message: "courseId required" },
+                        { message: "courseId and topicId required" },
                         { status: 400 }
                     );
                 }
 
                 bucket = R2_PRIVATE_BUCKET_NAME;
 
-                key = `courses/${courseId}/pdf_${timestamp}_${uuid}.${ext}`;
+                key = `courses/${courseId}/topics/${topicId}/pdfs/${timestamp}_${uuid}.${ext}`;
                 break;
             }
         }
@@ -247,6 +247,7 @@ export async function POST(req: NextRequest) {
                 expiresIn: 60 * 5, // 5 min
             }
         );
+
 
         /* ================================================== */
         /* Public URL                                         */

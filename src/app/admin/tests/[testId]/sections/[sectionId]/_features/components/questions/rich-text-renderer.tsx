@@ -52,6 +52,7 @@ export function RichTextRenderer({
         class: cn(
           "max-w-none cursor-default",
           isProse ? "prose prose-sm dark:prose-invert" : "rich-content",
+          className,
         ),
       },
     },
@@ -72,7 +73,7 @@ export function RichTextRenderer({
   if (!editor) return null;
 
   return (
-    <div className={cn(clamp && "line-clamp-2", className)}>
+    <div className={cn(clamp && "line-clamp-2")}>
       <EditorContent editor={editor} />
     </div>
   );

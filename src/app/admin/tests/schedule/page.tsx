@@ -1,7 +1,7 @@
 import { Separator } from "@/src/components/ui/separator";
 import { getPagedTests } from "./_features/server/get-paged-tests";
 import { ScheduleTestsClient } from "./_features/components/schedule-tests-client";
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 import { ArrowLeft } from "lucide-react";
 
 type Props = {

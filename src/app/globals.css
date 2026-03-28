@@ -193,6 +193,10 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@utility bg-muted-soft {
+  background-color: color-mix(in oklch, var(--muted) 40%, var(--background));
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 import { Button } from "@/src/components/ui/button";
 import {
   DropdownMenu,
@@ -56,7 +56,7 @@ export function TopicItem({
     <div
       className={clsx(
         "flex items-center justify-between rounded-md border px-3 py-2 transition-colors",
-        isActive ? "bg-muted border-gray-400" : "hover:bg-muted/40"
+        isActive ? "bg-muted border-gray-400" : "hover:bg-muted/40",
       )}
     >
       {/* Clickable content */}
@@ -130,13 +130,13 @@ export function TopicItem({
                     publish: !is_published,
                   });
                   toast.success(
-                    is_published ? "Topic unpublished" : "Topic published"
+                    is_published ? "Topic unpublished" : "Topic published",
                   );
                 } catch (err) {
                   toast.error(
                     err instanceof Error
                       ? err.message
-                      : "Failed to update publish chapter"
+                      : "Failed to update publish chapter",
                   );
                 }
               }}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 
 /* ================================================== */
 /* Types                                              */
@@ -15,17 +14,17 @@ export type UploadAssetType =
     | "batch_thumbnail";
 
 type UploadParams = {
-    file: File;
-    assetType: UploadAssetType;
-    courseId?: string;
-    batchId?: string;
-    instructorId?: string;
-    userId?: string;
-};
+    file: File
+    assetType: UploadAssetType
+    courseId?: string
+    topicId?: string
+    batchId?: string
+    instructorId?: string
+}
 
 type UploadResult = {
-    key: string;          // ← primary
-    publicUrl?: string;   // ← preview only
+    key: string;
+    publicUrl?: string;
     bucket: string;
 };
 
@@ -34,54 +33,42 @@ type UploadResult = {
 /* ================================================== */
 
 export function useR2Upload() {
-    const [uploading, setUploading] =
-        useState(false);
+    const [uploading, setUploading] = useState(false);
 
     async function uploadFile({
         file,
         assetType,
         courseId,
         instructorId,
-        userId,
-        batchId
-    }: UploadParams): Promise<UploadResult | null> {
-        setUploading(true);
+        batchId,
+        topicId
+    }: UploadParams): Promise<UploadResult> {
 
-        const toastId =
-            toast.loading("Uploading file...");
+        setUploading(true);
 
         try {
             /* ---------------- Signed URL ---------------- */
 
-            const res = await fetch(
-                "/api/uploads/signed-url",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-                    },
-                    body: JSON.stringify({
-                        assetType,
-                        fileType: file.type,
-                        fileSize: file.size,
-                        courseId,
-                        batchId,
-                        instructorId,
-                        userId,
-                    }),
-                }
-            );
+            const res = await fetch("/api/uploads/signed-url", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    assetType,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    courseId,
+                    topicId,
+                    batchId,
+                    instructorId
+                })
+            });
+
 
             if (!res.ok) {
-                const err = await res
-                    .json()
-                    .catch(() => null);
-
-                throw new Error(
-                    err?.message ||
-                    "Failed to get upload URL"
-                );
+                const err = await res.json().catch(() => null);
+                throw new Error(err?.message || "Failed to get upload URL");
             }
 
             const data: {
@@ -91,49 +78,39 @@ export function useR2Upload() {
                 bucket: string;
             } = await res.json();
 
+
             /* ---------------- Upload ---------------- */
 
-            const uploadRes = await fetch(
-                data.signedUrl,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": file.type,
-                    },
-                    body: file,
-                }
-            );
+            const uploadRes = await fetch(data.signedUrl, {
+                method: "PUT",
+                body: file,
+            });
+
+            if (!uploadRes.ok) {
+                const text = await uploadRes.text();
+                console.error("xxxxxxxxxxxxxx", text);
+                throw new Error("Upload failed");
+            }
+
 
             if (!uploadRes.ok) {
                 throw new Error("Upload failed");
             }
-
-            toast.success(
-                "Upload successful",
-                { id: toastId }
-            );
-
 
             return {
                 key: data.key,
                 publicUrl: data.publicUrl,
                 bucket: data.bucket,
             };
-        } catch (err) {
-            console.error(err);
 
-            toast.error("Upload failed", {
-                id: toastId,
-            });
-
-            return null;
+        } catch (error) {
+            throw error instanceof Error
+                ? error
+                : new Error("File upload failed");
         } finally {
             setUploading(false);
         }
     }
 
-    return {
-        uploadFile,
-        uploading,
-    };
+    return { uploadFile, uploading };
 }

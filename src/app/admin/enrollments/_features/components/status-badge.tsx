@@ -14,7 +14,11 @@ function StatusBadge({
 
   switch (status) {
     case "ongoing":
-      return <Badge className="bg-green-600">ongoing</Badge>;
+      return (
+        <Badge className="border-green-500/60 text-green-700 dark:text-green-500 dark:border-green-500/40 bg-transparent">
+          ongoing
+        </Badge>
+      );
     case "paused":
       return <Badge variant="secondary">paused</Badge>;
     case "completed":

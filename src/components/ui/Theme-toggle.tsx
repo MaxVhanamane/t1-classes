@@ -15,9 +15,13 @@ export function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
   const mounted = useMounted();
 
+  // Render stable button without icons (prevents shift)
   if (!mounted) {
-    // Render stable button without icons (prevents shift)
-    return <Button variant="ghost" size="icon" />;
+    return (
+      <Button variant="ghost" size="icon" disabled className="animate-pulse">
+        <div className="h-[1.2rem] w-[1.2rem] rounded-full bg-muted-foreground/30" />
+      </Button>
+    );
   }
 
   const isDark = resolvedTheme === "dark";

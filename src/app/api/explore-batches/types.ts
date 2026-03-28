@@ -4,6 +4,22 @@ export interface ExploreCourse {
     id: string
     title: string
     slug: string
+    subtitle: string | null
+    thumbnail_image: string | null
+    course_type: string
+    class_level: number | null
+    board: string | null
+    target_exam: string | null
+    subjects: string[] | null
+    list_price: number
+    sale_price: number
+    languages: string[] | null
+}
+
+export interface ExploreCourseMarketing {
+    id: string
+    title: string
+    slug: string
     description: JSONContent | null
     subtitle: string | null
     learning_outcomes: string[] | null
@@ -18,6 +34,7 @@ export interface ExploreCourse {
     sale_price: number
     languages: string[] | null
 }
+
 export type BatchMode = "offline" | "online" | "hybrid";
 
 export type BatchLifecycle =

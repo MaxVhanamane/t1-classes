@@ -45,7 +45,7 @@ export function BatchMetaBadges({ batch, size = "sm" }: BatchMetaBadgesProps) {
       key: "mode",
       label: BATCH_MODE_UI_LABELS[batch.mode],
       description: BATCH_MODE_EXPLANATION[batch.mode],
-      className: "text-white",
+      className: "text-color-foreground",
     },
     {
       key: "status",

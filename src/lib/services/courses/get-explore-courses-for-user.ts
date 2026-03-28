@@ -1,27 +1,19 @@
-import "server-only"
-import { SupabaseClient } from "@supabase/supabase-js"
-
-import { ExploreCourse } from "@/src/app/api/explore-batches/types"
-import { getAllActiveCourses } from "./get-all-active-courses"
-import { getUserAccessibleCourseIds } from "./get-user-accessible-course-ids"
+import "server-only";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { ExploreCourse } from "@/src/app/api/explore-batches/types";
 
 export async function getExploreCoursesForUser(
     supabase: SupabaseClient,
-    userId?: string
+    limit: number = 6,
 ): Promise<ExploreCourse[]> {
+    const { data, error } = await supabase.rpc("get_explore_courses_private", {
+        p_limit: limit,
+    });
 
-    const courses = await getAllActiveCourses()
-
-    if (!userId) {
-        return courses
+    if (error) {
+        console.error("Error fetching explore courses:", error);
+        throw new Error("Failed to fetch explore courses");
     }
 
-    const excludedCourseIds = await getUserAccessibleCourseIds(
-        supabase,
-        userId
-    )
-
-    return courses.filter(
-        (course) => !excludedCourseIds.has(course.id)
-    )
+    return (data ?? []) as ExploreCourse[];
 }

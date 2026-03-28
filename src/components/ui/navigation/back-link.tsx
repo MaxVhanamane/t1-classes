@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 
 type BackLinkProps = {
   href: string;

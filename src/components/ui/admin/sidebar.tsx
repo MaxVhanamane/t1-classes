@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/src/lib/utils";
 import {
@@ -22,6 +22,7 @@ const navItems = [
   { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
   { label: "Tests", href: "/admin/tests", icon: NotepadText },
   { label: "Instructors", href: "/admin/instructors", icon: NotepadText },
+  { label: "Notifications", href: "/admin/notifications", icon: NotepadText },
 ];
 
 export default function AdminSidebar({

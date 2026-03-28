@@ -54,24 +54,36 @@ import {
 
 import { useR2Upload } from "@/src/hooks/use-r2-upload";
 import { TipTapEditor } from "./tiptap-editor";
-import { SIZE_LIMITS } from "@/src/app/api/uploads/signed-url/route";
 import { Switch } from "@/src/components/ui/switch";
 import { RemoveButton } from "./remove-button";
 import {
   ALLOWED_IMAGE_EXTENSIONS,
   ALLOWED_IMAGE_MIME_TYPES,
+  SIZE_LIMITS,
 } from "@/src/lib/constants/upload.constants";
 import { formatFileSize } from "@/src/lib/helper-functions/format-file-size";
 import { IMAGE_OUTPUTS } from "@/src/lib/constants/image-output.config";
 import { validateImage } from "@/src/lib/helper-functions/validate-image";
 import { ImageCropper } from "@/src/components/ui/media/ImageCropper";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
-import { CourseTypeInfo } from "./course-type-info";
 import { MARKETING_LIMITS } from "@/src/lib/constants/marketing-limits";
 import { useQuery } from "@tanstack/react-query";
 import { InstructorOption } from "../types/course.types";
 import { extractFirstErrorMessage } from "../../../batches/_features/components/batch-dialog";
 import { Checkbox } from "@/src/components/ui/checkbox";
+import {
+  CATEGORIES,
+  CATEGORY_LABELS,
+  BOARDS,
+  BOARD_LABELS,
+  SUBJECTS,
+  LANGUAGES,
+  LANGUAGE_LABELS,
+  TARGET_EXAM_LABELS,
+  CATEGORY_TARGET_EXAMS,
+} from "../../../batches/_features/zod-schema/schema";
+import { Label } from "@/src/components/ui/label";
+import { Separator } from "@/src/components/ui/separator";
 
 /* -------------------------------------------------- */
 
@@ -92,20 +104,33 @@ function mapRowToForm(course: CourseRow): CourseFormValues {
     subtitle: course.subtitle ?? "",
     description: course.description ?? null,
     thumbnail_image: course.thumbnail_image ?? undefined,
-    course_type: course.course_type,
-    class_level: course.class_level ?? undefined,
-    board: course.board ?? "",
-    target_exam: course.target_exam ?? "",
+
+    /* ---------- Category ---------- */
+    category: course.category,
+    board: course.board ?? null,
+
+    /* ---------- Academic ---------- */
+    class_level: course.class_level ?? null,
+    target_exam: course.target_exam ?? null,
+
     subjects: course.subjects?.length
       ? course.subjects.map((v) => ({ value: v }))
       : [],
 
+    /* ---------- Pricing ---------- */
     list_price: course.list_price,
     sale_price: course.sale_price,
-    languages: course.languages?.map((v) => ({ value: v })) ?? [],
+
+    /* ---------- Languages ---------- */
+    languages: course.languages ?? [],
+
+    /* ---------- Instructors ---------- */
     instructor_ids: course.instructors?.map((i) => i.id) ?? [],
+
+    /* ---------- Status ---------- */
     is_active: course.is_active,
 
+    /* ---------- Marketing ---------- */
     learning_outcomes:
       course.learning_outcomes?.map((v) => ({
         value: v,
@@ -117,7 +142,6 @@ function mapRowToForm(course: CourseRow): CourseFormValues {
       })) ?? [],
   };
 }
-
 /* -------------------------------------------------- */
 
 export function CourseDialog({ course, open, onOpenChange }: Props) {
@@ -147,7 +171,6 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
       subtitle: "",
       description: null,
       thumbnail_image: undefined,
-      course_type: "academic",
       subjects: [],
       list_price: 0,
       sale_price: 0,
@@ -157,8 +180,9 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
       target_audience: [],
       is_active: true,
       class_level: undefined,
-      board: "",
-      target_exam: "",
+      category: undefined,
+      board: undefined,
+      target_exam: null,
     },
   });
 
@@ -177,16 +201,6 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
     name: "target_audience",
   });
 
-  const subjects = useFieldArray({
-    control: form.control,
-    name: "subjects",
-  });
-
-  const languages = useFieldArray({
-    control: form.control,
-    name: "languages",
-  });
-
   const watchedOutcomes = useWatch({
     control: form.control,
     name: "learning_outcomes",
@@ -196,16 +210,47 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
     control: form.control,
     name: "target_audience",
   });
+
+  const languagesValue =
+    useWatch({
+      control: form.control,
+      name: "languages",
+    }) ?? [];
+
+  const subjectsValue =
+    useWatch({
+      control: form.control,
+      name: "subjects",
+    }) ?? [];
+
+  const selectedSubjects = subjectsValue.map((s) => s.value);
+
+  const category = useWatch({
+    control: form.control,
+    name: "category",
+  });
+
+  const availableExams = CATEGORY_TARGET_EXAMS[category] ?? [];
   /* -------------------------------------------------- */
   /* Prefill edit                                       */
   /* -------------------------------------------------- */
 
   useEffect(() => {
-    if (course) {
-      form.reset(mapRowToForm(course));
-    }
+    if (!course) return;
+
+    const values = mapRowToForm(course);
+
+    form.reset(values);
   }, [course, form]);
 
+  useEffect(() => {
+    const allowed = CATEGORY_TARGET_EXAMS[category] ?? [];
+    const current = form.getValues("target_exam");
+
+    if (current && !allowed.includes(current)) {
+      form.setValue("target_exam", null);
+    }
+  }, [category, form]);
   /* -------------------------------------------------- */
 
   /* -------------------------------------------------- */
@@ -428,189 +473,206 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
             </div>
 
             <div className="space-y-4">
-              {/* ---------------- Type ---------------- */}
-              <div className="relative flex gap-2">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={saving}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {CATEGORY_LABELS[cat]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="class_level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Class Level
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (Add if relevant to the course)
+                      </span>
+                    </FormLabel>
+                    <Select
+                      value={field.value?.toString() ?? ""}
+                      onValueChange={(val) => field.onChange(Number(val))}
+                      disabled={saving}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select class" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {[6, 7, 8, 9, 10, 11, 12].map((cls) => (
+                          <SelectItem key={cls} value={String(cls)}>
+                            Class {cls}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {category === "boards" && (
                 <FormField
+                  key={category}
                   control={form.control}
-                  name="course_type"
+                  name="board"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Course Type</FormLabel>
+                      <FormLabel>Board</FormLabel>
                       <Select
-                        key={field.value}
-                        value={field.value}
+                        value={field.value ?? undefined}
                         onValueChange={field.onChange}
                         disabled={saving}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue />
+                            <SelectValue placeholder="Select board" />
                           </SelectTrigger>
                         </FormControl>
 
                         <SelectContent>
-                          <SelectItem value="academic">Academic</SelectItem>
-                          <SelectItem value="foundation">Foundation</SelectItem>
-                          <SelectItem value="exam">Exam</SelectItem>
-                          <SelectItem value="crash">Crash</SelectItem>
+                          {BOARDS.map((board) => (
+                            <SelectItem key={board} value={board}>
+                              {BOARD_LABELS[board]}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
-                <CourseTypeInfo />
-              </div>
-              <div>
-                <h3 className="text-sm font-medium">Academic Details</h3>
-                <p className="text-xs text-muted-foreground">
-                  Optional details to help categorize the course.
-                </p>
-              </div>
-              <FormField
-                control={form.control}
-                name="class_level"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>
-                      Class Level
-                      <span className="text-xs text-muted-foreground ml-1">
-                        (Optional)
-                      </span>
-                    </FormLabel>
+              )}
 
-                    <FormControl>
-                      <Input
-                        type="number"
+              {category !== "boards" && availableExams.length > 0 && (
+                <FormField
+                  control={form.control}
+                  name="target_exam"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Target Exam
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Add if relevant to the course)
+                        </span>
+                      </FormLabel>
+
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={(v) => field.onChange(v)}
                         disabled={saving}
-                        placeholder="Enter class level"
-                        {...form.register("class_level", {
-                          setValueAs: (v) =>
-                            v === "" || v === null || Number.isNaN(v)
-                              ? undefined
-                              : Number(v),
-                        })}
-                      />
-                    </FormControl>
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select exam" />
+                          </SelectTrigger>
+                        </FormControl>
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                        <SelectContent>
+                          {availableExams.map((exam) => (
+                            <SelectItem key={exam} value={exam}>
+                              {TARGET_EXAM_LABELS[exam]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-              <FormField
-                control={form.control}
-                name="board"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Board
-                      <span className="text-xs text-muted-foreground ml-1">
-                        (Optional)
-                      </span>
-                    </FormLabel>
-
-                    <FormControl>
-                      <Input {...field} disabled={saving} />
-                    </FormControl>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="target_exam"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Target Exam
-                      <span className="text-xs text-muted-foreground ml-1">
-                        (Optional)
-                      </span>
-                    </FormLabel>
-
-                    <FormControl>
-                      <Input
-                        {...field}
-                        disabled={saving}
-                        placeholder="e.g. NEET, JEE, SSC"
-                      />
-                    </FormControl>
-
-                    <p className="text-xs text-muted-foreground">
-                      Add only if this course prepares students for a specific
-                      exam.
-                    </p>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              <Separator />
               {/* ---------------- Subjects ---------------- */}
+              <div className="space-y-3">
+                <Label>Subjects Covered</Label>
 
-              <FormLabel>Subjects</FormLabel>
-              {subjects.fields.map((f, i) => (
-                <div key={f.id} className="flex gap-2">
-                  <Input
-                    {...form.register(`subjects.${i}.value`)}
-                    disabled={saving}
-                  />
-                  <RemoveButton onClick={() => subjects.remove(i)} />
+                <div className="flex flex-wrap gap-3">
+                  {SUBJECTS.map((sub) => {
+                    const checked = selectedSubjects.includes(sub);
+
+                    return (
+                      <div
+                        key={sub}
+                        className="flex items-center gap-2 min-w-36"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(v) => {
+                            const next = v
+                              ? [...selectedSubjects, sub]
+                              : selectedSubjects.filter((s) => s !== sub);
+
+                            form.setValue(
+                              "subjects",
+                              next.map((value) => ({ value })),
+                            );
+                          }}
+                        />
+                        <span>{sub}</span>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-
-              <Button
-                disabled={saving}
-                type="button"
-                variant="outline"
-                onClick={() => subjects.append({ value: "" })}
-              >
-                Add Subject
-              </Button>
-
+              </div>
+              <Separator />
               {/* ---------------- Languages ---------------- */}
-              <FormField
-                control={form.control}
-                name="languages"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Languages</FormLabel>
+              <div className="space-y-3">
+                <Label>Teaching Languages</Label>
 
-                    {languages.fields.map((f, i) => (
-                      <FormField
-                        key={f.id}
-                        control={form.control}
-                        name={`languages.${i}.value`}
-                        render={({ field }) => (
-                          <FormItem className="flex gap-2">
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <RemoveButton onClick={() => languages.remove(i)} />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    ))}
+                <div className="flex flex-wrap gap-3">
+                  {LANGUAGES.map((lang) => {
+                    const checked = languagesValue.includes(lang);
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-fit"
-                      onClick={() => languages.append({ value: "" })}
-                    >
-                      Add Language
-                    </Button>
+                    return (
+                      <div
+                        key={lang}
+                        className="flex items-center gap-2 min-w-36"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(v) => {
+                            const next = v
+                              ? [...languagesValue, lang]
+                              : languagesValue.filter((l) => l !== lang);
 
-                    {/* THIS DISPLAYS THE .min(1) ERROR */}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                            form.setValue("languages", next);
+                          }}
+                        />
+                        <span>{LANGUAGE_LABELS[lang]}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <FormMessage />
+              </div>
             </div>
-
+            <Separator />
             {/* ---------------- Outcomes ---------------- */}
             <div className="space-y-2">
               <FormLabel>

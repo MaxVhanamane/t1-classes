@@ -20,7 +20,7 @@ import { LifecycleBadge, ModeBadge } from "./batch-badges";
 import { BatchListItem } from "../types/types";
 import { BatchActiveSwitch } from "./batch-active-switch";
 import { Badge } from "@/src/components/ui/badge";
-
+import { CATEGORY_LABELS, BOARD_LABELS } from "../zod-schema/schema";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { RichTextRenderer } from "../../../tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 import { TableThumbnailPreview } from "../../../courses/_features/components/Table-thumbnail-preview";
@@ -38,12 +38,17 @@ export function BatchesTable({ batches, onEdit }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">Thumbnail</TableHead>
+              <TableHead className="sticky left-0 z-20 bg-muted-soft">
+                Thumbnail
+              </TableHead>
               <TableHead>Batch</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Board</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Courses</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Location</TableHead>
+              <TableHead>Address</TableHead>
               <TableHead>Languages</TableHead>
               <TableHead>Admission</TableHead>
               <TableHead className="text-center">Mode</TableHead>
@@ -64,12 +69,12 @@ export function BatchesTable({ batches, onEdit }: Props) {
                 : null;
 
               return (
-                <TableRow key={batch.id}>
+                <TableRow key={batch.id} className="group">
                   {/* ---------------------------------- */}
                   {/* Thumbnail */}
                   {/* ---------------------------------- */}
-                  <TableCell>
-                    <div className="relative h-10 w-10 overflow-visible rounded-md border">
+                  <TableCell className="sticky left-0 z-20 font-medium bg-muted-soft after:absolute after:inset-0 after:bg-muted/50 after:opacity-0 after:content-[''] after:transition-opacity group-hover:after:opacity-100">
+                    <div className="relative h-10 w-10 z-20 overflow-visible rounded-md border">
                       <TableThumbnailPreview
                         src={thumbnailSrc}
                         title={batch.title}
@@ -91,7 +96,29 @@ export function BatchesTable({ batches, onEdit }: Props) {
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
-
+                  {/* category */}
+                  <TableCell>
+                    <Badge variant="outline">
+                      {CATEGORY_LABELS[batch.category] ?? batch.category}
+                    </Badge>
+                  </TableCell>
+                  {/* Board  */}
+                  <TableCell>
+                    {batch.category === "boards" && batch.board ? (
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <p className="max-w-30 truncate cursor-help">
+                            {BOARD_LABELS[batch.board]}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          {BOARD_LABELS[batch.board]}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
                   {/* ---------------------------------- */}
                   {/* Description (TipTap JSON) */}
                   {/* ---------------------------------- */}
@@ -99,23 +126,20 @@ export function BatchesTable({ batches, onEdit }: Props) {
                     {batch.description ? (
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
-                          <div className="cursor-help max-w-xs ">
+                          <div className="cursor-help max-w-xs">
                             <RichTextRenderer
                               content={batch.description}
-                              clamp
+                              className="line-clamp-1"
                             />
                           </div>
                         </TooltipTrigger>
 
-                        <TooltipContent
-                          align="start"
-                          className="max-w-md text-inherit"
-                        >
+                        <TooltipContent align="start" className="max-w-md ">
                           <div className="max-h-64 overflow-y-auto pr-2">
                             <RichTextRenderer
                               content={batch.description}
-                              proseStyle
-                              className="text-white dark:text-gray-900"
+                              variant="prose"
+                              className="text-white! dark:text-gray-900!"
                             />
                           </div>
                         </TooltipContent>
@@ -197,7 +221,26 @@ export function BatchesTable({ batches, onEdit }: Props) {
                   {/* ---------------------------------- */}
                   {/* Location */}
                   {/* ---------------------------------- */}
-                  <TableCell>{batch.location ?? "—"}</TableCell>
+                  <TableCell className="capitalize">
+                    {batch.location ?? "—"}
+                  </TableCell>
+
+                  <TableCell>
+                    {batch.address ? (
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <p className="max-w-45 truncate cursor-help">
+                            {batch.address}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent align="start" className="max-w-xs">
+                          {batch.address}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
 
                   {/* ---------------------------------- */}
                   {/* Languages */}

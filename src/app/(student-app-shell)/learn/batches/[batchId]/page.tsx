@@ -1,19 +1,13 @@
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
-import { Info } from "lucide-react";
-
 import { Button } from "@/src/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/src/components/ui/popover";
 
 import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";
 import { CourseCard } from "./_features/components/batch-course-card";
 
 import { BatchDetailsResponse } from "@/src/types/batches.types";
 import BatchTestsPanel from "./_features/components/batch-tests-panel";
+import { BatchInfoPopover } from "./_features/components/batch-info-popover";
 
 type Props = {
   params: Promise<{ batchId: string }>;
@@ -56,29 +50,10 @@ export default async function BatchPage({ params, searchParams }: Props) {
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {batch.title}
             </h1>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 text-muted-foreground"
-                >
-                  <Info className="h-5 w-5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-72 space-y-3 bg-card">
-                {/* {batch.description && (
-                  <p className="text-sm text-muted-foreground">
-                    <RichTextRenderer content={batch.description} />
-                  </p>
-                )} */}
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  {batch.start_date && <p>Start date: {batch.start_date}</p>}
-                  {batch.end_date && <p>End date: {batch.end_date}</p>}
-                </div>
-              </PopoverContent>
-            </Popover>
+            <BatchInfoPopover
+              start_date={batch.start_date}
+              end_date={batch.end_date}
+            />
           </div>
 
           <BatchMetaBadges batch={{ ...batch }} />
@@ -128,15 +103,6 @@ export default async function BatchPage({ params, searchParams }: Props) {
                 <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary" />
               )}
             </a>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground"
-              disabled
-            >
-              Announcements
-            </Button>
           </div>
         </div>
 

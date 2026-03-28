@@ -2,7 +2,7 @@ import { Separator } from "@/src/components/ui/separator";
 
 import { DistributionsList } from "./_features/components/distributions-list";
 import { DistributionsToolbar } from "./_features/components/distributions-toolbar";
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 import { ArrowLeft } from "lucide-react";
 
 type Props = {

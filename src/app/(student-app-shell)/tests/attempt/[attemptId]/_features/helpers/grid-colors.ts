@@ -1,43 +1,53 @@
 import { GridState } from "../types/grid.types"
 
 export function getGridClasses(state: GridState) {
-    const base =
-        "transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-md"
+    const base = `
+    relative
+    rounded-md
+    border
+    transition-all duration-150 ease-out
+    hover:shadow-sm
+    active:scale-[0.97]
+    focus-visible:outline-none 
+    focus-visible:ring-2 
+    focus-visible:ring-offset-2
+  `;
 
     switch (state) {
         case "answered":
-            return `${base} 
-        bg-green-500/15 
-        text-green-700 
-        border-green-500/30 
-        hover:bg-green-500/25 
-        dark:text-green-400`
+            return `${base}
+        bg-green-500/10
+        text-green-700 dark:text-green-400
+        border-green-500/40
+      `;
 
         case "review":
-            return `${base} 
-        bg-purple-500/15 
-        text-purple-700 
-        border-purple-500/30 
-        hover:bg-purple-500/25 
-        dark:text-purple-400`
+            return `${base}
+        bg-purple-500/10
+        text-purple-700 dark:text-purple-400
+        border-purple-500/40
+      `;
 
         case "answered_review":
-            return `${base} 
-        bg-teal-500/15 
-        text-blue-700 
-        border-teal-500/30 
-        hover:bg-teal-500/25 
-        dark:text-blue-400`
+            return `${base}
+        bg-teal-500/10
+        text-blue-700 dark:text-blue-400
+        border-teal-500/40
+      `;
 
         case "not_answered":
-            return `${base} bg-yellow-500/20 text-yellow-800 border-yellow-500/30 dark:text-yellow-400 hover:bg-yellow-500`
+            return `${base}
+        bg-yellow-500/10
+        text-yellow-800 dark:text-yellow-400
+        border-yellow-500/40
+      `;
 
         case "not_visited":
         default:
-            return `${base} 
-        bg-muted 
-        text-muted-foreground 
-        border-border 
-        hover:bg-muted/80`
+            return `${base}
+        bg-muted
+        text-muted-foreground
+        border-border
+      `;
     }
 }

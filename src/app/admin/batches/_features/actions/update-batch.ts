@@ -7,6 +7,7 @@ import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 
 export async function updateBatch(
     batchId: string,
+    slug: string,
     input: unknown
 ) {
     /* -------------------------------------------------- */
@@ -37,9 +38,7 @@ export async function updateBatch(
     const staff = await getCurrentStaff();
 
     if (staff.role !== "admin") {
-        throw new Error(
-            "Only admins can update batches"
-        );
+        throw new Error("Only admins can update batches");
     }
 
     /* -------------------------------------------------- */
@@ -57,6 +56,10 @@ export async function updateBatch(
             p_title: data.title,
             p_subtitle: data.subtitle ?? null,
             p_description: data.description ?? null,
+
+            /* ---------- Category ---------- */
+            p_category: data.category,
+            p_board: data.board ?? null,
 
             /* ---------- Academic ---------- */
             p_subjects: subjects,
@@ -76,7 +79,10 @@ export async function updateBatch(
             p_is_active: data.is_active,
             p_is_admission_open: data.is_admission_open,
             p_languages: data.languages,
+
+            /* ---------- Location ---------- */
             p_location: data.location ?? null,
+            p_address: data.address ?? null,
 
             /* ---------- Lifecycle ---------- */
             p_start_date: data.start_date,
@@ -100,18 +106,25 @@ export async function updateBatch(
         .select("instructor_id")
         .eq("batch_id", batchId);
 
-    const existingIds = existing?.map((i) => i.instructor_id) ?? [];
+    const existingIds =
+        existing?.map((i) => i.instructor_id) ?? [];
+
     const newIds = data.instructor_ids ?? [];
 
-    const toInsert = newIds.filter((id) => !existingIds.includes(id));
-    const toDelete = existingIds.filter((id) => !newIds.includes(id));
+    const toInsert = newIds.filter(
+        (id) => !existingIds.includes(id)
+    );
+
+    const toDelete = existingIds.filter(
+        (id) => !newIds.includes(id)
+    );
 
     if (toInsert.length) {
         await supabase.from("batch_instructors").insert(
             toInsert.map((id) => ({
                 batch_id: batchId,
                 instructor_id: id,
-            })),
+            }))
         );
     }
 
@@ -123,9 +136,9 @@ export async function updateBatch(
             .in("instructor_id", toDelete);
     }
 
-    revalidatePath("/admin/batches");
     /* -------------------------------------------------- */
     /* 4. Revalidate                                      */
     /* -------------------------------------------------- */
     revalidatePath("/admin/batches");
+    revalidatePath(`/batches/${slug}`);
 }

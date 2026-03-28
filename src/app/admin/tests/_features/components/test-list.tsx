@@ -15,7 +15,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/src/components/ui/alert-dialog";
-import Link from "next/link";
+import { Link } from "@/src/components/ui/link";
 import { TestRow } from "../types/test.types";
 import { useState } from "react";
 import { EditTestDialog } from "./edit-test-dialog";

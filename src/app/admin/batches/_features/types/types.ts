@@ -1,4 +1,14 @@
+import type {
+    Category as BatchCategory,
+    Location as BatchLocation,
+    Board as BatchBoard,
+    TargetExam as BatchTargetExam,
+    Language as BatchLanguage,
+    Subject as BatchSubjectEnum,
+} from "../zod-schema/schema";
+
 /* ---------------- Batch Marketing ---------------- */
+
 export type BatchLearningOutcome = {
     value: string;
 };
@@ -8,16 +18,18 @@ export type BatchTargetAudience = {
 };
 
 export type BatchSubject = {
-    value: string;
+    value: BatchSubjectEnum;
 };
 
 /* ---------------- Core Enums ---------------- */
+
 export type BatchMode =
     | "offline"
     | "online"
     | "hybrid";
 
 /* ---------------- Batch List ---------------- */
+
 export type BatchListItem = {
     /* ---------- Identity ---------- */
     id: string;
@@ -26,16 +38,20 @@ export type BatchListItem = {
 
     /* ---------- Basic Info ---------- */
     subtitle: string | null;
-    description: Record<string, unknown> | null; // TipTap JSONB
+    description: Record<string, unknown> | null;
+
+    /* ---------- Category ---------- */
+    category: BatchCategory;
+    board: BatchBoard | null;
 
     /* ---------- Academic Metadata ---------- */
-    subjects: string[] | null;
+    subjects: BatchSubjectEnum[] | null;
     class_level: number | null;
-    target_exam: string | null;
+    target_exam: BatchTargetExam | null;
 
     /* ---------- Pricing ---------- */
     sale_price: number;
-    list_price: number; // now NOT NULL
+    list_price: number;
 
     /* ---------- Media ---------- */
     thumbnail_image: string | null;
@@ -48,8 +64,9 @@ export type BatchListItem = {
     is_admission_open: boolean;
 
     /* ---------- Location ---------- */
-    location: string | null;
-    languages: string[];
+    location: BatchLocation | null;
+    address: string | null;
+    languages: BatchLanguage[];
 
     /* ---------- Lifecycle Dates ---------- */
     start_date: string;
@@ -75,6 +92,7 @@ export type BatchListItem = {
         full_name: string;
     }[];
 };
+
 /* ---------------- Edit State ---------------- */
 
 export type BatchEditState =
@@ -86,7 +104,7 @@ export type BatchEditState =
 export type BatchDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    batch?: BatchListItem; // undefined = create
+    batch?: BatchListItem;
     courses: CourseSelectItem[];
 };
 

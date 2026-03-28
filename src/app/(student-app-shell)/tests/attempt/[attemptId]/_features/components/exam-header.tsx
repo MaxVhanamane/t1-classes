@@ -4,16 +4,11 @@ import { Clock } from "lucide-react";
 import { useServerTimer } from "../hooks/use-server-timer";
 
 type Props = {
-  studentName: string;
   testTitle: string;
   expiresAt: string;
 };
 
-export default function ExamHeader({
-  studentName,
-  testTitle,
-  expiresAt,
-}: Props) {
+export default function ExamHeader({ testTitle, expiresAt }: Props) {
   const seconds = useServerTimer(expiresAt, () => {
     window.dispatchEvent(new Event("exam-autosubmit"));
   });
@@ -22,7 +17,6 @@ export default function ExamHeader({
     <header className="flex items-center justify-between border-b px-6 py-2">
       {/* Left */}
       <div>
-        <p className="text-xs text-muted-foreground">{studentName}</p>
         <h1 className="text-sm font-semibold truncate max-w-50">{testTitle}</h1>
       </div>
 

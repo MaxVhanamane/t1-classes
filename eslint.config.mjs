@@ -22,6 +22,12 @@ const eslintConfig = defineConfig([
     },
     rules: {
       "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-restricted-imports": ["error", {
+        paths: [{
+          name: "next/link",
+          message: "Use @/src/components/ui/link instead. Prefetch is disabled by default there."
+        }]
+      }]
     },
   },
   // Override default ignores of eslint-config-next.
