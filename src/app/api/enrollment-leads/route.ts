@@ -10,7 +10,6 @@ import { sendTelegramMessage } from "@/src/lib/telegram/send-telegram";
 export async function POST(req: Request) {
     try {
         /* Rate limit (5 requests per minute per IP) */
-
         const rl = await rateLimit(req, {
             limit: 5,
             windowMs: 60_000,
@@ -19,8 +18,7 @@ export async function POST(req: Request) {
         if (!rl.success) {
             return new NextResponse(
                 JSON.stringify({
-                    error:
-                        "Too many requests. Please try again later.",
+                    error: "Too many requests. Please try again later.",
                 }),
                 {
                     status: 429,
@@ -33,11 +31,9 @@ export async function POST(req: Request) {
         }
 
         /* Parse body */
-
         const body = await req.json();
 
         /* Honeypot check */
-
         if (body.website) {
             return NextResponse.json(
                 { error: "Spam detected" },
@@ -46,7 +42,6 @@ export async function POST(req: Request) {
         }
 
         /* Turnstile verification */
-
         const token = body.captchaToken;
 
         if (!token) {
@@ -65,8 +60,7 @@ export async function POST(req: Request) {
                         "application/x-www-form-urlencoded",
                 },
                 body: new URLSearchParams({
-                    secret:
-                        process.env.TURNSTILE_SECRET_KEY!,
+                    secret: process.env.TURNSTILE_SECRET_KEY!,
                     response: token,
                 }),
             }
@@ -82,7 +76,6 @@ export async function POST(req: Request) {
         }
 
         /* Validate input */
-
         const parsed =
             enrollmentLeadSchema.safeParse(body);
 
@@ -96,7 +89,6 @@ export async function POST(req: Request) {
         const data = parsed.data;
 
         /* Insert into database */
-
         const supabase =
             await createServerSupabaseClient();
 
@@ -135,37 +127,74 @@ export async function POST(req: Request) {
                 "Insert error:",
                 error.message
             );
+
             return NextResponse.json(
                 { error: "Failed to create lead" },
                 { status: 500 }
             );
         }
 
-        let courseInfo: { title: string, price: number, course_type: string, class_level: number, target_exam: string } | null = null;
-        let batchInfo: { name: string, price: number, mode: string, start_date: string, center_name: string } | null = null;
+        let courseInfo: {
+            title: string;
+            price: number;
+            category: string;
+            class_level: number | null;
+            target_exam: string | null;
+        } | null = null;
+
+        let batchInfo: {
+            name: string;
+            price: number;
+            mode: string;
+            start_date: string | null;
+            center_name: string | null;
+        } | null = null;
 
         if (data.course_id) {
             const { data: course } = await supabase
                 .from("courses")
-                .select("title, price, course_type, class_level, target_exam")
+                .select(
+                    "title, sale_price, category, class_level, target_exam"
+                )
                 .eq("id", data.course_id)
                 .single();
 
-            courseInfo = course ?? null;
+            courseInfo = course
+                ? {
+                    title: course.title,
+                    price: Number(course.sale_price),
+                    category: course.category,
+                    class_level:
+                        course.class_level ?? null,
+                    target_exam:
+                        course.target_exam ?? null,
+                }
+                : null;
         }
 
         if (data.batch_id) {
             const { data: batch } = await supabase
                 .from("batches")
-                .select("name, price, mode, start_date, center_name")
+                .select(
+                    "title, sale_price, mode, start_date, address"
+                )
                 .eq("id", data.batch_id)
                 .single();
 
-            batchInfo = batch ?? null;
+            batchInfo = batch
+                ? {
+                    name: batch.title,
+                    price: Number(batch.sale_price),
+                    mode: batch.mode,
+                    start_date:
+                        batch.start_date ?? null,
+                    center_name:
+                        batch.address ?? null,
+                }
+                : null;
         }
 
         /* Send email notification to admins */
-
         try {
             await sendEmail({
                 to: ["maxvhanamane@gmail.com"],
@@ -180,23 +209,28 @@ export async function POST(req: Request) {
                 }),
             });
 
-            /* Telegram */
-            const telegramMessage = leadTelegramTemplate({
-                name: data.name,
-                phone: data.phone,
-                email: data.email,
-                message: data.message,
-                course: courseInfo,
-                batch: batchInfo,
-            });
+            const telegramMessage =
+                leadTelegramTemplate({
+                    name: data.name,
+                    phone: data.phone,
+                    email: data.email,
+                    message: data.message,
+                    course: courseInfo,
+                    batch: batchInfo,
+                });
 
-            await sendTelegramMessage(telegramMessage, data.phone);
+            await sendTelegramMessage(
+                telegramMessage,
+                data.phone
+            );
         } catch (notifyError) {
-            console.error("Notification error:", notifyError);
+            console.error(
+                "Notification error:",
+                notifyError
+            );
         }
 
         /* Success response */
-
         return NextResponse.json(
             { success: true },
             { status: 201 }

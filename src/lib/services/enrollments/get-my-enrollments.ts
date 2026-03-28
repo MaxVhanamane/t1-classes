@@ -1,11 +1,13 @@
-import "server-only"
+import "server-only";
+
 import type {
     MyEnrollment,
     CourseEnrollment,
     BatchEnrollment,
     RawEnrollmentRow,
-} from "@/src/app/api/my-enrollments/types"
-import { SupabaseClient } from "@supabase/supabase-js"
+} from "@/src/app/api/my-enrollments/types";
+
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function getMyEnrollmentsService(
     supabase: SupabaseClient,
@@ -16,29 +18,31 @@ export async function getMyEnrollmentsService(
     const { data, error } = await supabase
         .from("enrollments")
         .select(`
-            id,
-            target_type,
-            status,
-            access_starts_at,
-            access_ends_at,
-            course:course_id (
-                id,
-                title,
-                slug,
-                course_type,
-                is_active
-            ),
-            batch:batch_id (
-                id,
-                title,
-                subtitle,
-                slug,
-                mode,
-                start_date,
-                end_date,
-                is_active
-            )
-        `)
+      id,
+      target_type,
+      status,
+      access_starts_at,
+      access_ends_at,
+
+      course:course_id (
+        id,
+        title,
+        slug,
+        category,
+        is_active
+      ),
+
+      batch:batch_id (
+        id,
+        title,
+        subtitle,
+        slug,
+        mode,
+        start_date,
+        end_date,
+        is_active
+      )
+    `)
         .eq("user_id", userId)
         .eq("status", "ongoing")
         .lte("access_starts_at", nowIso)
@@ -62,13 +66,17 @@ export async function getMyEnrollmentsService(
                 status: e.status,
                 accessStartsAt: e.access_starts_at,
                 accessEndsAt: e.access_ends_at,
+
                 course: {
                     id: e.course.id,
                     title: e.course.title,
                     slug: e.course.slug,
-                    courseType: e.course.course_type,
+
+                    /* ---------- updated ---------- */
+                    category: e.course.category,
                 },
             } satisfies CourseEnrollment);
+
             continue;
         }
 
@@ -79,6 +87,7 @@ export async function getMyEnrollmentsService(
                 status: e.status,
                 accessStartsAt: e.access_starts_at,
                 accessEndsAt: e.access_ends_at,
+
                 batch: {
                     id: e.batch.id,
                     title: e.batch.title,
@@ -91,5 +100,6 @@ export async function getMyEnrollmentsService(
             } satisfies BatchEnrollment);
         }
     }
+
     return result;
 }

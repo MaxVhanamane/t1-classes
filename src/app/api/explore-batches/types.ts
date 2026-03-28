@@ -1,39 +1,75 @@
-import { JSONContent } from '@tiptap/core'
-// Courses
+import { JSONContent } from "@tiptap/core";
+
+import type {
+    Category,
+    Board,
+    TargetExam,
+    Subject,
+    Language,
+    Location,
+} from "@/src/app/admin/batches/_features/zod-schema/schema";
+
+/* ================================================== */
+/* Courses                                            */
+/* ================================================== */
+
 export interface ExploreCourse {
-    id: string
-    title: string
-    slug: string
-    subtitle: string | null
-    thumbnail_image: string | null
-    course_type: string
-    class_level: number | null
-    board: string | null
-    target_exam: string | null
-    subjects: string[] | null
-    list_price: number
-    sale_price: number
-    languages: string[] | null
+    id: string;
+    title: string;
+    slug: string;
+    subtitle: string | null;
+    thumbnail_image: string | null;
+
+    /* ---------- category ---------- */
+    category: Category;
+
+    /* ---------- academic ---------- */
+    class_level: number | null;
+    board: Board | null;
+    target_exam: TargetExam | null;
+    subjects: Subject[] | null;
+
+    /* ---------- pricing ---------- */
+    list_price: number;
+    sale_price: number;
+
+    /* ---------- delivery ---------- */
+    languages: Language[] | null;
 }
 
 export interface ExploreCourseMarketing {
-    id: string
-    title: string
-    slug: string
-    description: JSONContent | null
-    subtitle: string | null
-    learning_outcomes: string[] | null
-    target_audience: string[] | null
-    thumbnail_image: string | null
-    course_type: string
-    class_level: number | null
-    board: string | null
-    target_exam: string | null
-    subjects: string[] | null
-    list_price: number
-    sale_price: number
-    languages: string[] | null
+    id: string;
+    title: string;
+    slug: string;
+
+    description: JSONContent | null;
+    subtitle: string | null;
+
+    learning_outcomes: string[] | null;
+    target_audience: string[] | null;
+
+    thumbnail_image: string | null;
+
+    /* ---------- category ---------- */
+    category: Category;
+
+    /* ---------- academic ---------- */
+    class_level: number | null;
+    board: Board | null;
+    target_exam: TargetExam | null;
+    subjects: Subject[] | null;
+
+    /* ---------- pricing ---------- */
+    list_price: number;
+    sale_price: number;
+
+    /* ---------- delivery ---------- */
+    languages: Language[] | null;
 }
+
+/* ================================================== */
+/* Batches                                            */
+/* ================================================== */
 
 export type BatchMode = "offline" | "online" | "hybrid";
 
@@ -45,33 +81,38 @@ export type BatchLifecycle =
 export interface ExploreBatch {
     id: string;
 
-    /* Identity */
+    /* ---------- identity ---------- */
     title: string;
     slug: string;
     subtitle: string | null;
     thumbnail_image: string | null;
 
-    /* Pricing */
+    /* ---------- category ---------- */
+    category: Category;
+    board: Board | null;
+
+    /* ---------- pricing ---------- */
     sale_price: number;
     list_price: number;
 
-    /* Delivery */
+    /* ---------- delivery ---------- */
     mode: BatchMode;
-    languages: string[];
-    location: string | null;
+    languages: Language[];
+    location: Location | null;
+    address: string | null;
 
-    /* Lifecycle */
+    /* ---------- lifecycle ---------- */
     start_date: string;
     end_date: string;
 
-    /* Admissions */
+    /* ---------- admissions ---------- */
     is_admission_open: boolean;
 
-    /* Academic */
-    subjects: string[] | null;
+    /* ---------- academic ---------- */
+    subjects: Subject[] | null;
     class_level: number | null;
-    target_exam: string | null;
+    target_exam: TargetExam | null;
 
-    /* Relations */
+    /* ---------- relations ---------- */
     course_count: number;
 }

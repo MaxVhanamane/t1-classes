@@ -2,6 +2,7 @@ import {
     ExploreBatchDetail,
     ExploreCourseForBatch,
 } from "@/src/app/api/explore-batches/[slug]/types";
+
 import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function getExploreBatchDetailBySlugService(
@@ -22,19 +23,30 @@ export async function getExploreBatchDetailBySlugService(
       subtitle,
       slug,
       thumbnail_image,
+
+      category,
+      board,
+
       start_date,
       end_date,
+
       mode,
       languages,
       location,
+      address,
+
       is_admission_open,
+
       sale_price,
       list_price,
+
       learning_outcomes,
       target_audience,
+
       subjects,
       class_level,
       target_exam,
+
       description,
       capacity
     `)
@@ -44,7 +56,6 @@ export async function getExploreBatchDetailBySlugService(
         .single();
 
     if (batchError) {
-
         throw new Error("Failed to fetch batch");
     }
 
@@ -64,28 +75,39 @@ export async function getExploreBatchDetailBySlugService(
           slug,
           description,
           subtitle,
+
           learning_outcomes,
           target_audience,
+
           thumbnail_image,
-          course_type,
+
+          category,
           class_level,
           board,
           target_exam,
           subjects,
+
           list_price,
           sale_price,
           languages,
+
           is_active
         )
       `)
             .eq("batch_id", batch.id)
             .eq("course.is_active", true)
             .overrideTypes<
-                { course: ExploreCourseForBatch }[]
+                {
+                    course: ExploreCourseForBatch;
+                }[]
             >();
 
     if (coursesError) {
-        console.error("Error fetching batch courses:", coursesError);
+        console.error(
+            "Error fetching batch courses:",
+            coursesError
+        );
+
         throw new Error("Failed to fetch batch courses");
     }
 
@@ -103,19 +125,40 @@ export async function getExploreBatchDetailBySlugService(
                 id: course.id,
                 title: course.title,
                 slug: course.slug,
+
                 description: course.description,
                 subtitle: course.subtitle,
-                learning_outcomes: course.learning_outcomes,
-                target_audience: course.target_audience,
-                thumbnail_image: course.thumbnail_image,
-                course_type: course.course_type,
-                class_level: course.class_level,
+
+                learning_outcomes:
+                    course.learning_outcomes,
+
+                target_audience:
+                    course.target_audience,
+
+                thumbnail_image:
+                    course.thumbnail_image,
+
+                category: course.category,
+
+                class_level:
+                    course.class_level,
+
                 board: course.board,
-                target_exam: course.target_exam,
+
+                target_exam:
+                    course.target_exam,
+
                 subjects: course.subjects,
+
                 languages: course.languages,
-                list_price: Number(course.list_price),
-                sale_price: Number(course.sale_price),
+
+                list_price: Number(
+                    course.list_price
+                ),
+
+                sale_price: Number(
+                    course.sale_price
+                ),
             };
         }) ?? [];
 
@@ -129,21 +172,43 @@ export async function getExploreBatchDetailBySlugService(
         subtitle: batch.subtitle,
         slug: batch.slug,
         thumbnail_image: batch.thumbnail_image,
+
+        category: batch.category,
+        board: batch.board,
+
         start_date: batch.start_date,
         end_date: batch.end_date,
+
         mode: batch.mode,
+
         languages: batch.languages,
         location: batch.location,
-        is_admission_open: batch.is_admission_open,
-        sale_price: Number(batch.sale_price),
-        list_price: Number(batch.list_price),
-        learning_outcomes: batch.learning_outcomes,
-        target_audience: batch.target_audience,
+        address: batch.address,
+
+        is_admission_open:
+            batch.is_admission_open,
+
+        sale_price: Number(
+            batch.sale_price
+        ),
+
+        list_price: Number(
+            batch.list_price
+        ),
+
+        learning_outcomes:
+            batch.learning_outcomes,
+
+        target_audience:
+            batch.target_audience,
+
         subjects: batch.subjects,
         class_level: batch.class_level,
         target_exam: batch.target_exam,
+
         description: batch.description,
         capacity: batch.capacity,
+
         courses,
     };
 }

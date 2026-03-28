@@ -88,8 +88,8 @@ export function ExploreCourseCard({
           ))}
 
           {/* Course Type Badge Overlay */}
-          {course.course_type && (
-            <Badge className="text-xs capitalize">{course.course_type}</Badge>
+          {course.category && (
+            <Badge className="text-xs capitalize">{course.category}</Badge>
           )}
         </div>
         <div className="flex-1" />

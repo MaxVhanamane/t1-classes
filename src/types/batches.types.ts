@@ -1,5 +1,12 @@
 import { JSONContent } from "@tiptap/react";
 
+import type {
+    Category,
+    Board,
+    TargetExam,
+    Subject,
+} from "@/src/app/admin/batches/_features/zod-schema/schema";
+
 /* ---------------- Core Enums ---------------- */
 
 export type BatchMode =
@@ -7,32 +14,35 @@ export type BatchMode =
     | "offline"
     | "hybrid";
 
-export type CourseType =
-    | "academic"
-    | "foundation"
-    | "exam"
-    | "crash";
-
 /* ---------------- Batch Details ---------------- */
 
 export interface BatchDetails {
     id: string;
 
-    /* Identity */
+    /* ---------- identity ---------- */
     title: string;
     subtitle: string | null;
 
-    /* Delivery */
+    /* ---------- category ---------- */
+    category: Category;
+    board: Board | null;
+
+    /* ---------- delivery ---------- */
     mode: BatchMode;
 
-    /* Visibility */
+    /* ---------- visibility ---------- */
     is_active: boolean;
     is_admission_open: boolean;
 
-    /* Content */
+    /* ---------- content ---------- */
     description: JSONContent | null;
 
-    /* Lifecycle */
+    /* ---------- academic ---------- */
+    target_exam: TargetExam | null;
+    class_level: number | null;
+    subjects: Subject[] | null;
+
+    /* ---------- lifecycle ---------- */
     start_date: string;
     end_date: string;
 }
@@ -45,10 +55,14 @@ export interface BatchCourse {
     subtitle: string | null;
     slug: string;
     thumbnail_image: string | null;
-    course_type: CourseType;
-    target_exam: string | null;
+
+    /* ---------- category ---------- */
+    category: Category;
+
+    /* ---------- academic ---------- */
+    target_exam: TargetExam | null;
     class_level: number | null;
-    subjects: string[] | null;
+    subjects: Subject[] | null;
 }
 
 /* ---------------- API Response ---------------- */

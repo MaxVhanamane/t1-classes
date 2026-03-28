@@ -1,26 +1,28 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentUser } from "@/src/lib/helper-functions/getCurrentUser";
+
 import type {
     BatchDetailsResponse,
     BatchCourse,
 } from "@/src/types/batches.types";
+import { getAuth } from "../../auth/get-auth";
 
 export async function getBatchDetails(
     batchId: string
 ): Promise<BatchDetailsResponse> {
     const supabase = await createServerSupabaseClient();
-    const user = await getCurrentUser();
+    const user = await getAuth();
     const now = new Date().toISOString();
 
     /* ----------------------------------------------------------- */
-    /* 1. Validate batch enrollment + access window               */
+    /* 1. Validate batch enrollment + access window                */
     /* ----------------------------------------------------------- */
+
     const { count, error: enrollmentError } = await supabase
         .from("enrollments")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
+        .eq("user_id", user?.userId)
         .eq("target_type", "batch")
         .eq("batch_id", batchId)
         .in("status", ["ongoing", "paused"])
@@ -32,21 +34,31 @@ export async function getBatchDetails(
     }
 
     /* ----------------------------------------------------------- */
-    /* 2. Fetch batch + courses (single query)                    */
+    /* 2. Fetch batch + courses                                    */
     /* ----------------------------------------------------------- */
+
     const { data, error } = await supabase
         .from("batches")
-        .select(
-            `
+        .select(`
       id,
       title,
       subtitle,
+
+      category,
+      board,
+      target_exam,
+      class_level,
+      subjects,
+
       mode,
       is_active,
       is_admission_open,
+
       description,
+
       start_date,
       end_date,
+
       batch_courses (
         course:courses!inner (
           id,
@@ -54,15 +66,16 @@ export async function getBatchDetails(
           subtitle,
           slug,
           thumbnail_image,
-          course_type,
+
+          category,
           target_exam,
           class_level,
           subjects,
+
           is_active
         )
       )
-      `
-        )
+    `)
         .eq("id", batchId)
         .eq("is_active", true)
         .eq("batch_courses.course.is_active", true)
@@ -73,21 +86,12 @@ export async function getBatchDetails(
     }
 
     /* ----------------------------------------------------------- */
-    /* 3. Normalize courses (DB → domain boundary)                */
+    /* 3. Normalize courses                                        */
     /* ----------------------------------------------------------- */
+
     const courses: BatchCourse[] =
         data.batch_courses?.map((bc) => {
-            const course = bc.course as unknown as {
-                id: string;
-                title: string;
-                subtitle: string | null;
-                slug: string;
-                thumbnail_image: string | null;
-                course_type: BatchCourse["course_type"];
-                target_exam: string | null;
-                class_level: number | null;
-                subjects: string[] | null;
-            };
+            const course = bc.course as unknown as BatchCourse;
 
             return {
                 id: course.id,
@@ -95,7 +99,9 @@ export async function getBatchDetails(
                 subtitle: course.subtitle,
                 slug: course.slug,
                 thumbnail_image: course.thumbnail_image,
-                course_type: course.course_type,
+
+                category: course.category,
+
                 target_exam: course.target_exam,
                 class_level: course.class_level,
                 subjects: course.subjects,
@@ -103,20 +109,32 @@ export async function getBatchDetails(
         }) ?? [];
 
     /* ----------------------------------------------------------- */
-    /* 4. Return domain-shaped response                           */
+    /* 4. Return response                                          */
     /* ----------------------------------------------------------- */
+
     return {
         batch: {
             id: data.id,
             title: data.title,
             subtitle: data.subtitle,
+
+            category: data.category,
+            board: data.board,
+
+            target_exam: data.target_exam,
+            class_level: data.class_level,
+            subjects: data.subjects,
+
             mode: data.mode,
             is_active: data.is_active,
             is_admission_open: data.is_admission_open,
+
             description: data.description,
+
             start_date: data.start_date,
             end_date: data.end_date,
         },
+
         courses,
     };
 }

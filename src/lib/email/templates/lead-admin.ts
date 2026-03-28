@@ -1,33 +1,35 @@
 type LeadAdminTemplateProps = {
+  name: string;
+  phone: string;
+  email?: string | null;
+  message?: string | null;
+
+  course?: {
+    title: string;
+    price: number;
+    category?: string | null;
+    class_level?: number | null;
+    target_exam?: string | null;
+  } | null;
+
+  batch?: {
     name: string;
-    phone: string;
-    email?: string | null;
-    message?: string | null;
-    course?: {
-        title: string;
-        price: number;
-        course_type?: string;
-        class_level?: number;
-        target_exam?: string;
-    } | null;
-    batch?: {
-        name: string;
-        price: number;
-        mode?: string;
-        start_date?: string;
-        center_name?: string;
-    } | null;
+    price: number;
+    mode?: string | null;
+    start_date?: string | null;
+    center_name?: string | null;
+  } | null;
 };
 
 export function leadAdminTemplate({
-    name,
-    phone,
-    email,
-    message,
-    course,
-    batch,
+  name,
+  phone,
+  email,
+  message,
+  course,
+  batch,
 }: LeadAdminTemplateProps) {
-    return `
+  return `
   <div style="
     font-family: Arial, sans-serif;
     background:#f9fafb;
@@ -73,7 +75,7 @@ export function leadAdminTemplate({
       </table>
 
       ${course
-            ? `
+      ? `
         <div style="margin-top:20px">
           <h3 style="margin-bottom:8px;font-size:15px">
             Course Details
@@ -81,17 +83,28 @@ export function leadAdminTemplate({
 
           <p><strong>${course.title}</strong></p>
           <p>Price: ₹${course.price}</p>
+
+          ${course.category
+        ? `<p>Category: ${course.category}</p>`
+        : ""
+      }
+
+          ${course.class_level
+        ? `<p>Class: ${course.class_level}</p>`
+        : ""
+      }
+
           ${course.target_exam
-                ? `<p>Exam: ${course.target_exam}</p>`
-                : ""
-            }
+        ? `<p>Exam: ${course.target_exam}</p>`
+        : ""
+      }
         </div>
       `
-            : ""
-        }
+      : ""
+    }
 
       ${batch
-            ? `
+      ? `
         <div style="margin-top:20px">
           <h3 style="margin-bottom:8px;font-size:15px">
             Batch Details
@@ -99,21 +112,28 @@ export function leadAdminTemplate({
 
           <p><strong>${batch.name}</strong></p>
           <p>Price: ₹${batch.price}</p>
+
           ${batch.mode
-                ? `<p>Mode: ${batch.mode}</p>`
-                : ""
-            }
+        ? `<p>Mode: ${batch.mode}</p>`
+        : ""
+      }
+
           ${batch.start_date
-                ? `<p>Starts: ${batch.start_date}</p>`
-                : ""
-            }
+        ? `<p>Starts: ${batch.start_date}</p>`
+        : ""
+      }
+
+          ${batch.center_name
+        ? `<p>Center: ${batch.center_name}</p>`
+        : ""
+      }
         </div>
       `
-            : ""
-        }
+      : ""
+    }
 
       ${message
-            ? `
+      ? `
         <div style="
           margin-top:20px;
           padding:12px;
@@ -124,8 +144,8 @@ export function leadAdminTemplate({
           <p style="margin-top:6px">${message}</p>
         </div>
       `
-            : ""
-        }
+      : ""
+    }
 
       <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb"/>
 

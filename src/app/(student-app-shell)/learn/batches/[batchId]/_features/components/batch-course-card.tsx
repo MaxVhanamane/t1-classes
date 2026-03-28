@@ -38,7 +38,7 @@ export function CourseCard({ course, batchId }: CourseCardProps) {
           variant="secondary"
           className="absolute left-3 top-3 bg-background/90 text-[10px] capitalize"
         >
-          {course.course_type}
+          {course.category}
         </Badge>
       </div>
 

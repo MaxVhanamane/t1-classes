@@ -30,7 +30,7 @@ export function CourseEnrollmentCard({ enrollment }: Props) {
 
         {/* Meta */}
         <p className="text-xs capitalize text-muted-foreground">
-          {course.courseType}
+          {course.category}
         </p>
 
         {/* Context */}
