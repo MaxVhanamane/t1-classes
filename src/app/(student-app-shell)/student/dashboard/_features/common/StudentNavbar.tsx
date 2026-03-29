@@ -49,7 +49,7 @@ export function StudentNavbar({
             <div className="w-6 h-6">
               <AnimatedLogo />
             </div>
-            <span className="hidden text-sm font-semibold sm:inline">
+            <span className=" text-sm font-semibold">
               T<sub>1</sub> Classes
             </span>
           </Link>

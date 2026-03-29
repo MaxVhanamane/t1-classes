@@ -19,12 +19,16 @@ export default async function BatchPage({ params, searchParams }: Props) {
   const { tab } = await searchParams;
 
   const cookieStore = await cookies();
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SITE_URL}/api/batches/${batchId}`,
     {
       headers: {
-        cookie: cookieStore.toString(),
+        cookie: cookieHeader,
       },
     },
   );
