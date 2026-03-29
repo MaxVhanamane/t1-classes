@@ -17,15 +17,34 @@ type Props = {
 export default async function BatchPage({ params, searchParams }: Props) {
   const { batchId } = await params;
   const { tab } = await searchParams;
-  const requestHeaders = await headers();
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/batches/${batchId}`,
-    {
-      headers: requestHeaders, // Forward incoming request headers (including cookies) to the API route
-    },
+
+  const headersList = await headers();
+  const cookieHeader = headersList.get("cookie") ?? "";
+
+  console.log("[BatchPage] batchId:", batchId);
+  console.log(
+    "[BatchPage] NEXT_PUBLIC_SITE_URL:",
+    process.env.NEXT_PUBLIC_SITE_URL,
   );
+  console.log("[BatchPage] cookie present:", !!cookieHeader);
+  console.log("[BatchPage] cookie length:", cookieHeader.length);
+  console.log("[BatchPage] cookie preview:", cookieHeader.slice(0, 80));
+
+  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/api/batches/${batchId}`;
+  console.log("[BatchPage] fetching:", url);
+
+  const res = await fetch(url, {
+    headers: {
+      cookie: cookieHeader,
+    },
+  });
+
+  console.log("[BatchPage] response status:", res.status);
+  console.log("[BatchPage] response ok:", res.ok);
 
   if (!res.ok) {
+    const body = await res.text();
+    console.log("[BatchPage] error body:", body);
     notFound();
   }
 
