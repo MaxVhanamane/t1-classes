@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { Button } from "@/src/components/ui/button";
 
 import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";
@@ -17,19 +17,11 @@ type Props = {
 export default async function BatchPage({ params, searchParams }: Props) {
   const { batchId } = await params;
   const { tab } = await searchParams;
-
-  const cookieStore = await cookies();
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ");
-
+  const requestHeaders = await headers();
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SITE_URL}/api/batches/${batchId}`,
     {
-      headers: {
-        cookie: cookieHeader,
-      },
+      headers: requestHeaders, // Forward incoming request headers (including cookies) to the API route
     },
   );
 
