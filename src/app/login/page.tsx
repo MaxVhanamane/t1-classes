@@ -134,7 +134,10 @@ export default function LoginPage() {
 
           <div className="pt-8">
             <Image
-              src="/school.svg"
+              src={
+                process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL +
+                "/assets/school.svg"
+              }
               alt="Learning illustration"
               width={350}
               height={350}
@@ -150,7 +153,10 @@ export default function LoginPage() {
           {/* Mobile illustration */}
           <div className="flex justify-center rounded-t-2xl bg-muted  md:hidden">
             <Image
-              src="/school.svg"
+              src={
+                process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL +
+                "/assets/school.svg"
+              }
               alt="Learning illustration"
               width={200}
               height={200}

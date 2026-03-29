@@ -47,6 +47,7 @@ export function StudentNavbar({
         <div className="flex gap-2 items-center">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <div className="w-6 h-6">
+             
               <AnimatedLogo />
             </div>
             <span className=" text-sm font-semibold">

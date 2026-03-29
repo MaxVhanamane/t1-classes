@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
 import { Button } from "@/src/components/ui/button";
 
 import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";
@@ -8,6 +7,7 @@ import { CourseCard } from "./_features/components/batch-course-card";
 import { BatchDetailsResponse } from "@/src/types/batches.types";
 import BatchTestsPanel from "./_features/components/batch-tests-panel";
 import { BatchInfoPopover } from "./_features/components/batch-info-popover";
+import { getBatchDetails } from "@/src/lib/services/batches/get-batch-details";
 
 type Props = {
   params: Promise<{ batchId: string }>;
@@ -18,37 +18,13 @@ export default async function BatchPage({ params, searchParams }: Props) {
   const { batchId } = await params;
   const { tab } = await searchParams;
 
-  const headersList = await headers();
-  const cookieHeader = headersList.get("cookie") ?? "";
+  let data: BatchDetailsResponse;
 
-  console.log("[BatchPage] batchId:", batchId);
-  console.log(
-    "[BatchPage] NEXT_PUBLIC_SITE_URL:",
-    process.env.NEXT_PUBLIC_SITE_URL,
-  );
-  console.log("[BatchPage] cookie present:", !!cookieHeader);
-  console.log("[BatchPage] cookie length:", cookieHeader.length);
-  console.log("[BatchPage] cookie preview:", cookieHeader.slice(0, 80));
-
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/api/batches/${batchId}`;
-  console.log("[BatchPage] fetching:", url);
-
-  const res = await fetch(url, {
-    headers: {
-      cookie: cookieHeader,
-    },
-  });
-
-  console.log("[BatchPage] response status:", res.status);
-  console.log("[BatchPage] response ok:", res.ok);
-
-  if (!res.ok) {
-    const body = await res.text();
-    console.log("[BatchPage] error body:", body);
+  try {
+    data = await getBatchDetails(batchId);
+  } catch {
     notFound();
   }
-
-  const data: BatchDetailsResponse = await res.json();
 
   const { batch, courses } = data;
 
