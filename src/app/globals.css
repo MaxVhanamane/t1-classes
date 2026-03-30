@@ -76,6 +76,36 @@
     display: none;
   }
 
+
+
+
+  /* Enter animation */
+  ::view-transition-new(page) {
+    animation: 500ms ease-out both slide-in-from-top;
+  }
+
+  /* Exit animation */
+  ::view-transition-old(page) {
+    animation: 500ms ease-out both slide-out-bottom;
+  }
+
+  @keyframes slide-out-bottom {
+    to {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+
+  }
+
+  @keyframes slide-in-from-top {
+    from {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+  }
+
+
+
 }
 
 @custom-variant dark (&:is(.dark *));

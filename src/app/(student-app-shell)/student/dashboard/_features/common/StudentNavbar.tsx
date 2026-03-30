@@ -47,7 +47,6 @@ export function StudentNavbar({
         <div className="flex gap-2 items-center">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <div className="w-6 h-6">
-             
               <AnimatedLogo />
             </div>
             <span className=" text-sm font-semibold">
@@ -75,7 +74,7 @@ export function StudentNavbar({
                 variant="ghost"
                 className="hidden sm:inline-flex h-9 px-3"
               >
-                <Link href="/dashboard">My Learning</Link>
+                <Link href="/student/dashboard">My Learning</Link>
               </Button>
 
               <Button
