@@ -32,7 +32,7 @@ function getYouTubeEmbedUrl(url?: string | null): string {
   }
 
   return videoId
-    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&controls=1&iv_load_policy=3`
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&controls=1&fs=0&iv_load_policy=3`
     : "";
 }
 
@@ -57,24 +57,50 @@ export function VideoPlayer({ unit }: Props) {
   const hideTimeoutRef = useRef<number | null>(null);
 
   const [overlayRightOffset, setOverlayRightOffset] = useState(158);
-
   useEffect(() => {
+    const isMobileDevice = () => {
+      return (
+        typeof navigator !== "undefined" &&
+        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      );
+    };
+
+    const isTouchDevice = () => {
+      return (
+        typeof window !== "undefined" &&
+        ("ontouchstart" in window || navigator.maxTouchPoints > 0)
+      );
+    };
+
     const updateOffset = () => {
-      const isMobile = window.innerWidth < 768;
+      const isMobile = isMobileDevice() || isTouchDevice();
+      const isFullscreen = Boolean(document.fullscreenElement);
       const isLandscape = window.innerWidth > window.innerHeight;
 
-      if (isMobile && isLandscape) {
-        setOverlayRightOffset(180);
-      } else if (isMobile) {
-        setOverlayRightOffset(160);
-      } else {
-        setOverlayRightOffset(158);
+      let offset = 158; // desktop safe default
+
+      if (isMobile) {
+        if (isFullscreen || isLandscape) {
+          // fullscreen mobile → controls are bigger
+          offset = 220;
+        } else {
+          // normal mobile
+          offset = 170;
+        }
       }
+
+      setOverlayRightOffset(offset);
     };
 
     updateOffset();
+
     window.addEventListener("resize", updateOffset);
-    return () => window.removeEventListener("resize", updateOffset);
+    document.addEventListener("fullscreenchange", updateOffset);
+
+    return () => {
+      window.removeEventListener("resize", updateOffset);
+      document.removeEventListener("fullscreenchange", updateOffset);
+    };
   }, []);
 
   useEffect(() => {
@@ -117,7 +143,7 @@ export function VideoPlayer({ unit }: Props) {
       window.clearTimeout(hideTimeoutRef.current);
     }
 
-    const delay = window.innerWidth < 768 ? 3000 : 2000;
+    const delay = window.innerWidth < 768 ? 4000 : 2000;
 
     hideTimeoutRef.current = window.setTimeout(() => {
       setShowControls(false);
@@ -130,7 +156,7 @@ export function VideoPlayer({ unit }: Props) {
         ref={containerRef}
         onMouseMove={handleInteraction}
         onTouchStart={handleInteraction}
-        onClick={handleInteraction}
+        onTouchEnd={handleInteraction}
         className="relative aspect-video w-full bg-muted lg:rounded-xl overflow-hidden"
       >
         <iframe
@@ -159,8 +185,8 @@ export function VideoPlayer({ unit }: Props) {
         <button
           onClick={handleFullscreen}
           className={cn(
-            "absolute bottom-1/2 right-2 z-20 flex items-center justify-center rounded bg-black/60 p-1.5 text-white transition-opacity duration-300",
-            showControls ? "opacity-100" : "opacity-0 pointer-events-none",
+            "absolute bottom-14 min-[392px]:bottom-20 sm:bottom-20 right-3 sm:right-6 z-20 flex items-center justify-center rounded bg-black/60 p-2 text-white transition-opacity duration-300",
+            showControls ? "opacity-100" : "opacity-30",
           )}
         >
           {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
