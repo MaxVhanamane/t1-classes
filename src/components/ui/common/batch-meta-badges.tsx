@@ -57,7 +57,7 @@ export function BatchMetaBadges({ batch, size = "sm" }: BatchMetaBadgesProps) {
 
   return (
     <TooltipProvider delayDuration={150}>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5 z-10">
         {badges.map((badge) => (
           <BadgeWithTooltip
             key={badge.key}

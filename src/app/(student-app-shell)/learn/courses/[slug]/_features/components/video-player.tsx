@@ -11,6 +11,7 @@ import { cn } from "@/src/lib/utils";
 
 type Props = {
   unit: CourseUnitContent;
+  onIframeLoad: () => void;
 };
 
 type FullscreenElement = HTMLDivElement & {
@@ -46,7 +47,7 @@ function getEmbedUrl(unit: Props["unit"]): string {
   return "";
 }
 
-export function VideoPlayer({ unit }: Props) {
+export function VideoPlayer({ unit, onIframeLoad }: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -160,6 +161,7 @@ export function VideoPlayer({ unit }: Props) {
         className="relative aspect-video w-full bg-muted lg:rounded-xl overflow-hidden"
       >
         <iframe
+          onLoad={onIframeLoad}
           sandbox="allow-scripts allow-same-origin"
           src={getEmbedUrl(unit)}
           className="absolute inset-0 h-full w-full lg:rounded-xl"

@@ -24,26 +24,28 @@ export function ExploreBatchCard({ batch }: { batch: ExploreBatch }) {
   return (
     <Card className="group flex h-115 flex-col overflow-hidden rounded-2xl border bg-background p-0 transition-all hover:shadow-lg gap-3">
       {/* ================= IMAGE (TOP 50% — CLEAN FADE) ================= */}
-      <div className="relative aspect-video w-full overflow-hidden shrink-0">
-        {batch.thumbnail_image ? (
-          <Image
-            src={`${R2_BUCKET_PUBLIC_URL}/${batch.thumbnail_image}`}
-            alt={batch.title}
-            fill
-            priority
-            className="object-cover transition-transform duration-500 group-hover:scale-105 brightness-[1.02] contrast-110"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-muted text-xs text-muted-foreground">
-            No Image
+      <div className="px-3 pt-3">
+        <div className="relative aspect-video w-full overflow-hidden shrink-0 rounded-md">
+          {batch.thumbnail_image ? (
+            <Image
+              src={`${R2_BUCKET_PUBLIC_URL}/${batch.thumbnail_image}`}
+              alt={batch.title}
+              fill
+              priority
+              className="object-cover transition-transform duration-500 group-hover:scale-105 brightness-[1.02] contrast-110"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-muted text-xs text-muted-foreground">
+              No Image
+            </div>
+          )}
+
+          {/* Small bottom fade (NO BLUR) */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-black/35 to-transparent" />
+
+          <div className="absolute bottom-2 right-2 flex flex-wrap items-center gap-2 rounded-xl bg-black/80 px-3 py-1.5 text-white ring-1 ring-white/10 shadow-xl">
+            <BatchMetaBadges batch={{ ...batch, is_active: true }} />
           </div>
-        )}
-
-        {/* Small bottom fade (NO BLUR) */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-black/35 to-transparent" />
-
-        <div className="absolute bottom-2 right-2 flex flex-wrap items-center gap-2 rounded-xl bg-black/80 px-3 py-1.5 text-white ring-1 ring-white/10 shadow-xl">
-          <BatchMetaBadges batch={{ ...batch, is_active: true }} />
         </div>
       </div>
 

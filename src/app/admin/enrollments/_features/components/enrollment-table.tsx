@@ -158,20 +158,20 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <span className="text-xs">From</span>
-                      <span className="font-medium text-foreground">
+                      <span className="font-sm text-foreground">
                         {format(
                           new Date(enrollment.access_starts_at),
-                          "dd MMM yyyy",
+                          "dd MMM yyyy, hh:mm a",
                         )}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <span className="text-xs">To</span>
-                      <span className="font-medium text-foreground">
+                      <span className="font-sm text-foreground">
                         {enrollment.access_ends_at
                           ? format(
                               new Date(enrollment.access_ends_at),
-                              "dd MMM yyyy",
+                              "dd MMM yyyy, hh:mm a",
                             )
                           : "Unlimited"}
                       </span>

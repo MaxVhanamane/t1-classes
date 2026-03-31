@@ -22,21 +22,23 @@ export function ExploreCourseCard({
         )
       : null;
   return (
-    <Card className="flex h-115 flex-col overflow-hidden p-0 transition hover:shadow-md relative gap-3 group">
+    <Card className="flex h-115 flex-col overflow-hidden p-0 transition hover:shadow-md relative gap-3 group ">
       {/* Image */}
-      <div className="relative aspect-video w-full bg-muted overflow-hidden shrink-0">
-        {course.thumbnail_image ? (
-          <Image
-            src={`${R2_BUCKET_PUBLIC_URL}/${course.thumbnail_image}`}
-            alt={course.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-            No Image
-          </div>
-        )}
+      <div className="px-3 pt-3">
+        <div className="relative aspect-video w-full bg-muted overflow-hidden shrink-0 rounded-md">
+          {course.thumbnail_image ? (
+            <Image
+              src={`${R2_BUCKET_PUBLIC_URL}/${course.thumbnail_image}`}
+              alt={course.title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+              No Image
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}

@@ -23,25 +23,26 @@ export function CourseCard({ course, batchId }: CourseCardProps) {
 
   return (
     <Card className="flex h-110 flex-col overflow-hidden bg-background gap-0 p-0">
-      <div className="relative aspect-video w-full bg-muted">
-        <Image
-          src={`${R2_BUCKET_PUBLIC_URL}/${course.thumbnail_image}`}
-          alt={course.title}
-          fill
-          priority={false}
-          className="object-cover"
-        />
+      <div className="px-3 pt-3">
+        <div className="relative aspect-video w-full bg-muted overflow-hidden shrink-0 rounded-md">
+          <Image
+            src={`${R2_BUCKET_PUBLIC_URL}/${course.thumbnail_image}`}
+            alt={course.title}
+            fill
+            priority={false}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-muted/80 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-muted/80 to-transparent" />
 
-        <Badge
-          variant="secondary"
-          className="absolute left-3 top-3 bg-background/90 text-[10px] capitalize"
-        >
-          {course.category}
-        </Badge>
+          <Badge
+            variant="secondary"
+            className="absolute left-3 top-3 bg-background/90 text-[10px] capitalize"
+          >
+            {course.category}
+          </Badge>
+        </div>
       </div>
-
       <CardContent className="flex flex-1 flex-col gap-3 px-4 pt-4 pb-0 ">
         <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug tracking-tight">
           {course.title}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-
 import type { CourseOutline } from "@/src/types/course-outline.types";
 import { CourseStructureTree } from "./course-structure-tree";
 import { PlayerSkeleton } from "./player-skeleton";
@@ -38,7 +37,7 @@ type PlayerState =
   | { status: "idle" }
   | { status: "initial-loading" }
   | { status: "loading"; unitId: string; unitType: UnitType }
-  | { status: "ready"; unit: CourseUnitContent }
+  | { status: "ready"; unit: CourseUnitContent; iframeReady: boolean }
   | { status: "error"; message: string; unitId: string; unitType: UnitType }
   | { status: "pdf-dialog-closed" };
 
@@ -122,6 +121,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
           setPlayerState({
             status: "ready",
             unit: data,
+            iframeReady: false,
           });
         }
       } catch (e) {
@@ -219,7 +219,20 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
 
           {playerState.status === "ready" &&
             playerState.unit.unitType === "video" && (
-              <VideoPlayer unit={playerState.unit} />
+              <>
+                {!playerState.iframeReady && <PlayerSkeleton />}
+
+                <VideoPlayer
+                  unit={playerState.unit}
+                  onIframeLoad={() =>
+                    setPlayerState((prev) =>
+                      prev.status === "ready"
+                        ? { ...prev, iframeReady: true }
+                        : prev,
+                    )
+                  }
+                />
+              </>
             )}
 
           {playerState.status === "error" && (

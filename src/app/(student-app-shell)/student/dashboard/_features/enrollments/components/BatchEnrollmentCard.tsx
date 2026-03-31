@@ -5,6 +5,7 @@ import { Button } from "@/src/components/ui/button";
 import type { BatchEnrollment } from "../../../../../../api/my-enrollments/types";
 import { formatDateShort } from "@/src/lib/date";
 import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";
+import { GrafanaBackground } from "@/src/components/ui/grafana-background";
 
 interface Props {
   enrollment: BatchEnrollment;
@@ -14,8 +15,27 @@ export function BatchEnrollmentCard({ enrollment }: Props) {
   const { batch, accessEndsAt } = enrollment;
 
   return (
-    <Card className="flex h-72 flex-col transition hover:shadow-md py-5">
-      <CardContent className="flex flex-1 flex-col gap-3 px-4 py-2 overflow-hidden">
+    <Card className="relative overflow-hidden flex h-72 flex-col py-5 rounded-xl transition hover:shadow-lg bg-background ">
+      <GrafanaBackground opacity={0.5} />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-24 
+          bg-linear-to-b from-cyan-400/15 via-cyan-400/5 to-transparent 
+          dark:from-cyan-300/50 dark:via-cyan-300/5 blur-2xl"
+      />
+
+      {/* Soft border glow (NO animation) */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset 
+    ring-cyan-400/10 dark:ring-cyan-300/15"
+      />
+
+      {/*  Hover enhancement (very subtle) */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition duration-500 
+    group-hover:opacity-100 
+    bg-linear-to-b from-cyan-400/10 to-transparent"
+      />
+      <CardContent className="flex flex-1 flex-col gap-3 px-4 py-2 overflow-hidden z-10">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <h3 className="line-clamp-2  font-semibold leading-snug">
@@ -56,7 +76,7 @@ export function BatchEnrollmentCard({ enrollment }: Props) {
         </div>
       </CardContent>
 
-      <CardFooter className="px-4">
+      <CardFooter className="px-4 z-10">
         <Button asChild className="w-full">
           <Link href={`/learn/batches/${batch.id}`}>Go to Batch</Link>
         </Button>
