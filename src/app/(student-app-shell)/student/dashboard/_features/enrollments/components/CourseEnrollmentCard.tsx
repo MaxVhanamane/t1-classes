@@ -19,8 +19,8 @@ export function CourseEnrollmentCard({ enrollment }: Props) {
       <GrafanaBackground opacity={0.5} />
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-24 
-    bg-linear-to-b from-violet-400/15 via-violet-400/5 to-transparent 
-    dark:from-violet-300/60 dark:via-violet-300/5 blur-2xl"
+    bg-linear-to-b from-violet-400/60 via-violet-400/5 to-transparent 
+    dark:from-violet-400/60 dark:via-violet-300/5 blur-2xl"
       />
 
       {/* Soft border glow (NO animation) */}

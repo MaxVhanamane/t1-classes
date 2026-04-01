@@ -1,7 +1,11 @@
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { Loader } from "lucide-react";
 
-export function PlayerSkeleton() {
+type Props = {
+  hideTitleSekeleton?: boolean;
+};
+
+export function PlayerSkeleton({ hideTitleSekeleton = false }: Props) {
   return (
     <div className="flex h-full w-full flex-col">
       {/* Video */}
@@ -19,13 +23,15 @@ export function PlayerSkeleton() {
       </div>
 
       {/* Meta */}
-      <div className="my-3 px-4 lg:pr-4 lg:pl-0">
-        {/* Header row (collapsed state) */}
-        <div className="flex w-full max-w-4xl items-center gap-2 py-1">
-          {/* Title*/}
-          <Skeleton className="h-5.5 lg:h-6.25 w-[70%] rounded bg-muted animate-pulse" />
+      {!hideTitleSekeleton && (
+        <div className="my-3 px-4 lg:pr-4 lg:pl-0">
+          {/* Header row (collapsed state) */}
+          <div className="flex w-full max-w-4xl items-center gap-2 py-1">
+            {/* Title*/}
+            <Skeleton className="h-5.5 lg:h-6.25 w-[70%] rounded bg-muted animate-pulse" />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

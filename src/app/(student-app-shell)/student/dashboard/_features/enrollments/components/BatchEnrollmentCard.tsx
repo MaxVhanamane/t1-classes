@@ -19,7 +19,7 @@ export function BatchEnrollmentCard({ enrollment }: Props) {
       <GrafanaBackground opacity={0.5} />
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-24 
-          bg-linear-to-b from-cyan-400/15 via-cyan-400/5 to-transparent 
+          bg-linear-to-b from-cyan-400/50 via-cyan-400/5 to-transparent 
           dark:from-cyan-300/50 dark:via-cyan-300/5 blur-2xl"
       />
 

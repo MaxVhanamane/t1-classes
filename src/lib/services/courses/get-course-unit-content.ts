@@ -16,9 +16,8 @@ type CourseUnitContent = {
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getCourseAccess } from "./course-access";
+import { getPdfSignedUrl } from "@/src/app/admin/curriculum/[courseId]/_features/actions/topic/pdf/get-signed-pdf-url";
 
-const PDF_BUCKET = "course-pdfs";
-const SIGNED_URL_EXPIRY = 60 * 5; // 5 minutes
 
 export async function getCourseUnitContent(
     unitId: string
@@ -75,18 +74,13 @@ export async function getCourseUnitContent(
         if (!unit.file_path) {
             throw new Error("PDF file path missing");
         }
+        const url = await getPdfSignedUrl(unit.file_path);
 
-        const { data: signed, error: signError } =
-            await supabase.storage
-                .from(PDF_BUCKET)
-                .createSignedUrl(unit.file_path, SIGNED_URL_EXPIRY);
-
-
-        if (signError || !signed) {
+        if (!url) {
             throw new Error("Failed to generate signed PDF URL");
         }
 
-        contentUrl = signed.signedUrl;
+        contentUrl = url;
 
     }
 

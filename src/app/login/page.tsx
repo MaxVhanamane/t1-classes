@@ -9,6 +9,8 @@ import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client"
 import Image from "next/image";
 import { Loader2, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { StatusCard } from "@/src/components/ui/common/StatusCard";
+import { GridBackground } from "@/src/components/grid-background";
+import { AnimatedLogo } from "../(student-app-shell)/student/dashboard/_features/common/animated-logo";
 
 export default function LoginPage() {
   const supabase = createBrowserSupabaseClient();
@@ -103,8 +105,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-background 2xl:px-10">
       {/* ---------------- Left ---------------- */}
+
       <div className="hidden md:flex flex-col justify-center px-14 lg:px-20">
-        <div className="max-w-md space-y-6">
+        <div className="max-w-md space-y-6 pt-4">
           <h1 className="text-3xl font-semibold text-foreground leading-tight">
             Strong concepts.
             <br /> Better exam results.
@@ -149,26 +152,38 @@ export default function LoginPage() {
 
       {/* ---------------- Right: Login Card ---------------- */}
       <div className="flex items-center justify-center px-4">
-        <div className="w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-md border border-border">
-          {/* Mobile illustration */}
-          <div className="flex justify-center rounded-t-2xl bg-muted  md:hidden">
-            <Image
-              src={
-                process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL +
-                "/assets/school.svg"
-              }
-              alt="Learning illustration"
-              width={200}
-              height={200}
-              priority
-              className="mt-2"
-            />
+        <div className="w-full max-w-sm rounded-2xl text-card-foreground bg-background shadow-md border border-border relative z-10 overflow-hidden">
+          {/* Top glow */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-24 
+      bg-linear-to-b from-gray-400/15 via-gray-400/5 to-transparent 
+      dark:from-gray-300/50 dark:via-gray-300/5 blur-2xl rounded-2xl"
+          />
+
+          {/* Border glow */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset 
+      ring-gray-400/10 dark:ring-gray-300/15"
+          />
+
+          <GridBackground className="rounded-2xl opacity-40" />
+
+          <div className="flex flex-col items-center pt-10 pb-2 space-y-2 z-10 relative">
+            <div className="w-15 h-15">
+              <AnimatedLogo />
+            </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-7 px-8 py-10">
+          {/* FORM */}
+          <form
+            onSubmit={handleLogin}
+            className="space-y-6 px-8 pb-8 pt-4 relative z-10"
+          >
             <div className="space-y-2 text-center">
-              <h2 className="text-[22px] font-medium">Sign in to continue</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="text-xl font-semibold tracking-tight">
+                Sign in to continue
+              </h2>
+              <p className="text-sm text-muted-foreground/80">
                 Your personalized learning dashboard awaits
               </p>
             </div>
@@ -182,6 +197,7 @@ export default function LoginPage() {
                 disabled={loading}
                 autoComplete="email"
                 required
+                className="h-10 rounded-md bg-background/70 backdrop-blur border-white/10 focus-visible:ring-2 focus-visible:ring-gray-400/40"
               />
 
               <div className="relative">
@@ -193,20 +209,14 @@ export default function LoginPage() {
                   disabled={loading}
                   autoComplete="current-password"
                   required
-                  className="pr-10"
+                  className="h-10 pr-10 rounded-md bg-background/70 backdrop-blur border-white/10 focus-visible:ring-2 focus-visible:ring-gray-400/40"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   disabled={loading}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="
-                    absolute right-3 top-1/2 -translate-y-1/2
-                    text-muted-foreground hover:text-foreground
-                    transition
-                    disabled:opacity-50
-                  "
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -217,11 +227,16 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button type="submit" className="h-11 w-full" disabled={loading}>
-              {loading ? "Signing in…" : "Sign in"}
+            <Button
+              type="submit"
+              className="h-11 w-full z-10 "
+              disabled={loading}
+            >
+              {" "}
+              {loading ? "Signing in…" : "Sign in"}{" "}
             </Button>
 
-            <p className="text-center text-xs text-muted-foreground pt-2">
+            <p className="text-center text-xs text-muted-foreground pt-1">
               Secure access for students and administrators
             </p>
           </form>
@@ -229,4 +244,23 @@ export default function LoginPage() {
       </div>
     </div>
   );
+}
+
+{
+  /* Mobile illustration */
+}
+{
+  /* <div className="flex justify-center rounded-t-2xl bg-muted  md:hidden">
+            <Image
+              src={
+                process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL +
+                "/assets/school.svg"
+              }
+              alt="Learning illustration"
+              width={200}
+              height={200}
+              priority
+              className="mt-2"
+            />
+          </div> */
 }

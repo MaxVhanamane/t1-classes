@@ -100,7 +100,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
 
       try {
         const res = await fetch(`/api/learning/courses/units/${unitId}`, {
-          cache: "no-store",
           signal: controller.signal,
         });
 
@@ -219,9 +218,8 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
 
           {playerState.status === "ready" &&
             playerState.unit.unitType === "video" && (
-              <>
-                {!playerState.iframeReady && <PlayerSkeleton />}
-
+              <div className="relative ">
+                {/* Video */}
                 <VideoPlayer
                   unit={playerState.unit}
                   onIframeLoad={() =>
@@ -232,7 +230,14 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
                     )
                   }
                 />
-              </>
+
+                {/* Overlay skeleton */}
+                {!playerState.iframeReady && (
+                  <div className="absolute inset-0 z-10">
+                    <PlayerSkeleton hideTitleSekeleton={true} />
+                  </div>
+                )}
+              </div>
             )}
 
           {playerState.status === "error" && (
@@ -337,8 +342,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         <div
           className={cn(
             "bg-background",
-            mode === "learn" &&
-              "fixed top-14 right-7 mr-(--removed-body-scroll-bar-size) w-md h-screen",
+            mode === "learn" && "fixed top-14 right-7  w-md h-screen",
             mode === "preview" &&
               "relative border rounded-xl h-150 overflow-hidden",
           )}
@@ -353,7 +357,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
             <h1 className="px-4 py-3 text-lg font-semibold shrink-0">
               Course Content
             </h1>
-            <div className="flex-1 overflow-y-auto scrollbar-gutter-stable">
+            <div className="flex-1 overflow-y-auto ">
               <CourseStructureTree
                 chapters={outline.chapters}
                 activeUnitId={activeUnitId}
@@ -441,3 +445,12 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
     </div>
   );
 }
+
+//  <div
+//       className={cn(
+//         "bg-background mr-(--removed-body-scroll-bar-size)",
+//         mode === "learn" && "fixed top-14 right-7  w-md h-screen",
+//         mode === "preview" &&
+//           "relative border rounded-xl h-150 overflow-hidden",
+//       )}
+//     ></div>

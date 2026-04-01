@@ -227,12 +227,7 @@ export function GrafanaBackground({
             <feColorMatrix
               in="blur"
               type="matrix"
-              values="
-        1 0 0 0 0
-        0 1 0 0 0
-        0 0 1 0 0
-        0 0 0 1.8 0
-      "
+              values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1.8 0"
               result="glow"
             />
 
