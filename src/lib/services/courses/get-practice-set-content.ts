@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCourseAccess } from "./course-access";
+// import { getCourseAccess } from "./course-access";
 
 export type PracticeSetContent = {
     id: string
@@ -76,13 +76,13 @@ export async function getPracticeSetContent(practiceSetId: string): Promise<Prac
     // -------------------------------------------------
     // 2. Access check
     // -------------------------------------------------
-    const access = await getCourseAccess(courseId);
-    const canAccess = access.hasAccess || ps.is_free_preview === true;
+    // const access = await getCourseAccess(courseId);
+    // const canAccess = access.hasAccess || ps.is_free_preview === true;
 
 
-    if (!canAccess) {
-        throw new Error("You do not have access to this content");
-    }
+    // if (!canAccess) {
+    //     throw new Error("You do not have access to this content");
+    // }
 
     // -------------------------------------------------
     // 3. Fetch questions + options (WITH answers)

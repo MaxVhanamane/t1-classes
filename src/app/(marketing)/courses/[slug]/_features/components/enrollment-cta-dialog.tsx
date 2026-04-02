@@ -190,7 +190,10 @@ export function EnrollmentCTADialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl p-0  rounded-2xl border bg-background/95 backdrop-blur shadow-2xl w-[calc(100%-10px)] sm:w-full h-(--h-viewport-minus-navbar) overflow-y-auto">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="max-w-xl p-0  rounded-2xl border bg-background/95 backdrop-blur shadow-2xl w-[calc(100%-10px)] sm:w-full h-(--h-viewport-minus-navbar) overflow-y-auto"
+      >
         {success ? (
           <SuccessScreen
             title={title}

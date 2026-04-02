@@ -8,7 +8,7 @@ export default function LoadingCoursePlayer() {
         <div className="sticky top-14 z-20 bg-background lg:static lg:mt-3">
           <div className="flex w-full flex-col space-y-4">
             {/* Video */}
-            <Skeleton className="aspect-video w-full bg-muted rounded-none lg:rounded-xl" />
+            <Skeleton className="aspect-video w-full bg-muted dark:bg-muted-soft rounded-none lg:rounded-xl" />
 
             {/* Video meta (same spacing + height) */}
             <div className="space-y-2 px-4 lg:pr-4 lg:pl-0">

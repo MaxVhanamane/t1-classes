@@ -14,7 +14,7 @@ export function CourseEnrollmentCard({ enrollment }: Props) {
   const { course, accessEndsAt } = enrollment;
 
   return (
-    <Card className="relative overflow-hidden flex h-72 flex-col py-5 rounded-xl transition hover:shadow-lg bg-background">
+    <Card className="relative overflow-hidden flex h-72 flex-col py-5 rounded-xl transition hover:shadow-lg bg-background dark:bg-black">
       {/*  Subtle top light (main effect) */}
       <GrafanaBackground opacity={0.5} />
       <div

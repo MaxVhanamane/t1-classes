@@ -7,9 +7,9 @@ type Props = {
 
 export function PlayerSkeleton({ hideTitleSekeleton = false }: Props) {
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col relative">
       {/* Video */}
-      <div className="relative aspect-video w-full bg-muted lg:rounded-xl overflow-hidden">
+      <div className="relative aspect-video w-full dark:bg-muted-soft bg-muted lg:rounded-xl overflow-hidden">
         {/* shimmer */}
         <div className="absolute inset-0 animate-shimmer bg-muted/40" />
 

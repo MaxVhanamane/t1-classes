@@ -1,14 +1,6 @@
 "use client";
 
 import { cn } from "@/src/lib/utils";
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  animate,
-  type AnimationPlaybackControls,
-} from "motion/react";
-import { useEffect, useRef } from "react";
 
 type Props = {
   className?: string;
@@ -16,16 +8,16 @@ type Props = {
   color?: string;
   animated?: boolean;
 };
-
+const PATH_1 =
+  "M194.652 151.408C33.4075 151.408 29.6578 273.279 -92.2126 295.778L-60.3389 565.768L1268.99 623.891L1287.74 460.772C1246.49 455.772 1135.12 430.773 1019.62 370.775C875.252 295.778 886.501 110.16 740.257 110.16C594.012 110.16 640.885 263.904 470.266 263.904C299.648 263.904 355.896 151.408 194.652 151.408Z";
+const PATH_2 =
+  "M479.9 156.007C352.248 158.639 203.539 391.572 119.315 442.896L1239.23 482.376C1246.69 402.1 1257.13 240.231 1239.23 234.967C1216.86 228.387 1127.37 188.907 1019.46 188.907C911.549 188.907 885.229 216.543 741.785 216.543C598.34 216.543 607.552 153.375 479.9 156.007Z";
 export function GrafanaBackground({
   className,
   opacity = 1,
   color,
   animated = true,
 }: Props) {
-  const path1Ref = useRef<SVGPathElement>(null);
-  const path2Ref = useRef<SVGPathElement>(null);
-
   return (
     <div
       className={cn(
@@ -44,7 +36,7 @@ export function GrafanaBackground({
       >
         <defs>
           <filter id="glow-light" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feGaussianBlur stdDeviation="2" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -185,23 +177,27 @@ export function GrafanaBackground({
             />
           </clipPath>
         </defs>
-
         {animated && (
-          <>
-            <MovingDot
-              pathRef={path1Ref}
-              duration={20}
-              delay={0}
-              filter="url(#glow-light)"
+          <foreignObject width="1200" height="427">
+            {/* DOT 1 → LEFT → RIGHT */}
+            <div
+              className="motion-dot"
+              style={{
+                offsetPath: `path("${PATH_1}")`,
+                animation: "move 20s linear infinite",
+              }}
             />
-            <MovingDot
-              pathRef={path2Ref}
-              duration={20}
-              delay={10}
-              reverse
-              filter="url(#glow-light)"
+
+            {/* DOT 2 → RIGHT → LEFT */}
+            <div
+              className="motion-dot"
+              style={{
+                offsetPath: `path("${PATH_2}")`,
+                animation: "move-reverse 20s linear infinite",
+                animationDelay: "10s",
+              }}
             />
-          </>
+          </foreignObject>
         )}
       </svg>
 
@@ -362,38 +358,15 @@ export function GrafanaBackground({
 
           {/* Curve 1 */}
           <path
-            ref={path1Ref}
             d="M194.652 151.408C33.4075 151.408 29.6578 273.279 -92.2126 295.778L-60.3389 565.768L1268.99 623.891L1287.74 460.772C1246.49 455.772 1135.12 430.773 1019.62 370.775C875.252 295.778 886.501 110.16 740.257 110.16C594.012 110.16 640.885 263.904 470.266 263.904C299.648 263.904 355.896 151.408 194.652 151.408Z"
             fill="none"
           />
 
           {/* Curve 2 */}
           <path
-            ref={path2Ref}
             d="M479.9 156.007C352.248 158.639 203.539 391.572 119.315 442.896L1239.23 482.376C1246.69 402.1 1257.13 240.231 1239.23 234.967C1216.86 228.387 1127.37 188.907 1019.46 188.907C911.549 188.907 885.229 216.543 741.785 216.543C598.34 216.543 607.552 153.375 479.9 156.007Z"
             fill="none"
           />
-
-          {animated && (
-            <>
-              {" "}
-              {/* Dot 1 → LEFT → RIGHT */}
-              <MovingDot
-                pathRef={path1Ref}
-                duration={20}
-                delay={0}
-                filter="url(#glow-dark)"
-              />
-              {/* Dot 2 → RIGHT → LEFT (delayed) */}
-              <MovingDot
-                pathRef={path2Ref}
-                duration={20}
-                delay={10}
-                reverse
-                filter="url(#glow-dark)"
-              />
-            </>
-          )}
         </g>
 
         <defs>
@@ -401,86 +374,30 @@ export function GrafanaBackground({
             <rect width="1200" height="427" fill="white" />
           </clipPath>
         </defs>
+        {animated && (
+          <foreignObject width="1200" height="427">
+            {/* DOT 1 → LEFT → RIGHT */}
+            <div
+              className="motion-dot"
+              style={{
+                offsetPath: `path("${PATH_1}")`,
+                animation: "move 20s linear infinite, fade-in 0.2s forwards",
+              }}
+            />
+
+            {/* DOT 2 → RIGHT → LEFT */}
+            <div
+              className="motion-dot"
+              style={{
+                offsetPath: `path("${PATH_2}")`,
+                animation:
+                  "move-reverse 20s linear infinite, fade-in 0.2s forwards",
+                animationDelay: "10s",
+              }}
+            />
+          </foreignObject>
+        )}
       </svg>
     </div>
-  );
-}
-
-type MovingDotProps = {
-  pathRef: React.RefObject<SVGPathElement | null>;
-  duration?: number;
-  delay?: number;
-  reverse?: boolean;
-  color?: string;
-  animated?: boolean;
-  filter?: string;
-};
-
-export function MovingDot({
-  pathRef,
-  duration = 20,
-  delay = 0,
-  reverse = false,
-  color,
-  animated = true,
-  filter,
-}: MovingDotProps) {
-  const progress = useMotionValue(0);
-
-  const x = useTransform(progress, (v) => {
-    const path = pathRef.current;
-    if (!path) return 0;
-
-    const length = path.getTotalLength();
-    const point = path.getPointAtLength(reverse ? length - v : v);
-    return point.x;
-  });
-
-  const y = useTransform(progress, (v) => {
-    const path = pathRef.current;
-    if (!path) return 0;
-
-    const length = path.getTotalLength();
-    const point = path.getPointAtLength(reverse ? length - v : v);
-    return point.y;
-  });
-
-  useEffect(() => {
-    if (!animated) return;
-
-    const path = pathRef.current;
-    if (!path) return;
-
-    const length = path.getTotalLength();
-
-    let controls: AnimationPlaybackControls | undefined;
-
-    const start = () => {
-      progress.set(0);
-
-      controls = animate(progress, length, {
-        duration,
-        ease: "linear",
-        repeat: Infinity,
-      });
-    };
-
-    const timeout = setTimeout(start, delay * 1000);
-
-    return () => {
-      clearTimeout(timeout);
-      controls?.stop();
-    };
-  }, [animated, pathRef, duration, delay, reverse, progress]);
-
-  if (!animated) return null;
-
-  return (
-    <motion.circle
-      r="5"
-      fill={color ?? "#D4D4D4"}
-      style={{ cx: x, cy: y }}
-      filter={filter}
-    />
   );
 }

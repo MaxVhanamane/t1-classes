@@ -76,52 +76,45 @@
     display: none;
   }
 
-
-
-
-  .screen {
+  .motion-dot {
     position: absolute;
-    /* KEY */
-    inset: 0;
-    /* fill entire parent */
-
-    width: 100%;
-    /* override fixed size */
-    height: 100%;
-
-    font-family: Montserrat;
-    border: 2px solid #1d0e01;
-
-    background:
-      repeating-radial-gradient(#000 0 0.0001%, #ffffff 0 0.0002%) 50% 0/2500px 2500px,
-      repeating-conic-gradient(#000 0 0.0001%, #ffffff 0 0.0002%) 60% 60%/2500px 2500px;
-
-    background-blend-mode: difference;
-    animation: b 0.2s infinite alternate;
-
-    border-radius: inherit;
-    /* match parent rounding */
-    z-index: 20;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-weight: bold;
-    color: #252525;
-    letter-spacing: 0.15em;
-    text-align: center;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #D4D4D4;
+    offset-anchor: center;
+    opacity: 0;
+    /* IMPORTANT: do NOT set offset-distance here */
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
   }
 
-  @keyframes b {
-    100% {
-      background-position:
-        50% 0,
-        60% 50%;
+  /* LEFT → RIGHT */
+  @keyframes move {
+    from {
+      offset-distance: 0%;
+    }
+
+    to {
+      offset-distance: 100%;
     }
   }
 
+  /* RIGHT → LEFT */
+  @keyframes move-reverse {
+    from {
+      offset-distance: 100%;
+    }
 
+    to {
+      offset-distance: 0%;
+    }
+  }
+
+  @keyframes fade-in {
+    to {
+      opacity: 1;
+    }
+  }
 
 }
 

@@ -6,7 +6,6 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import ReactQueryProvider from "../providers/react-query-provider";
 import { SerwistProvider } from "./serwist";
-import { ViewTransition } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -79,9 +78,7 @@ export default function RootLayout({
             defaultTheme="dark"
             disableTransitionOnChange
           >
-            <SerwistProvider swUrl="/serwist/sw.js">
-              <ViewTransition>{children}</ViewTransition>
-            </SerwistProvider>
+            <SerwistProvider swUrl="/serwist/sw.js">{children}</SerwistProvider>
           </ThemeProvider>
         </ReactQueryProvider>
         <Toaster position="top-right" richColors visibleToasts={5} />

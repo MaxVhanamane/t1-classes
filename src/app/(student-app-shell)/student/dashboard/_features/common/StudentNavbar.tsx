@@ -2,7 +2,7 @@
 
 import { Link } from "@/src/components/ui/link";
 import { Button } from "@/src/components/ui/button";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { cn } from "@/src/lib/utils";
 import { ThemeToggle } from "@/src/components/ui/Theme-toggle";
 import { UserMenu } from "@/src/components/ui/user/user-menu";
@@ -35,6 +35,8 @@ interface StudentNavbarProps {
 export function StudentNavbar({
   variant = "authenticated",
 }: StudentNavbarProps) {
+  const pathname = usePathname();
+  const isCoursePage = pathname.startsWith("/learn/courses/");
   const params = useParams();
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
 
@@ -49,7 +51,12 @@ export function StudentNavbar({
             <div className="w-6 h-6">
               <AnimatedLogo />
             </div>
-            <span className=" text-sm font-semibold">
+            <span
+              className={cn(
+                "text-sm font-semibold",
+                isCoursePage && "hidden sm:inline",
+              )}
+            >
               T<sub>1</sub> Classes
             </span>
           </Link>

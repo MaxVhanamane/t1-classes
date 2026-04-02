@@ -12,7 +12,6 @@ export async function GET(
 
         return Response.json(content);
     } catch (err) {
-        console.error("[COURSE_UNIT_ERROR]", err);
 
         return Response.json(
             {

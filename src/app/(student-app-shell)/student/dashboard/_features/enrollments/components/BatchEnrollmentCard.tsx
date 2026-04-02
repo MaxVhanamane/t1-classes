@@ -15,7 +15,7 @@ export function BatchEnrollmentCard({ enrollment }: Props) {
   const { batch, accessEndsAt } = enrollment;
 
   return (
-    <Card className="relative overflow-hidden flex h-72 flex-col py-5 rounded-xl transition hover:shadow-lg bg-background ">
+    <Card className="relative overflow-hidden flex h-72 flex-col py-5 rounded-xl transition hover:shadow-lg bg-background dark:bg-black ">
       <GrafanaBackground opacity={0.5} />
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-24 

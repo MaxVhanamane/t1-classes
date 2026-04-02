@@ -403,6 +403,24 @@ function TopicBlock({
 }
 
 // Rows
+function formatDuration(minutes: number | null) {
+  if (!minutes && minutes !== 0) return "";
+
+  if (minutes < 1) {
+    const seconds = Math.round(minutes * 60);
+    return `${seconds} sec`;
+  }
+
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
+
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (mins === 0) return `${hrs} hr`;
+  return `${hrs} hr ${mins} min`;
+}
 
 function UnitRow({
   unit,
@@ -430,7 +448,13 @@ function UnitRow({
       )}
     >
       <Icon className="h-4 w-4 shrink-0 opacity-70" />
+
       <span className="flex-1 truncate">{unit.title}</span>
+
+      {/* Duration */}
+      <span className="text-xs text-muted-foreground whitespace-nowrap">
+        {formatDuration(unit.durationMinutes)}
+      </span>
 
       {unit.isFreePreview && !locked && (
         <span className="flex items-center gap-1 text-xs text-muted-foreground">

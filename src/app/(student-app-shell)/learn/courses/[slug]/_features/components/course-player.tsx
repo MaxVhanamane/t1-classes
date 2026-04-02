@@ -21,6 +21,11 @@ import {
 } from "../helper-functions/course-progress";
 import { PracticeSetDialog } from "./practice-set/practice-set-dialog";
 import PlayerErrorState from "./player-error-state";
+import { useQueryClient } from "@tanstack/react-query";
+
+/* ========================================================= */
+/* Types                                                      */
+/* ========================================================= */
 
 export type UnitType = "pdf" | "video";
 
@@ -29,46 +34,65 @@ type CoursePlayerProps = {
   mode?: "learn" | "preview";
 };
 
-/* ========================================================= */
-/* Player State Machine                                      */
-/* ========================================================= */
-
 type PlayerState =
   | { status: "idle" }
   | { status: "initial-loading" }
   | { status: "loading"; unitId: string; unitType: UnitType }
   | { status: "ready"; unit: CourseUnitContent; iframeReady: boolean }
   | { status: "error"; message: string; unitId: string; unitType: UnitType }
-  | { status: "pdf-dialog-closed" };
+  | {
+      status: "pdf";
+      unit: CourseUnitContent | null;
+      isOpen: boolean;
+      isLoading: boolean;
+    }
+  | { status: "practice"; unit: CourseUnitContent | null; isLoading: boolean };
+
+/* ========================================================= */
+/* Fetch helper                                               */
+/* ========================================================= */
+
+const fetchUnit = async (unitId: string): Promise<CourseUnitContent> => {
+  const res = await fetch(`/api/learning/courses/units/${unitId}`);
+  if (!res.ok) throw new Error("Failed to load unit");
+  return res.json();
+};
+
+/* ========================================================= */
+/* Component                                                  */
+/* ========================================================= */
 
 export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
+  const queryClient = useQueryClient();
+
   const [playerState, setPlayerState] = useState<PlayerState>({
     status: "initial-loading",
   });
-
   const [activePracticeSetId, setActivePracticeSetId] = useState<string | null>(
     null,
   );
-
-  const [hasPreviewUnit, setHasPreviewUnit] = useState(true);
   const [activeUnitId, setActiveUnitId] = useState("");
-
-  const didHydrateRef = useRef(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileMode, setMobileMode] = useState<"inline" | "drawer">(() => {
-    if (typeof window === "undefined") return "inline";
-
-    const saved = localStorage.getItem("mobileCourseContentMode");
-    return saved === "drawer" ? "drawer" : "inline";
-  });
-
   const [openChapterIds, setOpenChapterIds] = useState<Set<string>>(new Set());
   const [openTopicIds, setOpenTopicIds] = useState<Set<string>>(new Set());
 
-  const abortRef = useRef<AbortController | null>(null);
+  const didHydrateRef = useRef(false);
+
+  const [mobileMode, setMobileMode] = useState<"inline" | "drawer">(() => {
+    if (typeof window === "undefined") return "inline";
+    return localStorage.getItem("mobileCourseContentMode") === "drawer"
+      ? "drawer"
+      : "inline";
+  });
+
+  // Derived — no need for hasPreviewUnit state
+  const previewUnit = outline.chapters
+    .flatMap((c) => c.topics)
+    .flatMap((t) => t.units)
+    .find((u) => u.isFreePreview);
 
   /* -------------------------------------------------- */
-  /* Hydration                                           */
+  /* Persist mobile mode preference                      */
   /* -------------------------------------------------- */
 
   useEffect(() => {
@@ -81,102 +105,98 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   /* -------------------------------------------------- */
 
   const loadUnit = useCallback(
-    async (unitId: string, unitType: UnitType) => {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-
+    async (
+      unitId: string,
+      unitType: UnitType,
+      options?: { skipDialogOpen?: boolean },
+    ) => {
       setActiveUnitId(unitId);
 
-      setPlayerState({
-        status: "loading",
-        unitId,
-        unitType,
-      });
+      // Immediate optimistic UI
+      if (unitType === "pdf") {
+        setPlayerState({
+          status: "pdf",
+          unit: null,
+          isOpen: !options?.skipDialogOpen,
+          isLoading: true,
+        });
+      } else {
+        setPlayerState({ status: "loading", unitId, unitType });
+      }
 
       if (mode === "learn") {
-        localStorage.setItem("lastCourseUnitId", unitId);
+        localStorage.setItem(
+          `course:${outline.courseId}:lastUnit`,
+          JSON.stringify({ id: unitId, type: unitType }),
+        );
       }
 
       try {
-        const res = await fetch(`/api/learning/courses/units/${unitId}`, {
-          signal: controller.signal,
+        const data = await queryClient.fetchQuery({
+          queryKey: ["course-unit", unitId],
+          queryFn: () => fetchUnit(unitId),
+          staleTime: unitType === "pdf" ? 1000 * 60 * 4 : Infinity,
         });
 
-        if (!res.ok) {
+        if (unitType === "video") {
+          setPlayerState({ status: "ready", unit: data, iframeReady: false });
+        } else {
           setPlayerState({
-            status: "error",
-            message: "Something went wrong on our side. Please try again.",
-            unitId,
-            unitType,
-          });
-
-          return;
-        }
-
-        const data: CourseUnitContent = await res.json();
-
-        if (!controller.signal.aborted) {
-          setPlayerState({
-            status: "ready",
+            status: "pdf",
             unit: data,
-            iframeReady: false,
+            isOpen: !options?.skipDialogOpen,
+            isLoading: false,
           });
         }
-      } catch (e) {
-        if (!(e instanceof DOMException && e.name === "AbortError")) {
-          setPlayerState({
-            status: "error",
-            message: "Something went wrong. Please try again.",
-            unitId,
-            unitType,
-          });
-        }
+      } catch {
+        setPlayerState({
+          status: "error",
+          message: "Something went wrong. Please try again.",
+          unitId,
+          unitType,
+        });
       }
     },
-    [mode],
+    [mode, outline.courseId, queryClient],
   );
 
   /* -------------------------------------------------- */
-  /* Restore last unit                                   */
+  /* Restore last unit / preview unit on mount           */
   /* -------------------------------------------------- */
 
   useEffect(() => {
     if (mode === "learn") {
-      const savedUnitId = localStorage.getItem("lastCourseUnitId");
-      const unitId = savedUnitId ?? getFirstPlayableUnit(outline);
+      const saved = localStorage.getItem(`course:${outline.courseId}:lastUnit`);
 
-      if (unitId) {
-        /* eslint-disable react-hooks/set-state-in-effect */
-        void loadUnit(unitId, "video");
+      if (saved) {
+        const { id, type } = JSON.parse(saved);
+        void loadUnit(id, type, { skipDialogOpen: true });
       } else {
-        setPlayerState({ status: "idle" });
+        const unitId = getFirstPlayableUnit(outline);
+        if (unitId) {
+          void loadUnit(unitId, "video");
+        } else {
+          setPlayerState({ status: "idle" });
+        }
       }
     }
 
     if (mode === "preview") {
-      const previewUnit = outline.chapters
-        .flatMap((c) => c.topics)
-        .flatMap((t) => t.units)
-        .find((u) => u.isFreePreview);
-
       if (previewUnit) {
-        setHasPreviewUnit(true);
         void loadUnit(previewUnit.id, previewUnit.unitType);
       } else {
-        setHasPreviewUnit(false);
         setPlayerState({ status: "idle" });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outline, mode, loadUnit]);
 
   /* -------------------------------------------------- */
-  /* Auto-open path                                      */
+  /* Auto-expand active unit path in sidebar             */
   /* -------------------------------------------------- */
 
   useEffect(() => {
-    if (mode !== "learn") return;
-    if (!activeUnitId) return;
+    if (mode !== "learn" || !activeUnitId) return;
 
     const path = findUnitPath(outline, activeUnitId);
     if (!path) return;
@@ -185,23 +205,89 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
     setOpenTopicIds((prev) => new Set(prev).add(path.topicId));
   }, [activeUnitId, outline, mode]);
 
+  /* -------------------------------------------------- */
+  /* Shared CourseStructureTree props                    */
+  /* -------------------------------------------------- */
+
+  const treeProps = {
+    chapters: outline.chapters,
+    activeUnitId,
+    openChapterIds,
+    openTopicIds,
+    onToggleChapter: (id: string) =>
+      setOpenChapterIds(
+        (p) => new Set(p.has(id) ? [...p].filter((x) => x !== id) : [...p, id]),
+      ),
+    onToggleTopic: (id: string) =>
+      setOpenTopicIds(
+        (p) => new Set(p.has(id) ? [...p].filter((x) => x !== id) : [...p, id]),
+      ),
+    onUnitSelect: loadUnit,
+    onPracticeSelect: (id: string) => setActivePracticeSetId(id),
+  };
+
+  /* -------------------------------------------------- */
+  /* Derived dialog state helpers                        */
+  /* -------------------------------------------------- */
+
+  const isPdfOrPracticeDialog =
+    playerState.status === "pdf" || playerState.status === "practice";
+
+  const dialogTitle = isPdfOrPracticeDialog
+    ? playerState.isLoading
+      ? playerState.status === "pdf"
+        ? "Opening PDF..."
+        : "Opening practice..."
+      : playerState.status === "pdf"
+        ? "PDF ready to view"
+        : "Practice ready"
+    : "";
+
+  const dialogMessage = isPdfOrPracticeDialog
+    ? playerState.isLoading
+      ? "Preparing your content..."
+      : playerState.status === "pdf"
+        ? "Click below to open this lesson."
+        : "This lesson opens in an interactive practice view."
+    : "";
+
+  const dialogActionLabel =
+    isPdfOrPracticeDialog && !playerState.isLoading
+      ? playerState.status === "pdf"
+        ? "Open PDF"
+        : "Start Practice"
+      : undefined;
+
+  const handleDialogAction =
+    isPdfOrPracticeDialog && !playerState.isLoading
+      ? () => {
+          if (playerState.status === "pdf") {
+            setPlayerState((prev) =>
+              prev.status === "pdf" ? { ...prev, isOpen: true } : prev,
+            );
+          } else {
+            setActivePracticeSetId(playerState.unit?.id ?? null);
+          }
+        }
+      : undefined;
+
   /* ================================================== */
-  /* Layout                                             */
+  /* Render                                             */
   /* ================================================== */
 
   return (
     <div
       className={cn(
-        "flex w-full flex-col lg:flex-row ",
+        "flex w-full flex-col lg:flex-row",
         mode === "learn" && "lg:px-7 lg:pr-119",
         mode === "preview" && "gap-6",
       )}
     >
-      {/* ================================================= */}
-      {/* LEFT — PLAYER                                    */}
-      {/* ================================================= */}
+      {/* ============================================= */}
+      {/* LEFT — PLAYER                                 */}
+      {/* ============================================= */}
 
-      <div className="flex lg:flex-1 flex-col ">
+      <div className="flex lg:flex-1 flex-col">
         <div
           className={cn(
             "bg-background",
@@ -209,17 +295,15 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
             mode === "preview" && "relative",
           )}
         >
-          {playerState.status === "initial-loading" && hasPreviewUnit && (
-            <PlayerSkeleton />
-          )}
+          {/* Skeletons */}
+          {(playerState.status === "initial-loading" ||
+            (playerState.status === "loading" &&
+              playerState.unitType === "video")) && <PlayerSkeleton />}
 
-          {playerState.status === "loading" &&
-            playerState.unitType === "video" && <PlayerSkeleton />}
-
+          {/* Video */}
           {playerState.status === "ready" &&
             playerState.unit.unitType === "video" && (
-              <div className="relative ">
-                {/* Video */}
+              <div className="relative">
                 <VideoPlayer
                   unit={playerState.unit}
                   onIframeLoad={() =>
@@ -230,8 +314,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
                     )
                   }
                 />
-
-                {/* Overlay skeleton */}
                 {!playerState.iframeReady && (
                   <div className="absolute inset-0 z-10">
                     <PlayerSkeleton hideTitleSekeleton={true} />
@@ -240,6 +322,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
               </div>
             )}
 
+          {/* Error */}
           {playerState.status === "error" && (
             <PlayerErrorState
               message={playerState.message}
@@ -251,22 +334,25 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
             />
           )}
 
-          {playerState.status === "pdf-dialog-closed" && (
-            <EmptyPlayerState message="This item opens in a separate viewer. Select another unit to continue, or select this one again to reopen it." />
+          {/* PDF / Practice placeholder */}
+          {isPdfOrPracticeDialog && (
+            <EmptyPlayerState
+              title={dialogTitle}
+              message={dialogMessage}
+              actionLabel={dialogActionLabel}
+              onAction={handleDialogAction}
+            />
           )}
 
-          {!(
-            playerState.status === "loading" ||
-            playerState.status === "ready" ||
-            playerState.status === "error"
-          ) &&
+          {/* Preview — no preview unit */}
+          {playerState.status === "idle" &&
             mode === "preview" &&
-            !hasPreviewUnit && (
+            !previewUnit && (
               <EmptyPlayerState message="Preview content is not available for this course. Enroll to unlock full curriculum." />
             )}
         </div>
 
-        {/* Mobile toggle — unchanged */}
+        {/* Mobile — toggle bar */}
         <div className="lg:hidden px-4 flex justify-between items-center border-t border-b py-2">
           <span className="text-sm text-muted-foreground">Course content</span>
           <div className="flex rounded-lg border p-1 text-xs">
@@ -291,35 +377,14 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
           </div>
         </div>
 
+        {/* Mobile — inline tree */}
         {mobileMode === "inline" && (
           <div className="lg:hidden mt-3">
-            <CourseStructureTree
-              chapters={outline.chapters}
-              activeUnitId={activeUnitId}
-              openChapterIds={openChapterIds}
-              openTopicIds={openTopicIds}
-              onToggleChapter={(id) =>
-                setOpenChapterIds(
-                  (p) =>
-                    new Set(
-                      p.has(id) ? [...p].filter((x) => x !== id) : [...p, id],
-                    ),
-                )
-              }
-              onToggleTopic={(id) =>
-                setOpenTopicIds(
-                  (p) =>
-                    new Set(
-                      p.has(id) ? [...p].filter((x) => x !== id) : [...p, id],
-                    ),
-                )
-              }
-              onUnitSelect={loadUnit}
-              onPracticeSelect={(id) => setActivePracticeSetId(id)}
-            />
+            <CourseStructureTree {...treeProps} />
           </div>
         )}
 
+        {/* Mobile — drawer trigger */}
         {mobileMode === "drawer" && (
           <div className="lg:hidden px-4 py-3">
             <button
@@ -332,7 +397,10 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         )}
       </div>
 
-      {/* RIGHT SIDEBAR unchanged */}
+      {/* ============================================= */}
+      {/* RIGHT — SIDEBAR                              */}
+      {/* ============================================= */}
+
       <aside
         className={cn(
           "hidden lg:block",
@@ -342,7 +410,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         <div
           className={cn(
             "bg-background",
-            mode === "learn" && "fixed top-14 right-7  w-md h-screen",
+            mode === "learn" && "fixed top-14 right-7 w-md h-screen",
             mode === "preview" &&
               "relative border rounded-xl h-150 overflow-hidden",
           )}
@@ -357,37 +425,17 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
             <h1 className="px-4 py-3 text-lg font-semibold shrink-0">
               Course Content
             </h1>
-            <div className="flex-1 overflow-y-auto ">
-              <CourseStructureTree
-                chapters={outline.chapters}
-                activeUnitId={activeUnitId}
-                openChapterIds={openChapterIds}
-                openTopicIds={openTopicIds}
-                onToggleChapter={(id) =>
-                  setOpenChapterIds(
-                    (p) =>
-                      new Set(
-                        p.has(id) ? [...p].filter((x) => x !== id) : [...p, id],
-                      ),
-                  )
-                }
-                onToggleTopic={(id) =>
-                  setOpenTopicIds(
-                    (p) =>
-                      new Set(
-                        p.has(id) ? [...p].filter((x) => x !== id) : [...p, id],
-                      ),
-                  )
-                }
-                onUnitSelect={loadUnit}
-                onPracticeSelect={(id) => setActivePracticeSetId(id)}
-              />
+            <div className="flex-1 overflow-y-auto">
+              <CourseStructureTree {...treeProps} />
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Drawer unchanged */}
+      {/* ============================================= */}
+      {/* DRAWER (mobile)                              */}
+      {/* ============================================= */}
+
       <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
         <DrawerContent className="h-[85vh]">
           <DrawerHeader className="border-b">
@@ -395,62 +443,43 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
           </DrawerHeader>
           <div className="flex-1 overflow-y-auto">
             <CourseStructureTree
-              chapters={outline.chapters}
-              activeUnitId={activeUnitId}
-              openChapterIds={openChapterIds}
-              openTopicIds={openTopicIds}
-              onToggleChapter={(id) =>
-                setOpenChapterIds(
-                  (p) =>
-                    new Set(
-                      p.has(id) ? [...p].filter((x) => x !== id) : [...p, id],
-                    ),
-                )
-              }
-              onToggleTopic={(id) =>
-                setOpenTopicIds(
-                  (p) =>
-                    new Set(
-                      p.has(id) ? [...p].filter((x) => x !== id) : [...p, id],
-                    ),
-                )
-              }
+              {...treeProps}
               onUnitSelect={(id, type) => {
                 void loadUnit(id, type);
                 setMobileOpen(false);
               }}
-              onPracticeSelect={(id) => setActivePracticeSetId(id)}
             />
           </div>
         </DrawerContent>
       </Drawer>
 
-      {/* PDF Dialog */}
-      {playerState.status === "ready" &&
-        playerState.unit.unitType === "pdf" && (
-          <PdfViewerDialog
-            unit={playerState.unit}
-            loading={false}
-            onClose={() => setPlayerState({ status: "pdf-dialog-closed" })}
-          />
-        )}
+      {/* ============================================= */}
+      {/* DIALOGS                                      */}
+      {/* ============================================= */}
 
-      {/* Practice Dialog unchanged */}
+      {playerState.status === "pdf" && playerState.isOpen && (
+        <PdfViewerDialog
+          unit={playerState.unit}
+          loading={playerState.isLoading}
+          onClose={() =>
+            setPlayerState((prev) =>
+              prev.status === "pdf" ? { ...prev, isOpen: false } : prev,
+            )
+          }
+        />
+      )}
+
       {activePracticeSetId && (
         <PracticeSetDialog
           practiceSetId={activePracticeSetId}
-          onClose={() => setActivePracticeSetId(null)}
+          onClose={() => {
+            setActivePracticeSetId(null);
+            setPlayerState((prev) =>
+              prev.status === "pdf" ? { ...prev, isOpen: false } : prev,
+            );
+          }}
         />
       )}
     </div>
   );
 }
-
-//  <div
-//       className={cn(
-//         "bg-background mr-(--removed-body-scroll-bar-size)",
-//         mode === "learn" && "fixed top-14 right-7  w-md h-screen",
-//         mode === "preview" &&
-//           "relative border rounded-xl h-150 overflow-hidden",
-//       )}
-//     ></div>
