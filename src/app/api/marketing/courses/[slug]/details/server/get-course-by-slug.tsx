@@ -1,8 +1,8 @@
 import "server-only";
-import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { SupabaseClient } from "@supabase/supabase-js";
 
-export async function getCourseBySlug(slug: string) {
-  const supabase = await createServerSupabaseClient();
+export async function getCourseBySlug(slug: string, supabase: SupabaseClient) {
+  const decodedSlug = decodeURIComponent(slug);
 
   const { data, error } = await supabase
     .from("courses")
@@ -26,7 +26,7 @@ export async function getCourseBySlug(slug: string) {
             languages
         `,
     )
-    .eq("slug", slug)
+    .eq("slug", decodedSlug)
     .eq("is_active", true)
     .single();
 

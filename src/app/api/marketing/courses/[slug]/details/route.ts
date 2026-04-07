@@ -1,12 +1,15 @@
+import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getCourseBySlug } from "./server/get-course-by-slug";
 
 export async function GET(
     _req: Request,
     { params }: { params: Promise<{ slug: string }> }
 ) {
+    const supabase = await createServerSupabaseClient();
+
     const { slug } = await params;
 
-    const course = await getCourseBySlug(slug);
+    const course = await getCourseBySlug(slug, supabase);
 
     if (!course) {
         return Response.json(

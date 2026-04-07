@@ -10,7 +10,7 @@ import Image from "next/image";
 import { Loader2, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { StatusCard } from "@/src/components/ui/common/StatusCard";
 import { GridBackground } from "@/src/components/grid-background";
-import { AnimatedLogo } from "../(student-app-shell)/student/dashboard/_features/common/animated-logo";
+import { AnimatedLogo } from "../student/dashboard/_features/common/animated-logo";
 
 export default function LoginPage() {
   const supabase = createBrowserSupabaseClient();
@@ -65,9 +65,21 @@ export default function LoginPage() {
           throw new Error(error.message || "Failed to establish session");
         }
 
+        const { data: authData } = await supabase.auth.getClaims();
+        const role = authData?.claims?.app_role;
         setRedirecting(true);
 
-        router.replace("/");
+        switch (role) {
+          case "admin":
+          case "teacher":
+            router.replace("/admin");
+            break;
+          case "student":
+            router.replace("/student/dashboard");
+            break;
+          default:
+            router.replace("/");
+        }
       } catch (err) {
         console.error("Login error:", err);
 

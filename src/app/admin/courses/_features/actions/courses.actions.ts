@@ -149,6 +149,7 @@ export async function createCourse(
 
     const values = parsed.data;
 
+
     /* ---------- auth ---------- */
     const staff = await getCurrentStaff();
 
@@ -188,7 +189,7 @@ export async function createCourse(
 
             /* ---------- category ---------- */
             category: values.category,
-            board: values.board ?? null,
+            board: values.category === 'boards' ? values.board : null,
 
             /* ---------- academic ---------- */
             class_level: values.class_level ?? null,
@@ -235,7 +236,8 @@ export async function createCourse(
 
     /* ---------- revalidate ---------- */
     revalidatePath("/admin/courses");
-
+    revalidatePath(`/explore/${values.category}/courses`, "layout");
+    // revalidatePath(`/explore/${values.category}/courses/details/${slug}`);
     return courseId;
 }
 
@@ -257,7 +259,6 @@ export async function updateCourse(
     }
 
     const values = parsed.data;
-
     /* ---------- auth ---------- */
     const staff = await getCurrentStaff();
 
@@ -265,7 +266,7 @@ export async function updateCourse(
 
     const { data: course } = await supabase
         .from("courses")
-        .select("created_by")
+        .select("created_by, category")
         .eq("id", courseId)
         .single();
 
@@ -274,6 +275,8 @@ export async function updateCourse(
     if (staff.role === "teacher" && course.created_by !== staff.id) {
         throw new Error("Unauthorized");
     }
+    const oldCategory = course.category;
+
 
     /* ---------- description ---------- */
     const description =
@@ -303,7 +306,7 @@ export async function updateCourse(
 
             /* ---------- category ---------- */
             category: values.category,
-            board: values.board ?? null,
+            board: values.category === 'boards' ? values.board : null,
 
             /* ---------- academic ---------- */
             class_level: values.class_level ?? null,
@@ -372,7 +375,21 @@ export async function updateCourse(
     }
 
     /* ---------- revalidate ---------- */
+    /* ---------- revalidate ---------- */
+
     revalidatePath("/admin/courses");
+
+    /* new category */
+    revalidatePath(`/explore/${values.category}/courses`, "layout");
+
+    // revalidatePath(
+    //     `/explore/${values.category}/courses/details/${slug}`
+    // );
+
+    /* old category (only if changed) */
+    if (oldCategory && oldCategory !== values.category) {
+        revalidatePath(`/explore/${oldCategory}/courses`, "layout");
+    }
 
     return courseId;
 }

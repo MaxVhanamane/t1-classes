@@ -1,4 +1,4 @@
-import { loadAttempt } from "@/src/app/(student-app-shell)/tests/attempt/[attemptId]/_features/server/load-attempt";
+import { loadAttempt } from "@/src/app/student/tests/attempt/[attemptId]/_features/server/load-attempt";
 import { NextResponse } from "next/server";
 
 

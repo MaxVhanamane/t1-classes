@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/src/components/ui/badge";
 import { cn } from "@/src/lib/utils";
 import {
@@ -35,7 +35,11 @@ interface BatchMetaBadgesProps {
 /* ------------------------------------------------ */
 
 export function BatchMetaBadges({ batch, size = "sm" }: BatchMetaBadgesProps) {
-  const lifecycle = getBatchLifecycle(batch);
+  const [lifecycle, setLifecycle] = useState<BatchLifecycle>("upcoming");
+
+  useEffect(() => {
+    setLifecycle(getBatchLifecycle(batch));
+  }, [batch]);
 
   const sizeClasses =
     size === "md" ? "text-sm px-2.5 py-0.5" : "text-xs px-2 py-0.5";

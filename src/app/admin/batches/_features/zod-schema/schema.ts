@@ -26,8 +26,8 @@ export const CATEGORY_LABELS: Record<Category, string> = {
     cet: "CET",
     nmms: "NMMS",
     foundation: "Foundation",
-    govt_exam: "Govt Exams",
     scholarship: "Scholarship",
+    govt_exam: "Govt Exams",
     gate: "GATE",
 };
 

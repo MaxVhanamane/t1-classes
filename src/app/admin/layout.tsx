@@ -1,12 +1,23 @@
 import AdminShell from "@/src/components/ui/admin/admin-shell";
-import { getCurrentAdmin } from "@/src/lib/helper-functions/getCurrentAdmin";
+import AdminHeaderWrapper from "@/src/components/ui/admin/admin-header-wrapper";
+import { Suspense } from "react";
 
-export default async function AdminLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentAdmin();
-
-  return <AdminShell userName={user.full_name}>{children}</AdminShell>;
+  return (
+    <Suspense fallback={null}>
+      <AdminShell
+        header={
+          <Suspense fallback={<div className="h-14 bg-sidebar border-b" />}>
+            <AdminHeaderWrapper />
+          </Suspense>
+        }
+      >
+        {children}
+      </AdminShell>
+    </Suspense>
+  );
 }

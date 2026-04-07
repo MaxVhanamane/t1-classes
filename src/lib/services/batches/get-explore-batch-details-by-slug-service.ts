@@ -7,7 +7,8 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function getExploreBatchDetailBySlugService(
     supabase: SupabaseClient,
-    slug: string
+    slug: string,
+
 ): Promise<ExploreBatchDetail | null> {
     const nowIso = new Date().toISOString();
 

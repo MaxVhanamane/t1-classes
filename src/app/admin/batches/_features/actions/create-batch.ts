@@ -114,6 +114,6 @@ export async function createBatch(
 
     /* ---------------- Revalidate ---------------- */
     revalidatePath("/admin/batches");
-
+    revalidatePath(`/explore/${data.category}/batches`, "layout");
     return batchId;
 }

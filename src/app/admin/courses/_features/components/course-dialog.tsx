@@ -244,6 +244,15 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
   }, [course, form]);
 
   useEffect(() => {
+    if (category !== "boards") {
+      form.setValue("board", null, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  }, [category, form]);
+
+  useEffect(() => {
     const allowed = CATEGORY_TARGET_EXAMS[category] ?? [];
     const current = form.getValues("target_exam");
 

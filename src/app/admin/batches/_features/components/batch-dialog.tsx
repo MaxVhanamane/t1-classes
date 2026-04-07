@@ -319,7 +319,10 @@ export function BatchDialog({
 
   useEffect(() => {
     if (category !== "boards") {
-      form.setValue("board", null);
+      form.setValue("board", null, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
   }, [category, form]);
 
@@ -400,7 +403,7 @@ export function BatchDialog({
         /* -------------------------------------------------- */
         if (isEdit && batch) {
           batchId = batch.id;
-          await updateBatch(batchId, batch.slug, payload);
+          await updateBatch(batchId, batch.category, payload);
         } else {
           batchId = await createBatch(payload);
         }

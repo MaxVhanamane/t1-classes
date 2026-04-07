@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build2": "next build --debug-prerender",
     "start": "next start",
     "lint": "eslint"
   },
@@ -41,6 +42,7 @@
     "@tiptap/extension-subscript": "^3.20.1",
     "@tiptap/extension-superscript": "^3.20.1",
     "@tiptap/extension-table": "^3.20.1",
+    "@tiptap/html": "^3.22.2",
     "@tiptap/react": "^3.20.1",
     "@tiptap/starter-kit": "^3.20.1",
     "@types/canvas-confetti": "^1.9.0",
@@ -51,6 +53,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "happy-dom": "^20.8.9",
     "jwt-decode": "^4.0.0",
     "katex": "^0.16.33",
     "lucide-react": "^0.561.0",

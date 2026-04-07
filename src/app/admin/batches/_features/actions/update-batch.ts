@@ -1,13 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { batchSchema } from "../zod-schema/schema";
+import { batchSchema, Category } from "../zod-schema/schema";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 
 export async function updateBatch(
     batchId: string,
-    slug: string,
+    previousCategory: Category,
     input: unknown
 ) {
     /* -------------------------------------------------- */
@@ -140,5 +140,9 @@ export async function updateBatch(
     /* 4. Revalidate                                      */
     /* -------------------------------------------------- */
     revalidatePath("/admin/batches");
-    revalidatePath(`/batches/${slug}`);
+    revalidatePath(`/explore/${data.category}/batches`, "layout");
+
+    if (previousCategory && previousCategory !== data.category) {
+        revalidatePath(`/explore/${previousCategory}/batches`, "layout");
+    }
 }

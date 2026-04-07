@@ -1,7 +1,9 @@
-export function LoadingScreen() {
+import { Loader2 } from "lucide-react";
+
+export default function Loading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <p className="text-sm text-gray-600">Loading question paper…</p>
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
   );
 }
