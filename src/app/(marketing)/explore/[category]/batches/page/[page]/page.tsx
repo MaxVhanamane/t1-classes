@@ -1,4 +1,3 @@
-"use cache";
 import { notFound } from "next/navigation";
 import { createStaticSupabaseClient } from "@/src/lib/supabase/supabase-static";
 import { CATEGORY_LABELS } from "@/src/app/admin/batches/_features/zod-schema/schema";
@@ -6,8 +5,8 @@ import { ExploreBatchCard } from "@/src/app/student/dashboard/_features/componen
 import { SectionError } from "@/src/components/system/SectionError";
 import { Link } from "@/src/components/ui/link";
 import type { ExploreBatch } from "@/src/app/api/explore-batches/types";
+import { cacheLife, cacheTag } from "next/cache";
 
-// export const dynamic = "force-static";
 const LIMIT = 10;
 
 type Params = Promise<{
@@ -20,7 +19,6 @@ type Params = Promise<{
 /* -------------------------------------------------------------------------- */
 export async function generateStaticParams() {
   const supabase = createStaticSupabaseClient();
-
   const params: { category: string; page: string }[] = [];
 
   for (const category of Object.keys(CATEGORY_LABELS)) {
@@ -30,11 +28,7 @@ export async function generateStaticParams() {
       .eq("is_active", true)
       .eq("category", category);
 
-    if (error) {
-      // Still push a fallback so we never return []
-      params.push({ category, page: "1" });
-      continue;
-    }
+    if (error) continue;
 
     const totalPages = Math.max(1, Math.ceil((count ?? 0) / LIMIT));
 
@@ -43,16 +37,8 @@ export async function generateStaticParams() {
     }
   }
 
-  // Final safety net in case CATEGORY_LABELS itself is empty
-  if (params.length === 0) {
-    return [
-      { category: Object.keys(CATEGORY_LABELS)[0] ?? "general", page: "1" },
-    ];
-  }
-
   return params;
 }
-
 /* -------------------------------------------------------------------------- */
 /* Metadata                                                                   */
 /* -------------------------------------------------------------------------- */
@@ -105,9 +91,11 @@ export default async function CategoryBatchesPaginatedPage({
 }: {
   params: Params;
 }) {
-  console.log("Batches pagination page rendered");
+  "use cache";
+  cacheLife("aggressive");
   const { category, page } = await params;
-
+  console.log("Batches pagination page rendered", category, page);
+  cacheTag(`batch-list-${category}`);
   const pageNumber = Number(page);
 
   if (!Number.isInteger(pageNumber) || pageNumber < 1) {

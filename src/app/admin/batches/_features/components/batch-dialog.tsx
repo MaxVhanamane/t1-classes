@@ -403,7 +403,7 @@ export function BatchDialog({
         /* -------------------------------------------------- */
         if (isEdit && batch) {
           batchId = batch.id;
-          await updateBatch(batchId, batch.category, payload);
+          await updateBatch(batchId, batch.category, payload, batch.slug);
         } else {
           batchId = await createBatch(payload);
         }

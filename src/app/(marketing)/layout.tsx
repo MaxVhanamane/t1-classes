@@ -1,4 +1,5 @@
-// import { StudentNavbar } from "../(student-app-shell)/student/dashboard/_features/common/StudentNavbar";
+import { Suspense } from "react";
+import { StudentNavbar } from "../student/dashboard/_features/common/StudentNavbar";
 
 export default function MarketingLayout({
   children,
@@ -7,7 +8,9 @@ export default function MarketingLayout({
 }) {
   return (
     <>
-      {/* <StudentNavbar variant="marketing" /> */}
+      <Suspense fallback={null}>
+        <StudentNavbar variant="marketing" />
+      </Suspense>
       {children}
     </>
   );

@@ -1,4 +1,3 @@
-"use cache";
 import { notFound } from "next/navigation";
 import { createStaticSupabaseClient } from "@/src/lib/supabase/supabase-static";
 import { CATEGORY_LABELS } from "@/src/app/admin/batches/_features/zod-schema/schema";
@@ -6,6 +5,7 @@ import { ExploreCourseCard } from "@/src/app/student/dashboard/_features/compone
 import { SectionError } from "@/src/components/system/SectionError";
 import { Link } from "@/src/components/ui/link";
 import type { ExploreCourse } from "@/src/app/api/explore-batches/types";
+import { cacheLife, cacheTag } from "next/cache";
 
 // export const dynamic = "force-static";
 const LIMIT = 10;
@@ -30,10 +30,7 @@ export async function generateStaticParams() {
       .eq("is_active", true)
       .eq("category", category);
 
-    if (error) {
-      params.push({ category, page: "1" });
-      continue;
-    }
+    if (error) continue;
 
     const totalPages = Math.max(1, Math.ceil((count ?? 0) / LIMIT));
 
@@ -42,9 +39,7 @@ export async function generateStaticParams() {
     }
   }
 
-  return params.length > 0
-    ? params
-    : [{ category: Object.keys(CATEGORY_LABELS)[0] ?? "general", page: "1" }];
+  return params;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -102,8 +97,11 @@ export default async function CategoryCoursesPaginatedPage({
 }: {
   params: Params;
 }) {
+  "use cache";
+  cacheLife("aggressive");
   console.log("Courses pagination page rendered");
   const { category, page } = await params;
+  cacheTag(`course-list-${category}`);
 
   const pageNumber = Number(page);
 

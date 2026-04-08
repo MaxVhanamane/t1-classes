@@ -60,26 +60,6 @@ function CourseCardSkeleton() {
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-[80%]" />
 
-        {/* meta */}
-        <div className="space-y-1">
-          <Skeleton className="h-3 w-[60%]" />
-          <Skeleton className="h-3 w-[50%]" />
-        </div>
-
-        {/* badges */}
-        <div className="flex gap-1 flex-wrap">
-          <Skeleton className="h-4 w-10 rounded-sm" />
-          <Skeleton className="h-4 w-12 rounded-sm" />
-          <Skeleton className="h-4 w-8 rounded-sm" />
-        </div>
-
-        {/* description */}
-        <div className="space-y-1">
-          <Skeleton className="h-3 w-full" />
-          <Skeleton className="h-3 w-[90%]" />
-          <Skeleton className="h-3 w-[80%]" />
-        </div>
-
         <div className="flex-1" />
       </CardContent>
 

@@ -38,7 +38,7 @@ export function useTestSubmit(attemptId: string) {
                 data
             );
 
-            router.push(`/student/tests/results/${attemptId}`);
+            router.replace(`/student/tests/results/${attemptId}`);
         },
         onError: () => {
             toast.error("Autosubmit failed — you can retry manually");

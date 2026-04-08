@@ -84,14 +84,6 @@ export function StudentNavbar({
                 <Link href="/student/dashboard">My Learning</Link>
               </Button>
 
-              <Button
-                asChild
-                variant="ghost"
-                className="hidden sm:inline-flex h-9 px-3"
-              >
-                <Link href="/courses">Explore</Link>
-              </Button>
-
               <ThemeToggle />
               <NotificationPopover />
               <UserMenu />
@@ -104,6 +96,13 @@ export function StudentNavbar({
                 className="hidden sm:inline-flex h-9 px-3"
               >
                 <Link href="/courses">Explore</Link>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                className="hidden sm:inline-flex h-9 px-3"
+              >
+                <Link href="/">Home</Link>
               </Button>
 
               <ThemeToggle />

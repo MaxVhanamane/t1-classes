@@ -13,7 +13,7 @@ import { BatchLiveClassesSection } from "./_features/components/batch-live-class
 import { BatchFAQSection } from "./_features/components/batch-faq-section";
 import { InstructorsSection } from "@/src/components/instructors/instructors-section";
 import { SectionDivider } from "../../../../../../../components/ui/section-divider";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 // export const revalidate = false; // never revalidate — permanent static
 
@@ -22,7 +22,7 @@ import { cacheLife } from "next/cache";
 /* -------------------------------------------------------------------------- */
 
 async function getBatch(slug: string): Promise<ExploreBatchDetail | null> {
-  console.log("get batch called");
+  console.log("get batch called on batches details page for slug:", slug);
   const supabase = createStaticSupabaseClient();
   return await getExploreBatchDetailBySlugService(supabase, slug);
 }
@@ -62,12 +62,13 @@ export async function generateStaticParams() {
 export default async function BatchPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; category: string }>;
 }) {
   "use cache";
-  cacheLife({ stale: 60 * 5, revalidate: 60 * 10 });
-  console.log("Cached Batch page rendered");
-  const { slug } = await params;
+  const { slug, category } = await params;
+  console.log("Cached Batch page rendered", slug, category);
+  cacheLife("aggressive");
+  cacheTag(`batch-detail-${slug}`);
   if (slug === "__placeholder__") notFound();
   const batch = await getBatch(slug);
 

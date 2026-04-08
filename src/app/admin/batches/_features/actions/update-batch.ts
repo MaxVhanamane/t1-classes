@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { batchSchema, Category } from "../zod-schema/schema";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
@@ -8,7 +8,8 @@ import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 export async function updateBatch(
     batchId: string,
     previousCategory: Category,
-    input: unknown
+    input: unknown,
+    slug: string
 ) {
     /* -------------------------------------------------- */
     /* 1. Validate input                                  */
@@ -140,9 +141,10 @@ export async function updateBatch(
     /* 4. Revalidate                                      */
     /* -------------------------------------------------- */
     revalidatePath("/admin/batches");
-    revalidatePath(`/explore/${data.category}/batches`, "layout");
-
+    updateTag(`batch-detail-${slug}`)
+    updateTag(`batch-list-${data.category}`);
     if (previousCategory && previousCategory !== data.category) {
-        revalidatePath(`/explore/${previousCategory}/batches`, "layout");
+        // if category has changed, we need to revalidate the previous category list as well
+        updateTag(`batch-list-${previousCategory}`);
     }
 }

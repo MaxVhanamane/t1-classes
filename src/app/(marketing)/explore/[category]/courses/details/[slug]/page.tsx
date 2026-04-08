@@ -9,6 +9,7 @@ import { CoursePlayer } from "@/src/app/student/learn/courses/[slug]/_features/c
 import { CourseDescriptionSection } from "./components/course-description-section";
 import { InstructorsSection } from "@/src/components/instructors/instructors-section";
 import { getCourseBySlug } from "@/src/app/api/marketing/courses/[slug]/details/server/get-course-by-slug";
+import { cacheLife, cacheTag } from "next/cache";
 
 // export const revalidate = false;
 
@@ -17,11 +18,13 @@ import { getCourseBySlug } from "@/src/app/api/marketing/courses/[slug]/details/
 /* -------------------------------------------------------------------------- */
 
 async function getCourse(slug: string): Promise<CourseDetails | null> {
+  console.log("get course called on course details page for slug:", slug);
   const supabase = createStaticSupabaseClient();
   return await getCourseBySlug(slug, supabase);
 }
 
 async function getOutline(slug: string): Promise<CourseOutline | null> {
+  console.log("get course outline called");
   const supabase = createStaticSupabaseClient();
 
   const { data, error } = await supabase.rpc(
@@ -110,8 +113,10 @@ export default async function CourseLandingPage({
   params: Promise<{ slug: string }>;
 }) {
   "use cache";
-  console.log("Course page rendered");
+  console.log("Course details page rendered");
+  cacheLife("aggressive");
   const { slug } = await params;
+  cacheTag(`course-detail-${slug}`);
   if (slug === "__placeholder__") notFound();
   const [course, outline] = await Promise.all([
     getCourse(slug),

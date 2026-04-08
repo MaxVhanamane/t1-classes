@@ -62,7 +62,7 @@ export default function StartGate({ distributionId, disabled }: Props) {
 
       // Lock UI until route changes
       setIsNavigating(true);
-      router.push(`/student/tests/attempt/${data.attemptId}`);
+      router.replace(`/student/tests/attempt/${data.attemptId}`);
     },
 
     onError: (err: Error) => {

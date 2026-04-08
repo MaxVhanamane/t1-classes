@@ -10,7 +10,7 @@ import {
 
 import { deleteR2Object } from "@/src/lib/r2/deleteObject";
 import { generateBatchSlug } from "@/src/lib/helper-functions/generate-slug";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import {
     Board, Category, TargetExam,
     Subject,
@@ -236,8 +236,7 @@ export async function createCourse(
 
     /* ---------- revalidate ---------- */
     revalidatePath("/admin/courses");
-    revalidatePath(`/explore/${values.category}/courses`, "layout");
-    // revalidatePath(`/explore/${values.category}/courses/details/${slug}`);
+    updateTag(`course-list-${values.category}`);
     return courseId;
 }
 
@@ -266,7 +265,7 @@ export async function updateCourse(
 
     const { data: course } = await supabase
         .from("courses")
-        .select("created_by, category")
+        .select("created_by, category, slug")
         .eq("id", courseId)
         .single();
 
@@ -379,16 +378,11 @@ export async function updateCourse(
 
     revalidatePath("/admin/courses");
 
-    /* new category */
-    revalidatePath(`/explore/${values.category}/courses`, "layout");
-
-    // revalidatePath(
-    //     `/explore/${values.category}/courses/details/${slug}`
-    // );
-
-    /* old category (only if changed) */
+    updateTag(`course-detail-${course.slug}`)
+    updateTag(`course-list-${values.category}`);
     if (oldCategory && oldCategory !== values.category) {
-        revalidatePath(`/explore/${oldCategory}/courses`, "layout");
+        // if category has changed, we need to revalidate the previous category list as well
+        updateTag(`course-list-${oldCategory}`);
     }
 
     return courseId;

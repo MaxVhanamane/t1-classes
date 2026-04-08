@@ -70,8 +70,8 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["batch-tests", batchId],
     queryFn: () => fetchBatchTests(batchId),
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 1000 * 60 * 1, // 1 min cache
+    gcTime: 1000 * 60 * 30, // 30 min memory
   });
 
   /* -------------------------------------------------- */
@@ -239,9 +239,9 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
     return (
       <Card
         key={test.distributionId}
-        className="rounded-lg border hover:bg-muted/40 transition py-4"
+        className="rounded-lg border dark:bg-black hover:bg-muted/40 transition py-4 relative lg:w-3xl"
       >
-        <CardContent className="p-4 space-y-4">
+        <CardContent className="p-4 space-y-4 z-10">
           {/* Header */}
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm">{test.title}</h3>

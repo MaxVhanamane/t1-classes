@@ -2,6 +2,18 @@ import type { NextConfig } from "next";
 import { withSerwist } from "@serwist/turbopack";
 
 const nextConfig: NextConfig = {
+  cacheLife: {
+    aggressive: {
+      stale: 60 * 60 * 2,            // 2 hours (session-level)
+      revalidate: 60 * 60 * 24 * 365, // 1 year
+      expire: 60 * 60 * 24 * 365 * 2, // 2 years
+    },
+  },
+  logging: {
+    fetches: {
+      fullUrl: true
+    }
+  },
   cacheComponents: true,
   reactCompiler: true,
   images: {
