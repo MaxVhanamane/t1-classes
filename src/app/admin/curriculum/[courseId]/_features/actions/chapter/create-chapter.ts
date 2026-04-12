@@ -70,5 +70,6 @@ export async function createChapter(
     }
 
     // 6. Revalidate curriculum page
-    // revalidatePath(`/admin/curriculum/${courseId}`);
+    revalidatePath(`/admin/curriculum/${courseId}`);
+    return { success: true }
 }
