@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, Circle, ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
+import { Badge } from "@/src/components/ui/badge";
 import { cn } from "@/src/lib/utils";
-import { motion, AnimatePresence } from "motion/react";
-import { McqBuilder } from "./mcq-builder";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { deletePracticeQuestion } from "../../practice/[practiceSetId]/actions/practice-set/delete-practice-question";
+
 import {
   AlertDialog,
   AlertDialogContent,
@@ -16,24 +19,16 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/src/components/ui/alert-dialog";
-import { deletePracticeQuestion } from "../../actions/practice-set/delete-practice-question";
-import { toast } from "sonner";
+import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
+import { PracticeMcqBuilderDialog } from "./mcq-builder";
+import { PracticeQuestion } from "../../types/practice-question.types";
 
 interface Props {
   index: number;
   courseId: string;
   topicId: string;
   practiceSetId: string;
-  question: {
-    id: string;
-    question: string;
-    correct_answer_explanation: string | null;
-    practice_options: {
-      id: string;
-      option_text: string;
-      is_correct: boolean;
-    }[];
-  };
+  question: PracticeQuestion;
 }
 
 export function PracticeQuestionItem({
@@ -48,9 +43,15 @@ export function PracticeQuestionItem({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const correctOptionId = question.correct_answer?.option_id;
+
+  const sortedOptions = [...question.practice_question_options].sort(
+    (a, b) => a.sort_order - b.sort_order,
+  );
+
   function toggle() {
     if (editing) return;
-    setExpanded((v) => !v);
+    setExpanded((prev) => !prev);
   }
 
   async function handleDelete() {
@@ -69,7 +70,7 @@ export function PracticeQuestionItem({
       setConfirmDelete(false);
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to delete question"
+        err instanceof Error ? err.message : "Failed to delete question",
       );
     } finally {
       setDeleting(false);
@@ -79,23 +80,24 @@ export function PracticeQuestionItem({
   return (
     <>
       <div className="rounded-md border">
-        {/* HEADER – unchanged */}
+        {/* HEADER */}
         <div
           onClick={toggle}
           className={cn(
             "flex items-start justify-between gap-4 px-4 py-3 transition-colors",
-            !editing && "cursor-pointer hover:bg-muted/30"
+            !editing && "cursor-pointer hover:bg-muted/30",
           )}
         >
-          <p className="text-sm font-medium leading-relaxed">
-            {index}. {question.question}
-          </p>
-
+          <div className="flex items-start gap-2 text-sm font-medium leading-relaxed">
+            <span className="shrink-0">{index}.</span>
+            <div className="flex-1 [&>p]:inline [&>p]:m-0">
+              <RichTextRenderer content={question.question} />
+            </div>
+          </div>
           <div
             className="flex items-center gap-1"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Actions only when expanded */}
             {expanded && !editing && (
               <>
                 <Button
@@ -103,13 +105,13 @@ export function PracticeQuestionItem({
                   variant="ghost"
                   onClick={() => setEditing(true)}
                 >
-                  <Pencil className="h-4 w-4 cursor-pointer" />
+                  <Pencil className="h-4 w-4" />
                 </Button>
 
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="text-destructive cursor-pointer"
+                  className="text-destructive"
                   disabled={deleting}
                   onClick={() => setConfirmDelete(true)}
                 >
@@ -118,78 +120,92 @@ export function PracticeQuestionItem({
               </>
             )}
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0 cursor-pointer"
-              onClick={toggle}
-            >
+            <Button variant="ghost" size="icon" onClick={toggle}>
               <ChevronDown
                 className={cn(
                   "h-4 w-4 transition-transform",
-                  expanded && "rotate-180"
+                  expanded && "rotate-180",
                 )}
               />
             </Button>
           </div>
         </div>
 
-        {/* EXPANDED CONTENT – unchanged */}
+        {/* EXPANDED CONTENT */}
         <AnimatePresence initial={false}>
           {expanded && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
+              transition={{ duration: 0.25 }}
               className="overflow-hidden"
             >
               <div className="px-4 pb-4 pt-2">
                 {editing ? (
-                  <McqBuilder
-                    mode="edit"
+                  <PracticeMcqBuilderDialog
+                    open={editing}
+                    onOpenChange={setEditing}
                     courseId={courseId}
                     topicId={topicId}
                     practiceSetId={practiceSetId}
-                    initialData={{
-                      questionId: question.id,
-                      question: question.question,
-                      correct_answer_explanation:
-                        question.correct_answer_explanation,
-                      options: question.practice_options,
+                    editingQuestion={{
+                      id: question.id,
+                      questionText: question.question,
+                      explanation: question.explanation,
+                      options: sortedOptions.map((opt) => ({
+                        id: opt.id,
+                        label: opt.option_label,
+                        text: opt.option_text,
+                        isCorrect: opt.id === correctOptionId,
+                      })),
                     }}
-                    onCancel={() => setEditing(false)}
                   />
                 ) : (
                   <div className="space-y-4">
+                    {/* Options */}
                     <div className="space-y-2">
-                      {question.practice_options.map((opt) => (
-                        <div
-                          key={opt.id}
-                          className={cn(
-                            "flex items-center gap-3 rounded-md border px-3 py-2 text-sm",
-                            opt.is_correct &&
-                              "border-green-600/40 bg-green-50/40"
-                          )}
-                        >
-                          {opt.is_correct ? (
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <Circle className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <span>{opt.option_text}</span>
-                        </div>
-                      ))}
+                      {sortedOptions.map((opt) => {
+                        const isCorrect = opt.id === correctOptionId;
+
+                        return (
+                          <div
+                            key={opt.id}
+                            className={cn(
+                              "flex gap-2 rounded-md border px-3 py-2 text-sm transition",
+                              isCorrect
+                                ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                                : "border-muted",
+                            )}
+                          >
+                            <span className="font-medium w-6">
+                              {opt.option_label}.
+                            </span>
+
+                            <div className="flex-1">
+                              <RichTextRenderer content={opt.option_text} />
+                            </div>
+
+                            {isCorrect && (
+                              <Badge
+                                variant="secondary"
+                                className="ml-auto bg-green-600 text-white"
+                              >
+                                Correct
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
 
-                    {question.correct_answer_explanation && (
+                    {/* Explanation */}
+                    {question.explanation && (
                       <div className="rounded-md bg-muted p-3">
                         <p className="mb-1 text-xs font-medium text-muted-foreground">
                           Explanation
                         </p>
-                        <p className="text-sm leading-relaxed">
-                          {question.correct_answer_explanation}
-                        </p>
+                        <RichTextRenderer content={question.explanation} />
                       </div>
                     )}
                   </div>
@@ -200,7 +216,7 @@ export function PracticeQuestionItem({
         </AnimatePresence>
       </div>
 
-      {/* CONFIRM DELETE */}
+      {/* DELETE CONFIRMATION */}
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -211,13 +227,11 @@ export function PracticeQuestionItem({
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer" disabled={deleting}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
-              className="bg-destructive cursor-pointer"
+              className="bg-destructive"
             >
               {deleting ? "Deleting…" : "Delete"}
             </AlertDialogAction>

@@ -41,23 +41,47 @@ export function AddChapterDialog({ courseId }: AddChapterDialogProps) {
       form.reset({ title: "" });
     }
   }, [open, form]);
+
   async function onSubmit(data: AddChapterFormInput) {
+    console.log("========== CLIENT: CREATE CHAPTER START ==========");
+    console.log("Course ID:", courseId);
+    console.log("Form Data:", data);
+
     setLoading(true);
 
     try {
-      await createChapter(courseId, data);
+      console.log("Calling createChapter server action...");
+
+      const result = await createChapter(courseId, data);
+
+      console.log("Server Action Response:", result);
+      console.log("Response Type:", typeof result);
+      console.log("Response is undefined:", result === undefined);
 
       toast.success("Chapter created successfully");
 
+      console.log("Resetting form...");
       form.reset();
-      setOpen(false);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create chapter";
 
-      toast.error(message);
+      console.log("Closing modal...");
+      setOpen(false);
+
+      console.log("========== CLIENT: CREATE CHAPTER SUCCESS ==========");
+    } catch (err: unknown) {
+      console.error("❌ CLIENT ERROR:", err);
+
+      if (err instanceof Error) {
+        console.error("Error Name:", err.name);
+        console.error("Error Message:", err.message);
+        console.error("Error Stack:", err.stack);
+        toast.error(err.message);
+      } else {
+        console.error("Unknown Error:", err);
+        toast.error("An unexpected response was received from the server");
+      }
     } finally {
       setLoading(false);
+      console.log("Loading state reset");
     }
   }
 

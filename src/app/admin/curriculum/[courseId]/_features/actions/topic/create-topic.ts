@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 import { AddTopicFormInput, addTopicFormSchema } from "../../zod-schema/topic.schema";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { redirect } from "next/navigation";
+
 
 
 export async function createTopic(
@@ -20,7 +22,10 @@ export async function createTopic(
     const { title } = parsed.data;
 
     const supabase = await createServerSupabaseClient();
-    const staff = await getCurrentStaff(); // admin OR teacher
+    const staff = await getAuthIfHasRole(["admin", "teacher"]); // admin OR teacher
+    if (!staff) {
+        redirect("/login");
+    }
 
     // 2. Fetch chapter (no nested selects)
     const { data: chapter, error: chapterError } = await supabase
@@ -55,7 +60,7 @@ export async function createTopic(
     const courseOwnerId = courseRow.created_by;
 
     const isAdmin = staff.role === "admin";
-    const isOwner = courseOwnerId === staff.id;
+    const isOwner = courseOwnerId === staff.userId;
 
     if (!isAdmin && !isOwner) {
         throw new Error("You are not allowed to add topics to this course");

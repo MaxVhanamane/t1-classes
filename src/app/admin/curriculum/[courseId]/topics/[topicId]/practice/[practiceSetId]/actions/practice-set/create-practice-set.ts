@@ -5,7 +5,7 @@ import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import {
     PracticeSetInput,
     practiceSetSchema,
-} from "../../zod-schema/practice-set/practice-set";
+} from "../../../../zod-schema/practice-set/practice-set";
 import { revalidatePath } from "next/cache";
 
 export async function createPracticeSet(

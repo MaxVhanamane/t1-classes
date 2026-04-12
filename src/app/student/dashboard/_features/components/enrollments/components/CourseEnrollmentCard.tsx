@@ -45,7 +45,7 @@ export function CourseEnrollmentCard({ enrollment }: Props) {
           </h3>
           <Badge
             variant="secondary"
-            className="shrink-0 px-2 py-0.5 text-[10px]"
+            className="shrink-0 px-2 py-0.5 text-[10px] bg-background/70 dark:bg-white/10 backdrop-blur-md"
           >
             Course
           </Badge>

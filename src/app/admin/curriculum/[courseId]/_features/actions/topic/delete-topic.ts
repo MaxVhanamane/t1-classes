@@ -2,11 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { redirect } from "next/navigation";
 
 export async function deleteTopic(courseId: string, topicId: string) {
     const supabase = await createServerSupabaseClient();
-    const staff = await getCurrentStaff(); // admin OR teacher
+    const staff = await getAuthIfHasRole(["admin", "teacher"]); // admin OR teacher
+    if (!staff) {
+        redirect("/login");
+    }
 
     /**
      * 1. Fetch topic (NO joins)
@@ -46,7 +50,7 @@ export async function deleteTopic(courseId: string, topicId: string) {
      * 3. Authorization
      */
     const isAdmin = staff.role === "admin";
-    const isOwner = course.created_by === staff.id;
+    const isOwner = course.created_by === staff.userId;
 
     if (!isAdmin && !isOwner) {
         throw new Error("You are not allowed to delete this topic");

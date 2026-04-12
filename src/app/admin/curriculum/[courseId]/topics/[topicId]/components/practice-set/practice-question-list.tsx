@@ -1,21 +1,13 @@
 "use client";
 
+import { PracticeQuestion } from "../../types/practice-question.types";
 import { PracticeQuestionItem } from "./practice-question-item";
 
 interface Props {
   courseId: string;
   topicId: string;
   practiceSetId: string;
-  questions: {
-    id: string;
-    question: string;
-    correct_answer_explanation: string | null;
-    practice_options: {
-      id: string;
-      option_text: string;
-      is_correct: boolean;
-    }[];
-  }[];
+  questions: PracticeQuestion[];
 }
 
 export function PracticeQuestionList({
@@ -24,7 +16,7 @@ export function PracticeQuestionList({
   topicId,
   practiceSetId,
 }: Props) {
-  if (questions.length === 0) {
+  if (!questions.length) {
     return (
       <p className="text-sm text-muted-foreground text-center">
         No questions added yet.

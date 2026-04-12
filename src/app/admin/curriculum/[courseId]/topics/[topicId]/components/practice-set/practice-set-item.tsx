@@ -12,7 +12,7 @@ import {
 import { PracticeSetDialog } from "./practice-set-dialog";
 import { DeletePracticeSetDialog } from "../../practice/[practiceSetId]/components/delete-practice-set-confirmation-dialog";
 import { ConfirmActionDialog } from "@/src/components/ui/common/confirm-action-dialog";
-import { togglePracticeSetPublish } from "../../actions/practice-set/togglePracticeSetPublish";
+import { togglePracticeSetPublish } from "../../practice/[practiceSetId]/actions/practice-set/togglePracticeSetPublish";
 import { toast } from "sonner";
 
 interface Props {

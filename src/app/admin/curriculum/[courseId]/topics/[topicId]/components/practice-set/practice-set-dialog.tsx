@@ -23,8 +23,8 @@ import {
   PracticeSetInput,
   practiceSetSchema,
 } from "../../zod-schema/practice-set/practice-set";
-import { createPracticeSet } from "../../actions/practice-set/create-practice-set";
-import { updatePracticeSet } from "../../actions/practice-set/update-practice-set";
+import { createPracticeSet } from "../../practice/[practiceSetId]/actions/practice-set/create-practice-set";
+import { updatePracticeSet } from "../../practice/[practiceSetId]/actions/practice-set/update-practice-set";
 import { cn } from "@/src/lib/utils";
 import { Switch } from "@/src/components/ui/switch";
 

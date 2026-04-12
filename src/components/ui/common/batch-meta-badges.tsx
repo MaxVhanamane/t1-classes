@@ -33,9 +33,8 @@ interface BatchMetaBadgesProps {
 /* ------------------------------------------------ */
 /* Component */
 /* ------------------------------------------------ */
-
 export function BatchMetaBadges({ batch, size = "sm" }: BatchMetaBadgesProps) {
-  const [lifecycle, setLifecycle] = useState<BatchLifecycle>("upcoming");
+  const [lifecycle, setLifecycle] = useState<BatchLifecycle | null>(null);
 
   useEffect(() => {
     setLifecycle(getBatchLifecycle(batch));
@@ -44,34 +43,40 @@ export function BatchMetaBadges({ batch, size = "sm" }: BatchMetaBadgesProps) {
   const sizeClasses =
     size === "md" ? "text-sm px-2.5 py-0.5" : "text-xs px-2 py-0.5";
 
-  const badges = [
-    {
-      key: "mode",
-      label: BATCH_MODE_UI_LABELS[batch.mode],
-      description: BATCH_MODE_EXPLANATION[batch.mode],
-      className: "text-color-foreground",
-    },
-    {
-      key: "status",
-      label: BATCH_STATUS_UI_LABELS[lifecycle],
-      description: BATCH_STATUS_EXPLANATION[lifecycle],
-      className: getStatusStyles(lifecycle),
-    },
-  ];
-
   return (
     <TooltipProvider delayDuration={150}>
       <div className="flex flex-wrap gap-1.5 z-10">
-        {badges.map((badge) => (
+        {/* MODE badge (safe, no hydration issue) */}
+        <BadgeWithTooltip
+          label={BATCH_MODE_UI_LABELS[batch.mode]}
+          description={BATCH_MODE_EXPLANATION[batch.mode]}
+          className={cn(sizeClasses, "text-color-foreground")}
+        />
+
+        {/* STATUS badge */}
+        {lifecycle === null ? (
+          <SkeletonBadge className={sizeClasses} />
+        ) : (
           <BadgeWithTooltip
-            key={badge.key}
-            label={badge.label}
-            description={badge.description}
-            className={cn(sizeClasses, badge.className)}
+            label={BATCH_STATUS_UI_LABELS[lifecycle]}
+            description={BATCH_STATUS_EXPLANATION[lifecycle]}
+            className={cn(sizeClasses, getStatusStyles(lifecycle))}
           />
-        ))}
+        )}
       </div>
     </TooltipProvider>
+  );
+}
+
+function SkeletonBadge({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        " w-[107.5px] rounded-full border border-white/10 bg-white/5",
+        "animate-pulse",
+        className,
+      )}
+    />
   );
 }
 

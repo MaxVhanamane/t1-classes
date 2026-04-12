@@ -1,6 +1,6 @@
 import { Separator } from "@/src/components/ui/separator";
 import { PracticeSetItem } from "./practice-set-item";
-import { getPracticeSetsByTopic } from "../../actions/practice-set/get-practice-sets-by-topic";
+import { getPracticeSetsByTopic } from "../../practice/[practiceSetId]/actions/practice-set/get-practice-sets-by-topic";
 import { ClipboardList } from "lucide-react";
 import { PracticeSetDialog } from "./practice-set-dialog";
 

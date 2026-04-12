@@ -20,8 +20,15 @@ import {
 } from "@/src/components/ui/dialog";
 
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
 import { Skeleton } from "@/src/components/ui/skeleton";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/components/ui/select";
 
 import type { SectionTemplate } from "../../types/section-template.types";
 import { SectionTemplateCard } from "./section-template-card";
@@ -35,6 +42,17 @@ interface Props {
   testId: string;
   testType: TestType;
 }
+
+/**
+ * Predefined Subjects for Classes 8–12 and Competitive Exams
+ */
+export const SUBJECT_OPTIONS = [
+  // Core Subjects (Classes 11–12 and Competitive Exams)
+  { label: "Mathematics", value: "mathematics" },
+  { label: "Physics", value: "physics" },
+  { label: "Chemistry", value: "chemistry" },
+  { label: "Biology", value: "biology" },
+];
 
 export function SectionTemplateSheet({
   open,
@@ -71,7 +89,7 @@ export function SectionTemplateSheet({
   }, [open]);
 
   const handleCreate = async () => {
-    if (!selected || !subject.trim()) return;
+    if (!selected || !subject) return;
 
     let scoringCount: number | null = null;
 
@@ -91,7 +109,7 @@ export function SectionTemplateSheet({
       await addTestSectionFromTemplate(
         testId,
         selected.id,
-        subject.trim(),
+        subject,
         scoringCount,
       );
 
@@ -121,7 +139,7 @@ export function SectionTemplateSheet({
           <SheetHeader>
             <SheetTitle>Select section type</SheetTitle>
             <SheetDescription>
-              Choose how questions in this section will be evaluated
+              Choose how questions in this section will be evaluated.
             </SheetDescription>
           </SheetHeader>
 
@@ -164,22 +182,30 @@ export function SectionTemplateSheet({
           <DialogHeader>
             <DialogTitle>Section Settings</DialogTitle>
             <DialogDescription>
-              This information is shown to students and affects how scoring
-              works.
+              Select the subject for this section to organize the test structure
+              clearly for students.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* Subject Dropdown */}
             <div>
               <label className="text-sm font-medium">Subject</label>
-              <Input
-                placeholder="e.g. Physics"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                autoFocus
-              />
+              <Select value={subject} onValueChange={setSubject}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select a subject" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUBJECT_OPTIONS.map((subj) => (
+                    <SelectItem key={subj.value} value={subj.value}>
+                      {subj.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
+            {/* Scoring Rules */}
             {isNumerical && (
               <div className="space-y-3">
                 <div className="text-sm font-medium">Scoring Rule</div>
@@ -200,10 +226,10 @@ export function SectionTemplateSheet({
                     onChange={() => setScoringMode("best")}
                   />
                   Score best
-                  <Input
+                  <input
                     type="number"
                     min={1}
-                    className="w-20"
+                    className="w-20 border rounded px-2 py-1"
                     value={bestCount}
                     disabled={scoringMode !== "best"}
                     onChange={(e) => setBestCount(e.target.value)}
@@ -215,7 +241,7 @@ export function SectionTemplateSheet({
 
             <Button
               className="w-full"
-              disabled={!subject.trim() || submitting}
+              disabled={!subject || submitting}
               onClick={handleCreate}
             >
               Create Section

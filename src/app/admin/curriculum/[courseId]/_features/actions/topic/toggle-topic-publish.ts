@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { redirect } from "next/navigation";
 type TopicWithParent = {
     id: string;
     course_id: string;
@@ -29,7 +30,10 @@ export async function toggleTopicPublish({
     publish,
 }: Input) {
     const supabase = await createServerSupabaseClient();
-    const staff = await getCurrentStaff();
+    const staff = await getAuthIfHasRole(["admin", "teacher"]); // admin OR teacher
+    if (!staff) {
+        redirect("/login");
+    }
 
     /**
      * 1. Fetch topic + parent chapter
@@ -98,7 +102,7 @@ export async function toggleTopicPublish({
     }
 
     const isAdmin = staff.role === "admin";
-    const isOwner = course.created_by === staff.id;
+    const isOwner = course.created_by === staff.userId;
 
     if (!isAdmin && !isOwner) {
         throw new Error("Not allowed");

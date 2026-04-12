@@ -2,12 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
 
 import {
     renameTopicFormSchema,
     RenameTopicFormInput,
 } from "../../zod-schema/rename-topic.schema";
+import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { redirect } from "next/navigation";
 
 export async function renameTopic(
     courseId: string,
@@ -23,7 +24,10 @@ export async function renameTopic(
     const { title } = parsed.data;
 
     const supabase = await createServerSupabaseClient();
-    const staff = await getCurrentStaff(); // admin OR teacher
+    const staff = await getAuthIfHasRole(["admin", "teacher"]); // admin OR teacher
+    if (!staff) {
+        redirect("/login");
+    }
 
     /**
      * 2. Fetch topic
@@ -60,7 +64,7 @@ export async function renameTopic(
     }
 
     const isAdmin = staff.role === "admin";
-    const isOwner = course.created_by === staff.id;
+    const isOwner = course.created_by === staff.userId;
 
     if (!isAdmin && !isOwner) {
         throw new Error("You are not allowed to rename this topic");

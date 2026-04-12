@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { withSerwist } from "@serwist/turbopack";
 
 const nextConfig: NextConfig = {
+  reactStrictMode: false,
   cacheLife: {
     aggressive: {
       stale: 60 * 60 * 2,            // 2 hours (session-level)

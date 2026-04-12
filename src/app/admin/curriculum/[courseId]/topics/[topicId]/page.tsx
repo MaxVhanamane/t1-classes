@@ -4,7 +4,7 @@ import { getUnitsByTopic } from "../../_features/actions/get-course-units-by-top
 import { AddVideoDialog } from "../../_features/components/video/add-video-dialog";
 import { AddPdfDialog } from "../../_features/components/pdf/add-pdf-dialog";
 import { TopicUnitItem } from "../../_features/components/topic/topic-unit-item";
-import { getPracticeSetsByTopic } from "./actions/practice-set/get-practice-sets-by-topic";
+import { getPracticeSetsByTopic } from "./practice/[practiceSetId]/actions/practice-set/get-practice-sets-by-topic";
 import { Suspense } from "react";
 import { PracticeSetSection } from "./components/practice-set/practice-set-section";
 import { PracticeSetSkeleton } from "./components/skeleton/practice-set-skeleton";

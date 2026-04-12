@@ -3,31 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
-import {
-    UpdatePracticeSetInput,
-    updatePracticeSetSchema,
-} from "../../zod-schema/practice-set/practice-set";
+import { DeletePracticeQuestionInput, deletePracticeQuestionSchema } from "../../../../zod-schema/practice-set/practice-question.schema";
 
-export async function updatePracticeSet(
-    rawData: UpdatePracticeSetInput
+
+export async function deletePracticeQuestion(
+    rawData: DeletePracticeQuestionInput
 ) {
     /**
      * 1. Validate input
      */
-    const parsed = updatePracticeSetSchema.safeParse(rawData);
-
+    const parsed = deletePracticeQuestionSchema.safeParse(rawData);
     if (!parsed.success) {
-        throw new Error("Invalid practice set data");
+        throw new Error("Invalid delete request");
     }
 
-    const {
-        courseId,
-        topicId,
-        practiceSetId,
-        title,
-        description,
-        isFreePreview,
-    } = parsed.data;
+    const { courseId, topicId, practiceSetId, questionId } = parsed.data;
 
     const supabase = await createServerSupabaseClient();
     const staff = await getCurrentStaff();
@@ -54,7 +44,7 @@ export async function updatePracticeSet(
      */
     const { data: topic, error: topicError } = await supabase
         .from("course_structure")
-        .select("course_id")
+        .select("id, course_id")
         .eq("id", topicId)
         .single();
 
@@ -83,28 +73,37 @@ export async function updatePracticeSet(
     const isOwner = course.created_by === staff.id;
 
     if (!isAdmin && !isOwner) {
-        throw new Error("Not allowed");
+        throw new Error("You are not allowed to delete this question");
     }
 
     /**
-     * 5. Update practice set
+     * 5. Ensure question belongs to this practice set
      */
-    const { error: updateError } = await supabase
-        .from("practice_sets")
-        .update({
-            title: title.trim(),
-            description: description?.trim() || null,
+    const { data: question, error: qError } = await supabase
+        .from("practice_questions")
+        .select("id")
+        .eq("id", questionId)
+        .eq("practice_set_id", practiceSetId)
+        .single();
 
-            is_free_preview: isFreePreview,
-        })
-        .eq("id", practiceSetId);
-
-    if (updateError) {
-        throw new Error(updateError.message);
+    if (qError || !question) {
+        throw new Error("Question not found");
     }
 
     /**
-     * 6. Revalidate
+     * 6. Delete question (options cascade automatically)
+     */
+    const { error: deleteError } = await supabase
+        .from("practice_questions")
+        .delete()
+        .eq("id", questionId);
+
+    if (deleteError) {
+        throw new Error(deleteError.message);
+    }
+
+    /**
+     * 7. Revalidate
      */
     revalidatePath(`/admin/curriculum/${courseId}/topics/${topicId}`);
 }

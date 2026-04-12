@@ -3,21 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
-import { DeletePracticeQuestionInput, deletePracticeQuestionSchema } from "../../zod-schema/practice-set/practice-question.schema";
+import { DeletePracticeSetInput, deletePracticeSetSchema } from "../../../../zod-schema/practice-set/practice-set";
 
-
-export async function deletePracticeQuestion(
-    rawData: DeletePracticeQuestionInput
+export async function deletePracticeSet(
+    rawData: DeletePracticeSetInput
 ) {
     /**
-     * 1. Validate input
+     * 1. Validate
      */
-    const parsed = deletePracticeQuestionSchema.safeParse(rawData);
+    const parsed = deletePracticeSetSchema.safeParse(rawData);
     if (!parsed.success) {
         throw new Error("Invalid delete request");
     }
 
-    const { courseId, topicId, practiceSetId, questionId } = parsed.data;
+    const { courseId, topicId, practiceSetId } = parsed.data;
 
     const supabase = await createServerSupabaseClient();
     const staff = await getCurrentStaff();
@@ -44,7 +43,7 @@ export async function deletePracticeQuestion(
      */
     const { data: topic, error: topicError } = await supabase
         .from("course_structure")
-        .select("id, course_id")
+        .select("course_id")
         .eq("id", topicId)
         .single();
 
@@ -73,37 +72,24 @@ export async function deletePracticeQuestion(
     const isOwner = course.created_by === staff.id;
 
     if (!isAdmin && !isOwner) {
-        throw new Error("You are not allowed to delete this question");
+        throw new Error("Not allowed");
     }
 
     /**
-     * 5. Ensure question belongs to this practice set
-     */
-    const { data: question, error: qError } = await supabase
-        .from("practice_questions")
-        .select("id")
-        .eq("id", questionId)
-        .eq("practice_set_id", practiceSetId)
-        .single();
-
-    if (qError || !question) {
-        throw new Error("Question not found");
-    }
-
-    /**
-     * 6. Delete question (options cascade automatically)
+     * 5. Delete practice set
+     * (questions + options cascade automatically)
      */
     const { error: deleteError } = await supabase
-        .from("practice_questions")
+        .from("practice_sets")
         .delete()
-        .eq("id", questionId);
+        .eq("id", practiceSetId);
 
     if (deleteError) {
         throw new Error(deleteError.message);
     }
 
     /**
-     * 7. Revalidate
+     * 6. Revalidate
      */
     revalidatePath(`/admin/curriculum/${courseId}/topics/${topicId}`);
 }

@@ -57,13 +57,25 @@ export function BatchQuickInfoPopover({
           w-80
           rounded-2xl
           border
-          bg-card
+          dark:bg-black bg-card
           p-4
           shadow-2xl
           space-y-5
           relative
+          overflow-hidden
         "
       >
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-24 
+          bg-linear-to-b from-gray-400/50 via-gray-400/5 to-transparent 
+          dark:from-gray-300/50 dark:via-gray-300/5 blur-2xl"
+        />
+        {/* Soft border glow (NO animation) */}
+        <div
+          className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset 
+    ring-gray-400/10 dark:ring-gray-300/15 h-full"
+        />
+
         <GrafanaBackground opacity={0.3} />
         {/* ---------- Header ---------- */}
         <div className="flex items-center gap-2">

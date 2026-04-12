@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/src/components/ui/alert-dialog";
 import { Button } from "@/src/components/ui/button";
-import { deletePracticeSet } from "../../../actions/practice-set/delete-practice-set";
+import { deletePracticeSet } from "../actions/practice-set/delete-practice-set";
 
 interface Props {
   courseId: string;
@@ -46,7 +46,7 @@ export function DeletePracticeSetDialog({
       setOpen(false); //  close ONLY after success
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to delete practice set"
+        err instanceof Error ? err.message : "Failed to delete practice set",
       );
     } finally {
       setLoading(false);

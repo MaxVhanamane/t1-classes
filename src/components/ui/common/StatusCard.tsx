@@ -38,7 +38,7 @@ export function StatusCard({
     <Wrapper
       className={cn(
         fullscreen &&
-          "flex min-h-screen items-center justify-center bg-background px-4   ",
+          "flex min-h-screen items-center justify-center bg-background px-4 w-sm  ",
       )}
     >
       <div

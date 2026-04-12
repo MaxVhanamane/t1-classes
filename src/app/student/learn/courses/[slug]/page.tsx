@@ -15,6 +15,7 @@ export default async function CoursePage({ params }: Props) {
     return <CourseErrorState status={400} message="Invalid course URL" />;
   }
   const result = await getCourseOutlineForPlayer(slug);
+
   if (!result.success) {
     return <CourseErrorState status={result.status} message={result.message} />;
   }

@@ -7,8 +7,6 @@ import { Link } from "@/src/components/ui/link";
 import { cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
 
-// export const dynamic = "force-static";
-
 type Props = {
   params: Promise<{ category: Category }>;
 };
@@ -29,7 +27,7 @@ export function generateStaticParams() {
 
 export default async function ExploreCategoryPage({ params }: Props) {
   "use cache";
-  cacheLife("max");
+  cacheLife("aggressive");
   const { category } = await params;
 
   const label = CATEGORY_LABELS[category];
@@ -49,11 +47,11 @@ export default async function ExploreCategoryPage({ params }: Props) {
       </div>
 
       {/* Cards */}
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-2 ">
         {/* COURSES */}
         <Link
           href={`/explore/${category}/courses/page/1`}
-          className="relative rounded-2xl border p-6 active:scale-[0.98]"
+          className="relative rounded-2xl border p-6 active:scale-[0.98] "
         >
           <div className="space-y-5">
             <div>
