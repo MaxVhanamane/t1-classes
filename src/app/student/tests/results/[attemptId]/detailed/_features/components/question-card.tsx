@@ -119,7 +119,7 @@ export function QuestionCard({ index, question }: Props) {
 
       <div className="flex items-start gap-3">
         <h3 className="font-medium flex gap-1">
-          <span className="text-sm">Q{index}.</span>
+          <span className="text-sm mt-0.5">Q{index}.</span>
 
           <RichTextRenderer
             content={question.questionText}
