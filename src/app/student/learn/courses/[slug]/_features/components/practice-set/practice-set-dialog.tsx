@@ -69,7 +69,7 @@ export function PracticeSetDialog({ practiceSetId, onClose }: Props) {
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogOverlay className="backdrop-blur-xs" />
-      <DialogContent className="flex h-[90vh] w-[95vw] sm:max-w-xl flex-col p-0 gap-0">
+      <DialogContent className="flex h-[90dvh] w-[95vw] sm:max-w-xl flex-col p-0 gap-0">
         <DialogHeader className="border-b px-4 py-3">
           <DialogTitle className="sr-only">Practice set</DialogTitle>
           <DialogDescription className="sr-only">

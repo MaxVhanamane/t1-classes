@@ -37,8 +37,8 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
         onContextMenu={(e) => e.preventDefault()}
         className={cn(
           "grid grid-rows-[auto_1fr]",
-          "h-[95vh] w-[95vw] sm:max-w-200",
-          "p-0 overflow-hidden"
+          "h-[95dvh] w-[95vw] sm:max-w-200",
+          "p-0 overflow-hidden",
         )}
       >
         {/* ================= HEADER ================= */}
