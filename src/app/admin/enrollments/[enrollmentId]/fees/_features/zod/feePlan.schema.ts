@@ -5,48 +5,60 @@ import { z } from "zod";
  */
 export const feePlanFormSchema = z
     .object({
-        totalAmount: z
-            .string()
-            .min(1, "Total amount is required")
-            .regex(/^\d+$/, "Only whole numbers allowed"),
-
         discountAmount: z
             .string()
             .optional()
             .refine(
-                (v) => v === undefined || v === "" || /^\d+$/.test(v),
+                (v) =>
+                    v === undefined ||
+                    v === "" ||
+                    /^\d+$/.test(v),
                 "Only whole numbers allowed"
             ),
 
-        effectiveFrom: z.string().min(1, "Effective date is required"),
-        notes: z.string().optional(),
+        discountReason: z.string().optional(),
     })
     .refine(
         (data) => {
-            const total = Number(data.totalAmount);
-            const discount = Number(data.discountAmount || 0);
-            return discount <= total;
+            const discount = Number(
+                data.discountAmount || 0
+            );
+
+            if (discount === 0) {
+                return true;
+            }
+
+            return (
+                (data.discountReason?.trim()
+                    .length ?? 0) > 0
+            );
         },
         {
-            message: "Discount cannot be greater than total amount",
-            path: ["discountAmount"],
+            message:
+                "Discount reason is required when discount is greater than zero",
+            path: ["discountReason"],
         }
     );
 
-export type FeePlanFormInput = z.infer<
-    typeof feePlanFormSchema
->;
+export type FeePlanFormInput =
+    z.infer<
+        typeof feePlanFormSchema
+    >;
 
 /**
  * 2 SERVER SUBMIT SCHEMA (numbers only)
  */
-export const feePlanSubmitSchema = z.object({
-    totalAmount: z.number().min(0),
-    discountAmount: z.number().min(0),
-    effectiveFrom: z.string(),
-    notes: z.string().optional(),
-});
+export const feePlanSubmitSchema =
+    z.object({
+        discountAmount: z
+            .number()
+            .min(0),
 
-export type FeePlanSubmitInput = z.infer<
-    typeof feePlanSubmitSchema
->;
+        discountReason:
+            z.string().optional(),
+    });
+
+export type FeePlanSubmitInput =
+    z.infer<
+        typeof feePlanSubmitSchema
+    >;

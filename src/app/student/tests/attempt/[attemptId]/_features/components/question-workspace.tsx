@@ -44,9 +44,9 @@ export default function QuestionWorkspace({
 
   const [draft, setDraft] = useState<unknown | null>(null);
 
-  // Load saved answer into UI
   useEffect(() => {
     const serverAnswer = session.answerState?.answer ?? null;
+
     const uiValue = serverAnswer
       ? denormalizeStudentAnswer(
           session.current.section.answerMode,
@@ -67,40 +67,39 @@ export default function QuestionWorkspace({
         onRetry={submit.submit}
       />
 
-      <Card className="flex h-auto flex-col pt-7 lg:h-full relative  ">
+      <Card className="relative flex flex-col pt-7 lg:h-[calc(100vh-140px)]">
+        {/* Sync */}
         <div className="absolute top-2 right-2 flex items-center justify-start min-w-18.75 ">
           <SyncDot status={syncStatus} />
         </div>
-        {/* HEADER */}
-        <CardHeader className="shrink-0 space-y-2 px-4 sm:px-6 ">
-          <div className="flex items-center justify-between">
-            <div className="line-clamp-2 text-sm font-semibold ">
+
+        {/* Header */}
+        <CardHeader className="shrink-0 space-y-2 px-4 sm:px-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="line-clamp-2 text-sm font-semibold">
               {session.current.section.title}
             </div>
           </div>
-          <div className="flex justify-between">
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="text-xs text-muted-foreground">
               Question {session.index + 1} of {session.flat.length}
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-xs flex items-center gap-2">
-                <span className="">
-                  +{session.current.section.fullMarks} correct
-                </span>
-                <span className="text-muted-foreground">•</span>
-                <span className="">
-                  {session.current.section.negativeMarks} wrong
-                </span>
-              </div>
+
+            <div className="flex items-center gap-2 text-xs">
+              <span>+{session.current.section.fullMarks} correct</span>
+              <span className="text-muted-foreground">•</span>
+              <span>{session.current.section.negativeMarks} wrong</span>
             </div>
           </div>
         </CardHeader>
 
         <Separator />
 
-        {/* BODY */}
-        <CardContent className="flex min-h-0 flex-1 flex-col px-4 sm:px-6 ">
-          <div className="flex-1 overflow-y-auto pr-1">
+        {/* Content */}
+        <CardContent className="flex min-h-0 flex-1 flex-col px-4 py-4 sm:px-6">
+          {/* Question Body */}
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
             <QuestionBody
               question={session.current}
               section={session.current.section}
@@ -109,7 +108,8 @@ export default function QuestionWorkspace({
             />
           </div>
 
-          <div className="shrink-0 pt-3">
+          {/* Actions */}
+          <div className="shrink-0 pt-4">
             <QuestionActions
               disabled={submit.locked}
               isFirst={session.isFirst}
@@ -125,6 +125,7 @@ export default function QuestionWorkspace({
                   toast.warning("Please select an answer before saving");
                   return;
                 }
+
                 session.saveAnswerAndNext(draft);
               }}
               onSaveAndMark={() => {
@@ -132,6 +133,7 @@ export default function QuestionWorkspace({
                   toast.warning("Select an answer to save & mark for review");
                   return;
                 }
+
                 session.saveAnswerAndMarkForReview(draft);
               }}
               onMarkAndNext={() => {
@@ -141,6 +143,7 @@ export default function QuestionWorkspace({
                   );
                   return;
                 }
+
                 session.markForReviewAndNext();
               }}
               onSubmit={submit.submit}

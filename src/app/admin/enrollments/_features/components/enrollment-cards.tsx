@@ -6,6 +6,13 @@ import StatusBadge from "./status-badge";
 import RegistrationChannelBadge from "./registration-channel-badge";
 import { Badge } from "@/src/components/ui/badge";
 import { TruncatedWithTooltip } from "@/src/components/ui/TruncatedWithTooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 type EnrollmentCardsProps = {
   enrollments: EnrollmentRow[];
@@ -25,11 +32,13 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
     <div className="space-y-4">
       {enrollments.map((enrollment) => {
         const user = enrollment.user;
+
         const batch = enrollment.batch;
+
         const course = enrollment.course;
 
-        // ---- Target label logic (multi-course aware) ----
         let primaryTitle: string | null = null;
+
         let extraCoursesText: string | null = null;
 
         if (enrollment.target_type === "batch" && batch) {
@@ -50,12 +59,14 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
               {/* USER */}
               <div className="space-y-1">
                 <div className="text-xs text-muted-foreground">User</div>
+
                 {user ? (
                   <div>
                     <TruncatedWithTooltip
                       text={user.full_name}
                       className="font-medium"
                     />
+
                     {user.phone && (
                       <div className="text-xs text-muted-foreground">
                         {user.phone}
@@ -70,6 +81,7 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
               {/* TARGET TYPE */}
               <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground">Target type</div>
+
                 <Badge variant="secondary">{enrollment.target_type}</Badge>
               </div>
 
@@ -96,38 +108,58 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
                 )}
               </div>
 
-              {/* ENROLLMENT STATUS */}
+              {/* STATUS */}
               <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground">
-                  Enrollment status
+                <div className="text-xs text-muted-foreground">Status</div>
+
+                <div className="flex items-center gap-2">
+                  <StatusBadge isActive={enrollment.is_active} />
+
+                  {!enrollment.is_active && enrollment.deactivation_reason && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            <Info className="h-4 w-4" />
+                          </button>
+                        </TooltipTrigger>
+
+                        <TooltipContent className="max-w-xs text-sm">
+                          {enrollment.deactivation_reason}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
-                <StatusBadge
-                  status={enrollment.status}
-                  isActive={enrollment.is_active}
-                />
               </div>
 
               {/* GRANTED AS */}
               <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground">Granted as</div>
+
                 <Badge variant="secondary">{enrollment.enrollment_type}</Badge>
               </div>
 
               {/* REGISTRATION CHANNEL */}
               <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground">
-                  Registration channel
+                  Registered via
                 </div>
+
                 <RegistrationChannelBadge
                   channel={enrollment.registration_channel}
                 />
               </div>
 
-              {/* ACCESS PERIOD */}
+              {/* ACCESS */}
               <div className="space-y-1">
                 <div className="text-xs text-muted-foreground">
                   Access period
                 </div>
+
                 <div className="text-sm">
                   <span className="font-medium">
                     {format(
@@ -135,7 +167,9 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
                       "dd MMM yyyy",
                     )}
                   </span>
+
                   <span className="mx-1 text-muted-foreground">→</span>
+
                   <span className="font-medium">
                     {enrollment.access_ends_at
                       ? format(
@@ -150,8 +184,8 @@ export function EnrollmentCards({ enrollments, onEdit }: EnrollmentCardsProps) {
               {/* FOOTER */}
               <div className="flex items-center justify-between pt-2">
                 <div className="text-xs text-muted-foreground">
-                  Enrolled on{" "}
-                  {format(new Date(enrollment.enrolled_at), "dd MMM yyyy")}
+                  Created{" "}
+                  {format(new Date(enrollment.created_at), "dd MMM yyyy")}
                 </div>
 
                 <Button

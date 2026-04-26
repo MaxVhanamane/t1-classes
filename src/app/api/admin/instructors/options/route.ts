@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
+import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 type InstructorOption = {
     id: string;
@@ -9,15 +9,13 @@ type InstructorOption = {
 
 export async function GET() {
     try {
-        // Ensure admin access
-        const staff = await getCurrentStaff();
+        const auth = await requireStaffApiRoute();
 
-        if (!staff || staff.role !== "admin") {
-            return NextResponse.json(
-                { message: "Unauthorized" },
-                { status: 403 },
-            );
+        if (!auth.authorized) {
+            return auth.response;
         }
+
+
 
         const supabase = await createServerSupabaseClient();
 
@@ -35,7 +33,7 @@ export async function GET() {
         }
 
         return NextResponse.json(data satisfies InstructorOption[]);
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { message: "Failed to load instructors" },
             { status: 500 },

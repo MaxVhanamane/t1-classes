@@ -2,17 +2,12 @@ import "server-only"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import type { TestBuilderTest } from "../types/test-builder.types";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
-import { redirect } from "next/navigation";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 export async function getTestById(
     testId: string
 ): Promise<TestBuilderTest> {
-    const user = await getAuthIfHasRole(["admin", "teacher"]); // admin / teacher only
-
-    if (!user) {
-        redirect("/login")
-    }
+    const staff = await requireStaffServerOnly();
 
     const supabase = await createServerSupabaseClient();
 
@@ -37,7 +32,7 @@ export async function getTestById(
     }
 
     // ownership check for teachers
-    if (user.role === "teacher" && data.created_by !== user.userId) {
+    if (staff.role === "teacher" && data.created_by !== staff.userId) {
         throw new Error("UNAUTHORIZED");
     }
 

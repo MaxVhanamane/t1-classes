@@ -16,6 +16,7 @@ import {
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { AlertCircle, Loader, Search } from "lucide-react";
 import { ResultsSort, PagedResults } from "../types/results.types";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 
 interface Props {
   distributionId: string;
@@ -33,20 +34,16 @@ async function fetchResults(params: {
   search: string;
   sort: ResultsSort;
 }): Promise<PagedResults> {
-  const res = await fetch(
+  return fetchWrapper<PagedResults>(
     `/api/admin/distributions/${params.distributionId}/results`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(params),
     },
   );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch results");
-  }
-
-  return res.json();
 }
 
 function formatTime(seconds: number) {

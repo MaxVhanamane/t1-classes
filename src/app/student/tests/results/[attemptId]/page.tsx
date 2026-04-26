@@ -31,6 +31,7 @@ import { PendingResultState } from "./_features/components/pending-state";
 
 import { useMyRank } from "./_features/hooks/use-my-rank";
 import { useRotatingMessage } from "@/src/hooks/use-rotating-message";
+import DottedBackground from "@/src/components/dotted-background";
 
 /* -------------------------------------------------- */
 
@@ -194,7 +195,8 @@ export default function ResultsOverview() {
     <div className="mx-auto max-w-6xl p-4 sm:p-6 space-y-8">
       {/* Header */}
 
-      <Card className="relative overflow-hidden rounded-sm shadow-none bg-linear-to-br from-background to-muted/40">
+      <Card className="relative overflow-hidden rounded-sm shadow-none bg-background/80 backdrop-blur-xl">
+        <DottedBackground className="opacity-[0.35]" />
         <CardHeader className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <CardTitle className="text-2xl  font-semibold tracking-tight">
@@ -211,7 +213,8 @@ export default function ResultsOverview() {
 
       {/* Score */}
 
-      <Card className="rounded-sm shadow-none  bg-linear-to-br from-background to-muted/40 relative">
+      <Card className="rounded-sm shadow-none relative bg-background/80 backdrop-blur-xl">
+        <DottedBackground className="opacity-[0.35]" />
         <CardContent className="p-8 space-y-8 ">
           <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
             {/* Marks */}
@@ -236,7 +239,7 @@ export default function ResultsOverview() {
               </div>
             </div>
 
-            {/* Rank — Redesigned */}
+            {/* Rank  */}
             <div className="min-h-24 flex items-center">
               {finalRank !== null ? (
                 <div className="relative flex items-center gap-6 rounded-2xl ">
@@ -268,7 +271,8 @@ export default function ResultsOverview() {
 
                     {totalParticipants && (
                       <p className="text-xs text-muted-foreground">
-                        Among {totalParticipants.toLocaleString()} students
+                        Among {totalParticipants.toLocaleString()}{" "}
+                        {totalParticipants > 1 ? "students" : "student"}
                       </p>
                     )}
                   </div>
@@ -379,7 +383,8 @@ export default function ResultsOverview() {
 
       {/* CTA (UNCHANGED) */}
 
-      <Card className="rounded-sm shadow-none bg-linear-to-br from-background to-muted/40">
+      <Card className="rounded-sm shadow-none bg-background/80 backdrop-blur-xl relative">
+        <DottedBackground className="opacity-[0.35]" />
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-6">
           <p className="text-sm text-muted-foreground max-w-md">
             Review question-wise solutions, correct answers, and detailed

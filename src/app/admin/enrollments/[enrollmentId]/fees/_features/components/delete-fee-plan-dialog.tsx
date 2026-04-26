@@ -10,32 +10,33 @@ import {
   DialogFooter,
 } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
-import { cancelFeePlan } from "../actions/cancel-fee-plan";
-import { ZodError } from "zod";
 import { toast } from "sonner";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { deleteFeePlan } from "../actions/fee/delete-fee-plan";
 
-interface CancelFeePlanDialogProps {
+interface DeleteFeePlanDialogProps {
   feePlanId: string;
 }
 
-export function CancelFeePlanDialog({ feePlanId }: CancelFeePlanDialogProps) {
+export function DeleteFeePlanDialog({ feePlanId }: DeleteFeePlanDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleConfirm() {
     setLoading(true);
-    try {
-      await cancelFeePlan(feePlanId);
-      setOpen(false);
-    } catch (err) {
-      if (err instanceof ZodError) {
-        const issue = err.issues[0];
 
-        toast(issue?.message ?? "Invalid form input");
+    try {
+      const { error } = await callServerAction(deleteFeePlan(feePlanId));
+
+      if (error) {
+        toast.error(error);
         return;
       }
 
-      toast("Failed to update fee plan.");
+      setOpen(false);
+      toast.success("Fee plan deleted.");
+    } catch {
+      toast.error("Failed to delete fee plan.");
     } finally {
       setLoading(false);
     }
@@ -49,19 +50,21 @@ export function CancelFeePlanDialog({ feePlanId }: CancelFeePlanDialogProps) {
         className="text-destructive hover:text-destructive cursor-pointer"
         onClick={() => setOpen(true)}
       >
-        Cancel Fee Plan
+        Delete Fee Plan
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Cancel Fee Plan</DialogTitle>
+            <DialogTitle>Delete Fee Plan</DialogTitle>
+
             <DialogDescription>
-              This will cancel the current fee plan and mark it as inactive.
+              This will permanently delete the current fee plan.
               <br />
               <br />
               <strong>
-                No payments have been recorded for this enrollment.
+                This is only allowed when no successful payments have been been
+                recorded.
               </strong>
               <br />
               <br />
@@ -71,9 +74,9 @@ export function CancelFeePlanDialog({ feePlanId }: CancelFeePlanDialogProps) {
 
           <DialogFooter>
             <Button
-              className="cursor-pointer"
               type="button"
               variant="outline"
+              className="cursor-pointer"
               onClick={() => setOpen(false)}
               disabled={loading}
             >
@@ -81,13 +84,13 @@ export function CancelFeePlanDialog({ feePlanId }: CancelFeePlanDialogProps) {
             </Button>
 
             <Button
-              className="cursor-pointer"
               type="button"
               variant="destructive"
+              className="cursor-pointer"
               onClick={handleConfirm}
               disabled={loading}
             >
-              {loading ? "Cancelling..." : "Confirm Cancellation"}
+              {loading ? "Deleting..." : "Confirm Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

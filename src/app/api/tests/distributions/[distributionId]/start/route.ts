@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { hasActiveBatchEnrollment } from "@/src/lib/server/enrollment-access";
-import { getAuth } from "@/src/lib/auth/get-auth";
+import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 type DistributionRow = {
     id: string;
@@ -22,14 +22,12 @@ export async function POST(
     /* 0. Auth                                          */
     /* ------------------------------------------------ */
 
-    const user = await getAuth();
+    const auth = await requireStudentApiRoute();
 
-    if (!user) {
-        return NextResponse.json(
-            { kind: "error", reason: "unauthorized" },
-            { status: 401 }
-        );
+    if (!auth.authorized) {
+        return auth.response;
     }
+    const user = auth.user
 
     const distributionId = (await params).distributionId;
 

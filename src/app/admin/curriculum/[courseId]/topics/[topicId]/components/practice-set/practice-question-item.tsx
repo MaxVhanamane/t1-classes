@@ -22,6 +22,7 @@ import {
 import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 import { PracticeMcqBuilderDialog } from "./mcq-builder";
 import { PracticeQuestion } from "../../types/practice-question.types";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   index: number;
@@ -58,23 +59,25 @@ export function PracticeQuestionItem({
     if (deleting) return;
 
     setDeleting(true);
-    try {
-      await deletePracticeQuestion({
+
+    const { error } = await callServerAction(
+      deletePracticeQuestion({
         courseId,
         topicId,
         practiceSetId,
         questionId: question.id,
-      });
+      }),
+    );
 
-      toast.success("Question deleted");
-      setConfirmDelete(false);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to delete question",
-      );
-    } finally {
+    if (error) {
+      toast.error(error);
       setDeleting(false);
+      return;
     }
+
+    toast.success("Question deleted");
+    setConfirmDelete(false);
+    setDeleting(false);
   }
 
   return (

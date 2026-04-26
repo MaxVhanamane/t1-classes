@@ -55,6 +55,7 @@ function redirect(request: NextRequest, pathname: string, supabaseResponse: Next
 // ---------------------------------------------------------------------------
 
 export async function updateSession(request: NextRequest) {
+    console.log("Proxy updateSession is running")
     let supabaseResponse = NextResponse.next({ request })
 
     const supabase = createServerClient(

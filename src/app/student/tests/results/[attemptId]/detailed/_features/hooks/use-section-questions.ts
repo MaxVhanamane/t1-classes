@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 import type {
     QuestionsPageResponse,
 } from "@/src/app/api/tests/results/[attemptId]/sections/[sectionId]/questions/route";
@@ -11,27 +12,19 @@ type Params = {
     page: number;
 };
 
-async function fetchSectionQuestions({
+function fetchSectionQuestions({
     attemptId,
     sectionId,
     page,
 }: Params): Promise<QuestionsPageResponse> {
-    const res = await fetch(
-        `/api/tests/results/${attemptId}/sections/${sectionId}/questions?page=${page}&limit=10`,
-        { credentials: "include" }
+    return fetchWrapper<QuestionsPageResponse>(
+        `/api/tests/results/${attemptId}/sections/${sectionId}/questions?page=${page}&limit=10`
     );
-
-    if (!res.ok) {
-        throw new Error("Failed to load questions");
-    }
-
-    return res.json();
 }
-
 
 export function useSectionQuestions(
     attemptId: string,
-    sectionId: string,
+    sectionId: string | null | undefined,
     page: number
 ) {
     return useQuery({
@@ -41,12 +34,18 @@ export function useSectionQuestions(
             sectionId,
             page,
         ],
+
         queryFn: () =>
             fetchSectionQuestions({
                 attemptId,
-                sectionId,
+                sectionId: sectionId!,
                 page,
             }),
+
+        enabled:
+            !!attemptId &&
+            !!sectionId,
+
         staleTime: Infinity,
     });
 }

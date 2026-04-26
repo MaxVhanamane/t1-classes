@@ -11,6 +11,7 @@ import {
 } from "@/src/components/ui/dialog";
 import { toast } from "sonner";
 import { deleteChapter } from "../../actions/chapter/delete-chapter";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   chapterId: string;
@@ -23,19 +24,20 @@ export function DeleteChapterDialog({ chapterId, courseId }: Props) {
 
   async function handleDelete() {
     setLoading(true);
-    try {
-      await deleteChapter(chapterId, courseId);
+
+    const { error } = await callServerAction(
+      deleteChapter(chapterId, courseId),
+    );
+
+    if (error) {
+      toast.error(error);
+    } else {
       toast.success("Chapter deleted");
       setOpen(false);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to delete chapter"
-      );
-    } finally {
-      setLoading(false);
     }
-  }
 
+    setLoading(false);
+  }
   return (
     <>
       <Button

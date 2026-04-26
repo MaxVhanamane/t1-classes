@@ -26,6 +26,7 @@ import { TestSection } from "../../types/test-section.types";
 
 import { Trash2 } from "lucide-react";
 import { deleteSection } from "../../actions/sections/delete-section";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   testId: string;
@@ -74,21 +75,24 @@ export function TestSectionsList({
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    try {
-      setDeleting(true);
+    setDeleting(true);
 
-      await deleteSection(testId, deleteTarget.id);
+    const { error } = await callServerAction(
+      deleteSection(testId, deleteTarget.id),
+    );
 
-      toast.success("Section deleted");
-      router.refresh();
-    } catch {
-      toast.error("Failed to delete section");
-    } finally {
+    if (error) {
+      toast.error(error);
       setDeleting(false);
-      setDeleteTarget(null);
+      return;
     }
-  }
 
+    toast.success("Section deleted");
+    router.refresh();
+
+    setDeleting(false);
+    setDeleteTarget(null);
+  }
   return (
     <>
       <div className="space-y-4">

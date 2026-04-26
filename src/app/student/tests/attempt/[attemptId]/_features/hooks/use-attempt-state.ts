@@ -11,7 +11,7 @@ export function useAttemptState(
 
     const query = useQuery({
         queryKey: ["attempt-state", attemptId],
-        queryFn: async () => initialState,
+        queryFn: () => initialState,
 
         initialData: initialState,
 

@@ -37,6 +37,7 @@ import {
 } from "../zod/instructor.schema";
 import { Instructor } from "../types/instructor-types";
 import { Switch } from "@/src/components/ui/switch";
+import { fetchWrapper, HttpError } from "@/src/lib/api/fetch-wrapper";
 
 const AVATAR_MAX_SIZE = SIZE_LIMITS.instructor_avatar;
 
@@ -119,23 +120,46 @@ export function InstructorDialog({ open, onOpenChange, instructor }: Props) {
   /* Mutation                           */
   /* ---------------------------------- */
 
-  const mutation = useMutation({
-    mutationFn: async (values: InstructorFormValues) => {
+  const mutation = useMutation<Instructor, Error, InstructorFormValues>({
+    mutationFn: async (values: InstructorFormValues): Promise<Instructor> => {
       const url = isEdit
-        ? `/api/admin/instructors/${instructor.id}`
+        ? `/api/admin/instructors/${instructor!.id}`
         : `/api/admin/instructors`;
 
       const method = isEdit ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
+      try {
+        return await fetchWrapper<Instructor>(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        });
+      } catch (error) {
+        if (error instanceof HttpError) {
+          const body = error.body as
+            | {
+                message?: string;
+                field?: keyof InstructorFormValues;
+              }
+            | undefined;
 
-      if (!res.ok) throw new Error("Failed to save");
+          const customError = new Error(
+            body?.message || "Failed to save",
+          ) as Error & {
+            field?: keyof InstructorFormValues;
+            status?: number;
+          };
 
-      return res.json();
+          customError.field = body?.field;
+          customError.status = error.status;
+
+          throw customError;
+        }
+
+        throw error;
+      }
     },
   });
 
@@ -191,11 +215,29 @@ export function InstructorDialog({ open, onOpenChange, instructor }: Props) {
       });
 
       onOpenChange(false);
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while saving.", {
-        id: toastId,
-      });
+    } catch (error: unknown) {
+      let message = "Something went wrong while saving.";
+
+      if (error instanceof Error) {
+        const err = error as Error & {
+          field?: keyof InstructorFormValues;
+          status?: number;
+        };
+
+        message = err.message;
+
+        // Show inline error for duplicate email
+        if (err.field === "email" || err.status === 409) {
+          form.setError("email", {
+            type: "server",
+            message:
+              err.message ||
+              "This email already exists. Please use a different email.",
+          });
+        }
+      }
+
+      toast.error(message, { id: toastId });
     } finally {
       setSaving(false);
     }

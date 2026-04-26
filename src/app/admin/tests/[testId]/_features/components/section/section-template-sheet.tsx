@@ -35,6 +35,7 @@ import { SectionTemplateCard } from "./section-template-card";
 import { getSectionTemplates } from "../../server/sections/get-section-templates";
 import { addTestSectionFromTemplate } from "../../actions/sections/add-test-section";
 import { TestType } from "../../../../create/_features/types/create-test.types";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   open: boolean;
@@ -105,28 +106,26 @@ export function SectionTemplateSheet({
     setSubmitting(true);
     const toastId = toast.loading("Adding section…");
 
-    try {
-      await addTestSectionFromTemplate(
-        testId,
-        selected.id,
-        subject,
-        scoringCount,
-      );
+    const { error } = await callServerAction(
+      addTestSectionFromTemplate(testId, selected.id, subject, scoringCount),
+    );
 
-      toast.success("Section added", { id: toastId });
-
-      // Reset UI
-      setSubject("");
-      setSelected(null);
-      setScoringMode("all");
-      setBestCount("");
-      setSubjectOpen(false);
-      onOpenChange(false);
-    } catch {
-      toast.error("Failed to add section", { id: toastId });
-    } finally {
+    if (error) {
+      toast.error(error, { id: toastId });
       setSubmitting(false);
+      return;
     }
+
+    toast.success("Section added", { id: toastId });
+
+    // Reset UI
+    setSubject("");
+    setSelected(null);
+    setScoringMode("all");
+    setBestCount("");
+    setSubjectOpen(false);
+    onOpenChange(false);
+    setSubmitting(false);
   };
 
   return (

@@ -16,6 +16,7 @@ import {
 } from "@/src/components/ui/alert-dialog";
 import { Button } from "@/src/components/ui/button";
 import { deletePracticeSet } from "../actions/practice-set/delete-practice-set";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   courseId: string;
@@ -35,22 +36,23 @@ export function DeletePracticeSetDialog({
     if (loading) return;
     setLoading(true);
 
-    try {
-      await deletePracticeSet({
+    const { error } = await callServerAction(
+      deletePracticeSet({
         courseId,
         topicId,
         practiceSetId,
-      });
+      }),
+    );
 
-      toast.success("Practice set deleted");
-      setOpen(false); //  close ONLY after success
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to delete practice set",
-      );
-    } finally {
+    if (error) {
+      toast.error(error);
       setLoading(false);
+      return;
     }
+
+    toast.success("Practice set deleted");
+    setOpen(false); // close ONLY after success
+    setLoading(false);
   }
 
   return (

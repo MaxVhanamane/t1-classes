@@ -7,9 +7,8 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
     flexibleChecksumsMiddlewareOptions,
 } from "@aws-sdk/middleware-flexible-checksums";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
-import { ROLE_GROUPS } from "@/src/lib/auth/role-groups";
 import { AssetType, SIZE_LIMITS, VALID_ASSET_TYPES } from "@/src/lib/constants/upload.constants";
+import { requireAnyUserApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 /* ================================================== */
 /* ENV                                                */
@@ -71,14 +70,12 @@ export async function POST(req: NextRequest) {
     try {
         /* ---------------- Auth ---------------- */
 
-        const user = await getAuthIfHasRole(ROLE_GROUPS.ALL);
+        const auth = await requireAnyUserApiRoute();
 
-        if (!user) {
-            return NextResponse.json(
-                { message: "Unauthorized" },
-                { status: 401 }
-            );
+        if (!auth.authorized) {
+            return auth.response;
         }
+        const user = auth.user
         /* ---------------- Body ---------------- */
 
         const body = await req.json().catch(() => null);

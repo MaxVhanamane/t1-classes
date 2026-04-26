@@ -37,7 +37,8 @@ import {
   NotificationFormValues,
   notificationSchema,
 } from "../zod/notification.schema";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 
 type BatchRow = {
   id: string;
@@ -58,8 +59,13 @@ type Props = {
 
 export function NotificationDialog({ notification }: Props) {
   const [open, setOpen] = useState(false);
-  const [batches, setBatches] = useState<BatchRow[]>([]);
+
   const queryClient = useQueryClient();
+  const { data: batches = [] } = useQuery<BatchRow[]>({
+    queryKey: ["notification-batches"],
+    queryFn: () =>
+      fetchWrapper<BatchRow[]>("/api/admin/test-scheduling/batches"),
+  });
 
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),
@@ -70,19 +76,6 @@ export function NotificationDialog({ notification }: Props) {
       batch_id: notification?.batch_id ?? null,
     },
   });
-
-  useEffect(() => {
-    async function load() {
-      const res = await fetch("/api/admin/test-scheduling/batches");
-
-      if (!res.ok) return;
-
-      const data: BatchRow[] = await res.json();
-      setBatches(data);
-    }
-
-    void load();
-  }, []);
 
   useEffect(() => {
     if (!open) {

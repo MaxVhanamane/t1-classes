@@ -34,25 +34,91 @@ export function QuestionBuilderHeader({
   return (
     <div className="space-y-4">
       {/* Top Row */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <BackLink href={`/admin/tests/${testId}`} label="Back to Sections" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <BackLink
+              href={`/admin/tests/${testId}`}
+              label="Back to Sections"
+            />
 
-          <div className="flex items-center gap-2 mt-1">
-            <h1 className="text-xl font-semibold tracking-tight line-clamp-2">
-              {section.title}
-            </h1>
+            <div className="flex items-center gap-2 mt-1">
+              <h1 className="text-xl font-semibold tracking-tight line-clamp-2">
+                {section.title}
+              </h1>
 
-            {section.is_locked && <LockedBadge />}
+              {section.is_locked && <LockedBadge />}
+            </div>
           </div>
 
           {isLoading ? (
-            <Skeleton className="w-40 h-5 rounded-sm" />
+            <Skeleton className="w-full max-w-lg h-24 rounded-md" />
           ) : (
-            <p className="text-sm text-muted-foreground">
-              {questionCount} {questionCount === 1 ? "question" : "questions"}{" "}
-              in this section
-            </p>
+            <div className="rounded-lg border bg-muted/30 px-4 py-3 space-y-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Section Summary
+              </p>
+
+              {/* Primary stats */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                <span>
+                  <span className="font-medium text-foreground">
+                    {questionCount}
+                  </span>{" "}
+                  {questionCount === 1 ? "question" : "questions"}
+                </span>
+
+                <span className="hidden sm:inline">•</span>
+
+                <span>
+                  Total Marks:{" "}
+                  <span className="font-medium text-foreground">
+                    {section.fullMarks * questionCount}
+                  </span>
+                </span>
+              </div>
+
+              {/* Related badges */}
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="capitalize">
+                  {section.answerMode.replace("_", " ")}
+                </Badge>
+
+                {section.subjectLabel && (
+                  <Badge variant="secondary">
+                    Subject: {section.subjectLabel}
+                  </Badge>
+                )}
+
+                <Badge variant="secondary">Correct: +{section.fullMarks}</Badge>
+
+                {section.negativeMarks < 0 && (
+                  <Badge variant="secondary">
+                    Incorrect: {section.negativeMarks}
+                  </Badge>
+                )}
+
+                {section.partialMarks && (
+                  <Badge variant="secondary">Partial marking</Badge>
+                )}
+
+                {section.answerMode === "numerical_input" && (
+                  <Badge variant="outline">
+                    {scoringLimit ? `Best ${scoringLimit} count` : "All count"}
+                  </Badge>
+                )}
+
+                {needsMoreQuestions && (
+                  <Badge
+                    variant="destructive"
+                    className="flex items-center gap-1"
+                  >
+                    <AlertTriangle className="h-3 w-3" />
+                    Add at least {scoringLimit + 1} questions
+                  </Badge>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
@@ -60,42 +126,6 @@ export function QuestionBuilderHeader({
           <Plus className="mr-2 h-4 w-4" />
           Add Question
         </Button>
-      </div>
-
-      {/* Meta Row */}
-      <div className="flex flex-wrap gap-2">
-        <Badge variant="outline" className="capitalize">
-          {section.answerMode.replace("_", " ")}
-        </Badge>
-
-        {section.subjectLabel && (
-          <Badge variant="secondary">Subject: {section.subjectLabel}</Badge>
-        )}
-
-        <Badge variant="secondary">Correct: +{section.fullMarks}</Badge>
-
-        {section.negativeMarks < 0 && (
-          <Badge variant="secondary">Incorrect: {section.negativeMarks}</Badge>
-        )}
-
-        {section.partialMarks && (
-          <Badge variant="secondary">Partial marking</Badge>
-        )}
-
-        {/* Scoring Rule */}
-        {section.answerMode === "numerical_input" && (
-          <Badge variant="outline">
-            {scoringLimit ? `Best ${scoringLimit} count` : "All count"}
-          </Badge>
-        )}
-
-        {/* Validation Warning */}
-        {needsMoreQuestions && (
-          <Badge variant="destructive" className="flex items-center gap-1">
-            <AlertTriangle className="h-3 w-3" />
-            Add at least {scoringLimit + 1} questions
-          </Badge>
-        )}
       </div>
 
       {/* Locked Warning */}

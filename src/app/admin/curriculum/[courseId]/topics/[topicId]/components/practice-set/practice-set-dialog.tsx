@@ -27,6 +27,7 @@ import { createPracticeSet } from "../../practice/[practiceSetId]/actions/practi
 import { updatePracticeSet } from "../../practice/[practiceSetId]/actions/practice-set/update-practice-set";
 import { cn } from "@/src/lib/utils";
 import { Switch } from "@/src/components/ui/switch";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   courseId: string;
@@ -95,31 +96,43 @@ export function PracticeSetDialog({
 
     try {
       if (mode === "edit" && initialData) {
-        await updatePracticeSet({
-          courseId,
-          topicId,
-          practiceSetId: initialData.practiceSetId,
-          title: data.title.trim(),
-          description: data.description?.trim() || null,
-          isFreePreview: data.isFreePreview,
-        });
+        const { error } = await callServerAction(
+          updatePracticeSet({
+            courseId,
+            topicId,
+            practiceSetId: initialData.practiceSetId,
+            title: data.title.trim(),
+            description: data.description?.trim() || null,
+            isFreePreview: data.isFreePreview,
+          }),
+        );
+
+        if (error) {
+          toast.error(error);
+          return;
+        }
 
         toast.success("Practice set updated");
       } else {
-        await createPracticeSet(courseId, topicId, {
-          title: data.title.trim(),
-          description: data.description?.trim() || undefined,
-          isFreePreview: data.isFreePreview ?? false,
-        });
+        const { error } = await callServerAction(
+          createPracticeSet(courseId, topicId, {
+            title: data.title.trim(),
+            description: data.description?.trim() || undefined,
+            isFreePreview: data.isFreePreview ?? false,
+          }),
+        );
+
+        if (error) {
+          toast.error(error);
+          return;
+        }
 
         toast.success("Practice set created");
       }
 
       setOpen(false);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to save practice set",
-      );
+    } catch {
+      toast.error("Failed to save practice set");
     } finally {
       setSubmitting(false);
     }

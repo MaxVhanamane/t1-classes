@@ -14,6 +14,7 @@ import {
 
 import { useRouter } from "next/navigation";
 import { deleteTopic } from "../../actions/topic/delete-topic";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface DeleteTopicDialogProps {
   topicId: string;
@@ -30,16 +31,16 @@ export function DeleteTopicDialog({
 
   function handleDelete() {
     startTransition(async () => {
-      try {
-        await deleteTopic(courseId, topicId);
-        toast.success("Topic deleted");
-        router.replace(`/admin/curriculum/${courseId}`);
-        setOpen(false);
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Failed to delete topic"
-        );
+      const { error } = await callServerAction(deleteTopic(courseId, topicId));
+
+      if (error) {
+        toast.error(error);
+        return;
       }
+
+      toast.success("Topic deleted");
+      router.replace(`/admin/curriculum/${courseId}`);
+      setOpen(false);
     });
   }
 

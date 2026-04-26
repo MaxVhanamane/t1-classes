@@ -15,6 +15,8 @@ import { ResultSummary, SectionSidebar } from "./section-sidebar";
 import { SectionItem } from "../hooks/use-get-sections";
 import { MetaStrip } from "./meta-strip";
 import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
+import { SectionSummaryAccordion } from "./section-summary-accordion";
+import { SectionReviewSummary } from "@/src/app/api/tests/results/[attemptId]/sections/[sectionId]/questions/route";
 
 type Props = {
   sections: SectionItem[];
@@ -29,6 +31,7 @@ type Props = {
   questionCount?: number;
   currentPage?: number;
   totalPages?: number;
+  sectionSummary: SectionReviewSummary | null;
 };
 
 export function MobileSectionDrawer({
@@ -42,6 +45,7 @@ export function MobileSectionDrawer({
   negativeMarks,
   partialMarks,
   questionCount,
+  sectionSummary,
   currentPage = 1,
   totalPages = 1,
 }: Props) {
@@ -111,6 +115,9 @@ export function MobileSectionDrawer({
             currentPage={currentPage}
             totalPages={totalPages}
           />
+          {sectionSummary && (
+            <SectionSummaryAccordion summary={sectionSummary} />
+          )}
         </div>
       )}
     </div>

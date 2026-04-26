@@ -18,6 +18,7 @@ import { Textarea } from "@/src/components/ui/textarea";
 
 import { updateTest } from "../actions/update-test";
 import { TestRow } from "../types/test.types";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   test: TestRow;
@@ -40,20 +41,23 @@ export function EditTestDialog({ test, open, onOpenChange }: Props) {
 
     setSaving(true);
 
-    try {
-      await updateTest(test.id, {
+    const { error } = await callServerAction(
+      updateTest(test.id, {
         title: title.trim(),
         description: description.trim() || null,
-      });
+      }),
+    );
 
-      toast.success("Test updated");
-      router.refresh();
-      onOpenChange(false);
-    } catch {
-      toast.error("Failed to update test");
-    } finally {
+    if (error) {
+      toast.error(error);
       setSaving(false);
+      return;
     }
+
+    toast.success("Test updated");
+    router.refresh();
+    onOpenChange(false);
+    setSaving(false);
   }
 
   return (

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { jwtDecode } from "jwt-decode";
-import { createAdminSupabaseClient } from "@/src/lib/supabase/supabase-admin"
+import { createServiceRoleSupabaseClient } from "@/src/lib/supabase/supabase-service-role"
 type SupabaseJwt = {
     session_id: string
 }
@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     try {
         const { email, password } = await req.json()
 
-        const supabaseAdmin = await createAdminSupabaseClient()
+        const supabaseAdmin = await createServiceRoleSupabaseClient()
 
         const { data, error } = await supabaseAdmin.auth.signInWithPassword({
             email,

@@ -1,4 +1,7 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 
 type Notification = {
     id: string;
@@ -16,15 +19,12 @@ type Response = {
 export function useStudentNotifications() {
     return useQuery<Response>({
         queryKey: ["student-notifications"],
-        queryFn: async () => {
-            const res = await fetch("/api/notifications/student");
 
-            if (!res.ok) {
-                throw new Error("Failed to fetch notifications");
-            }
+        queryFn: () =>
+            fetchWrapper<Response>(
+                "/api/notifications/student"
+            ),
 
-            return res.json();
-        },
         staleTime: 1000 * 60, // 1 min (no unnecessary refetch)
     });
 }

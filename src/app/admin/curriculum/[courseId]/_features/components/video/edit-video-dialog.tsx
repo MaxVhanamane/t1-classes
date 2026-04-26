@@ -25,6 +25,7 @@ import {
 } from "../../zod-schema/video.schema";
 import { updateVideo } from "../../actions/topic/video/update-video";
 import { toast } from "sonner";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   courseId: string;
@@ -95,19 +96,21 @@ export function EditVideoDialog({ courseId, video }: Props) {
 
     setSubmitting(true);
 
-    try {
-      await updateVideo(courseId, video.id, {
+    const { error } = await callServerAction(
+      updateVideo(courseId, video.id, {
         ...data,
         videoProvider: provider,
-      });
+      }),
+    );
 
+    if (error) {
+      toast.error(error);
+    } else {
       toast.success("Video updated");
       handleOpenChange(false);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setSubmitting(false);
     }
+
+    setSubmitting(false);
   }
 
   function handleOpenChange(value: boolean) {
@@ -170,8 +173,8 @@ export function EditVideoDialog({ courseId, video }: Props) {
                   urlStatus === "error"
                     ? "text-destructive"
                     : urlStatus === "valid"
-                    ? "text-green-600"
-                    : "text-muted-foreground"
+                      ? "text-green-600"
+                      : "text-muted-foreground"
                 }`}
               >
                 {urlStatus === "error" &&

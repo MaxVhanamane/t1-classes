@@ -1,9 +1,8 @@
-"use server"
+import "server-only"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
 import type { TestSection } from "../types/section.types"
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role"
-import { redirect } from "next/navigation"
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only"
 
 type SectionWithTest = {
     id: string
@@ -27,11 +26,9 @@ export async function getSectionById(
     sectionId: string
 ): Promise<TestSection> {
     const supabase = await createServerSupabaseClient()
-    const user = await getAuthIfHasRole(["admin", "teacher"])
+    // redirect() throws internally; calling inside try/catch would prevent the redirect
+    await requireStaffServerOnly();
 
-    if (!user) {
-        redirect("/login")
-    }
 
     const { data, error } = await supabase
         .from("test_sections")

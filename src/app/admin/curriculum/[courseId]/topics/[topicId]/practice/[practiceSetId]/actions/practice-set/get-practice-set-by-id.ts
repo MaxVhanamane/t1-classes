@@ -1,4 +1,4 @@
-"use server";
+import "server-only"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 

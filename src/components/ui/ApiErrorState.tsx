@@ -187,7 +187,10 @@ export function ApiErrorState({
 
   return (
     <div
-      className={cn("flex items-center justify-center p-6 sm:p-10", className)}
+      className={cn(
+        "min-h-screen flex items-center justify-center p-6 sm:p-10",
+        className,
+      )}
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}

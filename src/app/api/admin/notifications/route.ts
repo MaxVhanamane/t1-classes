@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 export async function GET() {
-    const user = await getAuthIfHasRole(["admin", "teacher"]);
 
-    if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await requireStaffApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
     }
-
+    const staff = auth.user
     const supabase = await createServerSupabaseClient();
 
     const oneWeekAgo = new Date();
@@ -29,8 +30,8 @@ export async function GET() {
         .order("created_at", { ascending: false });
 
     // Teachers can only see their own notifications
-    if (user.role === "teacher") {
-        query = query.eq("created_by", user.userId);
+    if (staff.role === "teacher") {
+        query = query.eq("created_by", staff.userId);
     }
 
     const { data, error } = await query;

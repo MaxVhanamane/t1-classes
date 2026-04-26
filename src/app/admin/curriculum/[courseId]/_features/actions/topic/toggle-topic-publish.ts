@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
-import { redirect } from "next/navigation";
+import { ServerActionResponse } from "@/src/types/server-action";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+
 type TopicWithParent = {
     id: string;
     course_id: string;
@@ -17,7 +18,6 @@ type TopicWithParent = {
     };
 };
 
-
 interface Input {
     courseId: string;
     topicId: string;
@@ -28,20 +28,19 @@ export async function toggleTopicPublish({
     courseId,
     topicId,
     publish,
-}: Input) {
-    const supabase = await createServerSupabaseClient();
-    const staff = await getAuthIfHasRole(["admin", "teacher"]); // admin OR teacher
-    if (!staff) {
-        redirect("/login");
-    }
+}: Input): Promise<ServerActionResponse> {
+    // redirect() throws internally; calling inside try/catch would prevent the redirect
+    const staff = await requireStaffServerOnly();
+    try {
+        const supabase = await createServerSupabaseClient();
 
-    /**
-     * 1. Fetch topic + parent chapter
-     */
-    const { data: topic, error: topicError } = await supabase
-        .from("course_structure")
-        .select(
-            `
+        /**
+         * 1. Fetch topic + parent chapter
+         */
+        const { data: topic, error: topicError } = await supabase
+            .from("course_structure")
+            .select(
+                `
         id,
         course_id,
         structure_type,
@@ -52,91 +51,96 @@ export async function toggleTopicPublish({
           structure_type
         )
       `
-        )
-        .eq("id", topicId)
-        .single<TopicWithParent>();
+            )
+            .eq("id", topicId)
+            .single<TopicWithParent>();
 
-    if (topicError || !topic) {
-        throw new Error("Topic not found");
-    }
-
-    /**
-     * 2. Ensure this is a topic
-     */
-    if (topic.structure_type !== "topic") {
-        throw new Error("Invalid topic");
-    }
-
-    /**
-     * 3. Validate course
-     */
-    if (topic.course_id !== courseId) {
-        throw new Error("Invalid course");
-    }
-
-    /**
-     * 4. Parent chapter must exist
-     */
-    if (!topic.parent || topic.parent.structure_type !== "chapter") {
-        throw new Error("Parent chapter not found");
-    }
-
-    /**
-     * 5. Chapter must be published before publishing topic
-     */
-    if (publish && !topic.parent.is_published) {
-        throw new Error("Publish the chapter first");
-    }
-
-    /**
-     * 6. Ownership check
-     */
-    const { data: course } = await supabase
-        .from("courses")
-        .select("created_by")
-        .eq("id", courseId)
-        .single();
-
-    if (!course) {
-        throw new Error("Course not found");
-    }
-
-    const isAdmin = staff.role === "admin";
-    const isOwner = course.created_by === staff.userId;
-
-    if (!isAdmin && !isOwner) {
-        throw new Error("Not allowed");
-    }
-
-    /**
-     * 7. Publish / unpublish
-     */
-    if (publish) {
-        // Simple publish (NO cascade)
-        const { error } = await supabase
-            .from("course_structure")
-            .update({ is_published: true })
-            .eq("id", topicId);
-
-        if (error) {
-            throw new Error(error.message);
+        if (topicError || !topic) {
+            return { error: "Topic not found" };
         }
-    } else {
-        // Atomic cascade unpublish
-        const { error } = await supabase.rpc(
-            "unpublish_topic_and_descendants",
-            {
-                p_topic_id: topicId,
+
+        /**
+         * 2. Ensure this is a topic
+         */
+        if (topic.structure_type !== "topic") {
+            return { error: "Invalid topic" };
+        }
+
+        /**
+         * 3. Validate course
+         */
+        if (topic.course_id !== courseId) {
+            return { error: "Invalid course" };
+        }
+
+        /**
+         * 4. Parent chapter must exist
+         */
+        if (!topic.parent || topic.parent.structure_type !== "chapter") {
+            return { error: "Parent chapter not found" };
+        }
+
+        /**
+         * 5. Chapter must be published before publishing topic
+         */
+        if (publish && !topic.parent.is_published) {
+            return { error: "Publish the chapter first" };
+        }
+
+        /**
+         * 6. Ownership check
+         */
+        const { data: course, error: courseError } = await supabase
+            .from("courses")
+            .select("created_by, slug")
+            .eq("id", courseId)
+            .single();
+
+        if (courseError || !course) {
+            return { error: "Course not found" };
+        }
+
+        const isAdmin = staff.role === "admin";
+        const isOwner = course.created_by === staff.userId;
+
+        if (!isAdmin && !isOwner) {
+            return { error: "Not allowed" };
+        }
+
+        /**
+         * 7. Publish / Unpublish
+         */
+        if (publish) {
+            const { error } = await supabase
+                .from("course_structure")
+                .update({ is_published: true })
+                .eq("id", topicId);
+
+            if (error) {
+                console.error("[PUBLISH_TOPIC_ERROR]", error);
+                return { error: "Failed to publish topic. Please try again." };
             }
-        );
+        } else {
+            const { error } = await supabase.rpc(
+                "unpublish_topic_and_descendants",
+                {
+                    p_topic_id: topicId,
+                }
+            );
 
-        if (error) {
-            throw new Error(error.message);
+            if (error) {
+                console.error("[UNPUBLISH_TOPIC_ERROR]", error);
+                return { error: "Failed to unpublish topic. Please try again." };
+            }
         }
-    }
 
-    /**
-     * 8. Revalidate
-     */
-    revalidatePath(`/admin/curriculum/${courseId}`);
+        /**
+         * 8. Revalidate
+         */
+        revalidatePath(`/admin/curriculum/${courseId}`);
+        updateTag(`course-outline:enrolled:${course.slug}`);
+    } catch (error) {
+        console.error("[TOGGLE_TOPIC_PUBLISH_FATAL]", error);
+        return { error: "Something went wrong. Please try again." };
+    }
 }

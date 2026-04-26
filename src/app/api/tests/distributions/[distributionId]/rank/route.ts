@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStudent } from "@/src/lib/helper-functions/getCurrentStudent";
 import { TEST_GRACE_TIME_IN_SECONDS } from "@/src/lib/constants/rpc-constants";
+import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 export type MyRankResponse =
     | { kind: "pending"; message: string; endsAt: string }
@@ -32,8 +32,13 @@ export async function GET(
     _req: Request,
     { params }: { params: Promise<{ distributionId: string }> }
 ) {
+    const auth = await requireStudentApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
+    }
+    const user = auth.user
     const supabase = await createServerSupabaseClient();
-    const user = await getCurrentStudent();
     const { distributionId } = await params;
 
     const nowMs = Date.now();
@@ -109,7 +114,7 @@ export async function GET(
         .from("test_attempts")
         .select("id")
         .eq("distribution_id", distributionId)
-        .eq("user_id", user.id)
+        .eq("user_id", user.userId)
         .single();
 
     if (!attempt) {
@@ -128,7 +133,7 @@ export async function GET(
             "rank, total_participants, performance_label"
         )
         .eq("distribution_id", distributionId)
-        .eq("user_id", user.id)
+        .eq("user_id", user.userId)
         .single();
 
     if (!result || result.rank === null) {

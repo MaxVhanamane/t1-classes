@@ -2,6 +2,9 @@ import { instructorUpdateSchema } from "@/src/app/admin/instructors/_features/zo
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { deleteR2Object } from "@/src/lib/r2/deleteObject";
+import { requireAdminApiRoute } from "@/src/lib/auth/require-role-api-route";
+
 
 type Params = {
     params: Promise<{ id: string }>;
@@ -15,7 +18,11 @@ export async function PUT(
     req: Request,
     { params }: Params
 ) {
-    await getCurrentAdmin()
+    const auth = await requireAdminApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
+    }
     const { id } = await params;
 
     const supabase = await createServerSupabaseClient();
@@ -52,20 +59,21 @@ export async function PUT(
 /* DELETE                             */
 /* ---------------------------------- */
 
-import { deleteR2Object } from "@/src/lib/r2/deleteObject";
-import { getCurrentAdmin } from "@/src/lib/helper-functions/getCurrentAdmin";
 
-/* ---------------------------------- */
-/* DELETE                             */
-/* ---------------------------------- */
 
 export async function DELETE(
     _req: Request,
     { params }: Params
 ) {
+    const auth = await requireAdminApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
+    }
     const { id } = await params;
     const supabase = await createServerSupabaseClient();
-    await getCurrentAdmin()
+
+
 
     /* 1 Get existing image */
     const { data: existing, error: fetchError } =
@@ -102,7 +110,7 @@ export async function DELETE(
         await deleteR2Object(
             process.env.R2_PUBLIC_BUCKET_NAME!,
             imageKey
-        ).catch(console.error);
+        )
     }
 
     return NextResponse.json({ success: true });

@@ -2,17 +2,12 @@
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { SectionTemplate } from "../../types/section-template.types";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
-import { redirect } from "next/navigation";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 
 
 export async function getSectionTemplates(): Promise<SectionTemplate[]> {
-    const user = await getAuthIfHasRole(["admin", "teacher"]); // admin / teacher only
-
-    if (!user) {
-        redirect("/login")
-    }
+    await requireStaffServerOnly();
 
     const supabase = await createServerSupabaseClient();
 

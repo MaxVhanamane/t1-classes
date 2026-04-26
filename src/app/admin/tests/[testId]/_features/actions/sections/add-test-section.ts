@@ -1,138 +1,157 @@
-"use server"
+"use server";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
-import { revalidatePath } from "next/cache"
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role"
-import { redirect } from "next/navigation"
+import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { revalidatePath } from "next/cache";
+import { ServerActionResponse } from "@/src/types/server-action";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 export async function addTestSectionFromTemplate(
     testId: string,
     templateId: string,
     subjectLabel: string,
     scoringQuestionCount: number | null
-) {
-    const user = await getAuthIfHasRole(["admin", "teacher"])
-    if (!user) redirect("/login")
+): Promise<ServerActionResponse> {
+    // redirect() throws internally; calling inside try/catch would prevent the redirect
+    const staff = await requireStaffServerOnly();
+    try {
 
-    const supabase = await createServerSupabaseClient()
 
-    /* -------------------------------------------- */
-    /* Validate Subject */
-    /* -------------------------------------------- */
+        const supabase = await createServerSupabaseClient();
 
-    const cleanSubject = subjectLabel?.trim()
+        /* -------------------------------------------- */
+        /* Validate Subject */
+        /* -------------------------------------------- */
+        const cleanSubject = subjectLabel?.trim();
 
-    if (!cleanSubject || cleanSubject.length < 2) {
-        throw new Error("INVALID_SUBJECT_LABEL")
+        if (!cleanSubject || cleanSubject.length < 2) {
+            return { error: "Invalid subject label" };
+        }
+
+        /* -------------------------------------------- */
+        /* Validate Scoring Rule */
+        /* -------------------------------------------- */
+        if (
+            scoringQuestionCount !== null &&
+            (!Number.isInteger(scoringQuestionCount) ||
+                scoringQuestionCount < 1)
+        ) {
+            return { error: "Invalid scoring question count" };
+        }
+
+        /* -------------------------------------------- */
+        /* Fetch template + test lock in parallel */
+        /* -------------------------------------------- */
+        const [templateRes, testRes] = await Promise.all([
+            supabase
+                .from("test_section_templates")
+                .select(`
+          id,
+          name,
+          description,
+          answer_mode,
+          max_selections,
+          default_full_marks,
+          default_negative_marks,
+          default_partial_marks
+        `)
+                .eq("id", templateId)
+                .eq("is_active", true)
+                .single(),
+
+            supabase
+                .from("tests")
+                .select("is_locked, created_by")
+                .eq("id", testId)
+                .single(),
+        ]);
+
+        const template = templateRes.data;
+        const test = testRes.data;
+
+        if (templateRes.error || !template) {
+            return { error: "Template not found" };
+        }
+
+        if (testRes.error || !test) {
+            return { error: "Test not found" };
+        }
+
+        /* -------------------------------------------- */
+        /* Ownership check */
+        /* -------------------------------------------- */
+        if (
+            staff.role === "teacher" &&
+            test.created_by !== staff.userId
+        ) {
+            return { error: "You are not authorized to modify this test" };
+        }
+
+        /* -------------------------------------------- */
+        /* Lock check */
+        /* -------------------------------------------- */
+        if (test.is_locked) {
+            return { error: "This test is locked and cannot be modified" };
+        }
+
+        /* -------------------------------------------- */
+        /* Compute next sort_order */
+        /* -------------------------------------------- */
+        const { data: lastSection, error: sortError } =
+            await supabase
+                .from("test_sections")
+                .select("sort_order")
+                .eq("test_id", testId)
+                .order("sort_order", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+        if (sortError) {
+            console.error("[SECTION_SORT_ERROR]", sortError);
+            return { error: "Failed to determine section order" };
+        }
+
+        const nextSortOrder = (lastSection?.sort_order ?? 0) + 1;
+
+        /* -------------------------------------------- */
+        /* Insert section */
+        /* -------------------------------------------- */
+        const { error: insertError } = await supabase
+            .from("test_sections")
+            .insert({
+                test_id: testId,
+                title: template.name,
+                description: template.description,
+                answer_mode: template.answer_mode,
+                max_selections: template.max_selections,
+                full_marks: template.default_full_marks,
+                negative_marks: template.default_negative_marks,
+                partial_marks: template.default_partial_marks,
+                sort_order: nextSortOrder,
+                subject_label: cleanSubject,
+                scoring_question_count: scoringQuestionCount,
+            });
+
+        if (insertError) {
+            console.error(
+                "[ADD_TEST_SECTION_ERROR]",
+                insertError
+            );
+            return {
+                error: "Failed to add section. Please try again.",
+            };
+        }
+
+        /* -------------------------------------------- */
+        /* Revalidate */
+        /* -------------------------------------------- */
+        revalidatePath(`/admin/tests/${testId}`);
+    } catch (error) {
+        console.error(
+            "[ADD_TEST_SECTION_FATAL]",
+            error
+        );
+        return {
+            error: "Something went wrong. Please try again.",
+        };
     }
-
-    /* -------------------------------------------- */
-    /* Validate Scoring Rule */
-    /* -------------------------------------------- */
-
-    if (
-        scoringQuestionCount !== null &&
-        (!Number.isInteger(scoringQuestionCount) || scoringQuestionCount < 1)
-    ) {
-        throw new Error("INVALID_SCORING_COUNT")
-    }
-
-    /* -------------------------------------------- */
-    /* Fetch template + test lock in parallel */
-    /* -------------------------------------------- */
-
-    const [templateRes, testRes] = await Promise.all([
-        supabase
-            .from("test_section_templates")
-            .select(`
-        id,
-        name,
-        description,
-        answer_mode,
-        max_selections,
-        default_full_marks,
-        default_negative_marks,
-        default_partial_marks
-      `)
-            .eq("id", templateId)
-            .eq("is_active", true)
-            .single(),
-
-        supabase
-            .from("tests")
-            .select("is_locked, created_by")
-            .eq("id", testId)
-            .single(),
-    ])
-
-    const template = templateRes.data
-    const test = testRes.data
-
-    if (templateRes.error || !template) {
-        throw new Error("TEMPLATE_NOT_FOUND")
-    }
-
-    if (testRes.error || !test) {
-        throw new Error("TEST_NOT_FOUND")
-    }
-
-    /* -------------------------------------------- */
-    /* Ownership check */
-    /* -------------------------------------------- */
-
-    if (user.role === "teacher" && test.created_by !== user.userId) {
-        throw new Error("UNAUTHORIZED")
-    }
-
-    /* -------------------------------------------- */
-    /* Lock check */
-    /* -------------------------------------------- */
-
-    if (test.is_locked) {
-        throw new Error("TEST_LOCKED")
-    }
-
-    /* -------------------------------------------- */
-    /* Compute next sort_order */
-    /* -------------------------------------------- */
-
-    const { data: lastSection } = await supabase
-        .from("test_sections")
-        .select("sort_order")
-        .eq("test_id", testId)
-        .order("sort_order", { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-    const nextSortOrder = (lastSection?.sort_order ?? 0) + 1
-
-    /* -------------------------------------------- */
-    /* Insert section */
-    /* -------------------------------------------- */
-
-    const { error: insertError } = await supabase
-        .from("test_sections")
-        .insert({
-            test_id: testId,
-            title: template.name,
-            description: template.description,
-            answer_mode: template.answer_mode,
-            max_selections: template.max_selections,
-            full_marks: template.default_full_marks,
-            negative_marks: template.default_negative_marks,
-            partial_marks: template.default_partial_marks,
-            sort_order: nextSortOrder,
-            subject_label: cleanSubject,
-            scoring_question_count: scoringQuestionCount,
-        })
-
-    if (insertError) {
-        throw new Error(insertError.message)
-    }
-
-    /* -------------------------------------------- */
-    /* Revalidate */
-    /* -------------------------------------------- */
-
-    revalidatePath(`/admin/tests/${testId}`)
 }

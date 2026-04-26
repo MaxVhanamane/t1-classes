@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FieldError, FieldErrors, useForm } from "react-hook-form";
+import { FieldError, FieldErrors, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
@@ -18,6 +18,7 @@ import { RichTextEditor } from "./rich-text-editor";
 import {
   createQuestionSchema,
   CreateQuestionInput,
+  isEditorEmpty,
 } from "../../zod/question.schema";
 
 import { TestSection } from "../../types/section.types";
@@ -32,6 +33,7 @@ import { NumericalInputBuilder } from "./numerical-input-builder";
 import { MatchMatrixBuilder } from "./match-matrix-builder";
 import { JSONContent } from "@tiptap/react";
 import { useQueryClient } from "@tanstack/react-query";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 /* --------------------------------------------
  * Types
  * ------------------------------------------*/
@@ -271,6 +273,15 @@ export function QuestionBuilderDialog({
     },
   });
 
+  const questionText = useWatch({
+    control: form.control,
+    name: "questionText",
+  });
+
+  const explanation = useWatch({
+    control: form.control,
+    name: "explanation",
+  });
   /* --------------------------------------------
    * Load / Reset Form
    * ------------------------------------------*/
@@ -311,54 +322,53 @@ export function QuestionBuilderDialog({
   /* --------------------------------------------
    * Submit
    * ------------------------------------------*/
+
   const handleSubmit = async (values: CreateQuestionInput) => {
     if (!hasValidCorrectAnswer(section.answerMode, values.correctAnswer)) {
       toast.error("Please select or enter the correct answer before saving.");
       return;
     }
 
-    const finalValues = JSON.stringify({ ...values });
+    const payload = {
+      ...values,
+      explanation: isEditorEmpty(values.explanation)
+        ? null
+        : values.explanation,
+    };
+
+    const finalValues = JSON.stringify(payload);
 
     setSubmitting(true);
+
     const toastId = toast.loading(
       editingQuestion ? "Updating question..." : "Saving question...",
     );
 
-    try {
-      await upsertQuestion(
+    const { error } = await callServerAction(
+      upsertQuestion(
         section.testId,
         section.id,
         finalValues,
         editingQuestion?.id,
-      );
+      ),
+    );
 
-      toast.success(editingQuestion ? "Question updated" : "Question added", {
-        id: toastId,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["section-questions", section.id],
-      });
-
-      onOpenChange(false);
-    } catch (err: unknown) {
-      let rawMessage = "Failed to save question";
-
-      if (err instanceof Error) {
-        rawMessage = err.message;
-      } else if (typeof err === "object" && err !== null) {
-        const e = err as Record<string, unknown>;
-
-        rawMessage =
-          (typeof e.message === "string" && e.message) ||
-          (typeof e.error_description === "string" && e.error_description) ||
-          (typeof e.details === "string" && e.details) ||
-          rawMessage;
-      }
-
-      toast.error(rawMessage, { id: toastId });
-    } finally {
+    if (error) {
+      toast.error(error, { id: toastId });
       setSubmitting(false);
+      return;
     }
+
+    toast.success(editingQuestion ? "Question updated" : "Question added", {
+      id: toastId,
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["section-questions", section.id],
+    });
+
+    onOpenChange(false);
+    setSubmitting(false);
   };
 
   /* --------------------------------------------
@@ -416,7 +426,7 @@ export function QuestionBuilderDialog({
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Question</label>
             <RichTextEditor
-              value={form.watch("questionText")}
+              value={questionText}
               onChange={(v) =>
                 form.setValue("questionText", v, { shouldDirty: true })
               }
@@ -444,7 +454,7 @@ export function QuestionBuilderDialog({
             <NumericalInputBuilder form={form} />
           )}
           {section.answerMode === "match_matrix" && (
-            <MatchMatrixBuilder form={form} />
+            <MatchMatrixBuilder form={form} questionText={questionText} />
           )}
 
           {/* Explanation */}
@@ -453,7 +463,7 @@ export function QuestionBuilderDialog({
               Explanation (Optional)
             </label>
             <RichTextEditor
-              value={form.watch("explanation") ?? emptyDoc}
+              value={explanation ?? emptyDoc}
               onChange={(v) =>
                 form.setValue("explanation", v, { shouldDirty: true })
               }

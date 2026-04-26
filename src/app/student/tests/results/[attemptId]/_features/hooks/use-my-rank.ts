@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 import { MyRankResponse } from "../types/my-rank";
 
 export function useMyRank(
@@ -10,22 +11,12 @@ export function useMyRank(
     return useQuery<MyRankResponse>({
         queryKey: ["my-rank", distributionId],
 
-        queryFn: async () => {
-            const res = await fetch(
-                `/api/tests/distributions/${distributionId}/rank`,
-                {
-                    credentials: "include",
-                }
-            );
+        queryFn: () =>
+            fetchWrapper<MyRankResponse>(
+                `/api/tests/distributions/${distributionId}/rank`
+            ),
 
-            if (!res.ok) {
-                throw new Error("Failed to fetch rank");
-            }
-
-            return res.json();
-        },
-
-        enabled, // Prevent unnecessary calls
+        enabled,
         staleTime: Infinity,
     });
 }

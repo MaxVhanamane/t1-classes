@@ -1,8 +1,8 @@
 import "server-only"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff"
 import { DistributionResultsSummary } from "../types/results.types"
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only"
 
 type DistributionResultsSummaryRow = {
     participants: number
@@ -17,7 +17,8 @@ export async function getDistributionResultsSummary(
     distributionId: string
 ): Promise<DistributionResultsSummary> {
 
-    const staff = await getCurrentStaff()
+    // redirect() throws internally; calling inside try/catch would prevent the redirect
+    const staff = await requireStaffServerOnly();
     const supabase = await createServerSupabaseClient()
 
     /* ---------------------------------- */
@@ -29,7 +30,7 @@ export async function getDistributionResultsSummary(
             .from("test_distributions")
             .select("id")
             .eq("id", distributionId)
-            .eq("created_by", staff.id)
+            .eq("created_by", staff.userId)
             .maybeSingle()
 
         if (error || !data) {

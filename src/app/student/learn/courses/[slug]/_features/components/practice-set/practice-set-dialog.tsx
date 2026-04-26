@@ -17,6 +17,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PracticeSetContent } from "../../types/practice-session.types";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 
 type Props = {
   practiceSetId: string;
@@ -26,9 +27,9 @@ type Props = {
 async function fetchPracticeSet(
   practiceSetId: string,
 ): Promise<PracticeSetContent> {
-  const res = await fetch(`/api/practice-sets/${practiceSetId}`);
-  if (!res.ok) throw new Error("Failed to load practice set");
-  return res.json();
+  return fetchWrapper<PracticeSetContent>(
+    `/api/practice-sets/${practiceSetId}`,
+  );
 }
 
 export function PracticeSetDialog({ practiceSetId, onClose }: Props) {

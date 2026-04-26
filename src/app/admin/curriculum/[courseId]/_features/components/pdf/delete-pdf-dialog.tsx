@@ -11,6 +11,7 @@ import {
 } from "@/src/components/ui/dialog";
 import { toast } from "sonner";
 import { deletePdf } from "../../actions/topic/pdf/delete-pdf";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   courseId: string;
@@ -22,18 +23,19 @@ interface Props {
 export function DeletePdfDialog({ courseId, topicId, pdfId, pdfTitle }: Props) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-
   function handleDelete() {
     startTransition(async () => {
-      try {
-        await deletePdf(courseId, topicId, pdfId);
-        toast.success("PDF deleted");
-        setOpen(false);
-      } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Failed to delete PDF"
-        );
+      const { error } = await callServerAction(
+        deletePdf(courseId, topicId, pdfId),
+      );
+
+      if (error) {
+        toast.error(error);
+        return;
       }
+
+      toast.success("PDF deleted");
+      setOpen(false);
     });
   }
 

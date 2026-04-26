@@ -27,6 +27,7 @@ import {
 } from "../../zod-schema/pdf.schema";
 
 import { useR2Upload } from "@/src/hooks/use-r2-upload";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   pdf: PdfUnit;
@@ -62,7 +63,7 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
 
     try {
       /**
-       * 1 Upload new file (if replaced)
+       * 1. Upload new file (if replaced)
        */
       if (data.file) {
         if (
@@ -83,15 +84,21 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
       }
 
       /**
-       * 2 Update DB
+       * 2. Update DB
        */
-      await updatePdfUnit(courseId, topicId, pdf.id, {
-        form: data,
-        newFilePath,
-      });
+      const { error } = await callServerAction(
+        updatePdfUnit(courseId, topicId, pdf.id, {
+          form: data,
+          newFilePath,
+        }),
+      );
+
+      if (error) {
+        toast.error(error);
+        return;
+      }
 
       toast.success("PDF updated");
-
       setOpen(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Update failed");
@@ -99,7 +106,6 @@ export function EditPdfDialog({ pdf, courseId, topicId }: Props) {
       setLoading(false);
     }
   }
-
   function handleOpenChange(value: boolean) {
     setOpen(value);
 

@@ -2,21 +2,19 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { SaveAnswerBody, SaveAnswerSchema } from "./zod.answer.schema";
 import { getAttemptExpiryMs, isAttemptExpired } from "@/src/lib/helper-functions/attempt-expiry";
-import { getAuth } from "@/src/lib/auth/get-auth";
+import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ attemptId: string }> }
 ) {
-    const supabase = await createServerSupabaseClient();
-    const user = await getAuth();
+    const auth = await requireStudentApiRoute();
 
-    if (!user) {
-        return NextResponse.json(
-            { kind: "error", reason: "unauthorized" },
-            { status: 401 }
-        );
+    if (!auth.authorized) {
+        return auth.response;
     }
+    const user = auth.user
+    const supabase = await createServerSupabaseClient();
 
     const attemptId = (await params).attemptId;
     const nowIso = new Date().toISOString();

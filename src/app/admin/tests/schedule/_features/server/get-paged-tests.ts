@@ -3,16 +3,12 @@ import "server-only"
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
 import { PagedTests, TestQueryParams } from "../types/test-pagination.types"
 import { TestRow } from "../../../_features/types/test.types"
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role"
-import { redirect } from "next/navigation"
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only"
 
 export async function getPagedTests(
     params: TestQueryParams
 ): Promise<PagedTests<TestRow>> {
-    const user = await getAuthIfHasRole(["admin", "teacher"]);
-    if (!user) {
-        redirect("/login")
-    }
+    const staff = await requireStaffServerOnly();
     const supabase = await createServerSupabaseClient()
 
     const { page, pageSize, search } = params
@@ -25,8 +21,8 @@ export async function getPagedTests(
         .order("created_at", { ascending: false })
         .range(from, to)
 
-    if (user.role !== "admin") {
-        query = query.eq("created_by", user.userId)
+    if (staff.role !== "admin") {
+        query = query.eq("created_by", staff.userId)
     }
 
     if (search && search.trim().length > 0) {

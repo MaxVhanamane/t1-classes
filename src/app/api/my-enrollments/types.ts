@@ -8,23 +8,25 @@ import type { Category } from "@/src/app/admin/batches/_features/zod-schema/sche
 export type RawEnrollmentRow = {
     id: string;
 
-    target_type: "course" | "batch";
+    target_type:
+    | "course"
+    | "batch";
 
-    status:
-    | "ongoing"
-    | "paused"
-    | "completed"
-    | "cancelled";
+    is_active: boolean;
 
     access_starts_at: string;
-    access_ends_at: string;
+
+    access_ends_at:
+    | string
+    | null;
 
     course: {
         id: string;
+
         title: string;
+
         slug: string;
 
-        /* ---------- updated ---------- */
         category: Category;
 
         is_active: boolean;
@@ -32,26 +34,35 @@ export type RawEnrollmentRow = {
 
     batch: {
         id: string;
+
         title: string;
-        subtitle: string | null;
+
+        subtitle:
+        | string
+        | null;
+
         slug: string;
 
         mode: BatchMode;
 
         start_date: string;
+
         end_date: string;
 
-        admission_open: boolean;
         is_active: boolean;
     } | null;
 };
 
 export type RawBatchCourseRow = {
     batch_id: string;
+
     course: {
         id: string;
+
         title: string;
+
         slug: string;
+
         is_active: boolean;
     } | null;
 };
@@ -66,16 +77,16 @@ export type EnrollmentTargetType =
 
 interface BaseEnrollment {
     enrollmentId: string;
+
     targetType: EnrollmentTargetType;
 
-    accessStartsAt: string;
-    accessEndsAt: string;
+    isActive: boolean;
 
-    status:
-    | "ongoing"
-    | "paused"
-    | "completed"
-    | "cancelled";
+    accessStartsAt: string;
+
+    accessEndsAt:
+    | string
+    | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -88,10 +99,11 @@ export interface CourseEnrollment
 
     course: {
         id: string;
+
         title: string;
+
         slug: string;
 
-        /* ---------- updated ---------- */
         category: Category;
     };
 }
@@ -100,24 +112,25 @@ export interface CourseEnrollment
 /*                           Batch Enrollment                                 */
 /* -------------------------------------------------------------------------- */
 
-export interface BatchEnrollment {
-    enrollmentId: string;
+export interface BatchEnrollment
+    extends BaseEnrollment {
     targetType: "batch";
-
-    status: string;
-
-    accessStartsAt: string;
-    accessEndsAt: string;
 
     batch: {
         id: string;
+
         title: string;
-        subtitle: string | null;
+
+        subtitle:
+        | string
+        | null;
+
         slug: string;
 
         mode: BatchMode;
 
         start_date: string;
+
         end_date: string;
     };
 }

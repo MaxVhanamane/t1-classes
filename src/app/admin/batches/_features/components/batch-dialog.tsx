@@ -87,6 +87,9 @@ import { IMAGE_OUTPUTS } from "@/src/lib/constants/image-output.config";
 import { updateBatchThumbnail } from "../actions/update-batch-thumbnail";
 import { TipTapEditor } from "../../../courses/_features/components/tiptap-editor";
 import { FormField } from "@/src/components/ui/form";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
+import { formatFileSize } from "@/src/lib/helper-functions/format-file-size";
 
 const CLASS_LEVELS = [6, 7, 8, 9, 10, 11, 12] as const;
 
@@ -183,15 +186,8 @@ export function BatchDialog({
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const { data: instructors } = useQuery<InstructorOption[]>({
     queryKey: ["instructor-options"],
-    queryFn: async () => {
-      const res = await fetch("/api/admin/instructors/options");
-
-      if (!res.ok) {
-        throw new Error("Failed to load instructors");
-      }
-
-      return res.json();
-    },
+    queryFn: () =>
+      fetchWrapper<InstructorOption[]>("/api/admin/instructors/options"),
   });
 
   const form = useForm({
@@ -371,16 +367,13 @@ export function BatchDialog({
 
   const onSubmit = form.handleSubmit(
     async (values: BatchFormValues) => {
-      /* -------------------------------------------------- */
-      /* Loading toast (always create first)                */
-      /* -------------------------------------------------- */
       const toastId = toast.loading(
         isEdit ? "Updating batch..." : "Creating batch...",
       );
 
       try {
         /* -------------------------------------------------- */
-        /* Price validation                                  */
+        /* Price validation                                   */
         /* -------------------------------------------------- */
         if (values.list_price < values.sale_price) {
           toast.error(
@@ -389,27 +382,39 @@ export function BatchDialog({
           );
           return;
         }
-        /* -------------------------------------------------- */
-        /* Payload transform                                 */
-        /* -------------------------------------------------- */
-        const payload = {
-          ...values,
-        };
 
+        const payload = { ...values };
         let batchId: string;
 
         /* -------------------------------------------------- */
-        /* Create / Update                                   */
+        /* Create / Update                                    */
         /* -------------------------------------------------- */
         if (isEdit && batch) {
           batchId = batch.id;
-          await updateBatch(batchId, batch.category, payload, batch.slug);
+
+          const { error } = await callServerAction(
+            updateBatch(batchId, batch.category, payload, batch.slug),
+          );
+
+          if (error) {
+            toast.error(error, { id: toastId });
+            return;
+          }
         } else {
-          batchId = await createBatch(payload);
+          const { data, error } = await callServerAction(createBatch(payload));
+
+          if (error || !data) {
+            toast.error(error ?? "Failed to create batch", {
+              id: toastId,
+            });
+            return;
+          }
+
+          batchId = data;
         }
 
         /* -------------------------------------------------- */
-        /* Thumbnail upload                                  */
+        /* Thumbnail upload                                   */
         /* -------------------------------------------------- */
         if (thumbnailFile) {
           toast.loading("Uploading thumbnail...", { id: toastId });
@@ -421,24 +426,25 @@ export function BatchDialog({
           });
 
           if (upload?.key) {
-            await updateBatchThumbnail(batchId, upload.key);
+            const { error } = await callServerAction(
+              updateBatchThumbnail(batchId, upload.key),
+            );
+
+            if (error) {
+              toast.error(error, { id: toastId });
+              return;
+            }
           }
         }
 
         /* -------------------------------------------------- */
-        /* Success                                           */
+        /* Success                                            */
         /* -------------------------------------------------- */
         toast.success("Saved", { id: toastId });
-
         onOpenChange(false);
         form.reset();
-      } catch (e) {
-        /* -------------------------------------------------- */
-        /* Server / RPC errors                               */
-        /* -------------------------------------------------- */
-        const message = e instanceof Error ? e.message : "Save failed";
-
-        toast.error(message, { id: toastId });
+      } catch {
+        toast.error("Save failed", { id: toastId });
       }
     },
 
@@ -447,8 +453,7 @@ export function BatchDialog({
     /* -------------------------------------------------- */
     (errors) => {
       const message = extractFirstErrorMessage(errors);
-
-      toast.dismiss(); // prevents stuck loading toast
+      toast.dismiss();
       toast.error(message ?? "Please fix the form errors");
     },
   );
@@ -680,6 +685,12 @@ export function BatchDialog({
                   setCropSrc(url);
                 }}
               />
+
+              <p className="text-xs text-muted-foreground">
+                Upload an image at least{" "}
+                <span className="font-medium">750 × 422 px</span>. Max size{" "}
+                {formatFileSize(THUMBNAIL_MAX_SIZE)}.
+              </p>
             </div>
             {/* Original Price */}
             <div className="space-y-3">

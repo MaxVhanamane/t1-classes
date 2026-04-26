@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ZodError } from "zod";
 
 import {
   Dialog,
@@ -12,89 +13,93 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/src/components/ui/dialog";
+
 import { Button } from "@/src/components/ui/button";
 import { Label } from "@/src/components/ui/label";
 import { Textarea } from "@/src/components/ui/textarea";
 import { Separator } from "@/src/components/ui/separator";
 
-import { updateFeePlan } from "../actions/fee-actions";
 import {
   FeePlanFormInput,
   feePlanFormSchema,
   feePlanSubmitSchema,
 } from "../zod/feePlan.schema";
+
 import { MoneyInput } from "./money-input";
 import { toast } from "sonner";
-import { ZodError } from "zod";
+import { updateFeePlan } from "../actions/fee/update-fee-plan";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   feePlan: {
     id: string;
-    total_amount: number;
+    offered_amount: number;
     discount_amount: number;
-    effective_from: string;
-    notes?: string | null;
+    discount_reason?: string | null;
   };
 }
 
 export function EditFeePlanDialog({ feePlan }: Props) {
   const [open, setOpen] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const form = useForm<FeePlanFormInput>({
     resolver: zodResolver(feePlanFormSchema),
     mode: "onChange",
     defaultValues: {
-      totalAmount: "",
       discountAmount: "",
-      effectiveFrom: "",
-      notes: "",
+      discountReason: "",
     },
   });
 
-  //  Always reset on open
   useEffect(() => {
     if (open) {
       form.reset({
-        totalAmount: String(feePlan.total_amount),
         discountAmount: String(feePlan.discount_amount),
-        effectiveFrom: feePlan.effective_from,
-        notes: feePlan.notes ?? "",
+        discountReason: feePlan.discount_reason ?? "",
       });
     }
   }, [open, feePlan, form]);
 
-  const total = Number(form.watch("totalAmount") || 0);
   const discount = Number(form.watch("discountAmount") || 0);
-  const finalAmount = Math.max(total - discount, 0);
+
+  const finalAmount = useMemo(
+    () => Math.max(feePlan.offered_amount - discount, 0),
+    [feePlan.offered_amount, discount],
+  );
 
   const { isDirty, isValid } = form.formState;
 
-  //  Revalidate discount whenever total changes
-  useEffect(() => {
-    void form.trigger("discountAmount");
-  }, [total, form]);
-
   async function onSubmit(data: FeePlanFormInput) {
     setLoading(true);
+
     try {
       const parsed = feePlanSubmitSchema.parse({
-        totalAmount: Number(data.totalAmount),
         discountAmount: Number(data.discountAmount || 0),
-        effectiveFrom: data.effectiveFrom,
-        notes: data.notes,
-      });
-      await updateFeePlan(feePlan.id, parsed);
-      setOpen(false);
-    } catch (err) {
-      if (err instanceof ZodError) {
-        const issue = err.issues[0];
 
-        toast(issue?.message ?? "Invalid form input");
+        discountReason: data.discountReason?.trim().toLowerCase() || undefined,
+      });
+
+      const { error } = await callServerAction(
+        updateFeePlan(feePlan.id, parsed),
+      );
+
+      if (error) {
+        toast.error(error);
         return;
       }
 
-      toast("Failed to update fee plan.");
+      toast.success("Fee plan updated.");
+
+      setOpen(false);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        toast.error(err.issues[0]?.message ?? "Invalid form input");
+        return;
+      }
+
+      toast.error("Failed to update fee plan.");
     } finally {
       setLoading(false);
     }
@@ -112,67 +117,83 @@ export function EditFeePlanDialog({ feePlan }: Props) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Fee Plan</DialogTitle>
+
             <DialogDescription>
-              Editing is allowed only before payments.
+              Editing is allowed only before any payments are recorded.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Total Amount</Label>
-                <MoneyInput {...form.register("totalAmount")} />
-                {form.formState.errors.totalAmount && (
-                  <p className="text-xs text-destructive">
-                    {form.formState.errors.totalAmount.message}
-                  </p>
-                )}
-              </div>
+            {/* Locked Offered Amount */}
+            <div className="rounded-xl border p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Offered Amount</p>
 
-              <div className="space-y-2">
-                <Label>Discount</Label>
-                <MoneyInput {...form.register("discountAmount")} />
-                {form.formState.errors.discountAmount && (
-                  <p className="text-xs text-destructive">
-                    {form.formState.errors.discountAmount.message}
+                  <p className="text-xs text-muted-foreground">
+                    Fixed for this fee plan
                   </p>
-                )}
+                </div>
+
+                <p className="text-lg font-semibold">
+                  ₹{feePlan.offered_amount.toLocaleString()}
+                </p>
               </div>
             </div>
 
-            <div className="rounded-lg border bg-muted/40 p-4">
+            {/* Discount */}
+            <div className="space-y-2">
+              <Label>Extra Discount</Label>
+
+              <MoneyInput
+                placeholder="e.g. 500"
+                {...form.register("discountAmount")}
+              />
+
+              {form.formState.errors.discountAmount && (
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.discountAmount.message}
+                </p>
+              )}
+            </div>
+
+            {/* Final */}
+            <div className="rounded-xl border bg-muted/40 p-4">
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">
                   Final Amount
                 </span>
+
                 <span className="text-xl font-semibold">
-                  ₹ {finalAmount.toLocaleString()}
+                  ₹{finalAmount.toLocaleString()}
                 </span>
               </div>
             </div>
 
             <Separator />
 
+            {/* Reason */}
             <div className="space-y-2">
-              <Label>Effective From</Label>
-              <input
-                type="date"
-                {...form.register("effectiveFrom")}
-                className="w-full rounded-md border px-3 py-2"
+              <Label>Discount Reason</Label>
+
+              <Textarea
+                rows={3}
+                placeholder="e.g. scholarship, financial_need, sibling_discount"
+                {...form.register("discountReason")}
               />
-              {form.formState.errors.effectiveFrom && (
+
+              <p className="text-xs text-muted-foreground">
+                Required when discount is greater than zero.
+              </p>
+
+              {form.formState.errors.discountReason && (
                 <p className="text-xs text-destructive">
-                  {form.formState.errors.effectiveFrom.message}
+                  {form.formState.errors.discountReason.message}
                 </p>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Notes</Label>
-              <Textarea {...form.register("notes")} />
             </div>
 
             <DialogFooter>
@@ -181,15 +202,17 @@ export function EditFeePlanDialog({ feePlan }: Props) {
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
+                disabled={loading}
               >
                 Cancel
               </Button>
+
               <Button
                 className="cursor-pointer"
                 type="submit"
                 disabled={loading || !isDirty || !isValid}
               >
-                Save Changes
+                {loading ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>

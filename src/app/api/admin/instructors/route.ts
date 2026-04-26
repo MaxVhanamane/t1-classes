@@ -1,5 +1,5 @@
 import { instructorInsertSchema } from "@/src/app/admin/instructors/_features/zod/instructor.server.schema";
-import { getCurrentAdmin } from "@/src/lib/helper-functions/getCurrentAdmin";
+import { requireAdminApiRoute } from "@/src/lib/auth/require-role-api-route";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -9,6 +9,12 @@ import { z } from "zod";
 /* ---------------------------------- */
 
 export async function GET() {
+    const auth = await requireAdminApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
+    }
+
     const supabase = await createServerSupabaseClient();
 
     const { data, error } = await supabase
@@ -31,7 +37,12 @@ export async function GET() {
 /* ---------------------------------- */
 
 export async function POST(req: Request) {
-    await getCurrentAdmin()
+
+    const auth = await requireAdminApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
+    }
     const supabase = await createServerSupabaseClient();
 
     const json = await req.json();
@@ -56,8 +67,24 @@ export async function POST(req: Request) {
         .single();
 
     if (error) {
+        console.log("Error inserting instructor:", error);
+
+        // Handle duplicate email error
+        if (
+            error.code === "23505" &&
+            error.message.includes("instructors_email_key")
+        ) {
+            return NextResponse.json(
+                {
+                    message: "This email already exists. Please use a different email.",
+                    field: "email",
+                },
+                { status: 409 } // Conflict
+            );
+        }
+
         return NextResponse.json(
-            { message: error.message },
+            { message: "Failed to create instructor. Please try again." },
             { status: 500 }
         );
     }

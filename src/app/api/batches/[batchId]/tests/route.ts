@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getEnrollmentAccess } from "@/src/lib/server/enrollment-access";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 type AttemptStatus =
     | "none"
@@ -37,15 +37,16 @@ export async function GET(
     _req: Request,
     { params }: { params: Promise<{ batchId: string }> }
 ) {
-    console.log("request received in the route")
-    const supabase = await createServerSupabaseClient();
-    const user = await getAuthIfHasRole(["student"]);
-    if (!user) {
-        return NextResponse.json(
-            { error: "Unauthorized" },
-            { status: 401 }
-        );
+
+
+    const auth = await requireStudentApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
     }
+    const user = auth.user
+    const supabase = await createServerSupabaseClient();
+
     const batchId = (await params).batchId;
 
     /* -------------------------------------------- */

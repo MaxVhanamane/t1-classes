@@ -7,10 +7,24 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
+import { Badge } from "@/src/components/ui/badge";
 
 interface PaymentsListProps {
   payments: Payment[];
 }
+
+const refundReasonLabels: Record<
+  NonNullable<Payment["refund_reason"]>,
+  string
+> = {
+  overpayment: "Overpayment",
+  duplicate_payment: "Duplicate payment",
+  entry_error: "Incorrect payment entry",
+  service_issue: "Service issue",
+  course_withdrawal: "Student withdrew",
+  batch_cancelled: "Batch cancelled",
+  special_approval: "Special approval",
+};
 
 export function PaymentsList({ payments }: PaymentsListProps) {
   if (payments.length === 0) {
@@ -22,55 +36,76 @@ export function PaymentsList({ payments }: PaymentsListProps) {
   }
 
   return (
-    <div className="rounded-md border divide-y">
+    <div className="divide-y rounded-md border">
       {payments.map((payment) => {
-        const isRefund = payment.amount < 0;
+        const isRefund = payment.transaction_type === "refund";
+
+        const amount = Math.abs(payment.amount);
 
         const processedByLabel = isRefund ? "Refund issued by" : "Processed by";
+
+        const actorName = payment?.created_by ?? null;
+
+        const refundLabel = payment.refund_reason
+          ? refundReasonLabels[payment.refund_reason]
+          : null;
 
         return (
           <div
             key={payment.id}
-            className="flex items-center justify-between p-4 text-sm"
+            className="flex items-start justify-between gap-4 p-4 text-sm"
           >
             {/* LEFT */}
-            <div className="space-y-1">
+            <div className="min-w-0 space-y-1.5">
               {/* Amount */}
-              <div className="font-medium">
+              <div className="flex flex-wrap items-center gap-2">
                 {isRefund ? (
-                  <span className="text-red-600">
-                    −₹{Math.abs(payment.amount).toLocaleString()}
+                  <span className="font-semibold text-red-500">
+                    −₹
+                    {amount.toLocaleString()}
                   </span>
                 ) : (
-                  <span>₹{payment.amount.toLocaleString()}</span>
+                  <span className="font-semibold text-foreground">
+                    ₹{amount.toLocaleString()}
+                  </span>
                 )}
 
                 {isRefund && (
-                  <span className="ml-2 inline-block rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
+                  <Badge variant="secondary" className="text-red-500">
                     Refund
-                  </span>
+                  </Badge>
                 )}
               </div>
 
               {/* Meta */}
-              <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
                 <PaymentMethodBadge method={payment.payment_method} />
                 <span>·</span>
                 <span>{new Date(payment.paid_at).toLocaleDateString()}</span>
               </div>
 
-              {/* Processed by */}
-              {payment.processed_by_user_name && (
+              {/* Refund reason */}
+              {isRefund && refundLabel && (
                 <div className="text-xs text-muted-foreground">
-                  {processedByLabel}{" "}
+                  Reason:{" "}
                   <span className="font-medium text-foreground">
-                    {payment.processed_by_user_name}
+                    {refundLabel}
                   </span>
                 </div>
               )}
 
-              {/* Notes */}
-              {payment.notes && (
+              {/* Processed by */}
+              {actorName && (
+                <div className="text-xs text-muted-foreground">
+                  {processedByLabel}{" "}
+                  <span className="font-medium text-foreground">
+                    {actorName}
+                  </span>
+                </div>
+              )}
+
+              {/* Notes only for payments */}
+              {!isRefund && payment.notes && (
                 <div className="text-xs text-muted-foreground">
                   {payment.notes}
                 </div>
@@ -78,7 +113,7 @@ export function PaymentsList({ payments }: PaymentsListProps) {
             </div>
 
             {/* RIGHT */}
-            <div className="flex items-center gap-3">
+            <div className="shrink-0">
               {payment.status === "failed" && payment.failure_reason ? (
                 <TooltipProvider>
                   <Tooltip>
@@ -87,6 +122,7 @@ export function PaymentsList({ payments }: PaymentsListProps) {
                         <PaymentStatusBadge status={payment.status} />
                       </div>
                     </TooltipTrigger>
+
                     <TooltipContent side="left" className="max-w-xs text-sm">
                       {payment.failure_reason}
                     </TooltipContent>

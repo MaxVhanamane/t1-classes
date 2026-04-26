@@ -21,6 +21,7 @@ import {
 } from "../../zod-schema/topic.schema";
 import { createTopic } from "../../actions/topic/create-topic";
 import { Plus } from "lucide-react";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface AddTopicDialogProps {
   courseId: string;
@@ -51,18 +52,21 @@ export function AddTopicDialog({
 
   async function onSubmit(data: AddTopicFormInput) {
     setLoading(true);
-    try {
-      await createTopic(courseId, chapterId, data);
 
+    const { error } = await callServerAction(
+      createTopic(courseId, chapterId, data),
+    );
+
+    if (error) {
+      toast.error(error);
+    } else {
       toast.success("Topic added successfully");
       form.reset();
       setOpen(false);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to add topic");
-    } finally {
-      setLoading(false);
       expandChapter();
     }
+
+    setLoading(false);
   }
 
   return (

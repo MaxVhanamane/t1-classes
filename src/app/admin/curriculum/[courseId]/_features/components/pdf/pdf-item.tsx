@@ -29,7 +29,8 @@ import {
 } from "@/src/components/ui/popover";
 import { useIsTruncated } from "@/src/hooks/useIsTruncated";
 import { ConfirmActionDialog } from "@/src/components/ui/common/confirm-action-dialog";
-import { toggleCourseUnitPublish } from "../../actions/topic/toggleCourseUnitPublish";
+import { toggleCourseUnitPublish } from "../../actions/topic/toggle-course-unit-publish";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   pdf: PdfUnit;
@@ -158,22 +159,22 @@ export function PdfItem({ pdf, courseId, topicId }: Props) {
                   }
                   confirmLabel={pdf.is_published ? "Unpublish" : "Publish"}
                   onConfirm={async () => {
-                    try {
-                      await toggleCourseUnitPublish({
+                    const { error } = await callServerAction(
+                      toggleCourseUnitPublish({
                         courseId,
                         unitId: pdf.id,
                         publish: !pdf.is_published,
-                      });
-                      toast.success(
-                        pdf.is_published ? "pdf unpublished" : "pdf published",
-                      );
-                    } catch (err) {
-                      toast.error(
-                        err instanceof Error
-                          ? err.message
-                          : "Failed to publish pdf",
-                      );
+                      }),
+                    );
+
+                    if (error) {
+                      toast.error(error);
+                      return;
                     }
+
+                    toast.success(
+                      pdf.is_published ? "PDF unpublished" : "PDF published",
+                    );
                   }}
                   trigger={
                     <Button

@@ -1,14 +1,11 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 export async function deleteNotification(id: string) {
-    const user = await getAuthIfHasRole(["admin", "teacher"]);
+    await requireStaffServerOnly();
 
-    if (!user) {
-        throw new Error("UNAUTHORIZED");
-    }
 
     const supabase = await createServerSupabaseClient();
 

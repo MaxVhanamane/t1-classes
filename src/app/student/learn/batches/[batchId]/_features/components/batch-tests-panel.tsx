@@ -14,8 +14,13 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from "@/src/components/ui/alert-dialog";
-import { getDistributionStatus } from "../helper-functions/helper";
+import {
+  getAttemptExpiryMs,
+  getDistributionStatus,
+} from "../helper-functions/helper";
 import { format } from "date-fns";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
+import { TEST_GRACE_TIME_IN_SECONDS } from "@/src/lib/constants/rpc-constants";
 
 /* -------------------------------------------------- */
 /* Types */
@@ -45,14 +50,7 @@ type BatchTest = {
 /* -------------------------------------------------- */
 
 async function fetchBatchTests(batchId: string): Promise<BatchTest[]> {
-  const res = await fetch(`/api/batches/${batchId}/tests`, {
-    cache: "no-store",
-    credentials: "include",
-  });
-
-  if (!res.ok) throw new Error("Failed to load tests");
-
-  return res.json();
+  return fetchWrapper<BatchTest[]>(`/api/batches/${batchId}/tests`);
 }
 
 /* ================================================== */
@@ -184,7 +182,32 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
     const start = new Date(test.startsAt);
     const end = new Date(test.endsAt);
 
-    /* badge color */
+    const resultUnlockMs =
+      new Date(test.endsAt).getTime() + TEST_GRACE_TIME_IN_SECONDS * 1000;
+
+    const isResultUnlocked = Date.now() >= resultUnlockMs;
+    /* -------------------------------------------- */
+    /* Attempt expiry check for in_progress rows
+  /* -------------------------------------------- */
+    let isAttemptExpired = false;
+
+    if (
+      attempt.status === "in_progress" &&
+      attempt.startedAt &&
+      attempt.timeLimitSeconds
+    ) {
+      const expiryMs = getAttemptExpiryMs(
+        attempt.startedAt,
+        attempt.timeLimitSeconds,
+        test.endsAt,
+      );
+
+      isAttemptExpired = Date.now() >= expiryMs;
+    }
+
+    /* -------------------------------------------- */
+    /* badge color
+  /* -------------------------------------------- */
     const badgeClass =
       status === "scheduled"
         ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
@@ -194,6 +217,9 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
 
     let actionButton: React.ReactNode;
 
+    /* -------------------------------------------- */
+    /* Scheduled
+  /* -------------------------------------------- */
     if (status === "scheduled") {
       actionButton = (
         <Button size="sm" variant="ghost" disabled>
@@ -201,10 +227,24 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
           Locked
         </Button>
       );
+    } else if (status === "ongoing" && attempt.status === "none") {
+      /* -------------------------------------------- */
+      /* Ongoing + no attempt
+  /* -------------------------------------------- */
+      actionButton = (
+        <Button size="sm" onClick={() => goToInstructions(test.distributionId)}>
+          <Info className="mr-2 h-4 w-4" />
+          Instructions
+        </Button>
+      );
     } else if (
+      /* -------------------------------------------- */
+      /* Ongoing + active attempt + still valid
+  /* -------------------------------------------- */
       status === "ongoing" &&
       attempt.status === "in_progress" &&
-      attempt.attemptId
+      attempt.attemptId &&
+      !isAttemptExpired
     ) {
       actionButton = (
         <Button
@@ -216,14 +256,47 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
           Resume
         </Button>
       );
-    } else if (status === "ongoing" && attempt.status === "none") {
+    } else if (
+      /* -------------------------------------------- */
+      /* Personal timer expired → Result
+  /* -------------------------------------------- */
+      attempt.status === "in_progress" &&
+      attempt.attemptId &&
+      isAttemptExpired &&
+      !isResultUnlocked
+    ) {
       actionButton = (
-        <Button size="sm" onClick={() => goToInstructions(test.distributionId)}>
-          <Info className="mr-2 h-4 w-4" />
-          Instructions
+        <div className="flex flex-col items-end gap-1">
+          <Button size="sm" variant="outline" disabled>
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Result
+          </Button>
+
+          <p className="text-[11px] text-muted-foreground">
+            Available after {format(resultUnlockMs, "d MMM · h:mm a")}
+          </p>
+        </div>
+      );
+    } else if (
+      attempt.status === "in_progress" &&
+      attempt.attemptId &&
+      isAttemptExpired &&
+      isResultUnlocked
+    ) {
+      actionButton = (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => handleResultClick(attempt.attemptId, test.title)}
+        >
+          <BarChart3 className="mr-2 h-4 w-4" />
+          Result
         </Button>
       );
     } else {
+      /* -------------------------------------------- */
+      /* Submitted / expired / completed fallback
+  /* -------------------------------------------- */
       actionButton = (
         <Button
           size="sm"
@@ -266,6 +339,7 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
                   <span className="text-muted-foreground text-xs">
                     {status === "scheduled" ? "Starts:" : "Started:"}
                   </span>
+
                   <span className="text-xs">
                     {format(start, "d MMM · h:mm a")}
                   </span>
@@ -276,10 +350,12 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
                 <span className="text-muted-foreground text-xs">
                   {status === "completed" ? "Ended:" : "Ends:"}
                 </span>
+
                 <span className="text-xs">{format(end, "d MMM · h:mm a")}</span>
               </div>
             </div>
           </div>
+
           {/* Action */}
           <div className="flex justify-end">{actionButton}</div>
         </CardContent>
@@ -291,18 +367,23 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
   /* Sections */
   /* -------------------------------------------------- */
 
-  const scheduled = data.filter(
-    (t) => getDistributionStatus(t.startsAt, t.endsAt) === "scheduled",
-  );
+  const scheduled = data
+    .filter((t) => getDistributionStatus(t.startsAt, t.endsAt) === "scheduled")
+    .sort(
+      (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+    ); // nearest upcoming first
 
-  const ongoing = data.filter(
-    (t) => getDistributionStatus(t.startsAt, t.endsAt) === "ongoing",
-  );
+  const ongoing = data
+    .filter((t) => getDistributionStatus(t.startsAt, t.endsAt) === "ongoing")
+    .sort(
+      (a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime(),
+    ); // newest ongoing first
 
-  const completed = data.filter(
-    (t) => getDistributionStatus(t.startsAt, t.endsAt) === "completed",
-  );
-
+  const completed = data
+    .filter((t) => getDistributionStatus(t.startsAt, t.endsAt) === "completed")
+    .sort(
+      (a, b) => new Date(b.endsAt).getTime() - new Date(a.endsAt).getTime(),
+    ); // newest completed first
   /* -------------------------------------------------- */
   /* UI */
   /* -------------------------------------------------- */

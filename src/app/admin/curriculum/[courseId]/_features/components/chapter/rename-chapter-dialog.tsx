@@ -15,6 +15,7 @@ import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 
 import { renameChapter } from "../../actions/chapter/rename-chapter";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   chapterId: string;
@@ -38,17 +39,19 @@ export function RenameChapterDialog({
     }
 
     setLoading(true);
-    try {
-      await renameChapter(chapterId, courseId, title.trim());
+
+    const { error } = await callServerAction(
+      renameChapter(chapterId, courseId, title.trim()),
+    );
+
+    if (error) {
+      toast.error(error);
+    } else {
       toast.success("Chapter renamed");
       setOpen(false);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to rename chapter"
-      );
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   }
 
   return (

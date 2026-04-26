@@ -1,15 +1,27 @@
 import { format } from "date-fns";
 import { Children } from "react";
+import { Badge } from "@/src/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/src/components/ui/accordion";
 import { FeePlanAuditTrigger } from "./fee-plan-audit-trigger";
 
 type FeePlanSummaryCardProps = {
-  totalAmount: number;
+  offeredAmount: number;
   discountAmount: number;
   finalAmount: number;
-  effectiveFrom: string;
-  status: "active" | "cancelled" | "superseded";
-  is_active: boolean;
-  notes: string | null;
+
+  listPriceAtCreation: number;
+  salePriceAtCreation: number;
+
+  currency?: string;
+
+  status: "active" | "superseded";
+
+  discountReason: string | null;
 
   createdAt: string;
   createdBy: string;
@@ -19,83 +31,127 @@ type FeePlanSummaryCardProps = {
   actions?: React.ReactNode;
 };
 
+const reasonLabels: Record<string, string> = {
+  scholarship: "Scholarship",
+  sibling_discount: "Sibling discount",
+  retention_offer: "Retention offer",
+  staff_reference: "Staff reference",
+  promotional_offer: "Promotional offer",
+  management_approval: "Management approval",
+};
+
 export function FeePlanSummaryCard({
-  totalAmount,
+  offeredAmount,
   discountAmount,
   finalAmount,
-  effectiveFrom,
+  listPriceAtCreation,
+  salePriceAtCreation,
+  currency = "INR",
   status,
-  is_active,
-  notes,
+  discountReason,
   createdAt,
   createdBy,
   updatedAt,
   updatedBy,
   actions,
 }: FeePlanSummaryCardProps) {
+  const symbol = currency === "INR" ? "₹" : `${currency} `;
+
+  const standardDiscount = listPriceAtCreation - salePriceAtCreation;
+
   const statusStyles = {
-    active: "bg-green-100 text-green-700",
-    cancelled: "bg-red-100 text-red-700",
-    superseded: "bg-yellow-100 text-yellow-700",
+    active: "bg-green-100 text-green-700 hover:bg-green-100",
+    superseded: "bg-amber-100 text-amber-800 hover:bg-amber-100",
   };
+
+  const reasonLabel = discountReason
+    ? (reasonLabels[discountReason] ?? discountReason.replaceAll("_", " "))
+    : null;
 
   return (
     <div className="w-full max-w-sm rounded-xl border bg-card shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between border-b px-6 py-4">
         <h3 className="text-sm font-semibold">Fee Plan Summary</h3>
-        <span
-          className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusStyles[status]}`}
+
+        <Badge
+          variant="secondary"
+          className={`capitalize ${statusStyles[status]}`}
         >
           {status}
-        </span>
+        </Badge>
       </div>
 
-      {/* Content */}
-      <div className="space-y-6 px-6 py-5">
-        {/* Amounts */}
+      {/* Body */}
+      <div className="space-y-5 px-6 py-5">
+        {/* Snapshot */}
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full rounded-xl border bg-muted/25 px-4"
+        >
+          <AccordionItem value="pricing" className="border-none">
+            <AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
+              Original Pricing Snapshot
+            </AccordionTrigger>
+
+            <AccordionContent className="pb-4">
+              <div className="space-y-2 text-sm">
+                <Row label="List Price">
+                  {symbol}
+                  {listPriceAtCreation.toLocaleString()}
+                </Row>
+
+                <Row label="Sale Price">
+                  {symbol}
+                  {salePriceAtCreation.toLocaleString()}
+                </Row>
+
+                {standardDiscount > 0 && (
+                  <Row label="Standard Discount">
+                    − {symbol}
+                    {standardDiscount.toLocaleString()}
+                  </Row>
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
+        {/* Fee rows */}
         <div className="space-y-2 text-sm">
-          <Row label="Total Amount">₹ {totalAmount.toLocaleString()}</Row>
-          <Row label="Discount" destructive>
-            − ₹ {discountAmount.toLocaleString()}
+          <Row label="Offered Amount">
+            {symbol}
+            {offeredAmount.toLocaleString()}
+          </Row>
+
+          <Row label="Extra Discount" destructive>
+            − {symbol}
+            {discountAmount.toLocaleString()}
           </Row>
         </div>
 
-        {/* Final Amount */}
-        <div className="rounded-lg bg-muted/50 px-4 py-4 text-center">
+        {/* Final */}
+        <div className="rounded-xl bg-muted/50 px-4 py-4 text-center">
           <p className="text-xs text-muted-foreground">Final Amount</p>
+
           <p className="mt-1 text-2xl font-semibold tracking-tight">
-            ₹ {finalAmount.toLocaleString()}
+            {symbol}
+            {finalAmount.toLocaleString()}
           </p>
         </div>
 
-        {/* Meta */}
-        <div className="space-y-2 text-sm">
-          <Row label="Effective From">
-            {format(new Date(effectiveFrom), "dd MMM yyyy")}
-          </Row>
+        {/* Reason */}
+        {reasonLabel && (
+          <div className="space-y-1 border-t pt-4 text-sm">
+            <p className="text-muted-foreground">Discount Reason</p>
 
-          <Row label="Plan Active">
-            <span
-              className={`font-medium ${
-                is_active ? "text-green-600" : "text-muted-foreground"
-              }`}
-            >
-              {is_active ? "Yes" : "No"}
-            </span>
-          </Row>
-        </div>
-
-        {/* Notes */}
-        {notes && (
-          <div className="border-t pt-4 text-sm space-y-1">
-            <p className="text-muted-foreground">Notes</p>
-            <p className="leading-relaxed">{notes}</p>
+            <p className="leading-relaxed capitalize">{reasonLabel}</p>
           </div>
         )}
 
-        {/* Audit (lazy) */}
-        <div className="border-t pt-4 space-y-1 text-xs text-muted-foreground">
+        {/* Audit */}
+        <div className="space-y-1 border-t pt-4 text-xs text-muted-foreground">
           <p>
             Created on{" "}
             <span className="font-medium text-foreground">
@@ -116,7 +172,7 @@ export function FeePlanSummaryCard({
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Footer */}
       {actions && (
         <div className="flex justify-end gap-4 border-t bg-muted/20 px-6 py-4 text-sm">
           {Children.map(actions, (action) => (
@@ -128,7 +184,6 @@ export function FeePlanSummaryCard({
   );
 }
 
-/* Clean reusable row */
 function Row({
   label,
   children,
@@ -139,10 +194,11 @@ function Row({
   destructive?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-4">
       <span className="text-muted-foreground">{label}</span>
+
       <span
-        className={`font-medium ${
+        className={`text-right font-medium ${
           destructive ? "text-destructive" : "text-foreground"
         }`}
       >

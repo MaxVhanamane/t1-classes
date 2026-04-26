@@ -69,7 +69,7 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
     });
   };
   return (
-    <div className="flex h-[calc(100vh-109.6px)] flex-col lg:flex-row">
+    <div className="flex h-[calc(100vh-109.6px)] flex-col min-[820px]:flex-row">
       {/* MAIN */}
       <main className="flex-1 overflow-y-auto p-4 space-y-4">
         <QuestionWorkspace
@@ -81,7 +81,7 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
         />
 
         {/* MOBILE GRID */}
-        <div className="lg:hidden">
+        <div className="min-[820px]:hidden">
           <QuestionGrid
             attemptId={attemptId}
             sections={sections}
@@ -91,8 +91,8 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
         </div>
       </main>
 
-      {/* DESKTOP GRID */}
-      <aside className="hidden h-[calc(100vh-109.6px)] w-80 border-l bg-background lg:block">
+      {/* SIDE GRID */}
+      <aside className="hidden min-[820px]:block h-[calc(100vh-109.6px)] w-[320px] border-l bg-background">
         <div className="sticky top-0 h-full overflow-y-auto p-4">
           <QuestionGrid
             attemptId={attemptId}

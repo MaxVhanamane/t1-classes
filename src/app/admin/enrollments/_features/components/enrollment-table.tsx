@@ -16,6 +16,13 @@ import { TruncatedWithTooltip } from "@/src/components/ui/TruncatedWithTooltip";
 import RegistrationChannelBadge from "./registration-channel-badge";
 import StatusBadge from "./status-badge";
 import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 type EnrollmentTableProps = {
   enrollments: EnrollmentRow[];
@@ -39,13 +46,21 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>User</TableHead>
+
             <TableHead>Target Type</TableHead>
+
             <TableHead>Enrolled In</TableHead>
+
             <TableHead>Granted As</TableHead>
+
             <TableHead>Status</TableHead>
+
             <TableHead>Registered Via</TableHead>
+
             <TableHead>Access</TableHead>
-            <TableHead>Enrolled</TableHead>
+
+            <TableHead>Created</TableHead>
+
             <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
@@ -53,7 +68,9 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
         <TableBody>
           {enrollments.map((enrollment) => {
             const user = enrollment.user;
+
             const batch = enrollment.batch;
+
             const course = enrollment.course;
 
             const isBatch = enrollment.target_type === "batch";
@@ -66,6 +83,7 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                   : [];
 
             const primaryTitle = courseTitles[0];
+
             const extraCount = courseTitles.length - 1;
 
             const extraCoursesText =
@@ -78,6 +96,7 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                   {user ? (
                     <div className="space-y-0.5">
                       <TruncatedWithTooltip text={user.full_name} />
+
                       {user.phone && (
                         <div className="text-xs text-muted-foreground">
                           {user.phone}
@@ -85,7 +104,7 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                       )}
                     </div>
                   ) : (
-                    <span className="text-destructive text-sm">
+                    <span className="text-sm text-destructive">
                       Missing user
                     </span>
                   )}
@@ -105,6 +124,7 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                           text={batch.title}
                           className="font-medium"
                         />
+
                         {primaryTitle && (
                           <div className="text-xs text-muted-foreground">
                             <TruncatedWithTooltip
@@ -124,7 +144,7 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                         className="font-medium"
                       />
                     ) : (
-                      <span className="text-destructive text-sm">
+                      <span className="text-sm text-destructive">
                         Missing target
                       </span>
                     )}
@@ -140,10 +160,29 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
 
                 {/* STATUS */}
                 <TableCell>
-                  <StatusBadge
-                    status={enrollment.status}
-                    isActive={enrollment.is_active}
-                  />
+                  <div className="flex items-center gap-2">
+                    <StatusBadge isActive={enrollment.is_active} />
+
+                    {!enrollment.is_active &&
+                      enrollment.deactivation_reason && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                <Info className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+
+                            <TooltipContent className="max-w-xs text-sm">
+                              {enrollment.deactivation_reason}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                  </div>
                 </TableCell>
 
                 {/* REGISTERED VIA */}
@@ -158,16 +197,19 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <span className="text-xs">From</span>
-                      <span className="font-sm text-foreground">
+
+                      <span className="text-foreground">
                         {format(
                           new Date(enrollment.access_starts_at),
                           "dd MMM yyyy, hh:mm a",
                         )}
                       </span>
                     </div>
+
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <span className="text-xs">To</span>
-                      <span className="font-sm text-foreground">
+
+                      <span className="text-foreground">
                         {enrollment.access_ends_at
                           ? format(
                               new Date(enrollment.access_ends_at),
@@ -179,26 +221,27 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
                   </div>
                 </TableCell>
 
-                {/* ENROLLED AT */}
+                {/* CREATED */}
                 <TableCell className="text-sm text-muted-foreground">
-                  {format(new Date(enrollment.enrolled_at), "dd MMM yyyy")}
+                  {format(new Date(enrollment.created_at), "dd MMM yyyy")}
                 </TableCell>
 
                 {/* ACTIONS */}
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Button
-                      className="cursor-pointer"
                       variant="outline"
                       size="sm"
+                      className="cursor-pointer"
                       onClick={() => onEdit(enrollment)}
                     >
                       Edit
                     </Button>
+
                     <Button
-                      className="cursor-pointer"
                       variant="outline"
                       size="sm"
+                      className="cursor-pointer"
                       onClick={() =>
                         router.push(`/admin/enrollments/${enrollment.id}/fees`)
                       }

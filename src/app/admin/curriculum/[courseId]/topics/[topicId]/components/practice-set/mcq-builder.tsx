@@ -26,6 +26,7 @@ import { SingleSelectPracticeBuilder } from "./single-select-practice-builder";
 import { updatePracticeQuestion } from "../../practice/[practiceSetId]/actions/practice-set/update-practice-question-with-options";
 import { createPracticeQuestion } from "../../practice/[practiceSetId]/actions/practice-set/create-practice-question-with-options";
 import { normalizeRichText } from "@/src/lib/rich-text/rich-text-utils";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 /* --------------------------------------------
  * Types
@@ -143,8 +144,6 @@ export function PracticeMcqBuilderDialog({
     );
 
     try {
-      // Normalize optional fields
-      // normalizeRichText converts explanation to null if empty
       const normalizedValues = {
         ...values,
         explanation: normalizeRichText(values.explanation),
@@ -160,7 +159,14 @@ export function PracticeMcqBuilderDialog({
           answerMode: "single_select",
         };
 
-        await updatePracticeQuestion(updatePayload);
+        const { error } = await callServerAction(
+          updatePracticeQuestion(updatePayload),
+        );
+
+        if (error) {
+          toast.error(error, { id: toastId });
+          return;
+        }
       } else {
         const createPayload: CreatePracticeQuestionInput = {
           ...normalizedValues,
@@ -170,7 +176,14 @@ export function PracticeMcqBuilderDialog({
           answerMode: "single_select",
         };
 
-        await createPracticeQuestion(createPayload);
+        const { error } = await callServerAction(
+          createPracticeQuestion(createPayload),
+        );
+
+        if (error) {
+          toast.error(error, { id: toastId });
+          return;
+        }
       }
 
       toast.success(
@@ -181,8 +194,7 @@ export function PracticeMcqBuilderDialog({
       );
 
       onOpenChange(false);
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error("Failed to save question", { id: toastId });
     } finally {
       setSubmitting(false);

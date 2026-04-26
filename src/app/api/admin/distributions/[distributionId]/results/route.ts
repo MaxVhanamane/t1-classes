@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff"
 
 import {
     ResultsSort,
     PagedResults,
     DistributionResultRow,
 } from "@/src/app/admin/tests/distributions/[distributionId]/results/_features/types/results.types"
+import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route"
 
 const DEFAULT_PAGE_SIZE = 25
 const ADMIN_PAGE_SIZE = 50
@@ -19,7 +19,13 @@ export async function POST(
 
     try {
 
-        const staff = await getCurrentStaff()
+        const auth = await requireStaffApiRoute();
+
+        if (!auth.authorized) {
+            return auth.response;
+        }
+
+        const staff = auth.user;
         const supabase = await createServerSupabaseClient()
 
         const body = await req.json()
@@ -58,7 +64,7 @@ export async function POST(
                 .from("test_distributions")
                 .select("id")
                 .eq("id", distributionId)
-                .eq("created_by", staff.id)
+                .eq("created_by", staff.userId)
                 .maybeSingle()
 
             if (!data) {

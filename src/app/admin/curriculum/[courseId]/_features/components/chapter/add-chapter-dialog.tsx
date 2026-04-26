@@ -20,6 +20,7 @@ import {
   AddChapterFormInput,
   addChapterFormSchema,
 } from "../../zod-schema/chapter.schema";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface AddChapterDialogProps {
   courseId: string;
@@ -41,24 +42,21 @@ export function AddChapterDialog({ courseId }: AddChapterDialogProps) {
       form.reset({ title: "" });
     }
   }, [open, form]);
+
   async function onSubmit(data: AddChapterFormInput) {
     setLoading(true);
 
-    try {
-      await createChapter(courseId, data);
+    const { error } = await callServerAction(createChapter(courseId, data));
 
+    if (error) {
+      toast.error(error);
+    } else {
       toast.success("Chapter created successfully");
-
       form.reset();
       setOpen(false);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create chapter";
-
-      toast.error(message);
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   }
 
   return (

@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuth } from "@/src/lib/auth/get-auth";
+import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 export async function GET() {
-    const user = await getAuth();
+    const auth = await requireStudentApiRoute();
 
-    if (!user) {
-        return NextResponse.json(
-            { error: "Unauthorized" },
-            { status: 401 }
-        );
+    if (!auth.authorized) {
+        return auth.response;
     }
+    const user = auth.user
 
     const supabase = await createServerSupabaseClient();
 

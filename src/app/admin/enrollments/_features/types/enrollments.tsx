@@ -1,13 +1,46 @@
+import type { z } from "zod";
+
+import {
+  createEnrollmentSchema,
+  enrollmentTypeSchema,
+  deactivationReasonSchema,
+} from "../zod-schema/enrollments";
+
+/* ========================================
+   Base Shared Types
+======================================== */
+
+export type EnrollmentType = z.infer<typeof enrollmentTypeSchema>;
+
+export type DeactivationReason = z.infer<typeof deactivationReasonSchema>;
+
+export type RegistrationChannel = "online" | "offline";
+
+export type TargetType = "course" | "batch";
+
+/* ========================================
+   Supabase Query Rows
+======================================== */
+
 export type EnrollmentSupabaseRow = {
   id: string;
-  target_type: "course" | "batch";
-  enrollment_type: "paid" | "scholarship" | "trial" | "internal";
-  registration_channel: "online" | "offline";
-  status: "ongoing" | "paused" | "completed" | "cancelled";
+
+  target_type: TargetType;
+
+  enrollment_type: EnrollmentType;
+
+  registration_channel: RegistrationChannel;
+
   is_active: boolean;
+
   notes: string | null;
-  enrolled_at: string;
+
+  deactivation_reason: DeactivationReason | null;
+
+  created_at: string;
+
   access_starts_at: string;
+
   access_ends_at: string | null;
 
   user: {
@@ -25,6 +58,7 @@ export type EnrollmentSupabaseRow = {
   batch: {
     id: string;
     title: string;
+
     batch_courses: {
       course: {
         id: string;
@@ -36,11 +70,17 @@ export type EnrollmentSupabaseRow = {
 
 export type BatchSupabaseRow = {
   id: string;
+
   title: string;
+
   is_active: boolean;
+
   start_date: string | null;
+
   end_date: string | null;
+
   is_admission_open: boolean;
+
   batch_courses: {
     course: {
       id: string;
@@ -55,20 +95,29 @@ export type CourseSupabaseRow = {
   is_active: boolean;
 };
 
+/* ========================================
+   UI Rows
+======================================== */
+
 export type EnrollmentRow = {
   id: string;
-  target_type: "course" | "batch";
 
-  enrollment_type: "paid" | "scholarship" | "trial" | "internal";
-  registration_channel: "online" | "offline";
+  target_type: TargetType;
 
-  status: "ongoing" | "paused" | "completed" | "cancelled";
+  enrollment_type: EnrollmentType;
+
+  registration_channel: RegistrationChannel;
+
   is_active: boolean;
 
   notes: string | null;
 
-  enrolled_at: string;
+  deactivation_reason: DeactivationReason | null;
+
+  created_at: string;
+
   access_starts_at: string;
+
   access_ends_at: string | null;
 
   user: {
@@ -86,6 +135,7 @@ export type EnrollmentRow = {
   batch: {
     id: string;
     title: string;
+
     courses: {
       id: string;
       title: string;
@@ -93,40 +143,31 @@ export type EnrollmentRow = {
   } | null;
 };
 
-export type CreateEnrollmentInput = {
-  user_id: string;
+/* ========================================
+   Form Input (single source of truth)
+======================================== */
 
-  target_type: "batch" | "course";
-  batch_id?: string;
-  course_id?: string;
+export type CreateEnrollmentInput = z.infer<typeof createEnrollmentSchema>;
 
-  enrollment_type: "paid" | "scholarship" | "trial" | "internal";
-  registration_channel: "online" | "offline";
-
-  status: "ongoing" | "paused" | "completed" | "cancelled";
-  is_active?: boolean;
-
-  access_starts_at: string;
-  access_ends_at?: string;
-
-  notes?: string;
-};
-
-// BATCH OPTION (ADMIN UI)
+/* ========================================
+   Admin UI Options
+======================================== */
 
 export type BatchOption = {
   id: string;
+
   title: string;
 
   start_date: string | null;
+
   end_date: string | null;
 
-  // many-to-many
   course: {
     title: string;
   }[];
 
   is_active?: boolean;
+
   is_admission_open?: boolean;
 };
 

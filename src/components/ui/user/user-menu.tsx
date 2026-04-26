@@ -13,7 +13,7 @@ import { Button } from "../button";
 import { useMounted } from "@/src/hooks/use-mounted";
 import { UserMenuSkeleton } from "./user-menu-skeleton";
 import { UserMenuContent } from "./user-menu-content";
-import { getUserForMenu } from "@/src/lib/helper-functions/getCurrentUserOptimal";
+import { getUserForMenu } from "@/src/lib/auth/getCurrentUserOptimal";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 
 type UserType = {

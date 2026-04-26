@@ -2,13 +2,13 @@ import { getFeeData } from "../actions/queries";
 import { CreateFeePlanDialog } from "./create-fee-plan-dialog";
 import { SupersedeFeePlanDialog } from "./create-supersede-fee-plan";
 import { EditFeePlanDialog } from "./edit-fee-plan-dialog";
-import { CancelFeePlanDialog } from "./cancel-fee-plan-dialog";
 import { FeePlanSummaryCard } from "./fee-plan-summary-card";
 import { FeePlanHistoryList } from "./fee-plan-history-list";
 import { PaymentsSection } from "./payment/payments-section";
 import { Payment } from "../types/payment.types";
 import { EnrollmentPricingContext } from "../types/fee-types";
 import { Separator } from "@/src/components/ui/separator";
+import { DeleteFeePlanDialog } from "./delete-fee-plan-dialog";
 
 interface Props {
   enrollmentId: string;
@@ -17,25 +17,24 @@ interface Props {
 }
 
 export async function FeeSection({ enrollmentId, pricing, payments }: Props) {
-  const { activeFeePlan, feeHistory, feeStatus } = await getFeeData(
-    enrollmentId
-  );
+  const { activeFeePlan, feeHistory, feeStatus } =
+    await getFeeData(enrollmentId);
 
-  const paymentsExist = feeStatus && feeStatus.paid_amount > 0;
+  const paymentsExist = (feeStatus?.paid_amount ?? 0) > 0;
 
   return (
     <div className="space-y-6">
-      {/* ACTIVE FEE PLAN */}
       {activeFeePlan ? (
         <>
           <FeePlanSummaryCard
-            totalAmount={activeFeePlan.total_amount}
+            offeredAmount={activeFeePlan.offered_amount}
             discountAmount={activeFeePlan.discount_amount}
             finalAmount={activeFeePlan.final_amount}
-            effectiveFrom={activeFeePlan.effective_from}
-            notes={activeFeePlan.notes}
+            listPriceAtCreation={activeFeePlan.list_price_at_creation}
+            salePriceAtCreation={activeFeePlan.sale_price_at_creation}
+            currency={activeFeePlan.currency}
+            discountReason={activeFeePlan.discount_reason}
             status={activeFeePlan.status}
-            is_active={activeFeePlan.is_active}
             createdAt={activeFeePlan.created_at}
             createdBy={activeFeePlan.created_by}
             updatedAt={activeFeePlan.updated_at}
@@ -45,14 +44,14 @@ export async function FeeSection({ enrollmentId, pricing, payments }: Props) {
                 <SupersedeFeePlanDialog
                   enrollmentId={enrollmentId}
                   oldFeePlanId={activeFeePlan.id}
-                  currentTotalAmount={activeFeePlan.total_amount}
+                  currentOfferedAmount={activeFeePlan.offered_amount}
                   currentDiscountAmount={activeFeePlan.discount_amount}
-                  currentNotes={activeFeePlan.notes}
+                  currentDiscountReason={activeFeePlan.discount_reason}
                 />
               ) : (
                 <div className="flex gap-2">
                   <EditFeePlanDialog feePlan={activeFeePlan} />
-                  <CancelFeePlanDialog feePlanId={activeFeePlan.id} />
+                  <DeleteFeePlanDialog feePlanId={activeFeePlan.id} />
                 </div>
               )
             }
@@ -61,7 +60,7 @@ export async function FeeSection({ enrollmentId, pricing, payments }: Props) {
           {paymentsExist && (
             <p className="text-sm text-muted-foreground">
               Payments have been recorded. This fee plan cannot be edited or
-              cancelled.
+              deleted.
             </p>
           )}
 
@@ -76,19 +75,18 @@ export async function FeeSection({ enrollmentId, pricing, payments }: Props) {
           <Separator className="my-4" />
         </>
       ) : (
-        /* NO ACTIVE FEE PLAN */
-        <div className="rounded-md border p-6 space-y-4">
+        <div className="space-y-4 rounded-md border p-6">
           <p className="text-sm text-muted-foreground">No active fee plan.</p>
 
           <CreateFeePlanDialog
             enrollmentId={enrollmentId}
-            defaultTotalAmount={pricing.listPrice}
             title={pricing.title}
+            listPrice={pricing.listPrice}
+            salePrice={pricing.salePrice}
           />
         </div>
       )}
 
-      {/* FEE PLAN HISTORY */}
       {feeHistory.length > 0 ? (
         <FeePlanHistoryList feePlans={feeHistory} />
       ) : (

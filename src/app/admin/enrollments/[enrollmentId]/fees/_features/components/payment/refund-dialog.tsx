@@ -15,21 +15,20 @@ import {
 } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
 import { Label } from "@/src/components/ui/label";
-import { Textarea } from "@/src/components/ui/textarea";
 import { Separator } from "@/src/components/ui/separator";
 
 import {
   refundFormSchema,
   refundSubmitSchema,
   RefundFormInput,
+  refundReasonOptions,
 } from "../../zod/refund.schema";
 
 import { MoneyInput } from "../money-input";
-
 import { ConfirmRefundDialog } from "./confirm-refund-dialog";
 import { createRefund } from "../../actions/payments/create-refund";
-
 import { PaymentMethodSelect } from "./payment-method-select";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   enrollmentId: string;
@@ -38,7 +37,9 @@ interface Props {
 
 export function RefundDialog({ enrollmentId, refundableAmount }: Props) {
   const [open, setOpen] = useState(false);
+
   const [confirmOpen, setConfirmOpen] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const form = useForm<RefundFormInput>({
@@ -48,42 +49,44 @@ export function RefundDialog({ enrollmentId, refundableAmount }: Props) {
       amount: "",
       refundedAt: new Date().toISOString().slice(0, 10),
       paymentMethod: "",
-      reason: "",
-      notes: "",
+      refundReason: undefined,
     },
   });
 
-  /** Reset form every time dialog opens */
+  /**
+   * Reset each open
+   */
   useEffect(() => {
     if (open) {
       form.reset({
         amount: "",
         refundedAt: new Date().toISOString().slice(0, 10),
         paymentMethod: "",
-        reason: "",
-        notes: "",
+        refundReason: undefined,
       });
     }
   }, [open, form]);
 
-  /** useWatch instead of form.watch */
   const amountValue = Number(
-    useWatch({ control: form.control, name: "amount" }) || 0
+    useWatch({
+      control: form.control,
+      name: "amount",
+    }) || 0,
   );
 
-  const reasonValue = useWatch({ control: form.control, name: "reason" }) ?? "";
+  const refundReasonValue = useWatch({
+    control: form.control,
+    name: "refundReason",
+  });
 
   const isOverRefunding = amountValue > refundableAmount;
 
-  const { isDirty, isValid, errors, touchedFields, submitCount } =
-    form.formState;
+  const { isDirty, isValid, errors, touchedFields } = form.formState;
 
-  /** Step 1: open confirmation modal */
   function onSubmit() {
     setConfirmOpen(true);
   }
 
-  /** Step 2: confirm and create refund */
   async function confirmRefund() {
     setLoading(true);
 
@@ -94,83 +97,82 @@ export function RefundDialog({ enrollmentId, refundableAmount }: Props) {
         amount: Number(data.amount),
         refundedAt: data.refundedAt,
         paymentMethod: data.paymentMethod,
-        reason: data.reason,
-        notes: data.notes,
+        refundReason: data.refundReason,
       });
 
-      await createRefund(enrollmentId, parsed);
+      const { error } = await callServerAction(
+        createRefund(enrollmentId, parsed),
+      );
+
+      if (error) {
+        toast.error(error);
+        return;
+      }
 
       toast.success("Refund recorded successfully");
 
       setConfirmOpen(false);
       setOpen(false);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to record refund.";
-      toast.error(message);
+    } catch {
+      toast.error("Failed to record refund.");
     } finally {
       setLoading(false);
     }
   }
 
-  const showError =
-    errors.reason &&
-    (submitCount > 0 || (touchedFields.reason && reasonValue.length === 0));
-
-  const showHelper =
-    !showError && reasonValue.length > 0 && reasonValue.length < 3;
-
   return (
     <>
-      {/* Trigger */}
       <Button
         variant="outline"
-        className="cursor-pointer mr-2"
+        className="mr-2 cursor-pointer"
         onClick={() => setOpen(true)}
         disabled={refundableAmount <= 0}
       >
         Issue Refund
       </Button>
 
-      {/* Refund Form Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Issue Refund</DialogTitle>
+
             <DialogDescription>
               Record a refund issued for this enrollment.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            {/* Refund Amount */}
+            {/* Amount */}
             <div className="space-y-2">
               <Label>Refund Amount</Label>
+
               <MoneyInput
-                placeholder="e.g. 3000"
+                placeholder="e.g. 1000"
                 {...form.register("amount")}
               />
+
               {errors.amount && touchedFields.amount && (
                 <p className="text-xs text-destructive">
                   {errors.amount.message}
                 </p>
               )}
+
               <p className="text-xs text-muted-foreground">
-                Refundable amount: ₹{refundableAmount.toLocaleString()}
+                Available to refund: ₹{refundableAmount.toLocaleString()}
               </p>
+
               {isOverRefunding && (
-                <div className="rounded-md border border-yellow-300 bg-yellow-50 px-2 py-1">
-                  <p className="text-xs text-yellow-800">
-                    ⚠️ Refund exceeds refundable balance. Proceed only if
-                    intentional.
-                  </p>
-                </div>
+                <p className="rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs text-yellow-800">
+                  Refund exceeds current paid amount. Continue only if
+                  intentional.
+                </p>
               )}
             </div>
 
-            {/* Refund Date */}
+            {/* Date */}
             <div className="space-y-2">
               <Label>Refund Date</Label>
+
               <input
                 type="date"
                 {...form.register("refundedAt")}
@@ -178,7 +180,7 @@ export function RefundDialog({ enrollmentId, refundableAmount }: Props) {
               />
             </div>
 
-            {/* Refund Method */}
+            {/* Method */}
             <div className="space-y-2">
               <PaymentMethodSelect
                 control={form.control}
@@ -193,53 +195,53 @@ export function RefundDialog({ enrollmentId, refundableAmount }: Props) {
               )}
             </div>
 
-            {/* Refund Reason */}
+            {/* Reason */}
             <div className="space-y-2">
               <Label>Refund Reason</Label>
-              <Textarea
-                placeholder="Required reason for refund"
-                {...form.register("reason")}
-              />
-              <p
-                className={`
-                  min-h-4 text-xs transition-opacity
-                  ${showError || showHelper ? "opacity-100" : "opacity-0"}
-                  ${showError ? "text-destructive" : "text-muted-foreground"}
-                `}
-              >
-                {showError
-                  ? errors.reason?.message
-                  : showHelper
-                  ? "Minimum 3 characters required"
-                  : ""}
-              </p>
-            </div>
 
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label>Additional Notes</Label>
-              <Textarea
-                placeholder="Optional additional context"
-                {...form.register("notes")}
-              />
+              <select
+                {...form.register("refundReason")}
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              >
+                <option value="">Select refund reason</option>
+
+                {refundReasonOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              {errors.refundReason && (
+                <p className="text-xs text-destructive">
+                  {errors.refundReason.message}
+                </p>
+              )}
+
+              {refundReasonValue && (
+                <p className="text-xs text-muted-foreground">
+                  Reason will be stored in finance records.
+                </p>
+              )}
             </div>
 
             <Separator />
 
             <DialogFooter>
               <Button
-                className="cursor-pointer"
                 type="button"
                 variant="outline"
+                className="cursor-pointer"
                 onClick={() => setOpen(false)}
                 disabled={loading}
               >
                 Cancel
               </Button>
+
               <Button
-                className="cursor-pointer"
                 type="submit"
                 variant="destructive"
+                className="cursor-pointer"
                 disabled={loading || !isDirty || !isValid}
               >
                 Review Refund
@@ -249,7 +251,6 @@ export function RefundDialog({ enrollmentId, refundableAmount }: Props) {
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation Dialog */}
       <ConfirmRefundDialog
         open={confirmOpen}
         onCancel={() => setConfirmOpen(false)}

@@ -21,6 +21,7 @@ import {
 } from "@/src/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/src/components/ui/radio-group";
 import { Label } from "@/src/components/ui/label";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 export function CreateTestForm() {
   const router = useRouter();
@@ -39,22 +40,22 @@ export function CreateTestForm() {
     startTransition(async () => {
       const toastId = toast.loading("Creating test…");
 
-      try {
-        const res = await createTest(values);
+      const { data: testId, error } = await callServerAction(
+        createTest(values),
+      );
 
-        toast.success("Test created successfully", {
+      if (error || !testId) {
+        toast.error(error ?? "Something went wrong. Please try again.", {
           id: toastId,
         });
-
-        router.push(`/admin/tests/${res.testId}`);
-      } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : "Something went wrong. Please try again.";
-
-        toast.error(message, { id: toastId });
+        return;
       }
+
+      toast.success("Test created successfully", {
+        id: toastId,
+      });
+
+      router.push(`/admin/tests/${testId}`);
     });
   };
 

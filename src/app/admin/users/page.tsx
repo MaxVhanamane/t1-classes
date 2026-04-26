@@ -1,14 +1,14 @@
 import { AppUser } from "@/src/types/user";
-import UserTableRow from "@/src/components/ui/admin/users/user-table-row";
-import UserCard from "@/src/components/ui/admin/users/user-card";
-import CreateUserDialog from "@/src/components/ui/admin/users/create-user-dialog";
+import UserTableRow from "@/src/app/admin/users/_features/components/user-table-row";
+import UserCard from "@/src/app/admin/users/_features/components/user-card";
+import CreateUserDialog from "@/src/app/admin/users/_features/components/create-user-dialog";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 export default async function UsersPage() {
   const supabase = await createServerSupabaseClient();
 
   const { data } = await supabase
     .from("users")
-    .select("id, full_name, phone, role, status, created_at")
+    .select("id, full_name, phone,email, role, status, created_at")
     .order("created_at", { ascending: false });
 
   const users = data as AppUser[];
@@ -27,6 +27,7 @@ export default async function UsersPage() {
             <tr className="text-left">
               <th className="p-3">Name</th>
               <th>Phone</th>
+              <th>Email</th>
               <th>Role</th>
               <th>Status</th>
               <th>Joined</th>

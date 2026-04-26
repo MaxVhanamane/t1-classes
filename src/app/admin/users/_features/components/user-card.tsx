@@ -2,7 +2,7 @@
 
 import { AppUser } from "@/src/types/user";
 import EditUserDialog from "./edit-user-dialog";
-import { Button } from "../../button";
+import { Button } from "../../../../../components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 
 export default function UserCard({ user }: { user: AppUser }) {

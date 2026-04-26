@@ -27,6 +27,7 @@ import { deleteDistribution } from "../actions/delete-distribution";
 import { ScheduleTestDialog } from "../../../schedule/_features/components/schedule-test-dialog";
 import { DangerConfirmInput } from "@/src/components/ui/danger-confirm-input";
 import { Link } from "@/src/components/ui/link";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   item: DistributionItem;
@@ -66,24 +67,23 @@ export function DistributionRowCard({ item }: Props) {
   }
 
   async function handleDelete() {
-    try {
-      setDeleting(true);
+    setDeleting(true);
 
-      await deleteDistribution(item.id);
+    const { error } = await callServerAction(deleteDistribution(item.id));
 
-      toast.success("Distribution deleted");
-
-      setDeleteOpen(false);
-      setCanDelete(false);
-
-      router.refresh();
-    } catch {
-      toast.error("Failed to delete distribution");
-    } finally {
+    if (error) {
+      toast.error(error);
       setDeleting(false);
+      return;
     }
-  }
 
+    toast.success("Distribution deleted");
+    setDeleteOpen(false);
+    setCanDelete(false);
+    router.refresh();
+
+    setDeleting(false);
+  }
   return (
     <Card className="p-4 transition hover:bg-muted/40 shadow-none">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

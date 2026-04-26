@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { CoursesTable } from "./courses-table";
 import { Button } from "@/src/components/ui/button";
-import type { CourseRow } from "../actions/courses.actions";
 import { CourseDialog } from "./course-dialog";
+import { CourseRow } from "../actions/get-courses";
 
 interface CoursesClientProps {
   courses: CourseRow[];

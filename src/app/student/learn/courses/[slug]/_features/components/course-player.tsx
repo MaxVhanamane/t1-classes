@@ -22,6 +22,7 @@ import {
 import { PracticeSetDialog } from "./practice-set/practice-set-dialog";
 import PlayerErrorState from "./player-error-state";
 import { useQueryClient } from "@tanstack/react-query";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 
 /* ========================================================= */
 /* Types                                                      */
@@ -51,11 +52,10 @@ type PlayerState =
 /* ========================================================= */
 /* Fetch helper                                               */
 /* ========================================================= */
-
-const fetchUnit = async (unitId: string): Promise<CourseUnitContent> => {
-  const res = await fetch(`/api/learning/courses/units/${unitId}`);
-  if (!res.ok) throw new Error("Failed to load unit");
-  return res.json();
+const fetchUnit = (unitId: string): Promise<CourseUnitContent> => {
+  return fetchWrapper<CourseUnitContent>(
+    `/api/learning/courses/units/${unitId}`,
+  );
 };
 
 /* ========================================================= */

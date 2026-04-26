@@ -45,11 +45,18 @@ export async function AdminStat() {
 
 export async function EnrollmentsStat() {
   const supabase = await supabaseClient();
+
+  const now = new Date().toISOString();
+
   const { count } = await supabase
     .from("enrollments")
-    .select("*", { count: "exact", head: true })
+    .select("*", {
+      count: "exact",
+      head: true,
+    })
     .eq("is_active", true)
-    .in("status", ["ongoing", "paused"]);
+    .lte("access_starts_at", now)
+    .or(`access_ends_at.is.null,access_ends_at.gte.${now}`);
 
   return <StatCard icon={Layers} label="Enrollments" value={count ?? 0} />;
 }

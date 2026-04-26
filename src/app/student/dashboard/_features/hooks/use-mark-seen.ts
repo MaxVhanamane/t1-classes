@@ -1,18 +1,19 @@
+"use client";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 
 export function useMarkNotificationsSeen() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async () => {
-            const res = await fetch("/api/notifications/student/seen", {
-                method: "POST",
-            });
-
-            if (!res.ok) {
-                throw new Error("Failed");
-            }
-        },
+        mutationFn: () =>
+            fetchWrapper<{ success: true }>(
+                "/api/notifications/student/seen",
+                {
+                    method: "POST",
+                }
+            ),
 
         // optimistic update (instant)
         onMutate: async () => {
@@ -26,11 +27,11 @@ export function useMarkNotificationsSeen() {
 
             queryClient.setQueryData(
                 ["student-notifications"],
-                (old) => {
+                (old: unknown) => {
                     if (!old) return old;
 
                     return {
-                        ...old,
+                        ...(old as Record<string, unknown>),
                         unread_count: 0,
                     };
                 }
@@ -39,7 +40,7 @@ export function useMarkNotificationsSeen() {
             return { previous };
         },
 
-        //  rollback if API fails
+        // rollback if API fails
         onError: (_err, _vars, context) => {
             if (context?.previous) {
                 queryClient.setQueryData(
@@ -49,7 +50,7 @@ export function useMarkNotificationsSeen() {
             }
         },
 
-        // optional: keep cache fresh
+        // keep cache fresh
         onSettled: () => {
             void queryClient.invalidateQueries({
                 queryKey: ["student-notifications"],

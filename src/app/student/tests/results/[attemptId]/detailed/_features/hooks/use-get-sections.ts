@@ -1,7 +1,8 @@
 "use client";
 
-import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
 import { useQuery } from "@tanstack/react-query";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
+import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
 
 /* ---------------- Types ---------------- */
 
@@ -38,27 +39,26 @@ export type SectionsResponse =
 
 /* ---------------- Fetch ---------------- */
 
-async function fetchSections(
+function fetchSections(
     attemptId: string
 ): Promise<SectionsResponse> {
-    const res = await fetch(
-        `/api/tests/results/${attemptId}/sections`,
-        { credentials: "include" }
+    return fetchWrapper<SectionsResponse>(
+        `/api/tests/results/${attemptId}/sections`
     );
-
-    if (!res.ok) {
-        throw new Error("Failed to load sections");
-    }
-
-    return res.json();
 }
 
 /* ---------------- Hook ---------------- */
 
-export function useSections(attemptId: string) {
+export function useSections(
+    attemptId: string
+) {
     return useQuery({
-        queryKey: ["result-sections", attemptId],
-        queryFn: () => fetchSections(attemptId),
+        queryKey: [
+            "result-sections",
+            attemptId,
+        ],
+        queryFn: () =>
+            fetchSections(attemptId),
         staleTime: Infinity,
     });
 }

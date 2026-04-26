@@ -1,13 +1,14 @@
 "use server"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff"
 
 import {
     ResultsQueryParams,
     PagedResults,
     DistributionResultRow,
 } from "../types/results.types"
+
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only"
 
 const DEFAULT_PAGE_SIZE = 25
 const ADMIN_PAGE_SIZE = 50
@@ -16,7 +17,8 @@ const MAX_PAGE_SIZE = 100
 export async function getDistributionResults(
     params: ResultsQueryParams
 ): Promise<PagedResults> {
-    const staff = await getCurrentStaff()
+    // redirect() throws internally; calling inside try/catch would prevent the redirect
+    const staff = await requireStaffServerOnly();
     const supabase = await createServerSupabaseClient()
 
     const {
@@ -49,7 +51,7 @@ export async function getDistributionResults(
             .from("test_distributions")
             .select("id")
             .eq("id", distributionId)
-            .eq("created_by", staff.id)
+            .eq("created_by", staff.userId)
             .maybeSingle()
 
         if (error || !data) {

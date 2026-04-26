@@ -1,7 +1,14 @@
 import { getQuestionsForSection } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/services/get-questions-for-section";
+import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
+    const auth = await requireStaffApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
+    }
+
     const sectionId = req.nextUrl.searchParams.get("sectionId");
 
     if (!sectionId) {

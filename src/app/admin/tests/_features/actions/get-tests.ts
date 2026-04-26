@@ -1,17 +1,12 @@
+import "server-only"
 import { TestRow } from "../types/test.types";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
-import { redirect } from "next/navigation";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 const PAGE_SIZE = 20;
 
 export async function getTests(page: number = 1) {
-    const user = await getAuthIfHasRole(["admin", "teacher"]);
-
-    if (!user) {
-        redirect("/login");
-    }
-
+    const staff = await requireStaffServerOnly();
     const supabase = await createServerSupabaseClient();
 
     const from = (page - 1) * PAGE_SIZE;
@@ -32,8 +27,8 @@ export async function getTests(page: number = 1) {
         )
         .order("created_at", { ascending: false })
         .range(from, to);
-    if (user.role !== "admin") {
-        query = query.eq("created_by", user.userId);
+    if (staff.role !== "admin") {
+        query = query.eq("created_by", staff.userId);
     }
 
     const { data, error, count } = await query;

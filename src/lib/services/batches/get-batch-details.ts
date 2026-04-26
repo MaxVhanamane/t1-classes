@@ -6,40 +6,81 @@ import type {
     BatchDetailsResponse,
     BatchCourse,
 } from "@/src/types/batches.types";
+
 import { getAuth } from "../../auth/get-auth";
 
 export async function getBatchDetails(
-    batchId: string
+    batchId: string,
 ): Promise<BatchDetailsResponse> {
-    const supabase = await createServerSupabaseClient();
-    const user = await getAuth();
-    const now = new Date().toISOString();
+    const supabase =
+        await createServerSupabaseClient();
+
+    const user =
+        await getAuth();
+
+    const now =
+        new Date().toISOString();
 
     /* ----------------------------------------------------------- */
     /* 1. Validate batch enrollment + access window                */
     /* ----------------------------------------------------------- */
 
-    const { count, error: enrollmentError } = await supabase
-        .from("enrollments")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user?.userId)
-        .eq("target_type", "batch")
-        .eq("batch_id", batchId)
-        .in("status", ["ongoing", "paused"])
-        .lte("access_starts_at", now)
-        .or(`access_ends_at.is.null,access_ends_at.gte.${now}`);
+    const {
+        count,
+        error:
+        enrollmentError,
+    } = await supabase
+        .from(
+            "enrollments",
+        )
+        .select("id", {
+            count: "exact",
+            head: true,
+        })
+        .eq(
+            "user_id",
+            user?.userId,
+        )
+        .eq(
+            "target_type",
+            "batch",
+        )
+        .eq(
+            "batch_id",
+            batchId,
+        )
+        .eq(
+            "is_active",
+            true,
+        )
+        .lte(
+            "access_starts_at",
+            now,
+        )
+        .or(
+            `access_ends_at.is.null,access_ends_at.gte.${now}`,
+        );
 
-    if (enrollmentError || (count ?? 0) === 0) {
-        throw new Error("BATCH_ACCESS_DENIED");
+    if (
+        enrollmentError ||
+        (count ?? 0) === 0
+    ) {
+        throw new Error(
+            "BATCH_ACCESS_DENIED",
+        );
     }
 
     /* ----------------------------------------------------------- */
-    /* 2. Fetch batch + courses                                    */
+    /* 2. Fetch batch + active courses                            */
     /* ----------------------------------------------------------- */
 
-    const { data, error } = await supabase
+    const {
+        data,
+        error,
+    } = await supabase
         .from("batches")
-        .select(`
+        .select(
+            `
       id,
       title,
       subtitle,
@@ -75,14 +116,26 @@ export async function getBatchDetails(
           is_active
         )
       )
-    `)
+    `,
+        )
         .eq("id", batchId)
-        .eq("is_active", true)
-        .eq("batch_courses.course.is_active", true)
+        .eq(
+            "is_active",
+            true,
+        )
+        .eq(
+            "batch_courses.course.is_active",
+            true,
+        )
         .single();
 
-    if (error || !data) {
-        throw new Error("BATCH_NOT_FOUND");
+    if (
+        error ||
+        !data
+    ) {
+        throw new Error(
+            "BATCH_NOT_FOUND",
+        );
     }
 
     /* ----------------------------------------------------------- */
@@ -90,23 +143,40 @@ export async function getBatchDetails(
     /* ----------------------------------------------------------- */
 
     const courses: BatchCourse[] =
-        data.batch_courses?.map((bc) => {
-            const course = bc.course as unknown as BatchCourse;
+        data.batch_courses?.map(
+            (bc) => {
+                const course =
+                    Array.isArray(
+                        bc.course,
+                    )
+                        ? bc.course[0]
+                        : bc.course;
 
-            return {
-                id: course.id,
-                title: course.title,
-                subtitle: course.subtitle,
-                slug: course.slug,
-                thumbnail_image: course.thumbnail_image,
+                return {
+                    id: course.id,
+                    title:
+                        course.title,
+                    subtitle:
+                        course.subtitle,
+                    slug:
+                        course.slug,
+                    thumbnail_image:
+                        course.thumbnail_image,
 
-                category: course.category,
+                    category:
+                        course.category,
 
-                target_exam: course.target_exam,
-                class_level: course.class_level,
-                subjects: course.subjects,
-            };
-        }) ?? [];
+                    target_exam:
+                        course.target_exam,
+
+                    class_level:
+                        course.class_level,
+
+                    subjects:
+                        course.subjects,
+                };
+            },
+        ) ?? [];
 
     /* ----------------------------------------------------------- */
     /* 4. Return response                                          */
@@ -115,24 +185,42 @@ export async function getBatchDetails(
     return {
         batch: {
             id: data.id,
-            title: data.title,
-            subtitle: data.subtitle,
+            title:
+                data.title,
+            subtitle:
+                data.subtitle,
 
-            category: data.category,
-            board: data.board,
+            category:
+                data.category,
+            board:
+                data.board,
 
-            target_exam: data.target_exam,
-            class_level: data.class_level,
-            subjects: data.subjects,
+            target_exam:
+                data.target_exam,
 
-            mode: data.mode,
-            is_active: data.is_active,
-            is_admission_open: data.is_admission_open,
+            class_level:
+                data.class_level,
 
-            description: data.description,
+            subjects:
+                data.subjects,
 
-            start_date: data.start_date,
-            end_date: data.end_date,
+            mode:
+                data.mode,
+
+            is_active:
+                data.is_active,
+
+            is_admission_open:
+                data.is_admission_open,
+
+            description:
+                data.description,
+
+            start_date:
+                data.start_date,
+
+            end_date:
+                data.end_date,
         },
 
         courses,

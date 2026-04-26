@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
+import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 export async function GET() {
-    const user = await getAuthIfHasRole(["admin", "teacher"]);
+    const auth = await requireStaffApiRoute();
 
-    if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!auth.authorized) {
+        return auth.response;
     }
+
 
     const supabase = await createServerSupabaseClient();
 

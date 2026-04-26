@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 import { NotificationType } from "../types/notification.types";
 
 export type NotificationRow = {
@@ -12,16 +13,11 @@ export type NotificationRow = {
 };
 
 export function useNotifications() {
-    return useQuery({
+    return useQuery<NotificationRow[]>({
         queryKey: ["admin-notifications"],
-        queryFn: async () => {
-            const res = await fetch("/api/admin/notifications");
-
-            if (!res.ok) {
-                throw new Error("Failed to load notifications");
-            }
-
-            return (await res.json()) as NotificationRow[];
-        },
+        queryFn: () =>
+            fetchWrapper<NotificationRow[]>(
+                "/api/admin/notifications"
+            ),
     });
 }

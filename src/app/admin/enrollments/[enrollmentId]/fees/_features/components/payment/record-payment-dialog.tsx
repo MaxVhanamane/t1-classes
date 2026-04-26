@@ -27,6 +27,7 @@ import { MoneyInput } from "../money-input";
 import { createPayment } from "../../actions/payments/create-payment";
 import { toast } from "sonner";
 import { PaymentMethodSelect } from "./payment-method-select";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   enrollmentId: string;
@@ -71,6 +72,7 @@ export function RecordPaymentDialog({ enrollmentId, pendingAmount }: Props) {
 
   async function onSubmit(data: RecordPaymentFormInput) {
     setLoading(true);
+
     try {
       const parsed = recordPaymentSubmitSchema.parse({
         amount: Number(data.amount),
@@ -79,13 +81,19 @@ export function RecordPaymentDialog({ enrollmentId, pendingAmount }: Props) {
         notes: data.notes,
       });
 
-      await createPayment(enrollmentId, parsed);
-      setOpen(false); //  close dialog on success
+      const { error } = await callServerAction(
+        createPayment(enrollmentId, parsed),
+      );
+
+      if (error) {
+        toast.error(error);
+        return;
+      }
+
+      setOpen(false);
       toast.success("Payment recorded successfully.");
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to record payment.";
-      toast.error(message);
+    } catch {
+      toast.error("Failed to record payment.");
     } finally {
       setLoading(false);
     }

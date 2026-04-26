@@ -16,6 +16,7 @@ import { Label } from "@/src/components/ui/label";
 
 import { renameTopic } from "../../actions/topic/rename-topic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface RenameTopicDialogProps {
   topicId: string;
@@ -53,29 +54,28 @@ export function RenameTopicDialog({
     }
 
     startTransition(async () => {
-      try {
-        await renameTopic(courseId, topicId, {
-          title: trimmed,
+      const { error } = await callServerAction(
+        renameTopic(courseId, topicId, { title: trimmed }),
+      );
+
+      if (error) {
+        toast.error(error);
+        return;
+      }
+
+      toast.success("Topic renamed");
+      setOpen(false);
+
+      /**
+       * Sync URL title if we are currently on this topic page
+       */
+      if (pathname.includes(`/topics/${topicId}`)) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("title", trimmed);
+
+        router.replace(`${pathname}?${params.toString()}`, {
+          scroll: false,
         });
-
-        toast.success("Topic renamed");
-        setOpen(false);
-
-        /**
-         *  Sync URL title if we are currently on this topic page
-         */
-        if (pathname.includes(`/topics/${topicId}`)) {
-          const params = new URLSearchParams(searchParams.toString());
-          params.set("title", trimmed);
-
-          router.replace(`${pathname}?${params.toString()}`, {
-            scroll: false,
-          });
-        }
-      } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Failed to rename chapter"
-        );
       }
     });
   }

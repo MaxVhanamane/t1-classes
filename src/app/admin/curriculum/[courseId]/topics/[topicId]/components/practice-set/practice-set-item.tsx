@@ -14,6 +14,7 @@ import { DeletePracticeSetDialog } from "../../practice/[practiceSetId]/componen
 import { ConfirmActionDialog } from "@/src/components/ui/common/confirm-action-dialog";
 import { togglePracticeSetPublish } from "../../practice/[practiceSetId]/actions/practice-set/togglePracticeSetPublish";
 import { toast } from "sonner";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   practiceSet: {
@@ -94,24 +95,24 @@ export function PracticeSetItem({ practiceSet, courseId, topicId }: Props) {
                   practiceSet.is_published ? "Unpublish" : "Publish"
                 }
                 onConfirm={async () => {
-                  try {
-                    await togglePracticeSetPublish({
+                  const { error } = await callServerAction(
+                    togglePracticeSetPublish({
                       courseId,
                       practiceSetId: practiceSet.id,
                       publish: !practiceSet.is_published,
-                    });
-                    toast.success(
-                      practiceSet.is_published
-                        ? "practice set unpublished"
-                        : "practice set published",
-                    );
-                  } catch (err) {
-                    toast.error(
-                      err instanceof Error
-                        ? err.message
-                        : "Failed to publish practice set",
-                    );
+                    }),
+                  );
+
+                  if (error) {
+                    toast.error(error);
+                    return;
                   }
+
+                  toast.success(
+                    practiceSet.is_published
+                      ? "Practice set unpublished"
+                      : "Practice set published",
+                  );
                 }}
                 trigger={
                   <Button

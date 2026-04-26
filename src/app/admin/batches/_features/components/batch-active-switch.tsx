@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { toggleBatchActive } from "../actions/toggle-batch-active";
 import { Switch } from "@/src/components/ui/switch";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 type Props = {
   batchId: string;
@@ -25,19 +26,19 @@ export function BatchActiveSwitch({ batchId, initialValue }: Props) {
         setChecked(next);
         setLoading(true);
 
-        try {
-          await toggleBatchActive(batchId, next);
-          toast.success(next ? "Batch activated" : "Batch deactivated");
-        } catch (e) {
+        const { error } = await callServerAction(
+          toggleBatchActive(batchId, next),
+        );
+
+        if (error) {
           setChecked(prev);
-
-          const message =
-            e instanceof Error ? e.message : "Failed to update batch";
-
-          toast.error(message);
-        } finally {
+          toast.error(error);
           setLoading(false);
+          return;
         }
+
+        toast.success(next ? "Batch activated" : "Batch deactivated");
+        setLoading(false);
       }}
     />
   );

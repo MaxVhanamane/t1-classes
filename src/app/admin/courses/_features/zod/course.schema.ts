@@ -13,12 +13,6 @@ import {
 /* Helpers                                            */
 /* -------------------------------------------------- */
 
-const optionalString = z
-    .string()
-    .trim()
-    .min(1)
-    .optional()
-    .or(z.literal("").transform(() => undefined));
 
 /* -------------------------------------------------- */
 /* TipTap JSON                                        */
@@ -36,8 +30,10 @@ export const descriptionSchema = z
 export const courseSchema = z
     .object({
         title: z.string().trim().min(1, "Title is required"),
-
-        subtitle: optionalString,
+        subtitle: z
+            .string()
+            .max(120, "Subtitle must be 120 characters or less")
+            .optional(),
 
         thumbnail_image: z.string().nullable().optional(),
 

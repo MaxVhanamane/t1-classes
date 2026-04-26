@@ -1,17 +1,15 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
 import { notificationSchema } from "../zod/notification.schema";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 export async function createNotification(data: unknown) {
     const parsed = notificationSchema.parse(data);
 
-    const user = await getAuthIfHasRole(["admin", "teacher"]);
+    const staff = await requireStaffServerOnly();
 
-    if (!user) {
-        throw new Error("UNAUTHORIZED");
-    }
+
 
     const supabase = await createServerSupabaseClient();
 
@@ -20,7 +18,7 @@ export async function createNotification(data: unknown) {
         message: parsed.message,
         type: parsed.type,
         batch_id: parsed.batch_id,
-        created_by: user.userId,
+        created_by: staff.userId,
     };
 
     const { error } = await supabase

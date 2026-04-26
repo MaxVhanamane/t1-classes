@@ -1,5 +1,5 @@
 "use server"
-import { getAuth } from "../auth/get-auth";
+import { getAuth } from "./get-auth";
 import { createServerSupabaseClient } from "../supabase/supabase-server";
 
 export async function getUserForMenu() {

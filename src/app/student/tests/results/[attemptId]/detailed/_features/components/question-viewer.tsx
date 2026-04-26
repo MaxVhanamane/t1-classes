@@ -1,59 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { useSectionQuestions } from "../hooks/use-section-questions";
-import { QuestionCard } from "./question-card";
-import { PaginationBar } from "./pagination-bar";
 import { Loader } from "lucide-react";
 import { cn } from "@/src/lib/utils";
-import { MetaStrip } from "./meta-strip";
-import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
 
-/* ---------------------------------- */
+import { QuestionCard } from "./question-card";
+import { PaginationBar } from "./pagination-bar";
+import { MetaStrip } from "./meta-strip";
+import { SectionSummaryAccordion } from "./section-summary-accordion";
+
+import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
+import { QuestionsPageResponse } from "@/src/app/api/tests/results/[attemptId]/sections/[sectionId]/questions/route";
+
 type Props = {
-  attemptId: string;
-  sectionId: string;
+  loading: boolean;
+  data: QuestionsPageResponse | null;
+
+  page: number;
+  setPage: (page: number) => void;
+
   sectionTitle: string;
   subjectLabel?: string;
   fullMarks?: number;
   negativeMarks?: number;
   partialMarks?: PartialMarkingByCorrectCount | null | undefined;
-  questionCount?: number;
 };
 
 const LIMIT = 10;
 
-/* ---------------------------------- */
 export function QuestionViewer({
-  attemptId,
-  sectionId,
+  loading,
+  data,
+  setPage,
   sectionTitle,
   subjectLabel,
   fullMarks,
   negativeMarks,
   partialMarks,
-  questionCount,
 }: Props) {
-  const [page, setPage] = useState(1);
-
-  const query = useSectionQuestions(attemptId, sectionId, page);
-
-  /* ---------------- Loading ---------------- */
-  if (query.isLoading) {
+  if (loading) {
     return (
-      <div
-        className="h-[calc(var(--h-viewport-minus-navbar)-108.78px)]
-  md:h-(--h-viewport-minus-navbar) w-full flex items-center justify-center flex-col gap-2"
-      >
+      <div className="h-[calc(var(--h-viewport-minus-navbar)-108.78px)] md:h-(--h-viewport-minus-navbar) w-full flex items-center justify-center flex-col gap-2">
         <Loader className="animate-spin text-muted-foreground" />
         <span className="text-xs">Fetching questions...</span>
       </div>
     );
   }
 
-  if (!query.data) return null;
+  if (!data) return null;
 
-  if (query.data.kind !== "ok") {
+  if (data.kind !== "ok") {
     return (
       <div className="p-6 text-sm text-muted-foreground">
         Unable to load questions
@@ -61,11 +56,11 @@ export function QuestionViewer({
     );
   }
 
-  const { questions, page: currentPage, totalPages } = query.data;
+  const { questions, page: currentPage, totalPages, summary } = data;
 
   return (
     <div className="w-full">
-      {/* ================= Desktop Sticky Header ================= */}
+      {/* Desktop Header */}
       <div
         className={cn(
           "hidden md:block sticky top-0 z-20",
@@ -79,17 +74,19 @@ export function QuestionViewer({
 
           <MetaStrip
             subjectLabel={subjectLabel}
-            questionCount={questionCount}
+            questionCount={summary.totalQuestions}
             fullMarks={fullMarks}
             negativeMarks={negativeMarks}
             partialMarks={partialMarks}
             currentPage={currentPage}
             totalPages={totalPages}
           />
+
+          <SectionSummaryAccordion summary={summary} />
         </div>
       </div>
 
-      {/* ================= Questions ================= */}
+      {/* Questions */}
       <div className="p-6 space-y-6">
         {questions.map((q, i) => (
           <QuestionCard

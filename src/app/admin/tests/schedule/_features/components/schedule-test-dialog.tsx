@@ -39,6 +39,7 @@ import { BatchRow } from "../types/audience.types";
 import { updateTestDistribution } from "../../../distributions/_features/actions/update-test-distribution";
 import { ISODatePicker } from "../../../distributions/_features/components/iso-date-picker";
 import { useRouter } from "nextjs-toploader/app";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 /* ---------------- Types ---------------- */
 export function dateToISO(date: Date) {
@@ -173,16 +174,32 @@ export function ScheduleTestDialog({
       }
 
       if (isEditMode && distribution) {
-        await updateTestDistribution(distribution.id, values);
+        const { error } = await callServerAction(
+          updateTestDistribution(distribution.id, values),
+        );
+
+        if (error) {
+          handleDistributionError(error);
+          return;
+        }
+
         toast.success("Distribution updated");
       } else {
-        await createTestDistribution(values);
+        const { error } = await callServerAction(
+          createTestDistribution(values),
+        );
+
+        if (error) {
+          handleDistributionError(error);
+          return;
+        }
+
         toast.success("Test scheduled");
       }
 
       onOpenChange(false);
-    } catch (error: unknown) {
-      handleDistributionError(error);
+    } catch {
+      toast.error("Something went wrong");
     }
   }
 

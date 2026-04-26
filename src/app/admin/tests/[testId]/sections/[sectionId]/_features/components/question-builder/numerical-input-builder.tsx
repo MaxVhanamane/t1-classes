@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/src/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { CreateQuestionInput } from "../../zod/question.schema";
@@ -16,36 +17,40 @@ type NumericRange = {
 export function NumericalInputBuilder({ form }: Props) {
   const value = form.watch("correctAnswer");
 
-  const range: NumericRange | undefined =
+  const range: NumericRange =
     typeof value === "object" &&
     value !== null &&
     "target" in value &&
     "tolerance" in value
       ? (value as NumericRange)
-      : undefined;
+      : {};
+
+  const [targetInput, setTargetInput] = useState(
+    range.target?.toString() ?? "",
+  );
+
+  const [toleranceInput, setToleranceInput] = useState(
+    range.tolerance?.toString() ?? "",
+  );
+
+  function parse(raw: string): number | undefined {
+    if (!raw.trim()) return undefined;
+
+    const n = Number(raw);
+    return Number.isNaN(n) ? undefined : n;
+  }
 
   function update(next: Partial<NumericRange>) {
-    const merged: NumericRange = {
-      target: range?.target,
-      tolerance: range?.tolerance,
-      ...next,
-    };
-
-    // Prevent NaN pollution
-    if (
-      (merged.target !== undefined && Number.isNaN(merged.target)) ||
-      (merged.tolerance !== undefined && Number.isNaN(merged.tolerance))
-    ) {
-      return;
-    }
-
     form.setValue(
       "correctAnswer",
-      merged as CreateQuestionInput["correctAnswer"],
+      {
+        target: "target" in next ? next.target : range.target,
+        tolerance: "tolerance" in next ? next.tolerance : range.tolerance,
+      },
       {
         shouldDirty: true,
         shouldTouch: true,
-      }
+      },
     );
   }
 
@@ -55,17 +60,16 @@ export function NumericalInputBuilder({ form }: Props) {
         Correct Answer (With Tolerance)
       </label>
 
-      <div className="grid grid-cols-2 gap-3 mt-2">
+      <div className="grid grid-cols-2 gap-3">
         <Input
           type="number"
           step="any"
-          placeholder="Target value (e.g. 9.8)"
-          value={range?.target ?? ""}
+          value={targetInput}
+          placeholder="1.53"
           onChange={(e) => {
             const raw = e.target.value;
-            update({
-              target: raw === "" ? undefined : Number(raw),
-            });
+            setTargetInput(raw);
+            update({ target: parse(raw) });
           }}
         />
 
@@ -73,22 +77,15 @@ export function NumericalInputBuilder({ form }: Props) {
           type="number"
           step="any"
           min="0"
-          placeholder="Tolerance (± range, e.g. 0.1)"
-          value={range?.tolerance ?? ""}
+          value={toleranceInput}
+          placeholder="0.01"
           onChange={(e) => {
             const raw = e.target.value;
-            update({
-              tolerance: raw === "" ? undefined : Number(raw),
-            });
+            setToleranceInput(raw);
+            update({ tolerance: parse(raw) });
           }}
         />
       </div>
-
-      <p className="text-xs text-muted-foreground">
-        Student answers between{" "}
-        <span className="font-medium">target ± tolerance</span> will be marked
-        correct.
-      </p>
     </div>
   );
 }

@@ -8,9 +8,10 @@ const DottedBackground = ({ className }: DottedBackgroundProps) => {
   return (
     <div
       className={cn(
-        "absolute inset-0 opacity-60",
-        "bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_0.7px,transparent_0)]",
-        "bg-size-[8px_8px] pointer-events-none",
+        "absolute inset-0 opacity-60 pointer-events-none",
+        "bg-[radial-gradient(circle_at_1px_1px,rgba(0,0,0,0.08)_0.7px,transparent_0)]",
+        "dark:bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.10)_0.7px,transparent_0)]",
+        "bg-size-[8px_8px]",
         className,
       )}
       style={{

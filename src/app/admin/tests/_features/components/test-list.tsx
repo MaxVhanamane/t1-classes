@@ -21,6 +21,7 @@ import { useState } from "react";
 import { EditTestDialog } from "./edit-test-dialog";
 import { useRouter } from "nextjs-toploader/app";
 import LockedBadge from "@/src/components/ui/common/locked-badge";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 function generatePages(current: number, total: number) {
   const pages: (number | "...")[] = [];
@@ -160,22 +161,24 @@ export function TestsList({
                         variant="destructive"
                         disabled={deleting}
                         onClick={async () => {
-                          try {
-                            setDeleting(true);
+                          setDeleting(true);
 
-                            await deleteTest(test.id);
+                          const { error } = await callServerAction(
+                            deleteTest(test.id),
+                          );
 
-                            toast.success("Test deleted");
-
+                          if (error) {
+                            toast.error(error);
                             setDeleting(false);
-
-                            setTimeout(() => {
-                              setDeleteOpen(null);
-                            }, 400);
-                          } catch {
-                            setDeleting(false);
-                            toast.error("Failed to delete test");
+                            return;
                           }
+
+                          toast.success("Test deleted");
+                          setDeleting(false);
+
+                          setTimeout(() => {
+                            setDeleteOpen(null);
+                          }, 400);
                         }}
                       >
                         {deleting ? "Deleting..." : "Confirm Delete"}

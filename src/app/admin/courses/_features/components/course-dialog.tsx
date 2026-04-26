@@ -44,14 +44,6 @@ import {
 } from "@/src/components/ui/select";
 
 import { courseSchema, CourseFormValues } from "../zod/course.schema";
-
-import {
-  CourseRow,
-  createCourse,
-  updateCourse,
-  updateCourseThumbnail,
-} from "../actions/courses.actions";
-
 import { useR2Upload } from "@/src/hooks/use-r2-upload";
 import { TipTapEditor } from "./tiptap-editor";
 import { Switch } from "@/src/components/ui/switch";
@@ -84,6 +76,12 @@ import {
 } from "../../../batches/_features/zod-schema/schema";
 import { Label } from "@/src/components/ui/label";
 import { Separator } from "@/src/components/ui/separator";
+import { CourseRow } from "../actions/get-courses";
+import { createCourse } from "../actions/create-course";
+import { updateCourse } from "../actions/update-course";
+import { updateCourseThumbnail } from "../actions/update-course-thumbnail";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 
 /* -------------------------------------------------- */
 
@@ -155,11 +153,8 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
 
   const { data: instructors } = useQuery<InstructorOption[]>({
     queryKey: ["instructor-options"],
-    queryFn: async () => {
-      const res = await fetch("/api/admin/instructors/options");
-      if (!res.ok) throw new Error("Failed to load instructors");
-      return res.json() as Promise<InstructorOption[]>;
-    },
+    queryFn: () =>
+      fetchWrapper<InstructorOption[]>("/api/admin/instructors/options"),
   });
   /* -------------------------------------------------- */
   /* Form                                               */
@@ -244,11 +239,10 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
   }, [course, form]);
 
   useEffect(() => {
+    if (!category) return;
+
     if (category !== "boards") {
-      form.setValue("board", null, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
+      form.setValue("board", null);
     }
   }, [category, form]);
 
@@ -310,9 +304,26 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
 
         if (isEdit && course) {
           courseId = course.id;
-          await updateCourse(courseId, values);
+
+          const { error } = await callServerAction(
+            updateCourse(courseId, values),
+          );
+
+          if (error) {
+            toast.error(error, { id: toastId });
+            return;
+          }
         } else {
-          courseId = await createCourse(values);
+          const { data, error } = await callServerAction(createCourse(values));
+
+          if (error || !data) {
+            toast.error(error ?? "Failed to create course", {
+              id: toastId,
+            });
+            return;
+          }
+
+          courseId = data;
         }
 
         /* ---------- Thumbnail Upload ---------- */
@@ -326,7 +337,14 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
           });
 
           if (upload?.key) {
-            await updateCourseThumbnail(courseId, upload.key);
+            const { error } = await callServerAction(
+              updateCourseThumbnail(courseId, upload.key),
+            );
+
+            if (error) {
+              toast.error(error, { id: toastId });
+              return;
+            }
           }
         }
 
@@ -335,10 +353,8 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
 
         onOpenChange(false);
         form.reset();
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Save failed";
-
-        toast.error(message, { id: toastId });
+      } catch {
+        toast.error("Save failed", { id: toastId });
       }
     },
 

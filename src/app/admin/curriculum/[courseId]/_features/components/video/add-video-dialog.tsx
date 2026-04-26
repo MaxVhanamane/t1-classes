@@ -26,6 +26,7 @@ import {
 import { Loader2, Video } from "lucide-react";
 import { createVideo } from "../../actions/topic/video/create-video";
 import { toast } from "sonner";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   topicId: string;
@@ -86,23 +87,25 @@ export function AddVideoDialog({ topicId, courseId }: Props) {
 
     setSubmitting(true);
 
-    try {
-      await createVideo(courseId, topicId, {
+    const { error } = await callServerAction(
+      createVideo(courseId, topicId, {
         ...data,
         videoProvider: provider,
-      });
+      }),
+    );
 
+    if (error) {
+      toast.error(error);
+    } else {
       toast.success("Video added", {
         description: "Video has been added as a draft.",
       });
 
       setOpen(false);
       form.reset();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setSubmitting(false);
     }
+
+    setSubmitting(false);
   }
 
   /** Reset form when dialog closes (block during submit) */
@@ -160,8 +163,8 @@ export function AddVideoDialog({ topicId, courseId }: Props) {
                   urlStatus === "error"
                     ? "text-destructive"
                     : urlStatus === "valid"
-                    ? "text-green-600"
-                    : "text-muted-foreground"
+                      ? "text-green-600"
+                      : "text-muted-foreground"
                 }`}
               >
                 {urlStatus === "error" &&

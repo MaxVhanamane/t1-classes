@@ -17,11 +17,11 @@ import {
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
 import { useRouter } from "nextjs-toploader/app";
-import { CourseRow } from "../actions/courses.actions";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { TableThumbnailPreview } from "./Table-thumbnail-preview";
 import { TitleSubtitleTooltip } from "@/src/components/ui/common/title-subtitle-tooltip";
 import { BOARD_LABELS } from "../../../batches/_features/zod-schema/schema";
+import { CourseRow } from "../actions/get-courses";
 
 interface CoursesTableProps {
   data: CourseRow[];

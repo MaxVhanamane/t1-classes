@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 import { StateItem } from "../types/workspace.types";
 
 export type SavePayload = {
@@ -10,62 +11,57 @@ export type SavePayload = {
     markedForReview: boolean;
 };
 
-export function useAnswerSave({ attemptId }: { attemptId: string }) {
+export function useAnswerSave({
+    attemptId,
+}: {
+    attemptId: string;
+}) {
     const queryClient = useQueryClient();
 
     const mutation = useMutation({
         mutationKey: ["answer", attemptId],
 
-        mutationFn: async (payload: SavePayload) => {
-            const res = await fetch(
+        mutationFn: (payload: SavePayload) =>
+            fetchWrapper(
                 `/api/tests/attempts/${attemptId}/answer`,
                 {
                     method: "PATCH",
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type":
+                            "application/json",
                     },
-                    credentials: "include",
                     body: JSON.stringify(payload),
                 }
-            );
-
-            if (!res.ok) {
-                const msg = await res.text();
-                throw new Error(msg || "Save failed");
-            }
-
-            return res.json();
-        },
+            ),
 
         retry: 3,
-        retryDelay: (attemptIndex) => Math.min(800 * 2 ** attemptIndex, 4000),
+        retryDelay: (attemptIndex) =>
+            Math.min(
+                800 * 2 ** attemptIndex,
+                4000
+            ),
 
-        // =========================================
-        // OPTIMISTIC UPDATE
-        // =========================================
+        // optimistic update
         onMutate: async (payload) => {
-
             const previousState =
-                queryClient.getQueryData<StateItem[]>([
-                    "attempt-state",
-                    attemptId,
-                ]) ?? [];
+                queryClient.getQueryData<StateItem[]>(
+                    ["attempt-state", attemptId]
+                ) ?? [];
 
-
-            // -----------------------------
-            // ATTEMPT STATE
-            // -----------------------------
             const nextState = [...previousState];
 
             const index = nextState.findIndex(
-                (s) => s.questionId === payload.questionId
+                (s) =>
+                    s.questionId ===
+                    payload.questionId
             );
 
             const updatedItem: StateItem = {
                 questionId: payload.questionId,
                 answer: payload.answer,
                 visited: true,
-                markedForReview: payload.markedForReview,
+                markedForReview:
+                    payload.markedForReview,
             };
 
             if (index === -1) {
@@ -79,16 +75,11 @@ export function useAnswerSave({ attemptId }: { attemptId: string }) {
                 nextState
             );
 
-            return {
-                previousState,
-            };
+            return { previousState };
         },
 
-        // =========================================
-        // ROLLBACK
-        // =========================================
+        // rollback
         onError: (_err, _vars, ctx) => {
-
             if (ctx?.previousState) {
                 queryClient.setQueryData(
                     ["attempt-state", attemptId],
@@ -96,10 +87,10 @@ export function useAnswerSave({ attemptId }: { attemptId: string }) {
                 );
             }
 
-            toast.error("Unable to save your answer. Please check your connection and try again.");
+            toast.error(
+                "Unable to save your answer. Please check your connection and try again."
+            );
         },
-
-
     });
 
     return {

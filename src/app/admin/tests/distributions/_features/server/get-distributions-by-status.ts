@@ -7,8 +7,7 @@ import {
     PagedDistributions,
 } from "../types/distribution.types";
 import { computeDistributionStatus } from "../helpers/compute-distribution-status";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
-import { redirect } from "next/navigation";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 /* -------------------------------------------- */
 /* Config */
@@ -25,11 +24,7 @@ const MAX_PAGE_SIZE = 50;
 export async function getDistributionsByStatus(
     params: DistributionQueryParams
 ): Promise<PagedDistributions> {
-    const user = await getAuthIfHasRole(["admin", "teacher"]);
-
-    if (!user) {
-        redirect("/login");
-    }
+    const staff = await requireStaffServerOnly();
 
     const supabase = await createServerSupabaseClient();
 
@@ -39,7 +34,7 @@ export async function getDistributionsByStatus(
     /* Pagination */
     /* -------------------------------------------- */
 
-    const baseSize = user.role === "admin" ? ADMIN_PAGE_SIZE : DEFAULT_PAGE_SIZE;
+    const baseSize = staff.role === "admin" ? ADMIN_PAGE_SIZE : DEFAULT_PAGE_SIZE;
     const pageSize = Math.min(params.pageSize ?? baseSize, MAX_PAGE_SIZE);
 
     const safePage = Math.max(1, page);
@@ -81,8 +76,8 @@ export async function getDistributionsByStatus(
     /* Role Filter */
     /* -------------------------------------------- */
 
-    if (user.role !== "admin") {
-        query = query.eq("created_by", user.userId);
+    if (staff.role !== "admin") {
+        query = query.eq("created_by", staff.userId);
     }
 
     /* -------------------------------------------- */

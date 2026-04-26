@@ -25,6 +25,8 @@ import { toast } from "sonner";
 
 import { TestQuestion } from "../../types/question.types";
 import { deleteQuestion } from "../../actions/delete-question";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   question: TestQuestion;
@@ -45,21 +47,26 @@ export function QuestionActionsMenu({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-
+  const queryClient = useQueryClient();
   async function handleDelete() {
     setLoading(true);
     const toastId = toast.loading("Deleting question...");
 
-    try {
-      await deleteQuestion(question.id, testId, sectionId);
+    const { error } = await callServerAction(
+      deleteQuestion(question.id, testId, sectionId),
+    );
+
+    if (error) {
+      toast.error(error, { id: toastId });
+    } else {
       toast.success("Deleted", { id: toastId });
-    } catch (err) {
-      console.error(err);
-      toast.error("Cannot delete question", { id: toastId });
-    } finally {
-      setLoading(false);
-      setConfirmOpen(false);
     }
+
+    setLoading(false);
+    setConfirmOpen(false);
+    await queryClient.invalidateQueries({
+      queryKey: ["section-questions", sectionId],
+    });
   }
 
   function handleDeleteBtnClick() {
@@ -74,10 +81,12 @@ export function QuestionActionsMenu({
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
   if (!isMounted) return null;
+
   return (
     <>
       <DropdownMenu>

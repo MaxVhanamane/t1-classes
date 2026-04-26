@@ -1,122 +1,254 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { PostgrestError } from "@supabase/supabase-js";
+
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
+
+import { ServerActionResponse } from "@/src/types/server-action";
+
 import { CreateEnrollmentInput } from "../types/enrollments";
 import { createEnrollmentSchema } from "../zod-schema/enrollments";
-import { revalidatePath } from "next/cache";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
-import { PostgrestError } from "@supabase/supabase-js";
 
 export async function updateEnrollment(
     enrollmentId: string,
-    input: CreateEnrollmentInput
-) {
-    /**
-     * 1. Validate input
-     */
-    const parsed = createEnrollmentSchema.safeParse(input);
-    if (!parsed.success) {
-        throw new Error("Invalid enrollment data");
-    }
+    input: CreateEnrollmentInput,
+): Promise<ServerActionResponse> {
+    const staff =
+        await requireAdminServerOnly();
 
-    const data = parsed.data;
+    try {
+        /* =====================================
+           1. Validate Input
+        ===================================== */
 
-    /**
-     * 2. Auth / role check
-     */
-    const supabase = await createServerSupabaseClient();
-    const staff = await getCurrentStaff();
-
-    if (!staff || staff.role !== "admin") {
-        throw new Error("Only admins can update enrollments");
-    }
-
-    /**
-     * 3. Normalize target fields
-     */
-    const batchId =
-        data.target_type === "batch" ? data.batch_id ?? null : null;
-
-    const courseId =
-        data.target_type === "course" ? data.course_id ?? null : null;
-
-    /**
-     * 4. Sanity guard
-     */
-    if (data.target_type === "batch" && !batchId) {
-        throw new Error("Batch is required for batch enrollment");
-    }
-
-    if (data.target_type === "course" && !courseId) {
-        throw new Error("Course is required for course enrollment");
-    }
-
-    /**
-     * 5. Prevent duplicate enrollment (excluding self)
-     */
-    const { data: existing } = await supabase
-        .from("enrollments")
-        .select("id")
-        .eq("user_id", data.user_id)
-        .eq("target_type", data.target_type)
-        .eq("batch_id", batchId)
-        .eq("course_id", courseId)
-        .neq("id", enrollmentId)
-        .maybeSingle();
-
-    if (existing) {
-        throw new Error(
-            data.target_type === "batch"
-                ? "User is already enrolled in this batch"
-                : "User is already enrolled in this course"
-        );
-    }
-
-    /**
-     * 6. Update enrollment
-     */
-    const { error } = await supabase
-        .from("enrollments")
-        .update({
-            user_id: data.user_id,
-
-            target_type: data.target_type,
-            batch_id: batchId,
-            course_id: courseId,
-
-            enrollment_type: data.enrollment_type,
-            registration_channel: data.registration_channel,
-            status: data.status,
-            is_active: data.is_active ?? true,
-
-            access_starts_at: data.access_starts_at,
-            access_ends_at: data.access_ends_at ?? null,
-
-            notes: data.notes ?? null,
-
-            updated_by: staff.id,
-        })
-        .eq("id", enrollmentId);
-
-    /**
-     * 7. DB-level safety (race condition)
-     */
-    if (error) {
-        const pgError: PostgrestError = error;
-
-        if (pgError.code === "23505") {
-            throw new Error(
-                data.target_type === "batch"
-                    ? "User is already enrolled in this batch"
-                    : "User is already enrolled in this course"
+        const parsed =
+            createEnrollmentSchema.safeParse(
+                input,
             );
+
+        if (!parsed.success) {
+            return {
+                error:
+                    parsed.error.issues[0]
+                        ?.message ??
+                    "Invalid enrollment data",
+            };
         }
 
-        throw new Error(pgError.message);
-    }
+        const data =
+            parsed.data;
 
-    /**
-     * 8. Revalidate
-     */
-    revalidatePath("/admin/enrollments");
+        /* =====================================
+           2. Client
+        ===================================== */
+
+        const supabase =
+            await createServerSupabaseClient();
+
+        /* =====================================
+           3. Normalize Target
+        ===================================== */
+
+        const batchId =
+            data.target_type ===
+                "batch"
+                ? data.batch_id ??
+                null
+                : null;
+
+        const courseId =
+            data.target_type ===
+                "course"
+                ? data.course_id ??
+                null
+                : null;
+
+        /* =====================================
+           4. Prevent Duplicate (excluding self)
+           NULL-safe filters
+        ===================================== */
+
+        let duplicateQuery =
+            supabase
+                .from(
+                    "enrollments",
+                )
+                .select("id")
+                .eq(
+                    "user_id",
+                    data.user_id,
+                )
+                .eq(
+                    "target_type",
+                    data.target_type,
+                )
+                .neq(
+                    "id",
+                    enrollmentId,
+                );
+
+        duplicateQuery =
+            batchId === null
+                ? duplicateQuery.is(
+                    "batch_id",
+                    null,
+                )
+                : duplicateQuery.eq(
+                    "batch_id",
+                    batchId,
+                );
+
+        duplicateQuery =
+            courseId === null
+                ? duplicateQuery.is(
+                    "course_id",
+                    null,
+                )
+                : duplicateQuery.eq(
+                    "course_id",
+                    courseId,
+                );
+
+        const {
+            data: existing,
+            error:
+            existingError,
+        } =
+            await duplicateQuery.maybeSingle();
+
+        if (
+            existingError
+        ) {
+            console.error(
+                "[UPDATE_ENROLLMENT_PRECHECK]",
+                existingError,
+            );
+
+            return {
+                error:
+                    "Failed to validate enrollment.",
+            };
+        }
+
+        if (existing) {
+            return {
+                error:
+                    data.target_type ===
+                        "batch"
+                        ? "User is already enrolled in this batch."
+                        : "User is already enrolled in this course.",
+            };
+        }
+
+        /* =====================================
+           5. Update
+        ===================================== */
+
+        const {
+            error,
+        } = await supabase
+            .from(
+                "enrollments",
+            )
+            .update({
+                user_id:
+                    data.user_id,
+
+                target_type:
+                    data.target_type,
+
+                batch_id:
+                    batchId,
+
+                course_id:
+                    courseId,
+
+                enrollment_type:
+                    data.enrollment_type,
+
+                registration_channel:
+                    data.registration_channel,
+
+                is_active:
+                    data.is_active,
+
+                deactivation_reason:
+                    data.is_active
+                        ? null
+                        : data.deactivation_reason ??
+                        null,
+
+                access_starts_at:
+                    data.access_starts_at,
+
+                access_ends_at:
+                    data.access_ends_at ??
+                    null,
+
+                notes:
+                    data.notes ??
+                    null,
+
+                updated_by:
+                    staff.userId,
+            })
+            .eq(
+                "id",
+                enrollmentId,
+            );
+
+        /* =====================================
+           6. Unique Violation Safe
+        ===================================== */
+
+        if (error) {
+            const pgError =
+                error as PostgrestError;
+
+            if (
+                pgError.code ===
+                "23505"
+            ) {
+                return {
+                    error:
+                        data.target_type ===
+                            "batch"
+                            ? "User is already enrolled in this batch."
+                            : "User is already enrolled in this course.",
+                };
+            }
+
+            console.error(
+                "[UPDATE_ENROLLMENT_DB]",
+                pgError,
+            );
+
+            return {
+                error:
+                    "Failed to update enrollment.",
+            };
+        }
+
+        /* =====================================
+           7. Refresh
+        ===================================== */
+
+        revalidatePath(
+            "/admin/enrollments",
+        );
+
+
+    } catch (error) {
+        console.error(
+            "[UPDATE_ENROLLMENT_FATAL]",
+            error,
+        );
+
+        return {
+            error:
+                "Something went wrong. Please try again.",
+        };
+    }
 }

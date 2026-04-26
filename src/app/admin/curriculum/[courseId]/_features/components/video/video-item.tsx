@@ -23,7 +23,8 @@ import { useIsTruncated } from "@/src/hooks/useIsTruncated";
 import { ConfirmActionDialog } from "@/src/components/ui/common/confirm-action-dialog";
 import { VideoUnit } from "../../types/course-unit.types";
 import { toast } from "sonner";
-import { toggleCourseUnitPublish } from "../../actions/topic/toggleCourseUnitPublish";
+import { toggleCourseUnitPublish } from "../../actions/topic/toggle-course-unit-publish";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface VideoItemProps {
   video: VideoUnit;
@@ -136,24 +137,24 @@ export function VideoItem({ video, courseId, topicId }: VideoItemProps) {
                     }
                     confirmLabel={video.is_published ? "Unpublish" : "Publish"}
                     onConfirm={async () => {
-                      try {
-                        await toggleCourseUnitPublish({
+                      const { error } = await callServerAction(
+                        toggleCourseUnitPublish({
                           courseId,
                           unitId: video.id,
                           publish: !video.is_published,
-                        });
-                        toast.success(
-                          video.is_published
-                            ? "Video unpublished"
-                            : "Video published",
-                        );
-                      } catch (err) {
-                        toast.error(
-                          err instanceof Error
-                            ? err.message
-                            : "Failed to publish video",
-                        );
+                        }),
+                      );
+
+                      if (error) {
+                        toast.error(error);
+                        return;
                       }
+
+                      toast.success(
+                        video.is_published
+                          ? "Video unpublished"
+                          : "Video published",
+                      );
                     }}
                     trigger={
                       <Button

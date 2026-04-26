@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { extendDistribution } from "../actions/extend-distribution";
 import { ISODatePicker } from "./iso-date-picker";
 import { dateToISO } from "../../../schedule/_features/components/schedule-test-dialog";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   open: boolean;
@@ -80,9 +81,9 @@ export function ExtendDistributionDialog({
   async function onSubmit(values: FormValues) {
     const newEnd = new Date(values.ends_at);
     const current = new Date(currentEndsAt);
+
     if (isBefore(newEnd, current)) {
       const formattedCurrent = format(current, "PPP p");
-
       toast.error(
         `New end time must be after the current end time (${formattedCurrent})`,
       );
@@ -96,23 +97,17 @@ export function ExtendDistributionDialog({
       return;
     }
 
-    try {
-      await extendDistribution(distributionId, values.ends_at);
-      toast.success("Test duration extended");
-      onOpenChange(false);
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        error.message.includes("no_overlapping_tests_per_batch")
-      ) {
-        toast.error(
-          "Cannot extend — another test is scheduled in this time window.",
-        );
-        return;
-      }
+    const { error } = await callServerAction(
+      extendDistribution(distributionId, values.ends_at),
+    );
 
-      toast.error("Failed to extend test");
+    if (error) {
+      toast.error(error);
+      return;
     }
+
+    toast.success("Test duration extended");
+    onOpenChange(false);
   }
 
   return (

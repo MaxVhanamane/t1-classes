@@ -11,16 +11,23 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function getMyEnrollmentsService(
     supabase: SupabaseClient,
-    userId: string
+    userId: string,
 ): Promise<MyEnrollment[]> {
-    const nowIso = new Date().toISOString();
+    const nowIso =
+        new Date().toISOString();
 
-    const { data, error } = await supabase
-        .from("enrollments")
-        .select(`
+    const {
+        data,
+        error,
+    } = await supabase
+        .from(
+            "enrollments",
+        )
+        .select(
+            `
       id,
       target_type,
-      status,
+      is_active,
       access_starts_at,
       access_ends_at,
 
@@ -42,60 +49,160 @@ export async function getMyEnrollmentsService(
         end_date,
         is_active
       )
-    `)
-        .eq("user_id", userId)
-        .eq("status", "ongoing")
-        .lte("access_starts_at", nowIso)
-        .or(`access_ends_at.is.null,access_ends_at.gte.${nowIso}`)
-        .order("created_at", { ascending: false });
+    `,
+        )
+        .eq(
+            "user_id",
+            userId,
+        )
+        .eq(
+            "is_active",
+            true,
+        )
+        .lte(
+            "access_starts_at",
+            nowIso,
+        )
+        .or(
+            `access_ends_at.is.null,access_ends_at.gte.${nowIso}`,
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false,
+            },
+        );
 
     if (error) {
-        console.error("Error fetching enrollments:", error);
-        throw new Error("Failed to fetch enrollments");
+        console.error(
+            "Error fetching enrollments:",
+            error,
+        );
+
+        throw new Error(
+            "Failed to fetch enrollments",
+        );
     }
 
-    if (!data || data.length === 0) return [];
+    if (
+        !data ||
+        data.length === 0
+    ) {
+        return [];
+    }
 
-    const result: MyEnrollment[] = [];
+    const rows =
+        data as unknown as RawEnrollmentRow[];
 
-    for (const e of data as unknown as RawEnrollmentRow[]) {
-        if (e.target_type === "course" && e.course?.is_active) {
+    const result: MyEnrollment[] =
+        [];
+
+    for (const e of rows) {
+        /* =====================================
+           Course Enrollment
+        ===================================== */
+
+        const course =
+            Array.isArray(
+                e.course,
+            )
+                ? e.course[0] ??
+                null
+                : e.course;
+
+        if (
+            e.target_type ===
+            "course" &&
+            course
+                ?.is_active
+        ) {
             result.push({
-                enrollmentId: e.id,
-                targetType: "course",
-                status: e.status,
-                accessStartsAt: e.access_starts_at,
-                accessEndsAt: e.access_ends_at,
+                enrollmentId:
+                    e.id,
+
+                targetType:
+                    "course",
+
+                isActive:
+                    e.is_active,
+
+                accessStartsAt:
+                    e.access_starts_at,
+
+                accessEndsAt:
+                    e.access_ends_at,
 
                 course: {
-                    id: e.course.id,
-                    title: e.course.title,
-                    slug: e.course.slug,
+                    id: course.id,
 
-                    /* ---------- updated ---------- */
-                    category: e.course.category,
+                    title:
+                        course.title,
+
+                    slug:
+                        course.slug,
+
+                    category:
+                        course.category,
                 },
             } satisfies CourseEnrollment);
 
             continue;
         }
 
-        if (e.target_type === "batch" && e.batch?.is_active) {
+        /* =====================================
+           Batch Enrollment
+        ===================================== */
+
+        const batch =
+            Array.isArray(
+                e.batch,
+            )
+                ? e.batch[0] ??
+                null
+                : e.batch;
+
+        if (
+            e.target_type ===
+            "batch" &&
+            batch
+                ?.is_active
+        ) {
             result.push({
-                enrollmentId: e.id,
-                targetType: "batch",
-                status: e.status,
-                accessStartsAt: e.access_starts_at,
-                accessEndsAt: e.access_ends_at,
+                enrollmentId:
+                    e.id,
+
+                targetType:
+                    "batch",
+
+                isActive:
+                    e.is_active,
+
+                accessStartsAt:
+                    e.access_starts_at,
+
+                accessEndsAt:
+                    e.access_ends_at,
 
                 batch: {
-                    id: e.batch.id,
-                    title: e.batch.title,
-                    subtitle: e.batch.subtitle,
-                    slug: e.batch.slug,
-                    mode: e.batch.mode,
-                    start_date: e.batch.start_date,
-                    end_date: e.batch.end_date,
+                    id: batch.id,
+
+                    title:
+                        batch.title,
+
+                    subtitle:
+                        batch.subtitle,
+
+                    slug:
+                        batch.slug,
+
+                    mode:
+                        batch.mode,
+
+                    start_date:
+                        batch.start_date,
+
+                    end_date:
+                        batch.end_date,
                 },
             } satisfies BatchEnrollment);
         }

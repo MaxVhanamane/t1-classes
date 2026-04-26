@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { deleteR2Object } from "@/src/lib/r2/deleteObject";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getCurrentAdmin } from "@/src/lib/helper-functions/getCurrentAdmin";
+import { requireAdminApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 /* ---------------------------------- */
 /* Schemas                            */
@@ -24,7 +24,13 @@ export async function PUT(
     req: Request,
     context: { params: Promise<{ id: string }> }
 ) {
-    await getCurrentAdmin()
+    const auth = await requireAdminApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
+    }
+
+
     const { id } = await context.params;
     const supabase = await createServerSupabaseClient();
 
@@ -87,7 +93,7 @@ export async function PUT(
         await deleteR2Object(
             process.env.R2_PUBLIC_BUCKET_NAME!,
             oldKey
-        ).catch(console.error);
+        )
     }
 
     return NextResponse.json({ success: true });

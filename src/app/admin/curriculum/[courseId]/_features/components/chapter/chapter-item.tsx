@@ -25,6 +25,7 @@ import { useIsTruncated } from "@/src/hooks/useIsTruncated";
 import { ConfirmActionDialog } from "@/src/components/ui/common/confirm-action-dialog";
 import { toggleChapterPublish } from "../../actions/chapter/toggle-chapter-publish";
 import { toast } from "sonner";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface ChapterItemProps {
   chapter: Chapter;
@@ -118,25 +119,24 @@ export function ChapterItem({ chapter, courseId }: ChapterItemProps) {
                   confirmLabel={chapter.is_published ? "Unpublish" : "Publish"}
                   confirmVariant="destructive"
                   onConfirm={async () => {
-                    try {
-                      await toggleChapterPublish({
+                    const { error } = await callServerAction(
+                      toggleChapterPublish({
                         chapterId: chapter.id,
                         courseId,
                         publish: !chapter.is_published,
-                      });
+                      }),
+                    );
 
-                      toast.success(
-                        chapter.is_published
-                          ? "Chapter unpublished"
-                          : "Chapter published"
-                      );
-                    } catch (err) {
-                      toast.error(
-                        err instanceof Error
-                          ? err.message
-                          : "Failed to update publish chapter"
-                      );
+                    if (error) {
+                      toast.error(error);
+                      return;
                     }
+
+                    toast.success(
+                      chapter.is_published
+                        ? "Chapter unpublished"
+                        : "Chapter published",
+                    );
                   }}
                   trigger={
                     <Button

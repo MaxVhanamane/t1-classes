@@ -40,6 +40,10 @@ function extractTextLength(node: unknown): number {
 
   return length;
 }
+
+export function isEditorEmpty(node: unknown): boolean {
+  return extractTextLength(node) === 0;
+}
 /* -------------------------------------------- *
  * Matrix schema
  * ------------------------------------------*/
@@ -77,6 +81,11 @@ const questionTextSchema = z.any().refine(
   "Question is too short",
 );
 
+const explanationSchema = z
+  .any()
+  .nullable()
+  .transform((val) => (isEditorEmpty(val) ? null : val));
+
 /* -------------------------------------------- *
  * Main schema
  * ------------------------------------------*/
@@ -84,7 +93,7 @@ const questionTextSchema = z.any().refine(
 export const createQuestionSchema = z.object({
   questionText: questionTextSchema,
 
-  explanation: z.any().nullable(),
+  explanation: explanationSchema,
 
   options: z.array(optionSchema).optional(),
 
@@ -104,7 +113,6 @@ export const createQuestionSchema = z.object({
   correctAnswer: z.union([
     z.string(),                    // single_select
     z.array(z.string()),           // multi_select
-    z.record(z.string(), z.string()), // match_matrix
 
     z
       .object({
@@ -121,7 +129,9 @@ export const createQuestionSchema = z.object({
           message: "Both target and tolerance must be filled",
         },
       ),
+    z.record(z.string(), z.string()), // match_matrix
   ]),
+
 });
 
 /* -------------------------------------------- *

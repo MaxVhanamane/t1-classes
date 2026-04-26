@@ -2,19 +2,13 @@ import "server-only"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server"
 import { TestSection } from "../../types/test-section.types"
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role"
-import { redirect } from "next/navigation"
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only"
 
 export async function getTestSections(
     testId: string
 ): Promise<TestSection[]> {
     const supabase = await createServerSupabaseClient()
-    const user = await getAuthIfHasRole(["admin", "teacher"]); // admin / teacher only
-
-    if (!user) {
-        redirect("/login")
-    }
-
+    await requireStaffServerOnly();
 
     const { data, error } = await supabase
         .from("test_sections")

@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { createPdf } from "../../actions/topic/pdf/create-pdf";
 import { useR2Upload } from "@/src/hooks/use-r2-upload";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface Props {
   courseId: string;
@@ -57,8 +58,6 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
     let uploadedPath: string | null = null;
 
     try {
-      /* Validate file */
-
       if (!data.file) {
         throw new Error("Please select a PDF file");
       }
@@ -75,7 +74,6 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
       }
 
       /* Upload to R2 */
-
       const upload = await uploadFile({
         file: data.file,
         assetType: "course_pdf",
@@ -86,8 +84,14 @@ export function AddPdfDialog({ courseId, topicId }: Props) {
       uploadedPath = upload.key;
 
       /* Save DB record */
+      const { error } = await callServerAction(
+        createPdf(courseId, topicId, uploadedPath, data),
+      );
 
-      await createPdf(courseId, topicId, uploadedPath, data);
+      if (error) {
+        toast.error(error);
+        return;
+      }
 
       toast.success("PDF added", {
         description: "PDF has been added as a draft.",

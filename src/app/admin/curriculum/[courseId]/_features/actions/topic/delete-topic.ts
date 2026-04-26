@@ -1,76 +1,121 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuthIfHasRole } from "@/src/lib/auth/get-auth-if-has-role";
-import { redirect } from "next/navigation";
+import { deleteR2Object } from "@/src/lib/r2/deleteObject";
+import { ServerActionResponse } from "@/src/types/server-action";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
-export async function deleteTopic(courseId: string, topicId: string) {
-    const supabase = await createServerSupabaseClient();
-    const staff = await getAuthIfHasRole(["admin", "teacher"]); // admin OR teacher
-    if (!staff) {
-        redirect("/login");
+const R2_PRIVATE_BUCKET_NAME = process.env.R2_PRIVATE_BUCKET_NAME!;
+
+export async function deleteTopic(
+    courseId: string,
+    topicId: string
+): Promise<ServerActionResponse> {
+    // redirect() throws internally; calling inside try/catch would prevent the redirect
+    const staff = await requireStaffServerOnly();
+    try {
+        const supabase = await createServerSupabaseClient();
+
+        /**
+         * 1. Fetch topic
+         */
+        const { data: topic, error: topicError } = await supabase
+            .from("course_structure")
+            .select("id, course_id, structure_type")
+            .eq("id", topicId)
+            .single();
+
+        if (topicError || !topic) {
+            return { error: "Topic not found" };
+        }
+
+        if (topic.structure_type !== "topic") {
+            return { error: "Invalid topic" };
+        }
+
+        if (topic.course_id !== courseId) {
+            return { error: "Topic does not belong to this course" };
+        }
+
+        /**
+         * 2. Fetch course owner
+         */
+        const { data: course, error: courseError } = await supabase
+            .from("courses")
+            .select("created_by, slug")
+            .eq("id", topic.course_id)
+            .single();
+
+        if (courseError || !course) {
+            return { error: "Course not found" };
+        }
+
+        /**
+         * 3. Authorization
+         */
+        const isAdmin = staff.role === "admin";
+        const isOwner = course.created_by === staff.userId;
+
+        if (!isAdmin && !isOwner) {
+            return { error: "You are not allowed to delete this topic" };
+        }
+
+        /**
+         * 4. Fetch all PDF file paths BEFORE deletion
+         */
+        const { data: pdfUnits, error: pdfError } = await supabase
+            .from("course_units")
+            .select("file_path")
+            .eq("structure_id", topicId)
+            .eq("unit_type", "pdf")
+            .not("file_path", "is", null);
+
+        console.log("pdf units", pdfUnits)
+
+        if (pdfError) {
+            console.error("[FETCH_TOPIC_PDFS_ERROR]", pdfError);
+            return { error: "Failed to fetch topic PDFs." };
+        }
+
+        const filePaths =
+            pdfUnits
+                ?.map((pdf) => pdf.file_path)
+                .filter(Boolean) || [];
+
+        /**
+         * 5. Delete topic (CASCADE deletes units)
+         */
+        const { error: deleteError } = await supabase
+            .from("course_structure")
+            .delete()
+            .eq("id", topicId);
+
+        if (deleteError) {
+            console.error("[DELETE_TOPIC_ERROR]", deleteError);
+            return { error: "Failed to delete topic. Please try again." };
+        }
+
+        /**
+         * 6. Cleanup R2 objects AFTER successful DB deletion
+         *    (Best effort — does not affect DB integrity)
+         */
+        if (filePaths.length > 0) {
+            await Promise.allSettled(
+                filePaths.map((path) =>
+                    deleteR2Object(R2_PRIVATE_BUCKET_NAME, path)
+                )
+            );
+        }
+        /**
+         * 7. Revalidate UI
+         */
+        revalidatePath(`/admin/curriculum/${courseId}`);
+        updateTag(`course-outline:enrolled:${course.slug}`);
+
+
+    } catch (error) {
+        console.error("[DELETE_TOPIC_FATAL]", error);
+        return { error: "Something went wrong. Please try again." };
     }
-
-    /**
-     * 1. Fetch topic (NO joins)
-     */
-    const { data: topic, error: topicError } = await supabase
-        .from("course_structure")
-        .select("id, course_id, structure_type")
-        .eq("id", topicId)
-        .single();
-
-    if (topicError || !topic) {
-        throw new Error("Topic not found");
-    }
-
-    if (topic.structure_type !== "topic") {
-        throw new Error("Invalid topic");
-    }
-
-    if (topic.course_id !== courseId) {
-        throw new Error("Topic does not belong to this course");
-    }
-
-    /**
-     * 2. Fetch course owner (separate query — THIS IS KEY)
-     */
-    const { data: course, error: courseError } = await supabase
-        .from("courses")
-        .select("created_by")
-        .eq("id", topic.course_id)
-        .single();
-
-    if (courseError || !course) {
-        throw new Error("Course not found");
-    }
-
-    /**
-     * 3. Authorization
-     */
-    const isAdmin = staff.role === "admin";
-    const isOwner = course.created_by === staff.userId;
-
-    if (!isAdmin && !isOwner) {
-        throw new Error("You are not allowed to delete this topic");
-    }
-
-    /**
-     * 4. Delete topic
-     */
-    const { error: deleteError } = await supabase
-        .from("course_structure")
-        .delete()
-        .eq("id", topicId);
-
-    if (deleteError) {
-        throw new Error(deleteError.message);
-    }
-
-    /**
-     * 5. Revalidate curriculum page
-     */
-
-    revalidatePath(`/admin/curriculum/${courseId}`);
 }

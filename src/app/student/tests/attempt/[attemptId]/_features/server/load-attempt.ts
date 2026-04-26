@@ -13,7 +13,7 @@ export async function loadAttempt(attemptId: string): Promise<LoadAttemptRespons
     }
 
     const now = Date.now();
-    const nowIso = new Date(now).toISOString();
+
 
     /* =========================================================
        1. Load attempt + distribution + test title in ONE query
@@ -114,10 +114,6 @@ export async function loadAttempt(attemptId: string): Promise<LoadAttemptRespons
     const expiresAtMs = getAttemptExpiryMs(attempt, distribution);
 
     if (isAttemptExpired(expiresAtMs, now)) {
-        await supabase
-            .from("test_attempts")
-            .update({ status: "expired", updated_at: nowIso })
-            .eq("id", attempt.id);
 
         return { kind: "denied", reason: "expired" };
     }

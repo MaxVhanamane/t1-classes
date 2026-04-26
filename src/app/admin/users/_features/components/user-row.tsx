@@ -1,33 +1,29 @@
 "use client";
 
 import { AppUser } from "@/src/types/user";
+import { Button } from "../../../../../components/ui/button";
 import EditUserDialog from "./edit-user-dialog";
-import { Button } from "../../button";
 
-export default function UserTableRow({ user }: { user: AppUser }) {
+export default function UserRow({ user }: { user: AppUser }) {
   return (
     <tr className="border-b last:border-0">
-      {/* Name */}
-      <td className="p-3 font-medium">{user.full_name || "Unnamed"}</td>
+      <td className="p-3">
+        <div className="font-medium">{user.full_name || "Unnamed"}</div>
+        <div className="text-xs text-muted-foreground">
+          {user.phone || "No phone"}
+        </div>
+      </td>
 
-      {/* Phone */}
-      <td className="text-sm text-muted-foreground">{user.phone || "—"}</td>
-
-      {/* Role */}
       <td className="capitalize">{user.role}</td>
-
-      {/* Status */}
       <td className="capitalize">{user.status}</td>
 
-      {/* Joined */}
       <td className="text-xs text-muted-foreground">
         {new Date(user.created_at).toLocaleDateString()}
       </td>
 
-      {/* Actions */}
-      <td className="text-left pr-3">
+      <td className="text-right pr-3">
         <EditUserDialog user={user}>
-          <Button variant="outline" size="sm" className="cursor-pointer">
+          <Button variant="outline" size="sm">
             Edit
           </Button>
         </EditUserDialog>

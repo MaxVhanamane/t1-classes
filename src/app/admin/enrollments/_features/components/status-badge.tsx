@@ -1,33 +1,26 @@
 import { Badge } from "@/src/components/ui/badge";
-import { EnrollmentRow } from "../types/enrollments";
 
-function StatusBadge({
-  status,
-  isActive,
-}: {
-  status: EnrollmentRow["status"];
+type StatusBadgeProps = {
   isActive: boolean;
-}) {
+};
+
+function StatusBadge({ isActive }: StatusBadgeProps) {
   if (!isActive) {
-    return <Badge variant="outline">inactive</Badge>;
+    return (
+      <Badge
+        variant="outline"
+        className="border-red-200 bg-red-50 text-red-700"
+      >
+        inactive
+      </Badge>
+    );
   }
 
-  switch (status) {
-    case "ongoing":
-      return (
-        <Badge className="border-green-500/60 text-green-700 dark:text-green-500 dark:border-green-500/40 bg-transparent">
-          ongoing
-        </Badge>
-      );
-    case "paused":
-      return <Badge variant="secondary">paused</Badge>;
-    case "completed":
-      return <Badge variant="outline">completed</Badge>;
-    case "cancelled":
-      return <Badge variant="destructive">cancelled</Badge>;
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
+  return (
+    <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+      active
+    </Badge>
+  );
 }
 
 export default StatusBadge;

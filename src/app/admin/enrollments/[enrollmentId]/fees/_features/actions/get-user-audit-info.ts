@@ -1,7 +1,6 @@
-"use server";
-
+"use server"
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentAdmin } from "@/src/lib/helper-functions/getCurrentAdmin";
+import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 export type UserAuditInfo = {
     id: string;
@@ -16,7 +15,7 @@ export async function getUserAuditInfo(
     userId: string
 ): Promise<UserAuditInfo | null> {
     // 1. Authorization (single source of truth)
-    await getCurrentAdmin();
+    await requireAdminServerOnly();
 
     const supabase = await createServerSupabaseClient();
 

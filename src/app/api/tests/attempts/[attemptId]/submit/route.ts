@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStudent } from "@/src/lib/helper-functions/getCurrentStudent";
 import { TEST_GRACE_TIME_IN_SECONDS } from "@/src/lib/constants/rpc-constants";
 import {
     getAttemptExpiryWithGraceMs,
     isAttemptExpired,
 } from "@/src/lib/helper-functions/attempt-expiry";
+import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 /* ---------------------------------------------
  * Response Type
@@ -40,7 +40,12 @@ export async function POST(
     { params }: { params: Promise<{ attemptId: string }> }
 ) {
     const supabase = await createServerSupabaseClient();
-    const user = await getCurrentStudent();
+    const auth = await requireStudentApiRoute();
+
+    if (!auth.authorized) {
+        return auth.response;
+    }
+    const user = auth.user
     const { attemptId } = await params;
 
     /* -------------------------------------------
@@ -70,7 +75,7 @@ export async function POST(
         );
     }
 
-    if (attempt.user_id !== user.id) {
+    if (attempt.user_id !== user.userId) {
         return NextResponse.json(
             { kind: "denied", reason: "not_owner" },
             { status: 403 }

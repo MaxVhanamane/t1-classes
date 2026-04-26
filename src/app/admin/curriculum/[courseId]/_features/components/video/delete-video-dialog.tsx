@@ -12,6 +12,7 @@ import {
 } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
 import { deleteVideo } from "../../actions/topic/video/delete-video";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface DeleteVideoDialogProps {
   courseId: string;
@@ -31,17 +32,17 @@ export function DeleteVideoDialog({
 
   function handleDelete() {
     startTransition(async () => {
-      try {
-        await deleteVideo(courseId, videoId, topicId);
+      const { error } = await callServerAction(
+        deleteVideo(courseId, videoId, topicId),
+      );
 
-        toast.success("Video deleted");
-        setOpen(false);
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to delete video";
-
-        toast.error(message);
+      if (error) {
+        toast.error(error);
+        return;
       }
+
+      toast.success("Video deleted");
+      setOpen(false);
     });
   }
 

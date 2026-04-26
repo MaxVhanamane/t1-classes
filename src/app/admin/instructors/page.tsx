@@ -30,6 +30,7 @@ import {
 } from "@/src/components/ui/table";
 
 import { Badge } from "@/src/components/ui/badge";
+import { fetchWrapper, HttpError } from "@/src/lib/api/fetch-wrapper";
 /* ---------------------------------- */
 /* Types                              */
 /* ---------------------------------- */
@@ -70,11 +71,7 @@ export default function AdminInstructorsPage() {
     isError,
   } = useQuery<Instructor[]>({
     queryKey: ["admin-instructors"],
-    queryFn: async () => {
-      const res = await fetch("/api/admin/instructors");
-      if (!res.ok) throw new Error("Failed to fetch instructors");
-      return res.json();
-    },
+    queryFn: () => fetchWrapper<Instructor[]>("/api/admin/instructors"),
   });
 
   useEffect(() => {
@@ -104,20 +101,26 @@ export default function AdminInstructorsPage() {
   /* ---------------------------------- */
 
   const { mutate: deleteMutation, isPending } = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await fetch(`/api/admin/instructors/${id}`, {
+    mutationFn: (id: string) =>
+      fetchWrapper<{ success: true }>(`/api/admin/instructors/${id}`, {
         method: "DELETE",
-      });
+      }),
 
-      if (!res.ok) throw new Error("Delete failed");
-    },
     onSuccess: () => {
       toast.success("Instructor deleted");
+
       void queryClient.invalidateQueries({
         queryKey: ["admin-instructors"],
       });
     },
-    onError: () => {
+    onError: (error) => {
+      if (
+        error instanceof HttpError &&
+        (error.status === 401 || error.status === 403)
+      ) {
+        return;
+      }
+
       toast.error("Failed to delete instructor");
     },
   });

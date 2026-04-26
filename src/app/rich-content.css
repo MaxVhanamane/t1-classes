@@ -131,16 +131,17 @@
 .rich-content td,
 .rich-content th {
     border: 1px solid var(--border);
-    padding: 5px 8px;
+    padding: 8px;
     width: 50%;
     min-width: unset !important;
-    /* override inline min-width on cols */
-    vertical-align: middle;
+
+    height: 48px;
+    min-height: 48px;
+
+    vertical-align: top;
     position: relative;
     line-height: 1.4;
-
 }
-
 
 .rich-content td {
     text-align: left;

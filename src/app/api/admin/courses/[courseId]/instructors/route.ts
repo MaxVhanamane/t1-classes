@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
+import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 /* ================================================== */
 /* GET — Fetch instructors by course                  */
@@ -10,9 +10,14 @@ export async function GET(
     _req: NextRequest,
     { params }: { params: Promise<{ courseId: string }> },
 ) {
+
     try {
         /* ---------- Auth ---------- */
-        await getCurrentStaff();
+        const auth = await requireStaffApiRoute();
+
+        if (!auth.authorized) {
+            return auth.response;
+        }
 
         const { courseId } = await params;
 

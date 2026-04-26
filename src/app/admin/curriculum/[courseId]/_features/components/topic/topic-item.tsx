@@ -23,6 +23,7 @@ import { useIsTruncated } from "@/src/hooks/useIsTruncated";
 import { ConfirmActionDialog } from "@/src/components/ui/common/confirm-action-dialog";
 import { toast } from "sonner";
 import { toggleTopicPublish } from "../../actions/topic/toggle-topic-publish";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 interface TopicItemProps {
   courseId: string;
@@ -123,22 +124,22 @@ export function TopicItem({
               }
               confirmLabel={is_published ? "Unpublish" : "Publish"}
               onConfirm={async () => {
-                try {
-                  await toggleTopicPublish({
+                const { error } = await callServerAction(
+                  toggleTopicPublish({
                     courseId,
                     topicId,
                     publish: !is_published,
-                  });
-                  toast.success(
-                    is_published ? "Topic unpublished" : "Topic published",
-                  );
-                } catch (err) {
-                  toast.error(
-                    err instanceof Error
-                      ? err.message
-                      : "Failed to update publish chapter",
-                  );
+                  }),
+                );
+
+                if (error) {
+                  toast.error(error);
+                  return;
                 }
+
+                toast.success(
+                  is_published ? "Topic unpublished" : "Topic published",
+                );
               }}
               trigger={
                 <Button

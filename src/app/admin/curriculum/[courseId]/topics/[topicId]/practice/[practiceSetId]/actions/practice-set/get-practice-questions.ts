@@ -1,4 +1,4 @@
-"use server";
+import "server-only"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { PracticeQuestion, PracticeQuestionOption } from "../../../../types/practice-question.types";

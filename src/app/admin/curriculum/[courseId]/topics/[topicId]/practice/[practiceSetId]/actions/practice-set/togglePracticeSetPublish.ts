@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getCurrentStaff } from "@/src/lib/helper-functions/getCurrentStaff";
+import { ServerActionResponse } from "@/src/types/server-action";
+import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 interface TogglePracticeSetPublishInput {
     courseId: string;
@@ -13,12 +14,10 @@ interface TogglePracticeSetPublishInput {
 type PracticeSetWithTopicAndChapter = {
     id: string;
     is_published: boolean;
-
     topic: {
         id: string;
         is_published: boolean;
         course_id: string;
-
         parent: {
             id: string;
             is_published: boolean;
@@ -27,22 +26,23 @@ type PracticeSetWithTopicAndChapter = {
     };
 };
 
-
 export async function togglePracticeSetPublish({
     courseId,
     practiceSetId,
     publish,
-}: TogglePracticeSetPublishInput) {
-    const supabase = await createServerSupabaseClient();
-    const staff = await getCurrentStaff();
+}: TogglePracticeSetPublishInput): Promise<ServerActionResponse> {
+    // redirect() throws internally; calling inside try/catch would prevent the redirect
+    const staff = await requireStaffServerOnly();
+    try {
+        const supabase = await createServerSupabaseClient();
 
-    /**
-     * 1. Fetch practice set + topic + chapter
-     */
-    const { data: practiceSet, error: psError } = await supabase
-        .from("practice_sets")
-        .select(
-            `
+        /**
+         * 1. Fetch practice set + topic + chapter
+         */
+        const { data: practiceSet, error: psError } = await supabase
+            .from("practice_sets")
+            .select(
+                `
         id,
         is_published,
         topic:topic_id (
@@ -56,78 +56,94 @@ export async function togglePracticeSetPublish({
           course_id
         )
       `
-        )
-        .eq("id", practiceSetId)
-        .single<PracticeSetWithTopicAndChapter>();
+            )
+            .eq("id", practiceSetId)
+            .single<PracticeSetWithTopicAndChapter>();
 
-    if (psError || !practiceSet) {
-        throw new Error("Practice set not found");
-    }
-
-    /**
-     * 2. Validate course
-     */
-    if (practiceSet.topic.course_id !== courseId) {
-        throw new Error("Invalid course");
-    }
-
-    /**
-     * 3. Ensure topic + chapter exist
-     */
-    const topic = practiceSet.topic;
-    const chapter = topic.parent;
-
-    if (!topic || !chapter || chapter.structure_type !== "chapter") {
-        throw new Error("Invalid topic or chapter");
-    }
-
-    /**
-     * 4. Publish checks
-     */
-    if (publish) {
-        if (!chapter.is_published) {
-            throw new Error("Publish the chapter first");
+        if (psError || !practiceSet) {
+            return { error: "Practice set not found" };
         }
 
-        if (!topic.is_published) {
-            throw new Error("Publish the topic first");
+        /**
+         * 2. Validate course
+         */
+        if (practiceSet.topic.course_id !== courseId) {
+            return { error: "Invalid course" };
         }
+
+        /**
+         * 3. Ensure topic + chapter exist
+         */
+        const topic = practiceSet.topic;
+        const chapter = topic?.parent;
+
+        if (!topic || !chapter || chapter.structure_type !== "chapter") {
+            return { error: "Invalid topic or chapter" };
+        }
+
+        /**
+         * 4. Publish checks
+         */
+        if (publish) {
+            if (!chapter.is_published) {
+                return { error: "Publish the chapter first" };
+            }
+
+            if (!topic.is_published) {
+                return { error: "Publish the topic first" };
+            }
+        }
+
+        /**
+         * 5. Ownership check (admin OR course owner)
+         */
+        const { data: course, error: courseError } = await supabase
+            .from("courses")
+            .select("created_by")
+            .eq("id", courseId)
+            .single();
+
+        if (courseError || !course) {
+            return { error: "Course not found" };
+        }
+
+        const isAdmin = staff.role === "admin";
+        const isOwner = course.created_by === staff.userId;
+
+        if (!isAdmin && !isOwner) {
+            return { error: "Not allowed" };
+        }
+
+        /**
+         * 6. Update publish state
+         */
+        const { error: updateError } = await supabase
+            .from("practice_sets")
+            .update({ is_published: publish })
+            .eq("id", practiceSetId);
+
+        if (updateError) {
+            console.error(
+                "[TOGGLE_PRACTICE_SET_PUBLISH_ERROR]",
+                updateError
+            );
+            return {
+                error:
+                    "Failed to update practice set. Please try again.",
+            };
+        }
+
+        /**
+         * 7. Revalidate
+         */
+        revalidatePath(`/admin/curriculum/${courseId}`);
+    } catch (error) {
+        console.error(
+            "[TOGGLE_PRACTICE_SET_PUBLISH_FATAL]",
+            error
+        );
+        return {
+            error: "Something went wrong. Please try again.",
+        };
     }
-
-    /**
-     * 5. Ownership check (admin OR course owner)
-     */
-    const { data: course } = await supabase
-        .from("courses")
-        .select("created_by")
-        .eq("id", courseId)
-        .single();
-
-    if (!course) {
-        throw new Error("Course not found");
-    }
-
-    const isAdmin = staff.role === "admin";
-    const isOwner = course.created_by === staff.id;
-
-    if (!isAdmin && !isOwner) {
-        throw new Error("Not allowed");
-    }
-
-    /**
-     * 6. Update publish state
-     */
-    const { error: updateError } = await supabase
-        .from("practice_sets")
-        .update({ is_published: publish })
-        .eq("id", practiceSetId);
-
-    if (updateError) {
-        throw new Error(updateError.message);
-    }
-
-    /**
-     * 7. Revalidate
-     */
-    revalidatePath(`/admin/curriculum/${courseId}`);
 }

@@ -16,7 +16,7 @@ export async function StructureTreeLoader({ courseId }: { courseId: string }) {
         sort_order: chapter.sort_order,
         topics,
       };
-    })
+    }),
   );
 
   return <StructureTree courseId={courseId} chapters={chapters} />;
