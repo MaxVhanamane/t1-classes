@@ -19,7 +19,7 @@ export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
 
   if (!visible && !failed) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-in fade-in duration-300 px-4">
       {/* Card */}
       <div
         className={cn(

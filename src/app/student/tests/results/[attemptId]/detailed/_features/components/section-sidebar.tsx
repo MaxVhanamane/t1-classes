@@ -352,25 +352,28 @@ export function SectionSidebar({
             )}
           >
             {/* Header */}
-            <div className="flex items-start justify-between gap-2">
-              <div className="space-y-1">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-2">
                 <div className="text-xs text-muted-foreground">
                   Section {i + 1}
                 </div>
 
-                <div className="font-semibold text-sm leading-tight">
-                  {s.title}
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  {s.subjectLabel}
-                </div>
+                <Badge
+                  variant="secondary"
+                  className="text-xs shrink-0 whitespace-nowrap"
+                >
+                  {s.questionCount}{" "}
+                  {s.questionCount === 1 ? "Question" : "Questions"}
+                </Badge>
               </div>
 
-              <Badge variant="secondary" className="text-xs">
-                {s.questionCount}{" "}
-                {s.questionCount === 1 ? "Question" : "Questions"}
-              </Badge>
+              <div className="font-semibold text-sm leading-tight">
+                {s.title}
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                {s.subjectLabel}
+              </div>
             </div>
 
             {/* Meta */}
@@ -386,7 +389,7 @@ export function SectionSidebar({
               )}
 
               {s.partialMarks && (
-                <Meta label="Partial Marks" value="Available" tone="warning" />
+                <Meta label="Partial" value="Available" tone="warning" />
               )}
             </div>
           </button>

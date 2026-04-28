@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@/src/components/ui/badge";
-import { Circle, CheckCircle2, Flag } from "lucide-react";
 
 import { GridState } from "../types/grid.types";
 import { getGridClasses } from "../helpers/grid-colors";
@@ -18,13 +17,14 @@ export default function GridBadge({
 
   const badgeClass = cn(
     className,
-    "inline-flex w-[190px] items-center justify-between gap-2 rounded-sm px-3 py-1.5 text-[11px] font-semibold shadow-sm transition-all duration-200 hover:scale-[1.02]",
+    "inline-flex w-[calc(50%-4px)] min-w-0 flex-col items-center justify-center gap-1 rounded-sm px-2 py-2 text-[11px] font-semibold shadow-sm",
   );
 
-  const labelClass = "flex min-w-0 items-center truncate";
+  const labelClass =
+    "w-full text-center text-[10px] leading-tight whitespace-normal break-words";
 
   const countClass = cn(
-    "ml-1 shrink-0 inline-flex min-w-[22px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white ",
+    "inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums text-white",
     state === "answered" && "bg-green-500 dark:bg-green-700",
     state === "review" && "bg-purple-500 dark:bg-purple-700",
     state === "answered_review" && "bg-teal-500 dark:bg-teal-700",
@@ -36,10 +36,7 @@ export default function GridBadge({
     case "answered":
       return (
         <Badge className={badgeClass}>
-          <span className={labelClass}>
-            <CheckCircle2 className="mr-1 h-3 w-3 shrink-0" />
-            <span className="truncate">Answered</span>
-          </span>
+          <span className={labelClass}>Answered</span>
           <span className={countClass}>{count}</span>
         </Badge>
       );
@@ -47,10 +44,7 @@ export default function GridBadge({
     case "review":
       return (
         <Badge className={badgeClass}>
-          <span className={labelClass}>
-            <Flag className="mr-1 h-3 w-3 shrink-0" />
-            <span className="truncate">Marked for Review</span>
-          </span>
+          <span className={labelClass}>Marked for Review</span>
           <span className={countClass}>{count}</span>
         </Badge>
       );
@@ -58,10 +52,7 @@ export default function GridBadge({
     case "answered_review":
       return (
         <Badge className={badgeClass}>
-          <span className={labelClass}>
-            <Flag className="mr-1 h-3 w-3 shrink-0" />
-            <span className="truncate">Answered & Review</span>
-          </span>
+          <span className={labelClass}>Answered & Review</span>
           <span className={countClass}>{count}</span>
         </Badge>
       );
@@ -69,10 +60,7 @@ export default function GridBadge({
     case "not_answered":
       return (
         <Badge className={badgeClass}>
-          <span className={labelClass}>
-            <Circle className="mr-1 h-3 w-3 shrink-0" />
-            <span className="truncate">Seen (Not Answered)</span>
-          </span>
+          <span className={labelClass}>Seen (Not Answered)</span>
           <span className={countClass}>{count}</span>
         </Badge>
       );
@@ -80,10 +68,7 @@ export default function GridBadge({
     default:
       return (
         <Badge className={badgeClass}>
-          <span className={labelClass}>
-            <Circle className="mr-1 h-3 w-3 shrink-0" />
-            <span className="truncate">Not Visited</span>
-          </span>
+          <span className={labelClass}>Not Visited</span>
           <span className={countClass}>{count}</span>
         </Badge>
       );

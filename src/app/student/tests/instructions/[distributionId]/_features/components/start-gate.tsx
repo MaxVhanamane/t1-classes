@@ -76,40 +76,51 @@ export default function StartGate({ distributionId, disabled }: Props) {
     disabled || !checked || startMutation.isPending || isNavigating;
 
   return (
-    <div className="flex w-full items-center justify-between gap-4">
+    <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       {/* Left */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground min-w-0">
         <Checkbox
           id="instructions"
           checked={checked}
           onCheckedChange={(v) => setChecked(Boolean(v))}
           disabled={isNavigating || startMutation.isPending}
+          className="shrink-0"
         />
-        <label htmlFor="instructions" className="cursor-pointer select-none">
+
+        <label
+          htmlFor="instructions"
+          className="cursor-pointer select-none leading-snug wrap-break-word"
+        >
           {INSTRUCTION_COPY.startGate.checkbox}
         </label>
       </div>
 
       {/* Right */}
-      {disabled ? (
-        <Button disabled className="flex items-center gap-2">
-          <Lock className="h-4 w-4" />
-          {INSTRUCTION_COPY.startGate.locked}
-        </Button>
-      ) : (
-        <Button
-          disabled={isLocked}
-          onClick={() => startMutation.mutate()}
-          className="flex items-center gap-2"
-        >
-          {startMutation.isPending || isNavigating ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Play className="h-4 w-4" />
-          )}
-          {!isNavigating ? INSTRUCTION_COPY.startGate.start : "Starting..."}
-        </Button>
-      )}
+      <div className="flex justify-end shrink-0">
+        {disabled ? (
+          <Button
+            disabled
+            className="min-w-35 flex items-center justify-center gap-2"
+          >
+            <Lock className="h-4 w-4" />
+            {INSTRUCTION_COPY.startGate.locked}
+          </Button>
+        ) : (
+          <Button
+            disabled={isLocked}
+            onClick={() => startMutation.mutate()}
+            className="min-w-35 flex items-center justify-center gap-2"
+          >
+            {startMutation.isPending || isNavigating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+
+            {!isNavigating ? INSTRUCTION_COPY.startGate.start : "Starting..."}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

@@ -87,7 +87,7 @@ export function QuestionViewer({
       </div>
 
       {/* Questions */}
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-6">
         {questions.map((q, i) => (
           <QuestionCard
             key={q.id}

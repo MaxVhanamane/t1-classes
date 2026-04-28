@@ -16,9 +16,15 @@ export async function DistributionsList({ status, search, page }: Props) {
   });
 
   if (data.items.length === 0) {
+    const statusLabel =
+      status === "all" ? "distributions" : `${status} distributions`;
+
     return (
-      <div className="text-sm text-muted-foreground text-center py-12">
-        No distributions found
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-14 px-6 text-center">
+        <p className="text-sm font-medium">No {statusLabel} found</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          There are no {statusLabel} available right now.
+        </p>
       </div>
     );
   }

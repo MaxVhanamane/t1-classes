@@ -23,12 +23,23 @@ export default function SectionInstructions({ section, index }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between text-base">
-          <span>
+        <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between text-base">
+          {/* Title */}
+          <span className="min-w-0 leading-snug wrap-break-word">
             Section {index + 1}: {section.title}
           </span>
 
-          <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+          {/* Badge */}
+          <span
+            className="
+          w-fit shrink-0
+          rounded-md
+          bg-muted
+          px-2 py-1
+          text-xs
+          text-muted-foreground
+        "
+          >
             {answerModeLabel(section.answer_mode)}
           </span>
         </CardTitle>

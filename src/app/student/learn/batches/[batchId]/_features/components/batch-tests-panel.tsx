@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
-import { RotateCcw, BarChart3, Lock, Info } from "lucide-react";
+import { RotateCcw, BarChart3, Lock, ClipboardCheck } from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import {
@@ -21,6 +21,7 @@ import {
 import { format } from "date-fns";
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 import { TEST_GRACE_TIME_IN_SECONDS } from "@/src/lib/constants/rpc-constants";
+import DottedBackground from "@/src/components/dotted-background";
 
 /* -------------------------------------------------- */
 /* Types */
@@ -76,7 +77,7 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
   /* Navigation */
   /* -------------------------------------------------- */
 
-  function goToInstructions(distributionId: string) {
+  function goToTest(distributionId: string) {
     router.push(`/student/tests/instructions/${distributionId}`);
   }
 
@@ -106,7 +107,10 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
 
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Card key={i} className="rounded-lg border py-4">
+              <Card
+                key={i}
+                className="rounded-lg border py-4 relative md:w-2xl"
+              >
                 <CardContent className="p-4 space-y-4">
                   {/* Header */}
                   <div className="flex items-center justify-between">
@@ -210,10 +214,10 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
   /* -------------------------------------------- */
     const badgeClass =
       status === "scheduled"
-        ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+        ? "bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20"
         : status === "ongoing"
-          ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
-          : "bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20";
+          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
+          : "bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border border-zinc-500/20";
 
     let actionButton: React.ReactNode;
 
@@ -222,8 +226,13 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
   /* -------------------------------------------- */
     if (status === "scheduled") {
       actionButton = (
-        <Button size="sm" variant="ghost" disabled>
-          <Lock className="mr-2 h-4 w-4" />
+        <Button
+          size="sm"
+          className="border border-border disabled:opacity-100"
+          variant="ghost"
+          disabled
+        >
+          <Lock className="mr-2 h-4 w-4 " />
           Locked
         </Button>
       );
@@ -232,9 +241,9 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
       /* Ongoing + no attempt
   /* -------------------------------------------- */
       actionButton = (
-        <Button size="sm" onClick={() => goToInstructions(test.distributionId)}>
-          <Info className="mr-2 h-4 w-4" />
-          Instructions
+        <Button size="sm" onClick={() => goToTest(test.distributionId)}>
+          <ClipboardCheck className="mr-2 h-4 w-4" />
+          Go to Test
         </Button>
       );
     } else if (
@@ -312,8 +321,9 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
     return (
       <Card
         key={test.distributionId}
-        className="rounded-lg border dark:bg-black hover:bg-muted/40 transition py-4 relative lg:w-3xl"
+        className="rounded-lg border dark:bg-black hover:bg-muted/40 transition py-4 relative md:w-2xl"
       >
+        <DottedBackground />
         <CardContent className="p-4 space-y-4 z-10">
           {/* Header */}
           <div className="flex items-center justify-between">

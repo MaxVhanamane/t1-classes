@@ -10,7 +10,7 @@ export default async function StudentAppShellLayout({
 }: StudentLayoutProps) {
   return (
     <>
-      <Suspense fallback={null}>
+      <Suspense fallback={<div className="w-full h-[56.8px]"></div>}>
         <StudentNavbar />
       </Suspense>
       {children}

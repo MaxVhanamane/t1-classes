@@ -15,6 +15,10 @@ import {
 } from "@/src/components/ui/alert-dialog";
 
 import { ArrowLeft, ArrowRight, Flag, Save, X, Send } from "lucide-react";
+import { useAttemptState } from "../hooks/use-attempt-state";
+import { Section } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
+import { useMemo } from "react";
+import DottedBackground from "@/src/components/dotted-background";
 
 type Props = {
   isFirst: boolean;
@@ -27,6 +31,8 @@ type Props = {
   onMarkAndNext: () => void;
   onSubmit: () => void;
   disabled?: boolean;
+  attemptId: string;
+  sections: Section[];
 };
 
 export default function QuestionActions({
@@ -40,7 +46,57 @@ export default function QuestionActions({
   onMarkAndNext,
   onSubmit,
   disabled,
+  attemptId,
+  sections,
 }: Props) {
+  const { state } = useAttemptState(attemptId, []);
+  const counts = useMemo(() => {
+    const summary = {
+      total: 0,
+      answered: 0,
+      answered_review: 0,
+      not_answered_review: 0,
+      not_answered: 0,
+    };
+
+    summary.total = sections.reduce(
+      (acc, section) => acc + section.questions.length,
+      0,
+    );
+
+    const stateMap = new Map(state.map((item) => [item.questionId, item]));
+
+    for (const section of sections) {
+      for (const question of section.questions) {
+        const item = stateMap.get(question.id);
+
+        if (!item) {
+          summary.not_answered++;
+          continue;
+        }
+
+        const hasAnswer =
+          item.answer !== null &&
+          item.answer !== undefined &&
+          item.answer !== "";
+
+        const marked = item.markedForReview;
+
+        if (hasAnswer && marked) {
+          summary.answered_review++;
+        } else if (hasAnswer) {
+          summary.answered++;
+        } else if (marked) {
+          summary.not_answered_review++;
+        } else {
+          summary.not_answered++;
+        }
+      }
+    }
+
+    return summary;
+  }, [sections, state]);
+
   return (
     <div className="space-y-4 rounded-lg border bg-card p-3 shadow-sm sm:p-4">
       {/* PRIMARY ACTIONS */}
@@ -120,27 +176,110 @@ export default function QuestionActions({
             </Button>
           </AlertDialogTrigger>
           <AlertDialogOverlay className="backdrop-blur-xs" />
-          <AlertDialogContent className="bg-card ">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Submit Test?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Once you submit, you won’t be able to change your answers. Make
-                sure you have reviewed all questions.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+          <AlertDialogContent className="sm:max-w-md rounded-2xl p-0 overflow-hidden max-h-[90dvh] overflow-y-auto">
+            <div className="p-4 py-6 space-y-6">
+              <AlertDialogHeader className="space-y-2">
+                <AlertDialogTitle className="text-xl font-semibold tracking-tight">
+                  Ready to Submit Test?
+                </AlertDialogTitle>
 
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogDescription className="text-sm text-muted-foreground leading-relaxed">
+                  Review your progress below. Once submitted, answers cannot be
+                  changed.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
 
-              <AlertDialogAction
-                onClick={onSubmit}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Yes, Submit
-              </AlertDialogAction>
-            </AlertDialogFooter>
+              {/* Summary */}
+              <div className="grid grid-cols-2 gap-3">
+                <SummaryCard label="Total" value={counts.total} />
+                <SummaryCard label="Answered" value={counts.answered} />
+                <SummaryCard
+                  label="Answered + Review"
+                  value={counts.answered_review}
+                />
+                <SummaryCard
+                  label="Not Answered + Review"
+                  value={counts.not_answered_review}
+                />
+                <SummaryCard label="Not Answered" value={counts.not_answered} />
+              </div>
+
+              {/* warning */}
+              {/* {(counts.not_answered > 0 || counts.not_visited > 0) && (
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+                  You still have unanswered or review-marked questions. You may
+                  review them before submitting.
+                </div>
+              )} */}
+
+              <AlertDialogFooter className="pt-2">
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                <AlertDialogAction
+                  onClick={onSubmit}
+                  className="bg-destructive text-white"
+                >
+                  Submit Test
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </div>
           </AlertDialogContent>
         </AlertDialog>
+      </div>
+    </div>
+  );
+}
+
+function SummaryCard({ label, value }: { label: string; value: number }) {
+  const glowClass =
+    label === "Answered"
+      ? "bg-green-500/40 dark:bg-green-600/20"
+      : label === "Review"
+        ? "bg-purple-500/40 dark:bg-purple-600/20"
+        : label === "Answered + Review"
+          ? "bg-teal-500/40 dark:bg-teal-600/20"
+          : label === "Not Answered"
+            ? "bg-yellow-500/40 dark:bg-yellow-600/20"
+            : "bg-slate-500/40 dark:bg-slate-600/20";
+
+  return (
+    <div
+      className="
+        relative
+        overflow-hidden
+        rounded-xl
+        border
+        bg-background
+        px-4
+        py-3
+      "
+    >
+      {/* subtle right glow */}
+      <div
+        className={`
+          pointer-events-none
+          absolute
+          right-0
+          top-1/2
+          h-14
+          w-14
+          -translate-y-1/2
+          rounded-full
+          blur-2xl
+          ${glowClass}
+        `}
+      />
+
+      <DottedBackground className="opacity-50" />
+
+      <div className="relative z-10">
+        <p className="text-xs text-muted-foreground uppercase tracking-wide">
+          {label}
+        </p>
+
+        <p className="mt-1 text-xl font-semibold tracking-tight tabular-nums">
+          {value}
+        </p>
       </div>
     </div>
   );

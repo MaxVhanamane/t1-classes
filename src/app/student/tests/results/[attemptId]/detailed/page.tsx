@@ -98,6 +98,7 @@ export default function DetailedPage() {
           partialMarks={activeSection?.partialMarks}
           questionCount={activeSection?.questionCount}
           sectionSummary={questionData?.summary ?? null}
+          isSectionSummaryLoading={questionsQuery.isLoading}
           currentPage={questionData?.page ?? 1}
           totalPages={questionData?.totalPages ?? 1}
         />

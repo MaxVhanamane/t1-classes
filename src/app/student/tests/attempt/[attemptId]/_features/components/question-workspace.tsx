@@ -116,6 +116,8 @@ export default function QuestionWorkspace({
               isLast={session.isLast}
               onBack={session.goBack}
               onNext={session.goNext}
+              attemptId={attemptId}
+              sections={sections}
               onClear={() => {
                 setDraft(null);
                 session.clearAnswer();

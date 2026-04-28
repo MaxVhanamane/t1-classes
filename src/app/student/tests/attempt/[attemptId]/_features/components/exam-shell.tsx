@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import QuestionGrid from "./question-grid";
 import QuestionWorkspace from "./question-workspace";
@@ -15,7 +15,7 @@ type Props = {
 
 export default function ExamShell({ attemptId, sections, state }: Props) {
   const queryClient = useQueryClient();
-
+  const didInitFirstVisit = useRef(false);
   // ----------------------------------
   // Hydrate cache ONCE from server
   // ----------------------------------
@@ -38,6 +38,39 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
       })),
     );
   }, [sections]);
+
+  useEffect(() => {
+    if (didInitFirstVisit.current) return;
+
+    const firstId = flat[0]?.id;
+    if (!firstId) return;
+
+    didInitFirstVisit.current = true;
+
+    const key = ["attempt-state", attemptId];
+
+    queryClient.setQueryData<StateItem[]>(key, (prev = []) => {
+      const exists = prev.find((item) => item.questionId === firstId);
+
+      if (exists) {
+        if (exists.visited) return prev;
+
+        return prev.map((item) =>
+          item.questionId === firstId ? { ...item, visited: true } : item,
+        );
+      }
+
+      return [
+        ...prev,
+        {
+          questionId: firstId,
+          answer: null,
+          visited: true,
+          markedForReview: false,
+        },
+      ];
+    });
+  }, [flat, attemptId, queryClient]);
 
   const [activeId, setActiveId] = useState(flat[0]?.id);
 

@@ -153,14 +153,28 @@ export function QuestionCard({ index, question }: Props) {
           </div>
 
           {/* Correct Answer */}
-
-          <div className="flex items-center justify-between">
+          <div
+            className={cn(
+              "flex gap-2",
+              range.type === "exact"
+                ? "items-center justify-between"
+                : "flex-col sm:flex-row sm:items-center sm:justify-between",
+            )}
+          >
             <div className="text-muted-foreground">Correct Answer</div>
 
             {range.type === "exact" ? (
-              <Badge variant="secondary">Exact answer: {range.value}</Badge>
+              <Badge
+                variant="secondary"
+                className="shrink-0 rounded-sm! sm:rounded-full!"
+              >
+                {range.value}
+              </Badge>
             ) : (
-              <Badge variant="secondary">
+              <Badge
+                variant="secondary"
+                className="max-w-full whitespace-normal text-left rounded-sm sm:rounded-full"
+              >
                 {formatRangeText(range.min, range.max)}
               </Badge>
             )}
