@@ -11,6 +11,9 @@ import {
   GraduationCap,
   X,
   NotepadText,
+  Bell,
+  Video,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "../button";
 
@@ -21,8 +24,9 @@ const navItems = [
   { label: "Batches", href: "/admin/batches", icon: Layers },
   { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
   { label: "Tests", href: "/admin/tests", icon: NotepadText },
-  { label: "Instructors", href: "/admin/instructors", icon: NotepadText },
-  { label: "Notifications", href: "/admin/notifications", icon: NotepadText },
+  { label: "Live Classes", href: "/admin/live-classes", icon: Video },
+  { label: "Instructors", href: "/admin/instructors", icon: UserCheck },
+  { label: "Notifications", href: "/admin/notifications", icon: Bell },
 ];
 
 export default function AdminSidebar({

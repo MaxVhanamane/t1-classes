@@ -103,7 +103,7 @@ export function ScheduleTestDialog({
       setLoading(true);
 
       try {
-        const res = await fetch("/api/admin/test-scheduling/batches");
+        const res = await fetch("/api/admin/schedule/batches");
 
         if (res.status === 401) {
           router.push("/login");
@@ -205,7 +205,10 @@ export function ScheduleTestDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[95vh] overflow-y-scroll">
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        className="sm:max-w-lg max-h-[95vh] overflow-y-scroll"
+      >
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Edit Scheduled Test" : "Schedule Test"}
@@ -319,9 +322,9 @@ export function ScheduleTestDialog({
 }
 
 function handleDistributionError(error: unknown) {
-  if (error instanceof Error) {
+  if (typeof error === "string") {
     try {
-      const parsed = JSON.parse(error.message);
+      const parsed = JSON.parse(error);
 
       if (parsed.code === "TEST_GAP_CONFLICT") {
         const start = new Date(parsed.starts_at).toLocaleString("en-GB", {
@@ -343,15 +346,23 @@ function handleDistributionError(error: unknown) {
         });
 
         toast.error(
-          `Cannot schedule this test. It conflicts with the test named "${parsed.title}", which is scheduled from ${start} to ${end}. A minimum 30-minute gap between tests is required.`,
-          { duration: 10000 },
+          `Cannot schedule this test. It conflicts with "${parsed.title}" scheduled from ${start} to ${end}. A minimum 30-minute gap between tests is required.`,
+          { duration: 15000 },
         );
 
         return;
       }
     } catch {
-      // ignore JSON parse errors
+      // not JSON, continue
     }
+
+    toast.error(error);
+    return;
+  }
+
+  if (error instanceof Error) {
+    toast.error(error.message);
+    return;
   }
 
   toast.error("Failed to save distribution");

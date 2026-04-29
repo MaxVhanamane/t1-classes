@@ -8,18 +8,16 @@ import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only"
 export async function createTestDistribution(
     input: ScheduleTestInput
 ): Promise<ServerActionResponse<string>> {
-    // redirect() throws internally; calling inside try/catch would prevent the redirect
     const staff = await requireStaffServerOnly();
+
     try {
-
-
         const supabase = await createServerSupabaseClient();
 
         if (!input.batch_id) {
             return { error: "Batch is required" };
         }
 
-        const { error } = await supabase.rpc(
+        const { data, error } = await supabase.rpc(
             "rpc_create_test_distribution",
             {
                 p_test_id: input.test_id,
@@ -32,14 +30,44 @@ export async function createTestDistribution(
         );
 
         if (error) {
-            return { error: error.message };
+            return { error: normalizeRpcError(error.message) };
         }
 
-
+        return { data };
     } catch (err) {
         console.error("[CREATE_TEST_DISTRIBUTION_ERROR]", err);
+
         return {
             error: "Failed to create test distribution",
         };
     }
+}
+
+function normalizeRpcError(message: string): string {
+    console.log("mmmmmmmmmm",message)
+    if (!message) {
+        return "Failed to create test distribution";
+    }
+
+    if (message.includes("TEST_NOT_FOUND")) {
+        return "The selected test was not found.";
+    }
+
+    if (message.includes("INVALID_TIME_RANGE")) {
+        return "End time must be after start time.";
+    }
+
+    if (message.includes("CANNOT_SCHEDULE_IN_PAST")) {
+        return "You cannot schedule a test in the past.";
+    }
+
+    if (message.includes("DURATION_EXCEEDS_DISTRIBUTION_WINDOW")) {
+        return "Duration cannot exceed the scheduled time window.";
+    }
+
+    if (message.includes("TEST_GAP_CONFLICT")) {
+        return message;
+    }
+
+    return "Failed to create test distribution";
 }
