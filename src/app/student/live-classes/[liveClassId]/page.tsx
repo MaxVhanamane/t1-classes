@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { LiveClassVideoPlayer } from "./_features/components/live-class-video-player";
 
 type Props = {
   params: Promise<{
@@ -48,25 +49,20 @@ export default async function Page({ params, searchParams }: Props) {
 
   const chatUrl =
     `https://www.youtube.com/live_chat?v=${query.youtube}` +
-    `&embed_domain=${embedDomain}`;
+    `&embed_domain=${embedDomain}` +
+    `&dark_theme=1`;
 
   return (
     <div className="min-h-dvh bg-background">
-      <div className="mx-auto max-w-[1800px] md:px-4 md:py-4">
+      <div className="mx-auto max-w-450 md:px-4 md:py-4">
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
           {/* LEFT SIDE */}
           <section className="space-y-3">
             <div className="overflow-hidden bg-black md:rounded-2xl md:border">
-              <div className="aspect-video w-full">
-                <iframe
-                  title={query.title ?? "Live Class"}
-                  src={videoUrl}
-                  className="h-full w-full"
-                  allow="autoplay; encrypted-media; picture-in-picture"
-                  allowFullScreen
-                  sandbox="allow-scripts allow-same-origin"
-                />
-              </div>
+              <LiveClassVideoPlayer
+                title={query.title ?? "Live Class"}
+                videoUrl={videoUrl}
+              />
             </div>
 
             <div className="px-3 pb-2 md:px-1">
@@ -88,12 +84,12 @@ export default async function Page({ params, searchParams }: Props) {
               <p className="text-sm font-semibold">Live Chat</p>
             </div>
 
-            <div className="h-[60dvh] sm:h-[65dvh] lg:h-[600px]">
+            <div className="h-[60dvh] sm:h-[65dvh] lg:h-150">
               <iframe
                 title="Live Chat"
                 src={chatUrl}
                 className="h-full w-full"
-                sandbox="allow-scripts allow-same-origin"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
               />
             </div>
           </aside>
