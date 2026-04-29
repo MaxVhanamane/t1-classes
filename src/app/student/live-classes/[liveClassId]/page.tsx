@@ -11,6 +11,20 @@ type Props = {
   }>;
 };
 
+function getEmbedDomain() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  if (!siteUrl) {
+    return "localhost";
+  }
+
+  try {
+    return new URL(siteUrl).hostname;
+  } catch {
+    return siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  }
+}
+
 export default async function Page({ params, searchParams }: Props) {
   const { liveClassId } = await params;
 
@@ -19,6 +33,8 @@ export default async function Page({ params, searchParams }: Props) {
   if (!liveClassId || !query.youtube) {
     notFound();
   }
+
+  const embedDomain = getEmbedDomain();
 
   const videoUrl =
     `https://www.youtube-nocookie.com/embed/${query.youtube}` +
@@ -30,7 +46,9 @@ export default async function Page({ params, searchParams }: Props) {
     `&iv_load_policy=3` +
     `&modestbranding=1`;
 
-  const chatUrl = `https://www.youtube.com/live_chat?v=${query.youtube}&embed_domain=localhost`;
+  const chatUrl =
+    `https://www.youtube.com/live_chat?v=${query.youtube}` +
+    `&embed_domain=${embedDomain}`;
 
   return (
     <div className="min-h-dvh bg-background">
@@ -70,7 +88,7 @@ export default async function Page({ params, searchParams }: Props) {
               <p className="text-sm font-semibold">Live Chat</p>
             </div>
 
-            <div className="h-[60dvh] sm:h-[65dvh] lg:h-[600px]  ">
+            <div className="h-[60dvh] sm:h-[65dvh] lg:h-[600px]">
               <iframe
                 title="Live Chat"
                 src={chatUrl}
