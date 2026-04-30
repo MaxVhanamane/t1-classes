@@ -76,13 +76,13 @@ export function StudentNavbar({
         <div className="flex items-center gap-2">
           {isApp ? (
             <>
-              <Button
+              {/* <Button
                 asChild
                 variant="ghost"
                 className="hidden sm:inline-flex h-9 px-3"
               >
                 <Link href="/student/dashboard">My Learning</Link>
-              </Button>
+              </Button> */}
 
               <ThemeToggle />
               <NotificationPopover />
@@ -90,7 +90,7 @@ export function StudentNavbar({
             </>
           ) : (
             <>
-              <Button
+              {/* <Button
                 asChild
                 variant="ghost"
                 className="hidden sm:inline-flex h-9 px-3"
@@ -103,7 +103,7 @@ export function StudentNavbar({
                 className="hidden sm:inline-flex h-9 px-3"
               >
                 <Link href="/">Home</Link>
-              </Button>
+              </Button> */}
 
               <ThemeToggle />
               <UserMenu />

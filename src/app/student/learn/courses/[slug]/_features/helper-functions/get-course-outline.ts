@@ -22,7 +22,7 @@ export async function getCourseOutline(slug: string): Promise<{
     chapters: CourseChapter[];
 } | null> {
     "use cache";
-    cacheLife("days");
+    cacheLife("aggressive");
     cacheTag(`course-outline:enrolled:${slug}`);
     console.log("zzing", `course-outline:enrolled:${slug}`)
 

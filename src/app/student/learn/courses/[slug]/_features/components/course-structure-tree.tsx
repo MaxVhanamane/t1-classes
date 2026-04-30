@@ -55,7 +55,7 @@ export function CourseStructureTree({
   onPracticeSelect,
 }: Props) {
   return (
-    <div className="space-y-4 p-3 lg:p-4">
+    <div className="space-y-4 p-3 lg:p-4 ">
       {chapters.map((chapter) => (
         <ChapterBlock
           key={chapter.id}

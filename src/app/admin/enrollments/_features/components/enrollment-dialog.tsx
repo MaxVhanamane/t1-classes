@@ -243,7 +243,10 @@ export function EnrollmentDialog({
         if (!nextOpen) onClose();
       }}
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        className="max-h-[90vh] overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Edit Enrollment" : "Create Enrollment"}

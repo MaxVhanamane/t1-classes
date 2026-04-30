@@ -3,7 +3,14 @@ import UserTableRow from "@/src/app/admin/users/_features/components/user-table-
 import UserCard from "@/src/app/admin/users/_features/components/user-card";
 import CreateUserDialog from "@/src/app/admin/users/_features/components/create-user-dialog";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+// import { createUserWithPassword } from "./_features/actions/create-user-with-password";
 export default async function UsersPage() {
+  // await createUserWithPassword({
+  //   email: "user1@gmail.com",
+  //   password: "user1@7",
+  //   full_name: "User One",
+  //   role: "student",
+  // });
   const supabase = await createServerSupabaseClient();
 
   const { data } = await supabase

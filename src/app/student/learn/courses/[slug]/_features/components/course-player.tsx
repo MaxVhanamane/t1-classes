@@ -398,7 +398,9 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         {/* Mobile — inline tree */}
         {mobileMode === "inline" && (
           <div className="lg:hidden mt-3">
-            <CourseStructureTree {...treeProps} />
+            <div className="mx-1 border border-border rounded-sm">
+              <CourseStructureTree {...treeProps} />
+            </div>
           </div>
         )}
 
@@ -443,8 +445,10 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
             <h1 className="px-4 py-3 text-lg font-semibold shrink-0">
               Course Content
             </h1>
-            <div className="flex-1 overflow-y-auto">
-              <CourseStructureTree {...treeProps} />
+            <div className="flex-1 overflow-y-auto relative px-4 py-4">
+              <div className="mx-auto border border-border rounded-sm">
+                <CourseStructureTree {...treeProps} />
+              </div>
             </div>
           </div>
         </div>
@@ -455,18 +459,20 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
       {/* ============================================= */}
 
       <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
-        <DrawerContent className="h-[85vh]">
+        <DrawerContent className="h-[95vh] data-[vaul-drawer-direction=bottom]:max-h-[95vh]">
           <DrawerHeader className="border-b">
             <DrawerTitle>Course Content</DrawerTitle>
           </DrawerHeader>
-          <div className="flex-1 overflow-y-auto">
-            <CourseStructureTree
-              {...treeProps}
-              onUnitSelect={(id, type) => {
-                void loadUnit(id, type);
-                setMobileOpen(false);
-              }}
-            />
+          <div className="flex-1 overflow-y-auto mt-1.5">
+            <div className="mx-1 border border-border rounded-sm">
+              <CourseStructureTree
+                {...treeProps}
+                onUnitSelect={(id, type) => {
+                  void loadUnit(id, type);
+                  setMobileOpen(false);
+                }}
+              />
+            </div>
           </div>
         </DrawerContent>
       </Drawer>

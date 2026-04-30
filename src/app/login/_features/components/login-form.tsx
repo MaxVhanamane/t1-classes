@@ -108,7 +108,9 @@ export default function LoginForm() {
         <StatusCard
           title="Getting things ready"
           description="Setting up your dashboard"
-          icon={<Loader2 className="h-6 w-6 animate-spin text-foreground" />}
+          icon={
+            <Loader2 className="h-6 w-6 animate-spin dark:text-foreground text-white" />
+          }
           footer={
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <CheckCircle className="h-4 w-4 text-green-500" />
