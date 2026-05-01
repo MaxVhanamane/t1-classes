@@ -3,13 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import {
-  Radio,
-  PlaySquare,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { useRouter } from "nextjs-toploader/app";
 
@@ -19,6 +13,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 
 import DottedBackground from "@/src/components/dotted-background";
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
+import { LiveClassActionButton } from "./live-class-action-button";
 
 type LiveClassStatus = "upcoming" | "live" | "completed";
 
@@ -200,50 +195,46 @@ export default function BatchLiveClassesPanel({
                   </div>
                 </div>
 
-                <div className="flex justify-end">
-                  <Button size="sm" onClick={() => openLiveClass(item)}>
-                    {status === "live" ? (
-                      <Radio className="mr-2 h-4 w-4" />
-                    ) : (
-                      <PlaySquare className="mr-2 h-4 w-4" />
-                    )}
-
-                    {status === "live" ? "Join Live" : "Open Class"}
-                  </Button>
-                </div>
+                <LiveClassActionButton
+                  status={status}
+                  startsAt={item.starts_at}
+                  onClick={() => openLiveClass(item)}
+                />
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      <div className="flex items-center justify-between md:w-2xl">
-        <p className="text-sm text-muted-foreground">
-          Page {page} of {totalPages}
-        </p>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between md:w-2xl">
+          <p className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </p>
 
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={page === 1 || isFetching}
-            onClick={() => setPage((prev) => prev - 1)}
-          >
-            <ChevronLeft className="mr-1 h-4 w-4" />
-            Previous
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 1 || isFetching}
+              onClick={() => setPage((prev) => prev - 1)}
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              Previous
+            </Button>
 
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={page >= totalPages || isFetching}
-            onClick={() => setPage((prev) => prev + 1)}
-          >
-            Next
-            <ChevronRight className="ml-1 h-4 w-4" />
-          </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page >= totalPages || isFetching}
+              onClick={() => setPage((prev) => prev + 1)}
+            >
+              Next
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

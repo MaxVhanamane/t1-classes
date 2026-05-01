@@ -9,5 +9,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY
  * Used inside React components
  */
 export function createBrowserSupabaseClient() {
-    return createBrowserClient(supabaseUrl, supabaseAnonKey);
+    return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            autoRefreshToken: false
+        }
+    });
 }
