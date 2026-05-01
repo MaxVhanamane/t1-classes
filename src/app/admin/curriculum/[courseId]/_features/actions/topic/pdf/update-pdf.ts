@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { deleteR2Object } from "@/src/lib/r2/deleteObject";
 import {
@@ -62,7 +62,7 @@ export async function updatePdfUnit(
          */
         const { data: course, error: courseError } = await supabase
             .from("courses")
-            .select("created_by")
+            .select("created_by, slug")
             .eq("id", pdf.course_id)
             .single();
 
@@ -136,6 +136,7 @@ export async function updatePdfUnit(
         revalidatePath(
             `/admin/curriculum/${courseId}/topics/${topicId}`
         );
+        updateTag(`course-outline:enrolled:${course.slug}`);
     } catch (error) {
         console.error("[UPDATE_PDF_FATAL]", error);
         return { error: "Something went wrong. Please try again." };

@@ -2,7 +2,7 @@
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { deleteR2Object } from "@/src/lib/r2/deleteObject";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
@@ -40,7 +40,7 @@ export async function deletePdf(
          */
         const { data: course, error: courseError } = await supabase
             .from("courses")
-            .select("created_by")
+            .select("created_by, slug")
             .eq("id", pdf.course_id)
             .single();
 
@@ -85,6 +85,7 @@ export async function deletePdf(
         revalidatePath(
             `/admin/curriculum/${courseId}/topics/${topicId}`
         );
+        updateTag(`course-outline:enrolled:${course.slug}`);
     } catch (error) {
         console.error("[DELETE_PDF_FATAL]", error);
         return { error: "Something went wrong. Please try again." };

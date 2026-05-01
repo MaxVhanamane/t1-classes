@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import {
     AddVideoFormInput,
@@ -49,7 +49,7 @@ export async function updateVideo(
         // 4. Fetch course owner
         const { data: course, error: courseError } = await supabase
             .from("courses")
-            .select("created_by")
+            .select("created_by, slug")
             .eq("id", courseId)
             .single();
 
@@ -92,6 +92,7 @@ export async function updateVideo(
 
         // 7. Revalidate UI
         revalidatePath(`/admin/courses/${courseId}/curriculum`);
+        updateTag(`course-outline:enrolled:${course.slug}`);
     } catch (error) {
         console.error("[UPDATE_VIDEO_FATAL]", error);
         return { error: "Something went wrong. Please try again." };

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
@@ -99,7 +99,7 @@ export async function togglePracticeSetPublish({
          */
         const { data: course, error: courseError } = await supabase
             .from("courses")
-            .select("created_by")
+            .select("created_by, slug")
             .eq("id", courseId)
             .single();
 
@@ -137,6 +137,7 @@ export async function togglePracticeSetPublish({
          * 7. Revalidate
          */
         revalidatePath(`/admin/curriculum/${courseId}`);
+        updateTag(`course-outline:enrolled:${course.slug}`);
     } catch (error) {
         console.error(
             "[TOGGLE_PRACTICE_SET_PUBLISH_FATAL]",

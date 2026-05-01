@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import {
     DeletePracticeSetInput,
@@ -71,7 +71,7 @@ export async function deletePracticeSet(
          */
         const { data: course, error: courseError } = await supabase
             .from("courses")
-            .select("created_by")
+            .select("created_by, slug")
             .eq("id", courseId)
             .single();
 
@@ -112,6 +112,7 @@ export async function deletePracticeSet(
         revalidatePath(
             `/admin/curriculum/${courseId}/topics/${topicId}`
         );
+        updateTag(`course-outline:enrolled:${course.slug}`);
 
         // No return on success
     } catch (error) {
