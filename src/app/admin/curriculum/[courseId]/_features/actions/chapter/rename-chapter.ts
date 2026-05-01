@@ -68,7 +68,7 @@ export async function renameChapter(
 
         // 7. Revalidate and invalidate cache
         revalidatePath(`/admin/curriculum/${courseId}`);
-        // updateTag(`course-outline:enrolled:${course.slug}`);
+        updateTag(`course-outline:enrolled:${course.slug}`);
 
         // Success: no return needed
     } catch (error) {
