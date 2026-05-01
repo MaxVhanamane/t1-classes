@@ -21,7 +21,7 @@ export async function getCourseOutline(slug: string): Promise<{
     courseId: string;
     chapters: CourseChapter[];
 } | null> {
-    "use cache";
+    "use cache: remote";
     cacheLife("aggressive");
     cacheTag(`course-outline:enrolled:${slug}`);
     console.log("getCourseOutline called", `course-outline:enrolled:${slug}`)
