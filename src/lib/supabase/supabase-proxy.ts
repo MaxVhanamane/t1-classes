@@ -39,25 +39,36 @@ function getRoleHome(role: string): string {
     return ROLE_HOME[role] ?? '/login'
 }
 
-function redirect(request: NextRequest, pathname: string, supabaseResponse: NextResponse): NextResponse {
-    // Preserve supabase cookies when redirecting so the session is not lost
+function redirect(
+    request: NextRequest,
+    pathname: string,
+    supabaseResponse: NextResponse
+): NextResponse {
+
     const url = request.nextUrl.clone()
     url.pathname = pathname
-    const redirectResponse = NextResponse.redirect(url)
-    supabaseResponse.cookies.getAll().forEach(cookie => {
-        redirectResponse.cookies.set(cookie.name, cookie.value)
-    })
-    return redirectResponse
-}
 
+    const response = NextResponse.redirect(url)
+
+    //  copy headers PROPERLY
+    supabaseResponse.headers.forEach((value, key) => {
+        response.headers.set(key, value)
+    })
+
+    //  copy cookies PROPERLY
+    supabaseResponse.cookies.getAll().forEach(({ name, value, ...options }) => {
+        response.cookies.set(name, value, options)
+    })
+
+    return response
+}
 // ---------------------------------------------------------------------------
 // Main handler
 // ---------------------------------------------------------------------------
 
 export async function updateSession(request: NextRequest) {
-    console.log("Proxy updateSession is running")
-    console.log("---- REQUEST START ----")
-    console.log("PATH:", request.nextUrl.pathname)
+
+    console.log("---- REQUEST START (updateSession is running) (proxy) ----")
     console.log("ALL COOKIES:", request.cookies.getAll())
     let supabaseResponse = NextResponse.next({ request })
 
@@ -96,7 +107,7 @@ export async function updateSession(request: NextRequest) {
             },
         }
     )
-    console.log("Client created")
+
 
     // DO NOT put any code between createServerClient and getClaims().
     // getClaims() is local-only (reads JWT) so it does not make a network
@@ -113,8 +124,7 @@ export async function updateSession(request: NextRequest) {
     // Rule 1 - Public routes
     // These are always accessible regardless of auth state, EXCEPT /login which
     // redirects authenticated users away to avoid confusion.
-    console.log("USER FINAL:", user ? "EXISTS" : "NULL")
-    console.log("COOKIE NAMES:", request.cookies.getAll().map(c => c.name))
+
     if (isPublicRoute(pathname)) {
         console.log("PUBLIC ROUTE:", pathname)
         if (user) {
