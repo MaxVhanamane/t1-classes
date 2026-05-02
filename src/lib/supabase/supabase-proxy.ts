@@ -56,41 +56,67 @@ function redirect(request: NextRequest, pathname: string, supabaseResponse: Next
 
 export async function updateSession(request: NextRequest) {
     console.log("Proxy updateSession is running")
+    console.log("---- REQUEST START ----")
+    console.log("PATH:", request.nextUrl.pathname)
+    console.log("ALL COOKIES:", request.cookies.getAll())
     let supabaseResponse = NextResponse.next({ request })
 
+    // With Fluid compute, don't put this client in a global environment
+    // variable. Always create a new one on each request.
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!,
         {
             cookies: {
                 getAll() {
+                    const allCookies = request.cookies.getAll()
+
+                    console.log("🍪 getAll called")
+                    console.log("COOKIE NAMES:", allCookies.map(c => c.name))
                     return request.cookies.getAll()
                 },
-                setAll(cookiesToSet) {
-                    // DO NOT remove this block - required for session refresh to work
-                    cookiesToSet.forEach(({ name, value }) =>
-                        request.cookies.set(name, value)
+                setAll(cookiesToSet, headers) {
+                    console.log("⚡ setAll CALLED (this means refresh happened)")
+                    console.log(
+                        "cookiesToSet:",
+                        cookiesToSet.map(c => c.name)
                     )
-                    supabaseResponse = NextResponse.next({ request })
+                    console.log("headers keys:", Object.keys(headers || {}))
+                    cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+                    supabaseResponse = NextResponse.next({
+                        request,
+                    })
                     cookiesToSet.forEach(({ name, value, options }) =>
                         supabaseResponse.cookies.set(name, value, options)
+                    )
+                    Object.entries(headers).forEach(([key, value]) =>
+                        supabaseResponse.headers.set(key, value)
                     )
                 },
             },
         }
     )
+    console.log("Client created")
 
     // DO NOT put any code between createServerClient and getClaims().
     // getClaims() is local-only (reads JWT) so it does not make a network
     // request unless the session is expired and needs a refresh.
-    const { data } = await supabase.auth.getClaims()
+    const { data, error } = await supabase.auth.getClaims()
+    console.log("getClaims RESULT:", {
+        hasUser: !!data?.claims,
+        error: error?.message || null,
+    })
+    console.log("error object", error)
     const user = data?.claims
     const pathname = request.nextUrl.pathname
 
     // Rule 1 - Public routes
     // These are always accessible regardless of auth state, EXCEPT /login which
     // redirects authenticated users away to avoid confusion.
+    console.log("USER FINAL:", user ? "EXISTS" : "NULL")
+    console.log("COOKIE NAMES:", request.cookies.getAll().map(c => c.name))
     if (isPublicRoute(pathname)) {
+        console.log("PUBLIC ROUTE:", pathname)
         if (user) {
             // Authenticated users should not be able to access / or /login
             // Send them to their own dashboard
