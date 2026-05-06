@@ -10,11 +10,11 @@ const nextConfig: NextConfig = {
       expire: 60 * 60 * 24 * 365 * 2, // 2 years
     },
   },
-  logging: {
-    fetches: {
-      fullUrl: true
-    }
-  },
+  // logging: {
+  //   fetches: {
+  //     fullUrl: true
+  //   }
+  // },
   cacheComponents: true,
   reactCompiler: true,
   images: {

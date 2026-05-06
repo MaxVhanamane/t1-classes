@@ -20,9 +20,9 @@ export async function createServerSupabaseClient() {
                         cookiesToSet.forEach(({ name, value, options }) => {
                             cookieStore.set(name, value, options);
                         });
-                    } catch (erro) {
+                    } catch (error) {
                         // Ignore 
-                        console.log(erro)
+                        console.log(error)
 
                     }
                 }

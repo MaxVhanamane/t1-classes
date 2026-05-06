@@ -69,7 +69,7 @@ function redirect(
 export async function updateSession(request: NextRequest) {
 
     console.log("---- REQUEST START (updateSession is running) (proxy) ----")
-    console.log("ALL COOKIES:", request.cookies.getAll())
+    // console.log("ALL COOKIES:", request.cookies.getAll())
     let supabaseResponse = NextResponse.next({ request })
 
     // With Fluid compute, don't put this client in a global environment
@@ -80,19 +80,11 @@ export async function updateSession(request: NextRequest) {
         {
             cookies: {
                 getAll() {
-                    const allCookies = request.cookies.getAll()
 
-                    console.log("🍪 getAll called")
-                    console.log("COOKIE NAMES:", allCookies.map(c => c.name))
                     return request.cookies.getAll()
                 },
                 setAll(cookiesToSet, headers) {
-                    console.log("⚡ setAll CALLED (this means refresh happened)")
-                    console.log(
-                        "cookiesToSet:",
-                        cookiesToSet.map(c => c.name)
-                    )
-                    console.log("headers keys:", Object.keys(headers || {}))
+
                     cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
                     supabaseResponse = NextResponse.next({
                         request,
@@ -112,12 +104,8 @@ export async function updateSession(request: NextRequest) {
     // DO NOT put any code between createServerClient and getClaims().
     // getClaims() is local-only (reads JWT) so it does not make a network
     // request unless the session is expired and needs a refresh.
-    const { data, error } = await supabase.auth.getClaims()
-    console.log("getClaims RESULT:", {
-        hasUser: !!data?.claims,
-        error: error?.message || null,
-    })
-    console.log("error object", error)
+    const { data } = await supabase.auth.getClaims()
+
     const user = data?.claims
     const pathname = request.nextUrl.pathname
 
@@ -126,7 +114,6 @@ export async function updateSession(request: NextRequest) {
     // redirects authenticated users away to avoid confusion.
 
     if (isPublicRoute(pathname)) {
-        console.log("PUBLIC ROUTE:", pathname)
         if (user) {
             // Authenticated users should not be able to access / or /login
             // Send them to their own dashboard
