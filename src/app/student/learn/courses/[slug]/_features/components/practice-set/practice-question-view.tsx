@@ -6,7 +6,6 @@ import { Button } from "@/src/components/ui/button";
 import { PracticeProgressBar } from "./practice-progress-bar";
 import { PracticeSessionQuestion } from "../../types/practice-session.types";
 import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
-import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import {
   Accordion,
@@ -14,7 +13,13 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/src/components/ui/accordion";
-import { PracticeQuestionNavigatorSheet } from "./practice-question-navigator-sheet";
+import { PracticeQuestionActions } from "./practice-question-actions";
+import { Settings } from "lucide-react";
+import {
+  PopoverContent,
+  PopoverTrigger,
+  Popover,
+} from "@/src/components/ui/popover";
 
 type Props = {
   question: PracticeSessionQuestion;
@@ -24,18 +29,14 @@ type Props = {
   questions: PracticeSessionQuestion[];
   answers: Record<string, string>;
   markedForReview: Set<string>;
-
   selectedOptionId?: string;
-
   onSelect: (optionId: string) => void;
   onNext: () => void;
   onPrev: () => void;
   onSubmit: () => void;
   onAnswerAndMark: (questionId: string, optionId: string) => void;
-
   onJump: (index: number) => void;
   onToggleReview: (id: string) => void;
-
   reviewMode?: boolean;
 };
 
@@ -58,6 +59,21 @@ export function PracticeQuestionView({
   reviewMode = false,
 }: Props) {
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
+  const [layoutMode, setLayoutMode] = useState<"fixed" | "flow">(() => {
+    if (typeof window === "undefined") return "fixed";
+
+    return (
+      (localStorage.getItem("practice-layout-mode") as
+        | "fixed"
+        | "flow"
+        | null) ?? "fixed"
+    );
+  });
+
+  useEffect(() => {
+    localStorage.setItem("practice-layout-mode", layoutMode);
+  }, [layoutMode]);
+
   const [localSelected, setLocalSelected] = useState<string | null>(
     selectedOptionId ?? null,
   );
@@ -78,6 +94,7 @@ export function PracticeQuestionView({
   }, [question.id]);
 
   const isLast = index === total - 1;
+  const isFixedLayout = layoutMode === "fixed";
 
   return (
     <div
@@ -86,12 +103,126 @@ export function PracticeQuestionView({
     >
       {/* PROGRESS */}
       <div className="px-4 pt-4">
-        <div className="mb-2 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-          <span>
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="text-[11px] font-medium text-muted-foreground">
             Question {index + 1} of {total}
-          </span>
+          </div>
 
-          <span>{Math.round(((index + 1) / total) * 100)}%</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-medium text-muted-foreground">
+              {Math.round(((index + 1) / total) * 100)}%
+            </span>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent align="end" className="w-72 rounded-xl p-3 ">
+                <div className="space-y-3">
+                  {/* HEADER */}
+                  <div>
+                    <h4 className="text-sm font-semibold tracking-tight">
+                      Layout Style
+                    </h4>
+
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      Choose how action buttons behave while solving questions.
+                    </p>
+                  </div>
+
+                  {/* OPTIONS */}
+                  <div className="space-y-2">
+                    {/* FIXED */}
+                    <button
+                      type="button"
+                      onClick={() => setLayoutMode("fixed")}
+                      className={cn(
+                        "flex w-full items-start gap-3 rounded-xl border p-3 text-left transition",
+                        isFixedLayout
+                          ? "border-primary/30 bg-primary/4"
+                          : "hover:bg-muted/50",
+                      )}
+                    >
+                      {/* RADIO */}
+                      <div className="pt-0.5">
+                        <div
+                          className={cn(
+                            "flex h-4 w-4 items-center justify-center rounded-full border transition",
+                            isFixedLayout
+                              ? "border-primary"
+                              : "border-muted-foreground/40",
+                          )}
+                        >
+                          {isFixedLayout && (
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* CONTENT */}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium">
+                          Stable Actions
+                        </div>
+
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          Buttons stay fixed at the bottom for faster
+                          navigation.
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* FLOW */}
+                    <button
+                      type="button"
+                      onClick={() => setLayoutMode("flow")}
+                      className={cn(
+                        "flex w-full items-start gap-3 rounded-xl border p-3 text-left transition",
+                        !isFixedLayout
+                          ? "border-primary/30 bg-primary/4"
+                          : "hover:bg-muted/50",
+                      )}
+                    >
+                      {/* RADIO */}
+                      <div className="pt-0.5">
+                        <div
+                          className={cn(
+                            "flex h-4 w-4 items-center justify-center rounded-full border transition",
+                            !isFixedLayout
+                              ? "border-primary"
+                              : "border-muted-foreground/40",
+                          )}
+                        >
+                          {!isFixedLayout && (
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* CONTENT */}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium">
+                          Follow Content
+                        </div>
+
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          Buttons appear below the question for a more natural
+                          reading flow.
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
         <PracticeProgressBar current={index} total={total} />
@@ -241,124 +372,55 @@ export function PracticeQuestionView({
                   </Accordion>
                 </div>
               )}
+              {!isFixedLayout && (
+                <PracticeQuestionActions
+                  question={question}
+                  index={index}
+                  isLast={isLast}
+                  reviewMode={reviewMode}
+                  localSelected={localSelected}
+                  selectedOptionId={selectedOptionId}
+                  container={containerEl}
+                  questions={questions}
+                  visited={visited}
+                  answers={answers}
+                  markedForReview={markedForReview}
+                  onPrev={onPrev}
+                  onNext={onNext}
+                  onSubmit={onSubmit}
+                  onJump={onJump}
+                  onToggleReview={onToggleReview}
+                  onAnswerAndMark={onAnswerAndMark}
+                  onSave={handleSave}
+                  onClear={handleClear}
+                />
+              )}
             </div>
           </div>
 
-          {/* ACTIONS */}
-          <div className="border-t bg-background pt-4 space-y-4 mb-4">
-            {!reviewMode && (
-              <div className="grid grid-cols-2 gap-2 w-full">
-                <Button
-                  onClick={() => {
-                    if (localSelected) {
-                      toast.error(
-                        "Use 'Answer & Mark for Review' when an answer is selected",
-                      );
-                      return;
-                    }
-                    onToggleReview(question.id);
-                    if (!isLast) onNext();
-                  }}
-                  className="min-w-0 border border-purple-500/40 bg-purple-500/10 text-foreground hover:bg-purple-500/20 text-xs"
-                >
-                  Mark for review & next
-                </Button>
-
-                <Button
-                  onClick={() => {
-                    if (!localSelected) {
-                      toast.error(
-                        "Select an answer first to use 'Answer & Mark for Review'",
-                      );
-                      return;
-                    }
-
-                    onAnswerAndMark(question.id, localSelected!);
-                    if (!isLast) onNext();
-                  }}
-                  className="min-w-0 border border-blue-500/40 bg-blue-500/10 text-foreground hover:bg-blue-500/20 text-xs"
-                >
-                  Answer & Mark for review
-                </Button>
-              </div>
-            )}
-
-            {/* Navigation + Submit */}
-            {/* TOP ROW */}
-            <div className="grid grid-cols-[1fr_1fr_1.4fr] gap-2">
-              <Button
-                variant="outline"
-                onClick={onPrev}
-                disabled={index === 0}
-                className="w-full text-xs"
-              >
-                Previous
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={onNext}
-                disabled={isLast}
-                className="w-full text-xs"
-              >
-                Next
-              </Button>
-
-              <PracticeQuestionNavigatorSheet
-                container={containerEl}
-                reviewMode={reviewMode}
-                index={index}
-                questions={questions}
-                visited={visited}
-                answers={answers}
-                markedForReview={markedForReview}
-                onJump={onJump}
-              />
-            </div>
-
-            {/* BOTTOM ROW */}
-            {!reviewMode && (
-              <div className="grid grid-cols-[0.9fr_1.4fr_1fr] gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleClear}
-                  disabled={!localSelected && !selectedOptionId}
-                  className="w-full text-xs"
-                >
-                  Clear
-                </Button>
-
-                {isLast ? (
-                  <Button
-                    onClick={handleSave}
-                    disabled={!localSelected}
-                    className="w-full text-xs"
-                  >
-                    Save
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => {
-                      handleSave();
-                      onNext();
-                    }}
-                    disabled={!localSelected}
-                    className="w-full text-xs"
-                  >
-                    Save & Next
-                  </Button>
-                )}
-
-                <Button
-                  variant="ghost"
-                  onClick={onSubmit}
-                  className="w-full bg-red-600 text-white hover:text-white hover:bg-red-500"
-                >
-                  Submit
-                </Button>
-              </div>
-            )}
-          </div>
+          {isFixedLayout && (
+            <PracticeQuestionActions
+              question={question}
+              index={index}
+              isLast={isLast}
+              reviewMode={reviewMode}
+              localSelected={localSelected}
+              selectedOptionId={selectedOptionId}
+              container={containerEl}
+              questions={questions}
+              visited={visited}
+              answers={answers}
+              markedForReview={markedForReview}
+              onPrev={onPrev}
+              onNext={onNext}
+              onSubmit={onSubmit}
+              onJump={onJump}
+              onToggleReview={onToggleReview}
+              onAnswerAndMark={onAnswerAndMark}
+              onSave={handleSave}
+              onClear={handleClear}
+            />
+          )}
         </div>
       </div>
     </div>
