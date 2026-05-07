@@ -2,14 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import QuickPinchZoom, { make3dTransformValue } from "react-quick-pinch-zoom";
+
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/src/components/ui/dialog";
+
 import { Loader } from "lucide-react";
+
 import { CourseUnitContent } from "../../types/course-unit-content";
+
 import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/button";
 
@@ -26,7 +31,9 @@ type Props = {
 
 export function PdfViewerDialog({ unit, loading, onClose }: Props) {
   const [pdfReady, setPdfReady] = useState(false);
-  const [scale, setScale] = useState(1.0);
+  const [scale, setScale] = useState(1);
+  const zoomRef = useRef<QuickPinchZoom | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   function handleClose() {
     if (window.history.state?.pdfModal) {
@@ -50,59 +57,47 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
     };
   }, [onClose]);
 
-  /* ================= PINCH ZOOM ================= */
+  /* ================= QUICK PINCH ZOOM ================= */
 
-  const pinchStartDistance = useRef(0);
-  const pinchStartScale = useRef(1);
-  const isPinching = useRef(false);
+  const onUpdate = ({
+    x,
+    y,
+    scale,
+  }: {
+    x: number;
+    y: number;
+    scale: number;
+  }) => {
+    if (!contentRef.current) return;
 
-  const getTouchDistance = (
-    touches: React.TouchEvent<HTMLDivElement>["touches"],
-  ) => {
-    const dx = touches[0].clientX - touches[1].clientX;
+    const value = make3dTransformValue({
+      x,
+      y,
+      scale,
+    });
 
-    const dy = touches[0].clientY - touches[1].clientY;
+    contentRef.current.style.transform = value;
 
-    return Math.sqrt(dx * dx + dy * dy);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.touches.length !== 2) return;
-
-    isPinching.current = true;
-
-    pinchStartDistance.current = getTouchDistance(e.touches);
-
-    pinchStartScale.current = scale;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isPinching.current) return;
-
-    if (e.touches.length !== 2) return;
-
-    e.preventDefault();
-
-    const currentDistance = getTouchDistance(e.touches);
-
-    const zoomFactor = currentDistance / pinchStartDistance.current;
-
-    const nextScale = pinchStartScale.current * zoomFactor;
-
-    const clampedScale = Math.min(Math.max(nextScale, 0.6), 3);
-
-    setScale(clampedScale);
-  };
-
-  const handleTouchEnd = () => {
-    isPinching.current = false;
+    setScale(scale);
   };
 
   /* ================= BUTTON ZOOM ================= */
 
-  const zoomIn = () => setScale((s) => Math.min(s + 0.2, 3));
+  const zoomIn = () => {
+    zoomRef.current?.scaleTo({
+      x: 0,
+      y: 0,
+      scale: Math.min(scale + 0.2, 4),
+    });
+  };
 
-  const zoomOut = () => setScale((s) => Math.max(s - 0.2, 0.6));
+  const zoomOut = () => {
+    zoomRef.current?.scaleTo({
+      x: 0,
+      y: 0,
+      scale: Math.max(scale - 0.2, 1),
+    });
+  };
 
   return (
     <Dialog open onOpenChange={handleClose}>
@@ -111,8 +106,9 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
         className={cn(
           "grid grid-rows-[auto_1fr]",
           "h-dvh w-full max-w-none rounded-none",
+          "border-x-0 border-b-0 sm:border sm:border-b",
           "sm:h-[90dvh] sm:w-[95vw] sm:max-w-200 sm:rounded-lg",
-          "p-0 overflow-hidden",
+          "overflow-hidden p-0",
         )}
       >
         {/* ================= HEADER ================= */}
@@ -120,8 +116,8 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
         <DialogHeader className="border-b px-4 py-3">
           <DialogTitle className="sr-only">Course PDF document</DialogTitle>
 
-          <div className="flex items-center justify-between mr-10">
-            <div className="text-base font-medium line-clamp-1">
+          <div className="mr-10 flex items-center justify-between">
+            <div className="line-clamp-1 text-base font-medium">
               {unit?.title ?? "Loading document"}
             </div>
 
@@ -179,31 +175,34 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
           {/* PDF */}
 
           {!loading && unit?.contentUrl && (
-            <div
-              className="
-                h-full
-                overflow-auto
-                touch-none
-              "
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <div
-                className="
-                  inline-block
-                  min-w-full
-                  origin-top
-                  transition-transform
-                  duration-75
-                "
+            <div className="h-full overflow-hidden">
+              <QuickPinchZoom
+                ref={zoomRef}
+                onUpdate={onUpdate}
+                inertia
+                tapZoomFactor={2}
+                minZoom={1}
+                maxZoom={4}
+                wheelScaleFactor={180}
+                doubleTapToggleZoom
               >
-                <PdfViewerClient
-                  scale={scale}
-                  url={unit.contentUrl}
-                  onLoad={() => setPdfReady(true)}
-                />
-              </div>
+                <div
+                  ref={contentRef}
+                  className="
+                    flex
+                    min-h-full
+                    min-w-full
+                    justify-center
+                    will-change-transform
+                  "
+                >
+                  <PdfViewerClient
+                    scale={1}
+                    url={unit.contentUrl}
+                    onLoad={() => setPdfReady(true)}
+                  />
+                </div>
+              </QuickPinchZoom>
             </div>
           )}
         </div>
