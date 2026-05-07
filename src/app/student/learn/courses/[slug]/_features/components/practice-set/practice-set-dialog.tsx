@@ -228,6 +228,7 @@ export function PracticeSetDialog({ practiceSetId, onClose }: Props) {
           "flex flex-col p-0 gap-0 overflow-hidden",
           "h-dvh w-full max-w-none rounded-none",
           "sm:h-[90dvh] sm:w-[95vw] sm:max-w-xl sm:rounded-lg",
+          "border-x-0 border-b-0 sm:border",
           showConfirm && "blur-lg opacity-30 pointer-events-none",
         )}
         onInteractOutside={(e) => e.preventDefault()}

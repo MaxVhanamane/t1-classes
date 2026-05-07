@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import QuickPinchZoom, { make3dTransformValue } from "react-quick-pinch-zoom";
 
 import {
   Dialog,
@@ -11,11 +10,12 @@ import {
   DialogTitle,
 } from "@/src/components/ui/dialog";
 
-import { Loader } from "lucide-react";
+import { Loader, RotateCcw } from "lucide-react";
 
 import { CourseUnitContent } from "../../types/course-unit-content";
 
 import { cn } from "@/src/lib/utils";
+
 import { Button } from "@/src/components/ui/button";
 
 // react-pdf must be client-only
@@ -31,9 +31,12 @@ type Props = {
 
 export function PdfViewerDialog({ unit, loading, onClose }: Props) {
   const [pdfReady, setPdfReady] = useState(false);
+
   const [scale, setScale] = useState(1);
-  const zoomRef = useRef<QuickPinchZoom | null>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+
+  /* =========================
+     MODAL BACK BUTTON
+  ========================= */
 
   function handleClose() {
     if (window.history.state?.pdfModal) {
@@ -57,47 +60,23 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
     };
   }, [onClose]);
 
-  /* ================= QUICK PINCH ZOOM ================= */
-
-  const onUpdate = ({
-    x,
-    y,
-    scale,
-  }: {
-    x: number;
-    y: number;
-    scale: number;
-  }) => {
-    if (!contentRef.current) return;
-
-    const value = make3dTransformValue({
-      x,
-      y,
-      scale,
-    });
-
-    contentRef.current.style.transform = value;
-
-    setScale(scale);
-  };
-
-  /* ================= BUTTON ZOOM ================= */
+  /* =========================
+     BUTTON ZOOM
+  ========================= */
 
   const zoomIn = () => {
-    zoomRef.current?.scaleTo({
-      x: 0,
-      y: 0,
-      scale: Math.min(scale + 0.2, 4),
-    });
+    setScale((s) => Math.min(s + 0.2, 3));
   };
 
   const zoomOut = () => {
-    zoomRef.current?.scaleTo({
-      x: 0,
-      y: 0,
-      scale: Math.max(scale - 0.2, 1),
-    });
+    setScale((s) => Math.max(s - 0.2, 0.5));
   };
+
+  const resetZoom = () => {
+    setScale(1);
+  };
+
+  const zoomPercent = Math.round(scale * 100);
 
   return (
     <Dialog open onOpenChange={handleClose}>
@@ -106,14 +85,14 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
         className={cn(
           "grid grid-rows-[auto_1fr]",
           "h-dvh w-full max-w-none rounded-none",
-          "border-x-0 border-b-0 sm:border sm:border-b",
+          "border-x-0 border-b-0 sm:border",
           "sm:h-[90dvh] sm:w-[95vw] sm:max-w-200 sm:rounded-lg",
-          "overflow-hidden p-0",
+          "p-0 overflow-hidden gap-0",
         )}
       >
         {/* ================= HEADER ================= */}
 
-        <DialogHeader className="border-b px-4 py-3">
+        <DialogHeader className="border-b px-4 py-3 bg-background">
           <DialogTitle className="sr-only">Course PDF document</DialogTitle>
 
           <div className="mr-10 flex items-center justify-between">
@@ -127,18 +106,13 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
                 size="icon"
                 variant="secondary"
                 onClick={zoomOut}
-                className="
-                  h-9 w-9 rounded-full
-                  shrink-0
-                  cursor-pointer
-                  shadow-sm
-                "
+                className="h-9 w-9 shrink-0 cursor-pointer rounded-full shadow-sm"
               >
-                <span className="text-lg leading-none font-medium">−</span>
+                <span className="text-lg font-medium leading-none">−</span>
               </Button>
 
-              <span className="min-w-12 text-center text-sm font-medium tabular-nums">
-                {Math.round(scale * 100)}%
+              <span className="min-w-14 text-center text-sm font-medium tabular-nums">
+                {zoomPercent}%
               </span>
 
               <Button
@@ -146,14 +120,18 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
                 size="icon"
                 variant="secondary"
                 onClick={zoomIn}
-                className="
-                  h-9 w-9 rounded-full
-                  shrink-0
-                  cursor-pointer
-                  shadow-sm
-                "
+                className="h-9 w-9 shrink-0 cursor-pointer rounded-full shadow-sm"
               >
-                <span className="text-lg leading-none font-medium">+</span>
+                <span className="text-lg font-medium leading-none">+</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={resetZoom}
+                className="h-9 rounded-full px-3 text-xs font-medium shadow-sm"
+              >
+                <RotateCcw className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -162,47 +140,25 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
         {/* ================= BODY ================= */}
 
         <div className="relative flex-1 overflow-hidden bg-background">
-          {/* Loading: fetching signed URL */}
-
           {loading && <CenteredState message="Preparing your document…" />}
-
-          {/* Loading: PDF parsing */}
 
           {!loading && unit?.contentUrl && !pdfReady && (
             <CenteredState message="Loading document…" />
           )}
 
-          {/* PDF */}
-
           {!loading && unit?.contentUrl && (
-            <div className="h-full overflow-hidden">
-              <QuickPinchZoom
-                ref={zoomRef}
-                onUpdate={onUpdate}
-                inertia
-                tapZoomFactor={2}
-                minZoom={1}
-                maxZoom={4}
-                wheelScaleFactor={180}
-                doubleTapToggleZoom
-              >
-                <div
-                  ref={contentRef}
-                  className="
-                    flex
-                    min-h-full
-                    min-w-full
-                    justify-center
-                    will-change-transform
-                  "
-                >
-                  <PdfViewerClient
-                    scale={1}
-                    url={unit.contentUrl}
-                    onLoad={() => setPdfReady(true)}
-                  />
+            <div className="h-full overflow-auto overscroll-contain bg-background">
+              <div className="min-h-full px-4 pb-6">
+                <div className="w-fit min-w-full">
+                  <div className="mx-auto w-fit">
+                    <PdfViewerClient
+                      scale={scale}
+                      url={unit.contentUrl}
+                      onLoad={() => setPdfReady(true)}
+                    />
+                  </div>
                 </div>
-              </QuickPinchZoom>
+              </div>
             </div>
           )}
         </div>
@@ -211,7 +167,7 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
   );
 }
 
-/* ================= Helpers ================= */
+/* ================= HELPERS ================= */
 
 function CenteredState({ message }: { message: string }) {
   return (
