@@ -64,6 +64,7 @@ export function PracticeSetDialog({ practiceSetId, onClose }: Props) {
 
   const questions = data?.questions ?? [];
   const currentQuestion = questions[currentIndex];
+
   function visitQuestion(questionId: string) {
     setVisited((prev) => {
       if (prev.has(questionId)) return prev;
@@ -193,8 +194,11 @@ export function PracticeSetDialog({ practiceSetId, onClose }: Props) {
   // -----------------------------
 
   function handleClose() {
-    window.history.back();
-    onClose();
+    if (window.history.state?.modal) {
+      window.history.back();
+    } else {
+      onClose();
+    }
   }
 
   useEffect(() => {

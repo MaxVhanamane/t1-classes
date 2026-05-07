@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { PracticeQuestionNavigatorSheet } from "./practice-question-navigator-sheet";
 
 import { PracticeSessionQuestion } from "../../types/practice-session.types";
+import { cn } from "@/src/lib/utils";
+import { AnimatePresence, motion } from "motion/react";
 
 type Props = {
   question: PracticeSessionQuestion;
@@ -66,6 +68,14 @@ export function PracticeQuestionActions({
   onSave,
   onClear,
 }: Props) {
+  function handleLastQuestionFeedback() {
+    if (isLast) {
+      toast("This is the last question");
+    }
+  }
+  const isMarkedForReview = markedForReview.has(question.id);
+
+  const hasAnsweredReview = isMarkedForReview && !!answers[question.id];
   return (
     <div className="border-t bg-background pt-4 space-y-4 mb-8 sm:mb-4">
       {/* REVIEW ACTIONS */}
@@ -73,6 +83,13 @@ export function PracticeQuestionActions({
         <div className="grid w-full grid-cols-2 gap-2">
           <Button
             onClick={() => {
+              // TOGGLE REVIEW OFF
+              if (isMarkedForReview && !hasAnsweredReview) {
+                onToggleReview(question.id);
+                return;
+              }
+
+              // PREVENT WRONG FLOW
               if (localSelected) {
                 toast.error(
                   "Use 'Answer & Mark for Review' when an answer is selected",
@@ -81,19 +98,57 @@ export function PracticeQuestionActions({
                 return;
               }
 
+              // MARK REVIEW
               onToggleReview(question.id);
 
               if (!isLast) {
                 onNext();
               }
+
+              if (isLast) {
+                handleLastQuestionFeedback();
+              }
             }}
-            className="min-w-0 border border-purple-500/40 bg-purple-500/10 text-xs text-foreground hover:bg-purple-500/20"
+            className={cn(
+              "min-w-0 border text-xs text-foreground transition-all duration-200",
+
+              isMarkedForReview && !hasAnsweredReview
+                ? "border-purple-500/50 bg-purple-500/20 shadow-[0_0_0_1px_rgba(168,85,247,0.08)] hover:bg-purple-500/25"
+                : "border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20",
+            )}
           >
-            Mark for review & next
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={
+                  isMarkedForReview && !hasAnsweredReview
+                    ? "reviewed"
+                    : "default-review"
+                }
+                initial={{ opacity: 0, y: 5, filter: "blur(3px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -5, filter: "blur(3px)" }}
+                transition={{
+                  duration: 0.18,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="inline-flex items-center"
+              >
+                {isMarkedForReview && !hasAnsweredReview
+                  ? "Marked for review"
+                  : "Mark for review & next"}
+              </motion.span>
+            </AnimatePresence>
           </Button>
 
           <Button
             onClick={() => {
+              // TOGGLE REVIEW OFF
+              if (hasAnsweredReview) {
+                onToggleReview(question.id);
+                return;
+              }
+
+              // VALIDATION
               if (!localSelected) {
                 toast.error(
                   "Select an answer first to use 'Answer & Mark for Review'",
@@ -102,15 +157,46 @@ export function PracticeQuestionActions({
                 return;
               }
 
+              // ANSWER + REVIEW
               onAnswerAndMark(question.id, localSelected);
 
               if (!isLast) {
                 onNext();
               }
+
+              if (isLast) {
+                handleLastQuestionFeedback();
+              }
             }}
-            className="min-w-0 border border-blue-500/40 bg-blue-500/10 text-xs text-foreground hover:bg-blue-500/20"
+            className={cn(
+              "min-w-0 border text-xs text-foreground transition-all duration-200",
+
+              hasAnsweredReview
+                ? "border-blue-500/50 bg-blue-500/20 shadow-[0_0_0_1px_rgba(59,130,246,0.08)] hover:bg-blue-500/25"
+                : "border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20",
+            )}
           >
-            Answer & Mark for review
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={
+                  hasAnsweredReview
+                    ? "answered-reviewed"
+                    : "default-answer-review"
+                }
+                initial={{ opacity: 0, y: 5, filter: "blur(3px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -5, filter: "blur(3px)" }}
+                transition={{
+                  duration: 0.18,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="inline-flex items-center"
+              >
+                {hasAnsweredReview
+                  ? "Answer marked for review"
+                  : "Answer & mark for review"}
+              </motion.span>
+            </AnimatePresence>
           </Button>
         </div>
       )}
@@ -161,7 +247,10 @@ export function PracticeQuestionActions({
 
           {isLast ? (
             <Button
-              onClick={onSave}
+              onClick={() => {
+                handleLastQuestionFeedback();
+                onSave();
+              }}
               disabled={!localSelected}
               className="w-full text-xs"
             >
