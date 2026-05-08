@@ -254,7 +254,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   const dialogTitle = isPdfOrPracticeDialog
     ? playerState.isLoading
       ? playerState.status === "pdf"
-        ? "Opening PDF..."
+        ? "Preparing PDF..."
         : "Opening practice..."
       : playerState.status === "pdf"
         ? "PDF ready to view"
