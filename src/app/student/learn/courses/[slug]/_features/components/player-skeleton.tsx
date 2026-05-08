@@ -3,9 +3,13 @@ import { Loader } from "lucide-react";
 
 type Props = {
   hideTitleSekeleton?: boolean;
+  label?: string;
 };
 
-export function PlayerSkeleton({ hideTitleSekeleton = false }: Props) {
+export function PlayerSkeleton({
+  hideTitleSekeleton = false,
+  label = "Loading video...",
+}: Props) {
   return (
     <div className="flex h-full w-full flex-col relative">
       {/* Video */}
@@ -17,7 +21,7 @@ export function PlayerSkeleton({ hideTitleSekeleton = false }: Props) {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur">
             <Loader className="h-4 w-4 animate-spin text-foreground/70" />
-            <span className="text-xs text-foreground/70">Loading video</span>
+            <span className="text-xs text-foreground/70">{label}</span>
           </div>
         </div>
       </div>

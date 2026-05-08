@@ -254,7 +254,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   const dialogTitle = isPdfOrPracticeDialog
     ? playerState.isLoading
       ? playerState.status === "pdf"
-        ? "Preparing PDF..."
+        ? "Fetching pdf..."
         : "Opening practice..."
       : playerState.status === "pdf"
         ? "PDF ready to view"
@@ -263,7 +263,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
 
   const dialogMessage = isPdfOrPracticeDialog
     ? playerState.isLoading
-      ? "Preparing your content..."
+      ? ""
       : playerState.status === "pdf"
         ? "Click below to open this lesson."
         : "This lesson opens in an interactive practice view."
@@ -316,7 +316,15 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
           {/* Skeletons */}
           {(playerState.status === "initial-loading" ||
             (playerState.status === "loading" &&
-              playerState.unitType === "video")) && <PlayerSkeleton />}
+              playerState.unitType === "video")) && (
+            <PlayerSkeleton
+              label={
+                playerState.status === "initial-loading"
+                  ? "Preparing your content..."
+                  : "Loading video..."
+              }
+            />
+          )}
 
           {/* Video */}
           {playerState.status === "ready" &&
@@ -359,6 +367,12 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
               message={dialogMessage}
               actionLabel={dialogActionLabel}
               onAction={handleDialogAction}
+              variant={
+                playerState.isLoading && playerState.status === "pdf"
+                  ? "loading"
+                  : "default"
+              }
+              loadingLabel={dialogTitle}
             />
           )}
 

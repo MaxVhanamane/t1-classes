@@ -1,4 +1,5 @@
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { Loader } from "lucide-react";
 
 export default function LoadingCoursePlayer() {
   return (
@@ -8,7 +9,21 @@ export default function LoadingCoursePlayer() {
         <div className="sticky top-14 z-20 bg-background lg:static lg:mt-3">
           <div className="flex w-full flex-col space-y-4">
             {/* Video */}
-            <Skeleton className="aspect-video w-full bg-muted dark:bg-muted-soft rounded-none lg:rounded-xl" />
+            <div className="relative aspect-video w-full overflow-hidden rounded-none bg-muted dark:bg-muted-soft lg:rounded-xl">
+              {/* shimmer */}
+              <div className="absolute inset-0 animate-shimmer bg-muted/40" />
+
+              {/* loader */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur">
+                  <Loader className="h-4 w-4 animate-spin text-foreground/70" />
+
+                  <span className="text-xs text-foreground/70">
+                    Preparing your content...
+                  </span>
+                </div>
+              </div>
+            </div>
 
             {/* Video meta (same spacing + height) */}
             <div className="space-y-2 px-4 lg:pr-4 lg:pl-0">

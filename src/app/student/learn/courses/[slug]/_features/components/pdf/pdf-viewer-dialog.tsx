@@ -141,7 +141,7 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
                 type="button"
                 variant="secondary"
                 onClick={resetZoom}
-                className="h-7 w-7 rounded-full"
+                className="h-7 w-7 rounded-full ml-1.5"
               >
                 <RotateCcw className="h-4 w-4" />
               </Button>
