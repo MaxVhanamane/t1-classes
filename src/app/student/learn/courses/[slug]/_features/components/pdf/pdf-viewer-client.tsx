@@ -47,7 +47,7 @@ export default function PdfViewerClient({
 
   return (
     <div ref={containerRef} className="w-full">
-      <div className="flex flex-col items-center gap-4 py-6">
+      <div className="py-6">
         <Document
           file={url}
           loading={null}
@@ -58,16 +58,17 @@ export default function PdfViewerClient({
           }}
         >
           {Array.from({ length: numPages }, (_, index) => (
-            <Page
-              key={`page_${index + 1}`}
-              pageNumber={index + 1}
-              width={baseWidth > 0 ? baseWidth : undefined}
-              scale={scale}
-              loading={null}
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
-              className="mb-6 overflow-hidden rounded-md bg-white "
-            />
+            <div key={`page_${index + 1}`} className="mb-6 flex justify-center">
+              <Page
+                pageNumber={index + 1}
+                width={baseWidth > 0 ? baseWidth : undefined}
+                scale={scale}
+                loading={null}
+                renderTextLayer={false}
+                renderAnnotationLayer={false}
+                className="mb-6  rounded-md bg-background "
+              />
+            </div>
           ))}
         </Document>
       </div>

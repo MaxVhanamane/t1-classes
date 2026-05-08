@@ -232,6 +232,9 @@ export function PracticeSetDialog({ practiceSetId, onClose }: Props) {
           showConfirm && "blur-lg opacity-30 pointer-events-none",
         )}
         onInteractOutside={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+        }}
       >
         <DialogHeader className="border-b px-4 py-3">
           <DialogTitle className="sr-only">Practice set</DialogTitle>
