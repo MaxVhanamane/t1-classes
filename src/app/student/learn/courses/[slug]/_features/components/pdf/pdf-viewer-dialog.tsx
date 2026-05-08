@@ -100,7 +100,7 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
               {unit?.title ?? "Loading document"}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 type="button"
                 size="icon"
@@ -111,7 +111,7 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
                 <span className="text-lg font-medium leading-none">−</span>
               </Button>
 
-              <span className="min-w-14 text-center text-sm font-medium tabular-nums">
+              <span className="min-w-12 text-center text-sm font-medium tabular-nums">
                 {zoomPercent}%
               </span>
 

@@ -23,26 +23,26 @@ export default function PdfViewerClient({
 }) {
   const [numPages, setNumPages] = useState(0);
 
-  const [containerWidth, setContainerWidth] = useState(0);
+  const [baseWidth, setBaseWidth] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   /* =========================
-     RESPONSIVE FIT-TO-WIDTH
+     MEASURE AVAILABLE WIDTH ONCE
   ========================= */
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const observer = new ResizeObserver(([entry]) => {
-      setContainerWidth(entry.contentRect.width);
-    });
+    const width = containerRef.current.clientWidth;
 
-    observer.observe(containerRef.current);
+    // leave breathing room for:
+    // dialog padding
+    // shadows
+    // scrollbar
+    // mobile safe areas
 
-    return () => {
-      observer.disconnect();
-    };
+    setBaseWidth(width - 40);
   }, []);
 
   return (
@@ -61,11 +61,12 @@ export default function PdfViewerClient({
             <Page
               key={`page_${index + 1}`}
               pageNumber={index + 1}
-              width={containerWidth > 0 ? containerWidth * scale : undefined}
+              width={baseWidth > 0 ? baseWidth : undefined}
+              scale={scale}
               loading={null}
               renderTextLayer={false}
               renderAnnotationLayer={false}
-              className="mb-6"
+              className="mb-6 overflow-hidden rounded-md bg-white "
             />
           ))}
         </Document>
