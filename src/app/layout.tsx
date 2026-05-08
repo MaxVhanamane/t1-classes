@@ -6,6 +6,8 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import ReactQueryProvider from "../providers/react-query-provider";
 import { SerwistProvider } from "./serwist";
+import { StatusThemeScript } from "../components/status-theme-script";
+import { ThemeColorSync } from "../components/status-theme-color-sync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,6 +71,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#0a0a0a" />
+
+        <StatusThemeScript />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased `}
       >
@@ -79,7 +86,12 @@ export default function RootLayout({
             defaultTheme="dark"
             disableTransitionOnChange
           >
-            <SerwistProvider swUrl="/serwist/sw.js">{children}</SerwistProvider>
+            <ThemeColorSync />
+            <SerwistProvider swUrl="/serwist/sw.js">
+              <div className="min-h-dvh px-safe pb-safe pt-safe">
+                {children}
+              </div>
+            </SerwistProvider>
           </ThemeProvider>
         </ReactQueryProvider>
         <Toaster position="top-right" richColors visibleToasts={5} />

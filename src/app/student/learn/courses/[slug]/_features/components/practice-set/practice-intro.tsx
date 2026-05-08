@@ -125,7 +125,7 @@ export function PracticeIntro({ title, description, onStart }: Props) {
 
             {/* FOOTER NOTE */}
             <div className="flex items-start gap-2 rounded-xl bg-muted/20 px-4 py-3">
-              <Clock3 className="mt-0.5 h-4 w-4 text-muted-foreground" />
+              <Clock3 className="h-4 w-4 mt-1 shrink-0 text-muted-foreground" />
 
               <p className="text-xs leading-relaxed text-muted-foreground">
                 Take your time to think through each question carefully before
@@ -159,7 +159,7 @@ function IntroItem({
 }) {
   return (
     <div className="flex items-start gap-3 rounded-xl bg-muted/20 px-4 py-3">
-      <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-background ring-1 ring-border/60">
+      <div className="mt-0.5 flex shrink-0 h-8 w-8 items-center justify-center rounded-lg bg-background ring-1 ring-border/60">
         <Icon className="h-4 w-4 text-primary" />
       </div>
 
