@@ -66,7 +66,7 @@ export function MentorshipParticipantTile({
   const internalQuality = useParticipantQuality(participantId);
 
   const participantQuality = localParticipantQuality ?? internalQuality;
-
+  const appliedQualityRef = useRef<"high" | "med" | "low" | null>(null);
   const {
     displayName,
     webcamStream,
@@ -80,7 +80,6 @@ export function MentorshipParticipantTile({
     disableWebcam,
     remove,
     setQuality,
-    setViewPort,
   } = useParticipant(participantId);
 
   /*
@@ -91,69 +90,30 @@ export function MentorshipParticipantTile({
       return;
     }
 
-    /*
-      VideoSDK recommended strategy
-
-      < 3 participants  -> high
-      3-4 participants  -> med
-      > 4 participants  -> low
-    */
+    let nextQuality: "high" | "med" | "low";
 
     if (screenShareOn) {
-      setQuality("high");
-
-      return;
+      nextQuality = "high";
+    } else if (totalParticipants < 3) {
+      nextQuality = "high";
+    } else if (totalParticipants <= 4) {
+      nextQuality = "med";
+    } else {
+      nextQuality = "low";
     }
 
-    if (totalParticipants < 3) {
-      setQuality("high");
-
-      return;
-    }
-
-    if (totalParticipants <= 4) {
-      setQuality("med");
-
-      return;
-    }
-
-    setQuality("low");
-  }, [totalParticipants, setQuality, screenShareOn]);
-
-  /*
-    Tell VideoSDK actual tile size
-
-    Extremely important for adaptive streaming.
+    /*
+    Avoid unnecessary
+    quality renegotiation
   */
-  useEffect(() => {
-    if (!containerRef.current || !setViewPort) {
+    if (appliedQualityRef.current === nextQuality) {
       return;
     }
 
-    const element = containerRef.current;
+    appliedQualityRef.current = nextQuality;
 
-    const updateViewport = () => {
-      const rect = element.getBoundingClientRect();
-
-      if (!rect.width || !rect.height) {
-        return;
-      }
-
-      setViewPort(Math.floor(rect.width), Math.floor(rect.height));
-    };
-
-    updateViewport();
-
-    const resizeObserver = new ResizeObserver(() => {
-      updateViewport();
-    });
-
-    resizeObserver.observe(element);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [setViewPort]);
+    setQuality(nextQuality);
+  }, [totalParticipants, screenShareOn, setQuality]);
 
   const videoStream = useMemo(() => {
     if (webcamOn && webcamStream) {
