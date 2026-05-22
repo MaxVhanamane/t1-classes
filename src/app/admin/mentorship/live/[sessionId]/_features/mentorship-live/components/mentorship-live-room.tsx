@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { MeetingProvider } from "@videosdk.live/react-sdk";
+import {
+  createCameraVideoTrack,
+  MeetingProvider,
+} from "@videosdk.live/react-sdk";
 
 import { MentorshipMeetingView } from "./mentorship-meeting-view";
 
@@ -78,6 +81,46 @@ export function MentorshipLiveRoom({
     }
   }, []);
 
+  const [customCameraVideoTrack, setCustomCameraVideoTrack] = useState<Awaited<
+    ReturnType<typeof createCameraVideoTrack>
+  > | null>(null);
+
+  /*
+    Create HD custom camera track
+
+    Required for proper
+    VideoSDK adaptive quality.
+  */
+  useEffect(() => {
+    const createTrack = async () => {
+      try {
+        const track = await createCameraVideoTrack({
+          encoderConfig: "h720p_w1280p",
+
+          optimizationMode: "motion",
+
+          multiStream: false,
+          bitrateMode: "high_quality",
+        });
+
+        setCustomCameraVideoTrack(track);
+      } catch (error) {
+        console.error("[CREATE_CAMERA_TRACK_ERROR]", error);
+      }
+    };
+
+    void createTrack();
+  }, []);
+
+  /*
+    Wait until custom track
+    is initialized before
+    mounting meeting provider.
+  */
+  if (!customCameraVideoTrack) {
+    return null;
+  }
+
   return (
     <MeetingProvider
       config={{
@@ -90,6 +133,8 @@ export function MentorshipLiveRoom({
         name: participantName,
 
         debugMode: false,
+
+        customCameraVideoTrack,
       }}
       token={token}
     >

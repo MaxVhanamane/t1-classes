@@ -79,41 +79,40 @@ export function MentorshipParticipantTile({
     disableMic,
     disableWebcam,
     remove,
-    setQuality,
   } = useParticipant(participantId);
 
   /*
     Dynamic VideoSDK quality selection
   */
-  useEffect(() => {
-    if (!setQuality) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!setQuality) {
+  //     return;
+  //   }
 
-    let nextQuality: "high" | "med" | "low";
+  //   let nextQuality: "high" | "med" | "low";
 
-    if (screenShareOn) {
-      nextQuality = "high";
-    } else if (totalParticipants < 3) {
-      nextQuality = "high";
-    } else if (totalParticipants <= 4) {
-      nextQuality = "med";
-    } else {
-      nextQuality = "low";
-    }
+  //   if (screenShareOn) {
+  //     nextQuality = "high";
+  //   } else if (totalParticipants < 3) {
+  //     nextQuality = "high";
+  //   } else if (totalParticipants <= 4) {
+  //     nextQuality = "med";
+  //   } else {
+  //     nextQuality = "low";
+  //   }
 
-    /*
-    Avoid unnecessary
-    quality renegotiation
-  */
-    if (appliedQualityRef.current === nextQuality) {
-      return;
-    }
+  //   /*
+  //   Avoid unnecessary
+  //   quality renegotiation
+  // */
+  //   if (appliedQualityRef.current === nextQuality) {
+  //     return;
+  //   }
 
-    appliedQualityRef.current = nextQuality;
+  //   appliedQualityRef.current = nextQuality;
 
-    setQuality(nextQuality);
-  }, [totalParticipants, screenShareOn, setQuality]);
+  //   setQuality(nextQuality);
+  // }, [totalParticipants, screenShareOn, setQuality]);
 
   const videoStream = useMemo(() => {
     if (webcamOn && webcamStream) {
