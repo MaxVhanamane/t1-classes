@@ -20,7 +20,7 @@ export default async function CurriculumLayout({ children, params }: Props) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6">
       <div className="flex items-center gap-3 border-b pb-3">
         <BackButton />
         <h1 className="text-lg font-semibold">Course Curriculum</h1>

@@ -14,6 +14,7 @@ import {
   Bell,
   Video,
   UserCheck,
+  MessagesSquare,
 } from "lucide-react";
 import { Button } from "../button";
 
@@ -25,6 +26,11 @@ const navItems = [
   { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
   { label: "Tests", href: "/admin/tests", icon: NotepadText },
   { label: "Live Classes", href: "/admin/live-classes", icon: Video },
+  {
+    label: "Mentorship Sessions",
+    href: "/admin/mentorship_sessions",
+    icon: MessagesSquare,
+  },
   { label: "Instructors", href: "/admin/instructors", icon: UserCheck },
   { label: "Notifications", href: "/admin/notifications", icon: Bell },
 ];

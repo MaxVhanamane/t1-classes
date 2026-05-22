@@ -9,8 +9,9 @@ import BatchTestsPanel from "./batch-tests-panel";
 
 import { BatchDetailsResponse } from "@/src/types/batches.types";
 import BatchLiveClassesPanel from "./batch-live-classes-panel";
+import BatchMentorshipSessionsPanel from "./batch-mentorship-sessions-panel";
 
-type TabKey = "courses" | "tests" | "live-classes";
+type TabKey = "courses" | "tests" | "live-classes" | "mentorship";
 
 type Props = {
   batchId: string;
@@ -70,6 +71,11 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
             active={activeTab === "live-classes"}
             onClick={() => setActiveTab("live-classes")}
           />
+          <TabButton
+            label="Mentorship"
+            active={activeTab === "mentorship"}
+            onClick={() => setActiveTab("mentorship")}
+          />
         </div>
       </div>
 
@@ -90,6 +96,12 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
       {activeTab === "live-classes" && (
         <section>
           <BatchLiveClassesPanel batchId={batchId} />
+        </section>
+      )}
+
+      {activeTab === "mentorship" && (
+        <section>
+          <BatchMentorshipSessionsPanel batchId={batchId} />
         </section>
       )}
     </>

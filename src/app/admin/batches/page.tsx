@@ -98,7 +98,7 @@ export default async function AdminBatchesPage() {
   const [batches, courses] = await Promise.all([getBatches(), getCourses()]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6">
       <BatchesClient batches={batches} courses={courses} />
     </div>
   );

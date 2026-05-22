@@ -160,7 +160,7 @@ user:users!enrollments_user_id_fkey (
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6">
       <EnrollmentsClient
         enrollments={enrollments}
         batches={batchOptions}

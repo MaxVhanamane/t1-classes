@@ -71,7 +71,6 @@ export async function deleteTopic(
             .eq("unit_type", "pdf")
             .not("file_path", "is", null);
 
-        console.log("pdf units", pdfUnits)
 
         if (pdfError) {
             console.error("[FETCH_TOPIC_PDFS_ERROR]", pdfError);

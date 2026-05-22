@@ -44,7 +44,6 @@ export async function createTestDistribution(
 }
 
 function normalizeRpcError(message: string): string {
-    console.log("mmmmmmmmmm",message)
     if (!message) {
         return "Failed to create test distribution";
     }

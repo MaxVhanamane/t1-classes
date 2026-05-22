@@ -28,7 +28,7 @@ export default function AdminShell({
       <div className="flex flex-1 flex-col overflow-auto">
         <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto ">{children}</main>
       </div>
     </div>
   );

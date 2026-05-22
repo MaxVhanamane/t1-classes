@@ -21,7 +21,7 @@ export default async function UsersPage() {
   const users = data as AppUser[];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6">
       <div className="flex gap-2 justify-between">
         <h1 className="text-xl font-semibold">Users</h1>
         <CreateUserDialog />

@@ -1,4 +1,3 @@
-import { cache } from "react"
 import { createBrowserSupabaseClient } from "../supabase/supabase-client"
 
 export type UserRole = "admin" | "teacher" | "student"
@@ -9,9 +8,25 @@ export interface AuthContext {
     role?: UserRole
 }
 
-//  Proper unknown-safe type guard
-function isTimeoutError(error: unknown): boolean {
-    if (typeof error !== "object" || error === null) return false
+// -----------------------------------------------------------------------------
+// Shared in-flight promise
+// Prevents multiple simultaneous auth requests
+// -----------------------------------------------------------------------------
+
+let authPromise: Promise<AuthContext | null> | null = null
+
+// -----------------------------------------------------------------------------
+// Error helpers
+// -----------------------------------------------------------------------------
+
+function getErrorDetails(error: unknown) {
+    if (typeof error !== "object" || error === null) {
+        return {
+            message: "",
+            code: "",
+            name: "",
+        }
+    }
 
     const err = error as {
         message?: unknown
@@ -21,36 +36,83 @@ function isTimeoutError(error: unknown): boolean {
         }
     }
 
-    const code =
-        typeof err.cause?.code === "string" ? err.cause.code : ""
-    const name =
-        typeof err.cause?.name === "string" ? err.cause.name : ""
-    const message =
-        typeof err.message === "string" ? err.message : ""
+    return {
+        message:
+            typeof err.message === "string" ? err.message : "",
 
-    return (
-        code === "UND_ERR_CONNECT_TIMEOUT" ||
-        name === "ConnectTimeoutError" ||
-        message.includes("fetch failed")
-    )
+        code:
+            typeof err.cause?.code === "string"
+                ? err.cause.code
+                : "",
+
+        name:
+            typeof err.cause?.name === "string"
+                ? err.cause.name
+                : "",
+    }
 }
 
-// small delay helper
+function isRetryableError(error: unknown): boolean {
+    const { message, code, name } = getErrorDetails(error)
+
+    // Network timeout
+    if (
+        code === "UND_ERR_CONNECT_TIMEOUT" ||
+        name === "ConnectTimeoutError"
+    ) {
+        return true
+    }
+
+    // Temporary network fetch failure
+    if (
+        message.includes("fetch failed") &&
+        !message.includes("ENOTFOUND")
+    ) {
+        return true
+    }
+
+    return false
+}
+
+// -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
+
 function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-//  Cached per request
-export const getAuthClient = cache(async (): Promise<AuthContext | null> => {
+async function withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number
+): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<never>((_, reject) => {
+            setTimeout(() => {
+                reject(new Error("Auth timeout"))
+            }, timeoutMs)
+        }),
+    ])
+}
+
+// -----------------------------------------------------------------------------
+// Main auth function
+// -----------------------------------------------------------------------------
+
+async function fetchAuth(): Promise<AuthContext | null> {
     const supabase = createBrowserSupabaseClient()
 
-    const MAX_RETRIES = 2
+    const MAX_RETRIES = 1
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
-            const { data, error } = await supabase.auth.getClaims()
+            const { data, error } = await withTimeout(
+                supabase.auth.getClaims(),
+                8000
+            )
 
-            // If Supabase responded → no retry
+            // Supabase responded successfully
             if (error || !data?.claims) {
                 return null
             }
@@ -62,20 +124,43 @@ export const getAuthClient = cache(async (): Promise<AuthContext | null> => {
                 email: claims.email,
                 role: claims.app_role as UserRole | undefined,
             }
-
         } catch (error: unknown) {
-            const timeout = isTimeoutError(error)
+            const retryable = isRetryableError(error)
 
-            if (timeout && attempt < MAX_RETRIES) {
-                const delay = 300 * Math.pow(2, attempt)
-                await sleep(delay)
+            // Retry only once for temporary network failures
+            if (retryable && attempt < MAX_RETRIES) {
+                await sleep(400)
                 continue
             }
 
-            console.error("getAuth failed:", error)
+            const { code, name, message } = getErrorDetails(error)
+
+            console.error("getAuthClient failed:", {
+                code,
+                name,
+                message,
+            })
+
             return null
         }
     }
 
     return null
-})
+}
+
+// -----------------------------------------------------------------------------
+// Public API
+// -----------------------------------------------------------------------------
+
+export async function getAuthClient(): Promise<AuthContext | null> {
+    // Reuse ongoing request
+    if (authPromise) {
+        return authPromise
+    }
+
+    authPromise = fetchAuth().finally(() => {
+        authPromise = null
+    })
+
+    return authPromise
+}

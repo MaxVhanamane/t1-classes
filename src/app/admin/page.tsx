@@ -12,7 +12,7 @@ import { StatCardSkeleton } from "./_features/components/stat-card-skeleton";
 
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 md:p-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>

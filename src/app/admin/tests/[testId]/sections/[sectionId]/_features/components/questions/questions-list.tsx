@@ -18,7 +18,6 @@ export function QuestionsList({
   onAddQuestion,
   onEditQuestion,
 }: Props) {
-  console.log("questions", questions);
   return (
     <div className="space-y-4">
       {/* Header */}
