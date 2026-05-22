@@ -15,12 +15,18 @@ import {
   MonitorUp,
   VideoOff,
   Hand,
+  ChevronDown,
 } from "lucide-react";
 
 import { toast } from "sonner";
 
 import { Button } from "@/src/components/ui/button";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/src/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -99,7 +105,9 @@ export function MentorshipMeetingView({
   >({});
   const [meetingExitReason, setMeetingExitReason] =
     useState<MeetingExitReason>(null);
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
 
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const {
     join,
 
@@ -346,20 +354,80 @@ export function MentorshipMeetingView({
       /*
       Apply selected microphone
     */
-      if (preferences.micEnabled && preferences.micId) {
+      if (preferences.micId) {
         changeMic(preferences.micId);
       }
-
       /*
       Apply selected webcam
     */
-      if (preferences.webcamEnabled && preferences.webcamId) {
+      if (preferences.webcamId) {
         changeWebcam(preferences.webcamId);
       }
     } catch (error) {
       console.error("[APPLY_DEVICE_PREFERENCES_ERROR]", error);
     }
   }, [hasJoined, changeMic, changeWebcam]);
+
+  useEffect(() => {
+    if (!hasJoined) {
+      return;
+    }
+
+    try {
+      const current = JSON.parse(
+        sessionStorage.getItem("mentorship-meeting-preferences") ?? "{}",
+      );
+
+      sessionStorage.setItem(
+        "mentorship-meeting-preferences",
+        JSON.stringify({
+          ...current,
+          micEnabled: localMicOn,
+          webcamEnabled: localWebcamOn,
+        }),
+      );
+    } catch (error) {
+      console.error("[SAVE_MEDIA_STATE_ERROR]", error);
+    }
+  }, [hasJoined, localMicOn, localWebcamOn]);
+
+  const loadDevices = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+
+      setAudioDevices(devices.filter((device) => device.kind === "audioinput"));
+
+      setVideoDevices(devices.filter((device) => device.kind === "videoinput"));
+    } catch (error) {
+      console.error("[LOAD_MEDIA_DEVICES_ERROR]", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!hasJoined) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      void loadDevices();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [hasJoined]);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices) {
+      return;
+    }
+
+    navigator.mediaDevices.addEventListener("devicechange", loadDevices);
+
+    return () => {
+      navigator.mediaDevices.removeEventListener("devicechange", loadDevices);
+    };
+  }, []);
 
   const participantIds = useMemo(() => {
     const ids = Array.from(
@@ -601,6 +669,7 @@ export function MentorshipMeetingView({
                   key={`${participantId}-${index}`}
                   participantId={participantId}
                   isModerator={isModerator}
+                  totalParticipants={participantIds.length}
                   localParticipantQuality={
                     participantId === localParticipant?.id
                       ? localParticipantQuality
@@ -626,40 +695,165 @@ export function MentorshipMeetingView({
       <div className="sticky bottom-0 z-30 border-t bg-muted-soft/95 backdrop-blur supports-[padding:max(0px)]:pb-safe">
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex min-w-max items-center justify-center gap-2 px-3 py-3 sm:gap-4 sm:px-4">
-            <Button
-              variant={localMicOn ? "outline" : "secondary"}
-              size="icon"
-              className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14"
-              onClick={() => toggleMic()}
-            >
-              {localMicOn ? (
-                <Mic className="size-4 sm:size-5" />
-              ) : (
-                <MicOff className="size-4 sm:size-5" />
-              )}
-            </Button>
+            <div className="flex items-center">
+              <Button
+                variant={localMicOn ? "outline" : "secondary"}
+                size="icon"
+                className="size-11 rounded-r-none border-r-0 shadow-sm transition active:scale-95 sm:size-14"
+                onClick={() => toggleMic()}
+              >
+                {localMicOn ? (
+                  <Mic className="size-4 sm:size-5" />
+                ) : (
+                  <MicOff className="size-4 sm:size-5" />
+                )}
+              </Button>
 
-            <Button
-              variant={localWebcamOn ? "outline" : "secondary"}
-              size="icon"
-              className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14"
-              onClick={() => toggleWebcam()}
-            >
-              {localWebcamOn ? (
-                <Video className="size-4 sm:size-5" />
-              ) : (
-                <VideoOff className="size-4 sm:size-5" />
-              )}
-            </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="
+    h-11 w-8 rounded-l-none border-l border-white/10
+    px-0 shadow-sm
+    transition active:scale-95
+    sm:h-14 sm:w-10
+  "
+                  >
+                    <ChevronDown className="size-3.5 opacity-70" />
+                  </Button>
+                </DropdownMenuTrigger>
 
-            <Button
-              variant={localScreenShareOn ? "default" : "outline"}
-              size="icon"
-              className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14"
-              onClick={() => toggleScreenShare()}
-            >
-              <MonitorUp className="size-4 sm:size-5" />
-            </Button>
+                <DropdownMenuContent align="center">
+                  {audioDevices.map((device) => (
+                    <DropdownMenuItem
+                      key={device.deviceId}
+                      onClick={() => {
+                        try {
+                          changeMic(device.deviceId);
+
+                          toast.success(
+                            `Microphone changed to ${device.label}`,
+                          );
+
+                          const current = JSON.parse(
+                            sessionStorage.getItem(
+                              "mentorship-meeting-preferences",
+                            ) ?? "{}",
+                          );
+
+                          sessionStorage.setItem(
+                            "mentorship-meeting-preferences",
+                            JSON.stringify({
+                              ...current,
+                              micEnabled: localMicOn,
+                              micId: device.deviceId,
+                            }),
+                          );
+                        } catch (error) {
+                          toast.error("Failed to change microphone");
+
+                          console.error("[CHANGE_MIC_ERROR]", error);
+                        }
+                      }}
+                    >
+                      {device.label || "Unknown Microphone"}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="flex items-center">
+              <Button
+                variant={localWebcamOn ? "outline" : "secondary"}
+                size="icon"
+                className="size-11 rounded-r-none border-r-0 shadow-sm transition active:scale-95 sm:size-14"
+                onClick={() => toggleWebcam()}
+              >
+                {localWebcamOn ? (
+                  <Video className="size-4 sm:size-5" />
+                ) : (
+                  <VideoOff className="size-4 sm:size-5" />
+                )}
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="
+    h-11 w-8 rounded-l-none border-l border-white/10
+    px-0 shadow-sm
+    transition active:scale-95
+    sm:h-14 sm:w-10
+  "
+                  >
+                    <ChevronDown className="size-3.5 opacity-70" />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="center">
+                  {videoDevices.map((device) => (
+                    <DropdownMenuItem
+                      key={device.deviceId}
+                      onClick={() => {
+                        try {
+                          changeWebcam(device.deviceId);
+
+                          toast.success(`Camera changed to ${device.label}`);
+
+                          const current = JSON.parse(
+                            sessionStorage.getItem(
+                              "mentorship-meeting-preferences",
+                            ) ?? "{}",
+                          );
+
+                          sessionStorage.setItem(
+                            "mentorship-meeting-preferences",
+                            JSON.stringify({
+                              ...current,
+                              webcamEnabled: localWebcamOn,
+                              webcamId: device.deviceId,
+                            }),
+                          );
+                        } catch (error) {
+                          toast.error("Failed to change camera");
+
+                          console.error("[CHANGE_CAMERA_ERROR]", error);
+                        }
+                      }}
+                    >
+                      {device.label || "Unknown Camera"}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            {(isModerator || isSessionOwner) && (
+              <Button
+                variant={localScreenShareOn ? "default" : "outline"}
+                size="icon"
+                className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14"
+                onClick={() => {
+                  if (
+                    typeof navigator !== "undefined" &&
+                    !navigator.mediaDevices?.getDisplayMedia
+                  ) {
+                    toast.error(
+                      "Screen sharing is not supported on this browser",
+                    );
+
+                    return;
+                  }
+
+                  toggleScreenShare();
+                }}
+              >
+                <MonitorUp className="size-4 sm:size-5" />
+              </Button>
+            )}
 
             <Button
               variant={hasRaisedHand ? "default" : "outline"}

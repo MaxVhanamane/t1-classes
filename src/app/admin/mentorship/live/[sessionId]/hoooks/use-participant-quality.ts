@@ -96,14 +96,25 @@ export function useParticipantQuality(
                     const statsArray =
                         await getVideoStats();
 
+                    /*
+                      Empty stats usually means:
+                      reconnecting /
+                      transport restarting
+                    */
+
                     if (
-                        !mounted ||
                         !statsArray ||
                         !Array.isArray(
                             statsArray,
                         ) ||
                         statsArray.length === 0
                     ) {
+                        setStats((prev) => ({
+                            ...prev,
+                            quality:
+                                "reconnecting",
+                        }));
+
                         return;
                     }
 
@@ -173,54 +184,85 @@ export function useParticipantQuality(
 
                     const network =
                         String(
-                            stat?.network ??
-                            "",
+                            stat?.network ?? "",
                         );
 
                     /*
-                      Combined quality scoring.
-
+                      Weighted quality scoring.
+          
                       Based on:
-                      - VideoSDK docs
-                      - RTC industry norms
+                      - VideoSDK thresholds
+                      - Real WebRTC UX
                     */
 
-                    const metricScores = {
-                        packetLoss:
-                            packetLossPercent > 8
-                                ? 2
-                                : packetLossPercent >
-                                    3
-                                    ? 1
-                                    : 0,
+                    let score = 0;
 
-                        rtt:
-                            rtt > 300
-                                ? 2
-                                : rtt > 150
-                                    ? 1
-                                    : 0,
+                    /*
+                      Packet loss
+                      MOST IMPORTANT
+                    */
 
-                        jitter:
-                            jitter > 30
-                                ? 2
-                                : jitter > 15
-                                    ? 1
-                                    : 0,
-                    };
+                    if (
+                        packetLossPercent > 5
+                    ) {
+                        score += 3;
+                    } else if (
+                        packetLossPercent >= 2
+                    ) {
+                        score += 1;
+                    }
 
-                    const totalScore =
-                        metricScores.packetLoss +
-                        metricScores.rtt +
-                        metricScores.jitter;
+                    /*
+                      RTT
+                    */
+
+                    if (rtt > 300) {
+                        score += 2;
+                    } else if (
+                        rtt >= 150
+                    ) {
+                        score += 1;
+                    }
+
+                    /*
+                      Jitter
+                    */
+
+                    if (jitter > 30) {
+                        score += 2;
+                    } else if (
+                        jitter >= 15
+                    ) {
+                        score += 1;
+                    }
+
+                    /*
+                      FPS collapse
+          
+                      Usually indicates:
+                      - congestion
+                      - decode issues
+                      - weak device/network
+                    */
+
+                    if (
+                        fps > 0 &&
+                        fps < 10
+                    ) {
+                        score += 2;
+                    }
+
+                    /*
+                      Determine overall quality
+                    */
 
                     let quality: ConnectionQuality =
                         "good";
 
-                    if (totalScore >= 4) {
+                    if (score >= 6) {
                         quality = "poor";
                     } else if (
-                        totalScore >= 2
+                        score >= 3
                     ) {
                         quality = "weak";
                     }
@@ -255,7 +297,7 @@ export function useParticipantQuality(
                     /*
                       VideoSDK throws:
                       InvalidStateError: closed
-
+          
                       when transport is destroyed
                       during leave/disconnect.
                     */
@@ -274,6 +316,20 @@ export function useParticipantQuality(
                         return;
                     }
 
+                    /*
+                      Temporary failures
+                    */
+
+                    if (!mounted) {
+                        return;
+                    }
+
+                    setStats((prev) => ({
+                        ...prev,
+                        quality:
+                            "reconnecting",
+                    }));
+
                     console.error(
                         "[PARTICIPANT_QUALITY_ERROR]",
                         error,
@@ -288,11 +344,9 @@ export function useParticipantQuality(
         void pollStats();
 
         /*
-          Poll every 5 seconds.
-
-          Good balance between:
-          responsiveness
-          and CPU/network usage.
+          Faster updates for smoother UX.
+    
+          2s is a good balance.
         */
 
         const intervalId =

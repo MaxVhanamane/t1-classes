@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { useParticipant } from "@videosdk.live/react-sdk";
+
 import {
   Popover,
   PopoverContent,
@@ -22,14 +23,18 @@ import {
 } from "@/src/components/ui/popover";
 
 import { MeetingNetworkStats } from "./meeting-network-stats";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
+
 import { Card } from "@/src/components/ui/card";
+
 import { Button } from "@/src/components/ui/button";
+
 import {
   useParticipantQuality,
   type ParticipantQualityState,
@@ -38,19 +43,26 @@ import {
 interface MentorshipParticipantTileProps {
   participantId: string;
   isModerator: boolean;
+
+  totalParticipants: number;
+
   localParticipantQuality?: ParticipantQualityState;
 }
 
 export function MentorshipParticipantTile({
   participantId,
   isModerator,
+  totalParticipants,
   localParticipantQuality,
 }: MentorshipParticipantTileProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const micRef = useRef<HTMLAudioElement>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [isVideoLoading, setIsVideoLoading] = useState(true);
+
   const internalQuality = useParticipantQuality(participantId);
 
   const participantQuality = localParticipantQuality ?? internalQuality;
@@ -67,7 +79,81 @@ export function MentorshipParticipantTile({
     disableMic,
     disableWebcam,
     remove,
+    setQuality,
+    setViewPort,
   } = useParticipant(participantId);
+
+  /*
+    Dynamic VideoSDK quality selection
+  */
+  useEffect(() => {
+    if (!setQuality) {
+      return;
+    }
+
+    /*
+      VideoSDK recommended strategy
+
+      < 3 participants  -> high
+      3-4 participants  -> med
+      > 4 participants  -> low
+    */
+
+    if (screenShareOn) {
+      setQuality("high");
+
+      return;
+    }
+
+    if (totalParticipants < 3) {
+      setQuality("high");
+
+      return;
+    }
+
+    if (totalParticipants <= 4) {
+      setQuality("med");
+
+      return;
+    }
+
+    setQuality("low");
+  }, [totalParticipants, setQuality, screenShareOn]);
+
+  /*
+    Tell VideoSDK actual tile size
+
+    Extremely important for adaptive streaming.
+  */
+  useEffect(() => {
+    if (!containerRef.current || !setViewPort) {
+      return;
+    }
+
+    const element = containerRef.current;
+
+    const updateViewport = () => {
+      const rect = element.getBoundingClientRect();
+
+      if (!rect.width || !rect.height) {
+        return;
+      }
+
+      setViewPort(Math.floor(rect.width), Math.floor(rect.height));
+    };
+
+    updateViewport();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateViewport();
+    });
+
+    resizeObserver.observe(element);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [setViewPort]);
 
   const videoStream = useMemo(() => {
     if (webcamOn && webcamStream) {
@@ -95,27 +181,61 @@ export function MentorshipParticipantTile({
     return null;
   }, [micOn, micStream]);
 
+  /*
+    Attach video stream
+  */
   useEffect(() => {
-    if (videoRef.current && activeVideoStream) {
-      videoRef.current.srcObject = activeVideoStream;
+    const videoElement = videoRef.current;
+
+    if (!videoElement) {
+      return;
     }
+
+    if (!activeVideoStream) {
+      videoElement.srcObject = null;
+
+      return;
+    }
+
+    /*
+    Avoid unnecessary re-attachments
+  */
+    if (videoElement.srcObject === activeVideoStream) {
+      return;
+    }
+
+    videoElement.srcObject = activeVideoStream;
   }, [activeVideoStream]);
 
+  /*
+    Attach audio stream
+  */
   useEffect(() => {
-    if (micRef.current && audioStream) {
-      micRef.current.srcObject = audioStream;
+    const audioElement = micRef.current;
 
-      micRef.current.play().catch(() => null);
+    if (!audioElement) {
+      return;
     }
+
+    if (!audioStream) {
+      audioElement.srcObject = null;
+
+      return;
+    }
+
+    audioElement.srcObject = audioStream;
+
+    audioElement.play().catch(() => null);
   }, [audioStream]);
 
   return (
     <Card
+      ref={containerRef}
       className={`
-    group relative overflow-hidden rounded-xl border bg-black p-0
-    aspect-video w-full
-    ${screenShareOn ? "col-span-full row-span-2" : ""}
-  `}
+        group relative overflow-hidden rounded-xl border bg-black p-0
+        aspect-video w-full
+        ${screenShareOn ? "col-span-full row-span-2" : ""}
+      `}
     >
       {/* Video Layer */}
       <div className="absolute inset-0">
@@ -126,10 +246,20 @@ export function MentorshipParticipantTile({
               autoPlay
               playsInline
               muted={isLocal}
-              onLoadedData={() => setIsVideoLoading(false)}
-              className={`h-full w-full ${
-                screenShareOn ? "object-contain bg-black" : "object-cover"
-              }`}
+              onWaiting={() => {
+                setIsVideoLoading(true);
+              }}
+              onPlaying={() => {
+                setIsVideoLoading(false);
+              }}
+              onLoadedData={() => {
+                setIsVideoLoading(false);
+              }}
+              className={`
+    h-full w-full transition-opacity duration-300
+
+${screenShareOn ? "object-contain bg-black" : "object-cover"}
+  `}
             />
 
             {isVideoLoading && (
@@ -157,38 +287,38 @@ export function MentorshipParticipantTile({
         </div>
       )}
 
+      {/* Network Quality */}
       <div
         className={`
-    absolute left-3 z-20
-
-    ${screenShareOn ? "top-14" : "top-3"}
-  `}
+          absolute left-3 z-20
+          ${screenShareOn ? "top-14" : "top-3"}
+        `}
       >
         <Popover>
           <PopoverTrigger asChild>
             <button
               className="
-          flex items-center gap-1 rounded-full
-          border border-white/10
-          bg-black/45 px-2 py-1.5
-          backdrop-blur-md
-          transition hover:bg-black/60
-        "
+                flex items-center gap-1 rounded-full
+                border border-white/10
+                bg-black/45 px-2 py-1.5
+                backdrop-blur-md
+                transition hover:bg-black/60
+              "
             >
               <Wifi
                 className={`
-            size-3.5 shrink-0
+                  size-3.5 shrink-0
 
-            ${
-              participantQuality.quality === "good"
-                ? "text-emerald-400"
-                : participantQuality.quality === "weak"
-                  ? "text-amber-400"
-                  : participantQuality.quality === "poor"
-                    ? "text-red-400"
-                    : "animate-pulse text-blue-400"
-            }
-          `}
+                  ${
+                    participantQuality.quality === "good"
+                      ? "text-emerald-400"
+                      : participantQuality.quality === "weak"
+                        ? "text-amber-400"
+                        : participantQuality.quality === "poor"
+                          ? "text-red-400"
+                          : "animate-pulse text-blue-400"
+                  }
+                `}
               />
 
               {isLocal && <ChevronDown className="size-3 text-white/70" />}
@@ -201,7 +331,10 @@ export function MentorshipParticipantTile({
               align="start"
               className="w-auto rounded-2xl border-white/10 bg-background/95 p-4 backdrop-blur-xl"
             >
-              <MeetingNetworkStats stats={participantQuality} />
+              <MeetingNetworkStats
+                stats={participantQuality}
+                videoEnabled={webcamOn || screenShareOn}
+              />
             </PopoverContent>
           )}
         </Popover>
@@ -215,7 +348,7 @@ export function MentorshipParticipantTile({
               <Button
                 size="icon"
                 variant="secondary"
-                className="size-8 rounded-full  bg-black/30 text-white shadow-sm backdrop-blur-md hover:bg-black/50"
+                className="size-8 rounded-full bg-black/30 text-white shadow-sm backdrop-blur-md hover:bg-black/50"
               >
                 <MoreVertical className="size-4" />
               </Button>
@@ -255,7 +388,7 @@ export function MentorshipParticipantTile({
       )}
 
       {/* Bottom Overlay */}
-      <div className="absolute inset-x-0 bottom-0 z-20 flex flex-wrap items-center justify-between gap-2  px-3 py-3">
+      <div className="absolute inset-x-0 bottom-0 z-20 flex flex-wrap items-center justify-between gap-2 px-3 py-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-white">
             {displayName}

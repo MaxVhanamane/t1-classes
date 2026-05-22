@@ -13,9 +13,38 @@ import type { ParticipantQualityState } from "../../../hoooks/use-participant-qu
 
 interface MeetingNetworkStatsProps {
   stats: ParticipantQualityState;
+
+  videoEnabled: boolean;
 }
 
-export function MeetingNetworkStats({ stats }: MeetingNetworkStatsProps) {
+export function MeetingNetworkStats({
+  stats,
+  videoEnabled,
+}: MeetingNetworkStatsProps) {
+  const getVideoMetricValue = (fallback: string) => {
+    /*
+      Reconnecting state
+    */
+
+    if (stats.quality === "reconnecting") {
+      return "Reconnecting...";
+    }
+
+    /*
+      No active video stream
+    */
+
+    if (!videoEnabled) {
+      return "Camera Off";
+    }
+
+    /*
+      Waiting for initial stats
+    */
+
+    return fallback;
+  };
+
   return (
     <div className="w-72 space-y-3">
       <div>
@@ -27,6 +56,8 @@ export function MeetingNetworkStats({ stats }: MeetingNetworkStatsProps) {
       </div>
 
       <div className="space-y-2">
+        {/* Network Metrics */}
+
         <Metric
           icon={TimerReset}
           label="Latency"
@@ -45,13 +76,15 @@ export function MeetingNetworkStats({ stats }: MeetingNetworkStatsProps) {
           value={`${stats.packetLoss.toFixed(1)}%`}
         />
 
+        {/* Video Metrics */}
+
         <Metric
           icon={Gauge}
           label="Bitrate"
           value={
             stats.bitrate > 0
               ? `${stats.bitrate.toFixed(1)} kbps`
-              : "Unavailable"
+              : getVideoMetricValue("Collecting...")
           }
         />
 
@@ -61,14 +94,18 @@ export function MeetingNetworkStats({ stats }: MeetingNetworkStatsProps) {
           value={
             stats.width > 0 && stats.height > 0
               ? `${stats.width}×${stats.height}`
-              : "Unavailable"
+              : getVideoMetricValue("Collecting...")
           }
         />
 
         <Metric
           icon={Video}
           label="Frame Rate"
-          value={stats.fps > 0 ? `${Math.round(stats.fps)} FPS` : "Unavailable"}
+          value={
+            stats.fps > 0
+              ? `${Math.round(stats.fps)} FPS`
+              : getVideoMetricValue("Collecting...")
+          }
         />
       </div>
     </div>
@@ -81,7 +118,9 @@ function Metric({
   value,
 }: {
   icon: LucideIcon;
+
   label: string;
+
   value: string;
 }) {
   return (
