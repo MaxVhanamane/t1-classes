@@ -95,12 +95,12 @@ export function MentorshipLiveRoom({
     const createTrack = async () => {
       try {
         const track = await createCameraVideoTrack({
-          encoderConfig: "h720p_w1280p",
+          encoderConfig: "h540p_w960p",
 
           optimizationMode: "motion",
 
           multiStream: false,
-          bitrateMode: "high_quality",
+          bitrateMode: "balanced",
         });
 
         setCustomCameraVideoTrack(track);

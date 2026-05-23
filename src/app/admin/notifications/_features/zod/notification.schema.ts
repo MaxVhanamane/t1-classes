@@ -1,8 +1,10 @@
 import { z } from "zod";
+
 import { notificationTypes } from "../types/notification.types";
 
 export const notificationSchema = z.object({
     title: z.string().trim().nullable(),
+
     message: z
         .string()
         .trim()
@@ -11,7 +13,11 @@ export const notificationSchema = z.object({
 
     type: z.enum(notificationTypes),
 
-    batch_id: z.uuid().nullable(),
+    // "" = no selection yet
+    // "all" = all students
+    // uuid = batch id
+    batch_id: z.string(),
 });
 
-export type NotificationFormValues = z.infer<typeof notificationSchema>;
+export type NotificationFormValues =
+    z.infer<typeof notificationSchema>;

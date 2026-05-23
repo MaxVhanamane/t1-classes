@@ -21,29 +21,60 @@ export function MeetingNetworkStats({
   stats,
   videoEnabled,
 }: MeetingNetworkStatsProps) {
-  const getVideoMetricValue = (fallback: string) => {
+  const getVideoMetricValue = (hasValue: boolean, value: string) => {
     /*
       Reconnecting state
     */
-
     if (stats.quality === "reconnecting") {
-      return "Reconnecting...";
+      return {
+        text: "Reconnecting...",
+        muted: true,
+      };
     }
 
     /*
       No active video stream
     */
-
     if (!videoEnabled) {
-      return "Camera Off";
+      return {
+        text: "Camera Off",
+        muted: true,
+      };
     }
 
     /*
-      Waiting for initial stats
+      Valid metric available
     */
+    if (hasValue) {
+      return {
+        text: value,
+        muted: false,
+      };
+    }
 
-    return fallback;
+    /*
+      Stats unavailable
+    */
+    return {
+      text: "Unavailable",
+      muted: true,
+    };
   };
+
+  const bitrateValue = getVideoMetricValue(
+    stats.bitrate > 0,
+    `${stats.bitrate.toFixed(1)} kbps`,
+  );
+
+  const resolutionValue = getVideoMetricValue(
+    stats.width > 0 && stats.height > 0,
+    `${stats.width}×${stats.height}`,
+  );
+
+  const fpsValue = getVideoMetricValue(
+    stats.fps > 0,
+    `${Math.round(stats.fps)} FPS`,
+  );
 
   return (
     <div className="w-72 space-y-3">
@@ -81,31 +112,22 @@ export function MeetingNetworkStats({
         <Metric
           icon={Gauge}
           label="Bitrate"
-          value={
-            stats.bitrate > 0
-              ? `${stats.bitrate.toFixed(1)} kbps`
-              : getVideoMetricValue("Collecting...")
-          }
+          value={bitrateValue.text}
+          muted={bitrateValue.muted}
         />
 
         <Metric
           icon={Video}
           label="Resolution"
-          value={
-            stats.width > 0 && stats.height > 0
-              ? `${stats.width}×${stats.height}`
-              : getVideoMetricValue("Collecting...")
-          }
+          value={resolutionValue.text}
+          muted={resolutionValue.muted}
         />
 
         <Metric
           icon={Video}
           label="Frame Rate"
-          value={
-            stats.fps > 0
-              ? `${Math.round(stats.fps)} FPS`
-              : getVideoMetricValue("Collecting...")
-          }
+          value={fpsValue.text}
+          muted={fpsValue.muted}
         />
       </div>
     </div>
@@ -116,22 +138,32 @@ function Metric({
   icon: Icon,
   label,
   value,
+  muted = false,
 }: {
   icon: LucideIcon;
 
   label: string;
 
   value: string;
+
+  muted?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between rounded-xl border bg-muted/40 px-3 py-2">
       <div className="flex items-center gap-2">
         <Icon className="size-4 text-muted-foreground" />
 
-        <span className="text-sm">{label}</span>
+        <span className="text-xs">{label}</span>
       </div>
 
-      <span className="text-sm font-medium">{value}</span>
+      <span
+        className={`
+          font-medium
+          ${muted ? "text-xs text-muted-foreground" : "text-xs"}
+        `}
+      >
+        {value}
+      </span>
     </div>
   );
 }

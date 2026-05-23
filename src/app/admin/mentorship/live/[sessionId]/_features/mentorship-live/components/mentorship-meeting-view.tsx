@@ -430,40 +430,60 @@ export function MentorshipMeetingView({
   }, []);
 
   const participantIds = useMemo(() => {
-    const ids = Array.from(
-      new Set([localParticipant?.id, ...Array.from(participants.keys())]),
-    ).filter(Boolean) as string[];
+    const allParticipants = [
+      localParticipant,
+      ...Array.from(participants.values()),
+    ].filter(Boolean);
+
+    /*
+    Deduplicate reconnecting users
+    using displayName.
+
+    Ideally use your real userId
+    if available.
+  */
+    const uniqueParticipants = allParticipants.reduce<typeof allParticipants>(
+      (acc, participant) => {
+        const alreadyExists = acc.some(
+          (p) => p?.displayName === participant?.displayName,
+        );
+
+        if (!alreadyExists) {
+          acc.push(participant);
+        }
+
+        return acc;
+      },
+      [],
+    );
 
     const getParticipantScore = (
-      participant:
-        | typeof localParticipant
-        | ReturnType<typeof participants.get>
-        | undefined,
+      participant: typeof localParticipant | undefined,
     ) => {
-      if (!participant) return 0;
+      if (!participant) {
+        return 0;
+      }
 
       let value = 0;
 
-      if (participant.screenShareOn) value += 100;
+      if (participant.screenShareOn) {
+        value += 100;
+      }
 
-      if (participant.local) value += 50;
+      if (participant.local) {
+        value += 50;
+      }
 
-      if (participant.webcamOn) value += 10;
+      if (participant.webcamOn) {
+        value += 10;
+      }
 
       return value;
     };
 
-    return ids.sort((a, b) => {
-      const participantA =
-        a === localParticipant?.id ? localParticipant : participants.get(a);
-
-      const participantB =
-        b === localParticipant?.id ? localParticipant : participants.get(b);
-
-      return (
-        getParticipantScore(participantB) - getParticipantScore(participantA)
-      );
-    });
+    return uniqueParticipants
+      .sort((a, b) => getParticipantScore(b) - getParticipantScore(a))
+      .map((participant) => participant!.id);
   }, [localParticipant, participants]);
 
   const isConnecting = !hasJoined && participantIds.length === 0;
@@ -476,7 +496,7 @@ export function MentorshipMeetingView({
     <div className="flex h-(--h-viewport-minus-navbar) flex-col overflow-hidden bg-muted-soft">
       {/* Header */}
       <div className="sticky top-0 z-20 border-b border-white/10 bg-muted-soft/95 backdrop-blur-xl">
-        <div className="px-3 py-2 sm:px-4 lg:px-6">
+        <div className="px-3 py-2 sm:px-4 xl:px-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             {/* Mobile + Desktop Left */}
             <div className="min-w-0">
@@ -619,7 +639,7 @@ export function MentorshipMeetingView({
       {/* Main */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Video Area */}
-        <div className="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-muted-soft p-3 sm:p-4 lg:p-5">
+        <div className="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-muted-soft p-3 sm:p-4 xl:p-5">
           {/* Joining Overlay */}
           {isConnecting && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted-soft backdrop-blur-sm">
@@ -664,9 +684,9 @@ export function MentorshipMeetingView({
         }
       `}
             >
-              {[...participantIds].map((participantId, index) => (
+              {participantIds.map((participantId) => (
                 <MentorshipParticipantTile
-                  key={`${participantId}-${index}`}
+                  key={participantId}
                   participantId={participantId}
                   isModerator={isModerator}
                   totalParticipants={participantIds.length}
@@ -682,7 +702,7 @@ export function MentorshipMeetingView({
         </div>
 
         {/* Desktop Chat */}
-        <div className="hidden min-h-0 w-90 flex-col border-l bg-muted-soft lg:flex">
+        <div className="hidden min-h-0 w-90 flex-col border-l bg-muted-soft xl:flex">
           <div className="border-b px-4 py-3">
             <h2 className="font-semibold tracking-tight">Chat</h2>
           </div>
@@ -907,7 +927,7 @@ export function MentorshipMeetingView({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14 lg:hidden"
+                  className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14 xl:hidden"
                 >
                   <MessageSquare className="size-4 sm:size-5" />
                 </Button>

@@ -36,37 +36,39 @@ export interface ParticipantQualityState {
     network: string;
 }
 
+const INITIAL_STATE: ParticipantQualityState =
+{
+    quality: "good",
+
+    packetLoss: 0,
+
+    rtt: 0,
+
+    jitter: 0,
+
+    bitrate: 0,
+
+    fps: 0,
+
+    width: 0,
+
+    height: 0,
+
+    codec: "",
+
+    network: "",
+};
+
 export function useParticipantQuality(
     participantId: string,
 ) {
     const [stats, setStats] =
-        useState<ParticipantQualityState>({
-            quality: "good",
+        useState<ParticipantQualityState>(
+            INITIAL_STATE,
+        );
 
-            packetLoss: 0,
-
-            rtt: 0,
-
-            jitter: 0,
-
-            bitrate: 0,
-
-            fps: 0,
-
-            width: 0,
-
-            height: 0,
-
-            codec: "",
-
-            network: "",
-        });
-
-    const {
-        getVideoStats,
-    } = useParticipant(
-        participantId,
-    );
+    const { getVideoStats } =
+        useParticipant(participantId);
 
     useEffect(() => {
         if (
@@ -78,6 +80,8 @@ export function useParticipantQuality(
 
         let mounted = true;
 
+        let isFetching = false;
+
         const stopPolling = () => {
             mounted = false;
 
@@ -88,20 +92,51 @@ export function useParticipantQuality(
 
         const pollStats =
             async () => {
-                if (!mounted) {
+                /*
+                  Prevent:
+                  - overlapping requests
+                  - stale polling
+                  - transport spam
+                */
+                if (
+                    !mounted ||
+                    isFetching
+                ) {
                     return;
                 }
+
+                /*
+                  Skip polling while
+                  tab is hidden.
+            
+                  Reduces:
+                  - CPU
+                  - RTC load
+                  - hidden-tab spam
+                */
+                if (
+                    document.visibilityState ===
+                    "hidden"
+                ) {
+                    return;
+                }
+
+                isFetching = true;
 
                 try {
                     const statsArray =
                         await getVideoStats();
 
+                    if (!mounted) {
+                        return;
+                    }
+
                     /*
                       Empty stats usually means:
-                      reconnecting /
-                      transport restarting
+                      - reconnecting
+                      - transport restarting
+                      - stream unavailable
                     */
-
                     if (
                         !statsArray ||
                         !Array.isArray(
@@ -119,16 +154,16 @@ export function useParticipantQuality(
                     }
 
                     /*
-                      Usually first stream
-                      is enough for quality.
+                      First stream is enough
+                      for overall quality.
                     */
-
                     const stat =
                         statsArray[0];
 
                     const packetsLost =
                         Number(
-                            stat?.packetsLost ?? 0,
+                            stat?.packetsLost ??
+                            0,
                         );
 
                     const totalPackets =
@@ -140,7 +175,6 @@ export function useParticipantQuality(
                     /*
                       Packet loss %
                     */
-
                     const packetLossPercent =
                         totalPackets > 0
                             ? (packetsLost /
@@ -152,15 +186,13 @@ export function useParticipantQuality(
                         stat?.rtt ?? 0,
                     );
 
-                    const jitter =
-                        Number(
-                            stat?.jitter ?? 0,
-                        );
+                    const jitter = Number(
+                        stat?.jitter ?? 0,
+                    );
 
-                    const bitrate =
-                        Number(
-                            stat?.bitrate ?? 0,
-                        );
+                    const bitrate = Number(
+                        stat?.bitrate ?? 0,
+                    );
 
                     const fps = Number(
                         stat?.size
@@ -168,46 +200,41 @@ export function useParticipantQuality(
                     );
 
                     const width = Number(
-                        stat?.size
-                            ?.width ?? 0,
+                        stat?.size?.width ??
+                        0,
                     );
 
-                    const height =
-                        Number(
-                            stat?.size
-                                ?.height ?? 0,
-                        );
+                    const height = Number(
+                        stat?.size?.height ??
+                        0,
+                    );
 
                     const codec = String(
                         stat?.codec ?? "",
                     );
 
-                    const network =
-                        String(
-                            stat?.network ?? "",
-                        );
+                    const network = String(
+                        stat?.network ?? "",
+                    );
 
                     /*
-                      Weighted quality scoring.
-          
-                      Based on:
+                      Weighted scoring based on:
                       - VideoSDK thresholds
-                      - Real WebRTC UX
+                      - real RTC UX
                     */
-
                     let score = 0;
 
                     /*
                       Packet loss
                       MOST IMPORTANT
                     */
-
                     if (
                         packetLossPercent > 5
                     ) {
                         score += 3;
                     } else if (
-                        packetLossPercent >= 2
+                        packetLossPercent >=
+                        2
                     ) {
                         score += 1;
                     }
@@ -215,7 +242,6 @@ export function useParticipantQuality(
                     /*
                       RTT
                     */
-
                     if (rtt > 300) {
                         score += 2;
                     } else if (
@@ -227,7 +253,6 @@ export function useParticipantQuality(
                     /*
                       Jitter
                     */
-
                     if (jitter > 30) {
                         score += 2;
                     } else if (
@@ -237,14 +262,11 @@ export function useParticipantQuality(
                     }
 
                     /*
-                      FPS collapse
-          
-                      Usually indicates:
+                      FPS collapse often indicates:
                       - congestion
-                      - decode issues
-                      - weak device/network
+                      - decoder issues
+                      - thermal throttling
                     */
-
                     if (
                         fps > 0 &&
                         fps < 10
@@ -253,9 +275,8 @@ export function useParticipantQuality(
                     }
 
                     /*
-                      Determine overall quality
+                      Final quality state
                     */
-
                     let quality: ConnectionQuality =
                         "good";
 
@@ -297,11 +318,12 @@ export function useParticipantQuality(
                     /*
                       VideoSDK throws:
                       InvalidStateError: closed
-          
-                      when transport is destroyed
-                      during leave/disconnect.
+              
+                      during disconnect /
+                      reconnect teardown.
+              
+                      This is expected.
                     */
-
                     if (
                         error instanceof
                         Error &&
@@ -317,13 +339,15 @@ export function useParticipantQuality(
                     }
 
                     /*
-                      Temporary failures
+                      Ignore updates after cleanup
                     */
-
                     if (!mounted) {
                         return;
                     }
 
+                    /*
+                      Temporary RTC failure
+                    */
                     setStats((prev) => ({
                         ...prev,
                         quality:
@@ -334,25 +358,26 @@ export function useParticipantQuality(
                         "[PARTICIPANT_QUALITY_ERROR]",
                         error,
                     );
+                } finally {
+                    isFetching = false;
                 }
             };
 
         /*
           Initial fetch
         */
-
         void pollStats();
 
         /*
-          Faster updates for smoother UX.
-    
-          2s is a good balance.
+          3s polling gives:
+          - responsive UI
+          - low RTC overhead
+          - smoother diagnostics
         */
-
         const intervalId =
             window.setInterval(
                 pollStats,
-                5000,
+                3000,
             );
 
         return () => {

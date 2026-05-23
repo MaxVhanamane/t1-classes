@@ -43,7 +43,6 @@ export function QuestionActionsMenu({
   is_locked,
   onEdit,
 }: Props) {
-  console.log("isLocked", is_locked);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);

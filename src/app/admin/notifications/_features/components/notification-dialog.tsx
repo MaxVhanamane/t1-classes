@@ -23,21 +23,28 @@ import { Label } from "@/src/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
 
 import { toast } from "sonner";
+
 import {
   notificationTypes,
   NotificationType,
 } from "../types/notification.types";
+
 import {
   NotificationFormValues,
   notificationSchema,
 } from "../zod/notification.schema";
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 
 type BatchRow = {
@@ -61,39 +68,46 @@ export function NotificationDialog({ notification }: Props) {
   const [open, setOpen] = useState(false);
 
   const queryClient = useQueryClient();
+
   const { data: batches = [] } = useQuery<BatchRow[]>({
     queryKey: ["notification-batches"],
-    queryFn: () =>
-      fetchWrapper<BatchRow[]>("/api/admin/test-scheduling/batches"),
+    queryFn: () => fetchWrapper<BatchRow[]>("/api/admin/schedule/batches"),
   });
 
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),
+
     defaultValues: {
       title: notification?.title ?? null,
       message: notification?.message ?? "",
       type: notification?.type ?? "announcement",
-      batch_id: notification?.batch_id ?? null,
+
+      // "" = no selection yet
+      // "all" = all students
+      // uuid = specific batch
+      batch_id: notification?.batch_id ?? "",
     },
   });
 
   useEffect(() => {
     if (!open) {
       if (notification) {
-        // edit mode → restore original values
+        // edit mode
+
         form.reset({
           title: notification.title ?? null,
           message: notification.message,
           type: notification.type,
-          batch_id: notification.batch_id ?? null,
+          batch_id: notification.batch_id ?? "",
         });
       } else {
-        // create mode → clear form
+        // create mode
+
         form.reset({
           title: null,
           message: "",
           type: "announcement",
-          batch_id: null,
+          batch_id: "",
         });
       }
     }
@@ -101,19 +115,29 @@ export function NotificationDialog({ notification }: Props) {
 
   async function onSubmit(values: NotificationFormValues) {
     try {
+      const payload = {
+        ...values,
+
+        // convert UI state → DB state
+        batch_id: values.batch_id === "all" ? null : values.batch_id || null,
+      };
+
       if (notification) {
-        await updateNotification(notification.id, values);
+        await updateNotification(notification.id, payload);
       } else {
-        await createNotification(values);
+        await createNotification(payload);
       }
+
       await queryClient.invalidateQueries({
         queryKey: ["admin-notifications"],
       });
+
       toast.success(
         notification ? "Notification updated" : "Notification created",
       );
 
       setOpen(false);
+
       form.reset();
     } catch {
       toast.error("Failed to save notification");
@@ -160,6 +184,7 @@ export function NotificationDialog({ notification }: Props) {
 
           <div className="space-y-2">
             <Label>Type</Label>
+
             <Controller
               control={form.control}
               name="type"
@@ -186,7 +211,7 @@ export function NotificationDialog({ notification }: Props) {
             />
           </div>
 
-          {/* Batch */}
+          {/* Target */}
 
           <div className="space-y-2">
             <Label>Target</Label>
@@ -195,24 +220,33 @@ export function NotificationDialog({ notification }: Props) {
               control={form.control}
               name="batch_id"
               render={({ field }) => (
-                <Select
-                  value={field.value ?? "all"}
-                  onValueChange={(value: string) =>
-                    field.onChange(value === "all" ? null : value)
-                  }
-                >
+                <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="All students or batch" />
+                    <SelectValue placeholder="Select notification target" />
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="all">All Students</SelectItem>
+                    <SelectGroup>
+                      <SelectLabel>Send To Everyone</SelectLabel>
 
-                    {batches.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>
-                        {b.title}
-                      </SelectItem>
-                    ))}
+                      <SelectItem value="all">All Students</SelectItem>
+                    </SelectGroup>
+
+                    {batches.length > 0 && (
+                      <>
+                        <SelectSeparator />
+
+                        <SelectGroup>
+                          <SelectLabel>Send To Batch</SelectLabel>
+
+                          {batches.map((b) => (
+                            <SelectItem key={b.id} value={b.id}>
+                              {b.title}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               )}

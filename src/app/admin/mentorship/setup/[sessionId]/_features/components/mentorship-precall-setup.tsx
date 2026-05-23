@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useRouter } from "next/navigation";
-
 import {
   Camera,
   CameraOff,
@@ -32,6 +30,7 @@ import {
 } from "@/src/components/ui/select";
 
 import { Switch } from "@/src/components/ui/switch";
+import { useRouter } from "nextjs-toploader/app";
 
 interface MentorshipPrecallSetupProps {
   joinHref: string;

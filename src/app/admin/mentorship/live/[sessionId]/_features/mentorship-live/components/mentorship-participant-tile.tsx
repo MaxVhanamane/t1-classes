@@ -63,10 +63,7 @@ export function MentorshipParticipantTile({
 
   const [isVideoLoading, setIsVideoLoading] = useState(true);
 
-  const internalQuality = useParticipantQuality(participantId);
-
-  const participantQuality = localParticipantQuality ?? internalQuality;
-  const appliedQualityRef = useRef<"high" | "med" | "low" | null>(null);
+  const participantQuality = localParticipantQuality;
   const {
     displayName,
     webcamStream,
@@ -246,45 +243,45 @@ ${screenShareOn ? "object-contain bg-black" : "object-cover"}
         </div>
       )}
 
-      {/* Network Quality */}
-      <div
-        className={`
-          absolute left-3 z-20
-          ${screenShareOn ? "top-14" : "top-3"}
-        `}
-      >
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className="
-                flex items-center gap-1 rounded-full
-                border border-white/10
-                bg-black/45 px-2 py-1.5
-                backdrop-blur-md
-                transition hover:bg-black/60
-              "
-            >
-              <Wifi
-                className={`
-                  size-3.5 shrink-0
+      {/* Local Network Quality */}
+      {isLocal && participantQuality && (
+        <div
+          className={`
+        absolute left-3 z-20
+        ${screenShareOn ? "top-14" : "top-3"}
+      `}
+        >
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className="
+              flex items-center gap-1 rounded-full
+              border border-white/10
+              bg-black/45 px-2 py-1.5
+              backdrop-blur-md
+              transition hover:bg-black/60
+            "
+              >
+                <Wifi
+                  className={`
+                size-3.5 shrink-0
 
-                  ${
-                    participantQuality.quality === "good"
-                      ? "text-emerald-400"
-                      : participantQuality.quality === "weak"
-                        ? "text-amber-400"
-                        : participantQuality.quality === "poor"
-                          ? "text-red-400"
-                          : "animate-pulse text-blue-400"
-                  }
-                `}
-              />
+                ${
+                  participantQuality.quality === "good"
+                    ? "text-emerald-400"
+                    : participantQuality.quality === "weak"
+                      ? "text-amber-400"
+                      : participantQuality.quality === "poor"
+                        ? "text-red-400"
+                        : "animate-pulse text-blue-400"
+                }
+              `}
+                />
 
-              {isLocal && <ChevronDown className="size-3 text-white/70" />}
-            </button>
-          </PopoverTrigger>
+                <ChevronDown className="size-3 text-white/70" />
+              </button>
+            </PopoverTrigger>
 
-          {isLocal && (
             <PopoverContent
               side="bottom"
               align="start"
@@ -295,9 +292,9 @@ ${screenShareOn ? "object-contain bg-black" : "object-cover"}
                 videoEnabled={webcamOn || screenShareOn}
               />
             </PopoverContent>
-          )}
-        </Popover>
-      </div>
+          </Popover>
+        </div>
+      )}
 
       {/* Moderator Actions */}
       {isModerator && !isLocal && (
