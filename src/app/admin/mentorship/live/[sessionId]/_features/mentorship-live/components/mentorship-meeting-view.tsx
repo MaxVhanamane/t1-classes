@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
-import { usePubSub } from "@videosdk.live/react-sdk";
+import { createCameraVideoTrack, usePubSub } from "@videosdk.live/react-sdk";
 import { useMeeting } from "@videosdk.live/react-sdk";
 import {
   Loader2,
@@ -75,7 +75,6 @@ interface MentorshipMeetingViewProps {
   leaveRedirectHref: string;
 
   sessionId: string;
-  customCameraVideoTrack: MediaStream;
 }
 
 export function MentorshipMeetingView({
@@ -84,7 +83,6 @@ export function MentorshipMeetingView({
   sessionId,
   endsAt,
   isSessionOwner,
-  customCameraVideoTrack,
 }: MentorshipMeetingViewProps) {
   const router = useRouter();
 
@@ -163,9 +161,22 @@ export function MentorshipMeetingView({
   const handleToggleWebcam = async () => {
     if (localWebcamOn) {
       toggleWebcam(); // turning off, no track needed
-    } else {
-      //  turning on — always pass the custom track
-      toggleWebcam(customCameraVideoTrack);
+      return;
+    }
+
+    // turning on — always create a fresh track, never reuse
+    try {
+      const freshTrack = await createCameraVideoTrack({
+        encoderConfig: "h540p_w960p",
+        optimizationMode: "motion",
+        multiStream: false,
+        bitrateMode: "high_quality",
+      });
+
+      toggleWebcam(freshTrack);
+    } catch (error) {
+      console.error("[TOGGLE_WEBCAM_ERROR]", error);
+      toast.error("Failed to start camera");
     }
   };
 
@@ -504,6 +515,11 @@ export function MentorshipMeetingView({
       .map((participant) => participant!.id);
   }, [localParticipant, participants]);
 
+  const handleCountdownExpire = useCallback(() => {
+    if (!isSessionOwner) return;
+    void performMeetingEnd();
+  }, [isSessionOwner, performMeetingEnd]);
+
   const isConnecting = !hasJoined && participantIds.length === 0;
 
   const isWaitingForOthers = hasJoined && participantIds.length <= 1;
@@ -549,13 +565,7 @@ export function MentorshipMeetingView({
             <div className="hidden items-center gap-2 sm:flex">
               <MeetingCountdown
                 endsAt={endsAt}
-                onExpire={() => {
-                  if (!isSessionOwner) {
-                    return;
-                  }
-
-                  void performMeetingEnd();
-                }}
+                onExpire={isSessionOwner ? handleCountdownExpire : undefined}
               />
 
               {isSessionOwner && (

@@ -5,8 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 interface MeetingCountdownProps {
   endsAt: string;
-
-  onExpire: () => void;
+  onExpire?: () => void; // optional
 }
 
 export function MeetingCountdown({ endsAt, onExpire }: MeetingCountdownProps) {
@@ -27,11 +26,9 @@ export function MeetingCountdown({ endsAt, onExpire }: MeetingCountdownProps) {
       const diff = Math.max(0, Math.floor((endTime - now) / 1000));
 
       setRemainingSeconds(diff);
-
       if (diff === 0 && !hasExpiredRef.current) {
         hasExpiredRef.current = true;
-
-        onExpire();
+        onExpire?.(); // only calls if provided
       }
     };
 

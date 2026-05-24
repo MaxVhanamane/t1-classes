@@ -186,7 +186,7 @@ export function MentorshipParticipantTile({
     <Card
       ref={containerRef}
       className={cn(
-        "group relative overflow-hidden rounded-xl border bg-black p-0 aspect-4/3 w-full",
+        "group relative overflow-hidden rounded-xl border bg-black p-0 aspect-video w-full",
         screenShareOn && "col-span-full row-span-2",
       )}
     >

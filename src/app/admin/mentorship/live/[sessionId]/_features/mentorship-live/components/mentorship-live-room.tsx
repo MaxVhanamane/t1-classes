@@ -95,7 +95,7 @@ export function MentorshipLiveRoom({
     const createTrack = async () => {
       try {
         const track = await createCameraVideoTrack({
-          encoderConfig: "h540p_w720p",
+          encoderConfig: "h540p_w960p",
 
           optimizationMode: "motion",
 
@@ -145,7 +145,6 @@ export function MentorshipLiveRoom({
         sessionId={sessionId}
         endsAt={endsAt}
         isSessionOwner={isSessionOwner}
-        customCameraVideoTrack={customCameraVideoTrack}
       />
     </MeetingProvider>
   );
