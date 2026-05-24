@@ -135,6 +135,7 @@ export function MentorshipLiveRoom({
         debugMode: false,
 
         customCameraVideoTrack,
+        multiStream: false,
       }}
       token={token}
     >
@@ -144,6 +145,7 @@ export function MentorshipLiveRoom({
         sessionId={sessionId}
         endsAt={endsAt}
         isSessionOwner={isSessionOwner}
+        customCameraVideoTrack={customCameraVideoTrack}
       />
     </MeetingProvider>
   );

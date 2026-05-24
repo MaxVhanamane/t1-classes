@@ -22,7 +22,7 @@ export default function AdminShell({
       )}
 
       {/* Sidebar */}
-      <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {/* <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} /> */}
 
       {/* Main */}
       <div className="flex flex-1 flex-col overflow-auto">

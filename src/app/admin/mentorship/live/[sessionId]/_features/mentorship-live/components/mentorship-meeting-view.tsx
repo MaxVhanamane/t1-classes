@@ -58,6 +58,7 @@ import { MeetingCountdown } from "./meeting-countdown";
 import { MentorshipMeetingChat } from "./mentorship-meeting-chat";
 import { MeetingConnectionBadge } from "./meeting-connection-badge";
 import { useParticipantQuality } from "../../../hoooks/use-participant-quality";
+import { cn } from "@/src/lib/utils";
 
 type MeetingExitReason =
   | "manual_leave"
@@ -74,6 +75,7 @@ interface MentorshipMeetingViewProps {
   leaveRedirectHref: string;
 
   sessionId: string;
+  customCameraVideoTrack: MediaStream;
 }
 
 export function MentorshipMeetingView({
@@ -82,6 +84,7 @@ export function MentorshipMeetingView({
   sessionId,
   endsAt,
   isSessionOwner,
+  customCameraVideoTrack,
 }: MentorshipMeetingViewProps) {
   const router = useRouter();
 
@@ -156,6 +159,15 @@ export function MentorshipMeetingView({
       console.error("[MEETING_ERROR]", error);
     },
   });
+
+  const handleToggleWebcam = async () => {
+    if (localWebcamOn) {
+      toggleWebcam(); // turning off, no track needed
+    } else {
+      //  turning on — always pass the custom track
+      toggleWebcam(customCameraVideoTrack);
+    }
+  };
 
   const { publish: publishRaiseHand } = usePubSub("RAISE_HAND", {
     onMessageReceived(message) {
@@ -668,21 +680,19 @@ export function MentorshipMeetingView({
           >
             {/* Grid */}
             <div
-              className={`
-        grid w-full max-w-450 gap-3
-        auto-rows-max
-        ${
-          participantIds.length === 1
-            ? "max-w-6xl grid-cols-1"
-            : participantIds.length === 2
-              ? "grid-cols-1 md:grid-cols-2"
-              : participantIds.length <= 4
-                ? "grid-cols-2"
-                : participantIds.length <= 9
-                  ? "grid-cols-2 md:grid-cols-3"
-                  : "grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-        }
-      `}
+              className={cn(
+                "grid w-full gap-3 auto-rows-max max-w-450",
+                participantIds.length === 1 && "max-w-3xl",
+                participantIds.length === 2 && "grid-cols-1 md:grid-cols-2",
+                participantIds.length <= 4 &&
+                  participantIds.length > 2 &&
+                  "grid-cols-2",
+                participantIds.length <= 9 &&
+                  participantIds.length > 4 &&
+                  "grid-cols-2 md:grid-cols-3",
+                participantIds.length > 9 &&
+                  "grid-cols-2 md:grid-cols-3 xl:grid-cols-4",
+              )}
             >
               {participantIds.map((participantId) => (
                 <MentorshipParticipantTile
@@ -789,7 +799,7 @@ export function MentorshipMeetingView({
                 variant={localWebcamOn ? "outline" : "secondary"}
                 size="icon"
                 className="size-11 rounded-r-none border-r-0 shadow-sm transition active:scale-95 sm:size-14"
-                onClick={() => toggleWebcam()}
+                onClick={handleToggleWebcam}
               >
                 {localWebcamOn ? (
                   <Video className="size-4 sm:size-5" />

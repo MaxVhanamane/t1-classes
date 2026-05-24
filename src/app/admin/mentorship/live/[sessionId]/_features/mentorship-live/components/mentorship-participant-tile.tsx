@@ -35,10 +35,8 @@ import { Card } from "@/src/components/ui/card";
 
 import { Button } from "@/src/components/ui/button";
 
-import {
-  useParticipantQuality,
-  type ParticipantQualityState,
-} from "../../../hoooks/use-participant-quality";
+import { type ParticipantQualityState } from "../../../hoooks/use-participant-quality";
+import { cn } from "@/src/lib/utils";
 
 interface MentorshipParticipantTileProps {
   participantId: string;
@@ -187,11 +185,10 @@ export function MentorshipParticipantTile({
   return (
     <Card
       ref={containerRef}
-      className={`
-        group relative overflow-hidden rounded-xl border bg-black p-0
-        aspect-video w-full
-        ${screenShareOn ? "col-span-full row-span-2" : ""}
-      `}
+      className={cn(
+        "group relative overflow-hidden rounded-xl border bg-black p-0 aspect-4/3 w-full",
+        screenShareOn && "col-span-full row-span-2",
+      )}
     >
       {/* Video Layer */}
       <div className="absolute inset-0">
@@ -214,7 +211,7 @@ export function MentorshipParticipantTile({
               className={`
     h-full w-full transition-opacity duration-300
 
-${screenShareOn ? "object-contain bg-black" : "object-cover"}
+${screenShareOn ? "object-contain bg-black" : "object-cover object-top"}
   `}
             />
 
