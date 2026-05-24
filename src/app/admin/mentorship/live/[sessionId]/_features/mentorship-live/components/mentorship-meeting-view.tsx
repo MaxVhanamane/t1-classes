@@ -233,42 +233,48 @@ export function MentorshipMeetingView({
   );
 
   const performMeetingEnd = useCallback(async () => {
-    if (isEndingMeetingRef.current) {
-      return false;
-    }
+    if (isEndingMeetingRef.current) return false;
 
     isEndingMeetingRef.current = true;
-
     setIsEndingMeeting(true);
 
-    const response = await callServerAction(
-      endMentorshipSession({
-        sessionId,
-      }),
-    );
+    try {
+      const response = await Promise.race([
+        callServerAction(endMentorshipSession({ sessionId })),
+        new Promise<{ data: null; error: string }>((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                data: null,
+                error: "Request timed out, please try again",
+              }),
+            10000, // 10 seconds then reset
+          ),
+        ),
+      ]);
 
-    if (response.error) {
-      isEndingMeetingRef.current = false;
+      if (response.error) {
+        toast.error(response.error);
+        return false;
+      }
 
-      setIsEndingMeeting(false);
+      setMeetingExitReason("meeting_ended");
 
-      toast.error(response.error || "Failed to end meeting");
-
-      return false;
-    }
-    setMeetingExitReason("meeting_ended");
-    setIsEndingMeeting(false);
-    await publishMeetingEnded(
-      JSON.stringify({
-        type: "MEETING_ENDED",
-      }),
-      {
+      await publishMeetingEnded(JSON.stringify({ type: "MEETING_ENDED" }), {
         persist: false,
-      },
-    );
-    end();
+      });
 
-    return true;
+      end();
+      return true;
+    } catch (error) {
+      console.error("[END_MEETING_ERROR]", error);
+      toast.error("Something went wrong. Please try again.");
+      return false;
+    } finally {
+      // Always runs — resets button state no matter what
+      isEndingMeetingRef.current = false;
+      setIsEndingMeeting(false);
+    }
   }, [end, sessionId, publishMeetingEnded]);
 
   const handleManualEndMeeting = useCallback(async () => {

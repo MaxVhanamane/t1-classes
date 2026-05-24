@@ -22,7 +22,7 @@ export default async function MentorshipSessionsPage() {
   const isAdmin = auth?.role === "admin";
 
   return (
-    <div className="space-y-6 sm:p-4 lg:p-6">
+    <div className="space-y-6 p-4 md:p-6">
       <MentorshipPageHeader
         isAdmin={isAdmin}
         mentorshipSessionsEnabled={mentorshipSessionsEnabled}
