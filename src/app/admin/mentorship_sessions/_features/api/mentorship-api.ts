@@ -28,20 +28,6 @@ export async function getMentorshipSessions({
     return response.json();
 }
 
-export async function getMentorshipQuota() {
-    const response = await fetch(
-        "/api/admin/mentorship-sessions/quota",
-    );
-
-    if (!response.ok) {
-        throw new Error(
-            "Failed to fetch mentorship quota",
-        );
-    }
-
-    return response.json();
-}
-
 
 export async function getMentorshipSessionStudents(
     sessionId: string,

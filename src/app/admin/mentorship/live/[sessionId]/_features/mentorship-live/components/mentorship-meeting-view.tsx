@@ -167,7 +167,7 @@ export function MentorshipMeetingView({
     // turning on — always create a fresh track, never reuse
     try {
       const freshTrack = await createCameraVideoTrack({
-        encoderConfig: "h540p_w960p",
+        encoderConfig: "h540p_w720p",
         optimizationMode: "motion",
         multiStream: false,
         bitrateMode: "high_quality",
@@ -244,12 +244,14 @@ export function MentorshipMeetingView({
   );
 
   const performMeetingEnd = useCallback(async () => {
+    console.log("performMeetingEnd called");
     if (isEndingMeetingRef.current) return false;
 
     isEndingMeetingRef.current = true;
     setIsEndingMeeting(true);
 
     try {
+      console.log("endMentorshipSession called");
       const response = await Promise.race([
         callServerAction(endMentorshipSession({ sessionId })),
         new Promise<{ data: null; error: string }>((resolve) =>
@@ -516,7 +518,9 @@ export function MentorshipMeetingView({
   }, [localParticipant, participants]);
 
   const handleCountdownExpire = useCallback(() => {
+    console.log("handleCountdownExpire called");
     if (!isSessionOwner) return;
+    console.log("isSessionOwner is true so calling performMeetingEnd ");
     void performMeetingEnd();
   }, [isSessionOwner, performMeetingEnd]);
 
@@ -698,7 +702,7 @@ export function MentorshipMeetingView({
             <div
               className={cn(
                 "grid w-full gap-3 auto-rows-max max-w-450",
-                participantIds.length === 1 && "max-w-3xl",
+                participantIds.length === 1 && "max-w-xl",
                 participantIds.length === 2 && "grid-cols-1 md:grid-cols-2",
                 participantIds.length <= 4 &&
                   participantIds.length > 2 &&

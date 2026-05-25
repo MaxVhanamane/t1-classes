@@ -73,24 +73,10 @@ export async function endMentorshipSession(
             };
         }
 
-        /* ---------- Already Ended ---------- */
-
-        const nowDate =
-            new Date();
-
-        if (
-            nowDate >
-            new Date(
-                session.ends_at,
-            )
-        ) {
-            return {
-                error:
-                    "Meeting already ended",
-            };
-        }
 
         /* ---------- End Session ---------- */
+        const nowDate =
+            new Date();
 
         const now =
             nowDate.toISOString();

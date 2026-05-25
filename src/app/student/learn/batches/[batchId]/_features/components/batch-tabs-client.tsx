@@ -5,16 +5,27 @@ import { useState } from "react";
 import { Button } from "@/src/components/ui/button";
 
 import { CourseCard } from "./batch-course-card";
+
 import BatchTestsPanel from "./batch-tests-panel";
 
-import { BatchDetailsResponse } from "@/src/types/batches.types";
 import BatchLiveClassesPanel from "./batch-live-classes-panel";
+
 import BatchMentorshipSessionsPanel from "./batch-mentorship-sessions-panel";
 
-type TabKey = "courses" | "tests" | "live-classes" | "mentorship";
+import BatchGroupSessionsPanel from "./batch-group-sessions-panel";
+
+import { BatchDetailsResponse } from "@/src/types/batches.types";
+
+type TabKey =
+  | "courses"
+  | "tests"
+  | "live-classes"
+  | "mentorship"
+  | "group-sessions";
 
 type Props = {
   batchId: string;
+
   courses: BatchDetailsResponse["courses"];
 };
 
@@ -24,7 +35,9 @@ function TabButton({
   onClick,
 }: {
   active: boolean;
+
   label: string;
+
   onClick: () => void;
 }) {
   return (
@@ -71,10 +84,17 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
             active={activeTab === "live-classes"}
             onClick={() => setActiveTab("live-classes")}
           />
+
           <TabButton
             label="Mentorship"
             active={activeTab === "mentorship"}
             onClick={() => setActiveTab("mentorship")}
+          />
+
+          <TabButton
+            label="Group Sessions"
+            active={activeTab === "group-sessions"}
+            onClick={() => setActiveTab("group-sessions")}
           />
         </div>
       </div>
@@ -102,6 +122,12 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
       {activeTab === "mentorship" && (
         <section>
           <BatchMentorshipSessionsPanel batchId={batchId} />
+        </section>
+      )}
+
+      {activeTab === "group-sessions" && (
+        <section>
+          <BatchGroupSessionsPanel batchId={batchId} />
         </section>
       )}
     </>

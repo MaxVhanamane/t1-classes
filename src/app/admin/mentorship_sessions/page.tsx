@@ -32,3 +32,20 @@ export default async function MentorshipSessionsPage() {
     </div>
   );
 }
+
+// <div className="overflow-hidden rounded-xl border bg-card">
+//   <div className="flex items-center gap-2 border-b px-4 py-3">
+//     <span className="text-sm font-medium">Mentorship session</span>
+//     <span className="ml-auto text-xs text-muted-foreground">
+//       Powered by Zoom
+//     </span>
+//   </div>
+//   <div className="relative w-full" style={{ height: "600px" }}>
+//     <iframe
+//       src="https://zoom.us/wc/join/85329765861?pwd=SGV8akFynM2HzS0EGgSwv4PLT8QXTy.1"
+//       allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+//       allowFullScreen
+//       className="absolute inset-0 h-full w-full border-none"
+//     />
+//   </div>
+// </div>

@@ -14,7 +14,8 @@ import {
   Bell,
   Video,
   UserCheck,
-  MessagesSquare,
+  MonitorPlay,
+  Handshake,
 } from "lucide-react";
 import { Button } from "../button";
 
@@ -29,8 +30,14 @@ const navItems = [
   {
     label: "Mentorship Sessions",
     href: "/admin/mentorship_sessions",
-    icon: MessagesSquare,
+    icon: Handshake,
   },
+  {
+    label: "Group Sessions",
+    href: "/admin/group-sessions",
+    icon: MonitorPlay,
+  },
+
   { label: "Instructors", href: "/admin/instructors", icon: UserCheck },
   { label: "Notifications", href: "/admin/notifications", icon: Bell },
 ];

@@ -7,9 +7,7 @@
 @import "./rich-content.css";
 
 @layer utilities {
-  .scrollbar-gutter-stable {
-    scrollbar-gutter: stable;
-  }
+
 
   /* ── Table styles — work with both rich-content and prose variants ── */
   .tiptap-table {
