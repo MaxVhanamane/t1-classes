@@ -169,7 +169,16 @@ export default async function GroupSessionLivePage({
             </div>
 
             <div className="border-t bg-muted/20 px-4 py-2 text-center text-[11px] text-muted-foreground sm:text-xs">
-              If the meeting does not load correctly, try refreshing the page.
+              If the session does not load correctly,&nbsp;
+              <a
+                href={access.externalJoinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary underline underline-offset-4 transition-opacity hover:opacity-80"
+              >
+                open it in Zoom
+              </a>
+              .
             </div>
           </div>
         </div>

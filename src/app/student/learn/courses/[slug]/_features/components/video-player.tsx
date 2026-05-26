@@ -5,21 +5,13 @@ import {
 } from "@/src/components/ui/collapsible";
 import { extractVimeoId } from "../helper-functions/video";
 import { CourseUnitContent } from "../types/course-unit-content";
-import { ChevronDown, Maximize, Minimize } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/src/lib/utils";
 
 type Props = {
   unit: CourseUnitContent;
   onIframeLoad: () => void;
-};
-
-type FullscreenElement = HTMLDivElement & {
-  webkitRequestFullscreen?: () => Promise<void>;
-};
-
-type FullscreenOrientation = ScreenOrientation & {
-  lock?: (orientation: "portrait" | "landscape") => Promise<void>;
 };
 
 function getYouTubeEmbedUrl(url?: string | null): string {
@@ -33,7 +25,7 @@ function getYouTubeEmbedUrl(url?: string | null): string {
   }
 
   return videoId
-    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&controls=1&fs=0&iv_load_policy=3`
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&controls=1&fs=1&iv_load_policy=3&modestbranding=1`
     : "";
 }
 
@@ -52,10 +44,6 @@ export function VideoPlayer({ unit, onIframeLoad }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const hasDescription = Boolean(unit.description);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const [showControls, setShowControls] = useState(true);
-  const hideTimeoutRef = useRef<number | null>(null);
 
   const [overlayRightOffset, setOverlayRightOffset] = useState(158);
   useEffect(() => {
@@ -104,60 +92,15 @@ export function VideoPlayer({ unit, onIframeLoad }: Props) {
     };
   }, []);
 
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
-  }, []);
-
-  const handleFullscreen = async (): Promise<void> => {
-    const el = containerRef.current as FullscreenElement | null;
-    if (!el) return;
-
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else {
-        if (el.requestFullscreen) {
-          await el.requestFullscreen();
-        } else if (el.webkitRequestFullscreen) {
-          await el.webkitRequestFullscreen();
-        }
-
-        const orientation = screen.orientation as FullscreenOrientation;
-        if (orientation?.lock) {
-          await orientation.lock("landscape");
-        }
-      }
-    } catch {}
-  };
-
   const preventAction = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-  };
-
-  const handleInteraction = () => {
-    setShowControls(true);
-
-    if (hideTimeoutRef.current) {
-      window.clearTimeout(hideTimeoutRef.current);
-    }
-
-    const delay = window.innerWidth < 768 ? 4000 : 2000;
-
-    hideTimeoutRef.current = window.setTimeout(() => {
-      setShowControls(false);
-    }, delay);
   };
 
   return (
     <div className="flex h-full flex-col">
       <div
         ref={containerRef}
-        onMouseMove={handleInteraction}
-        onTouchStart={handleInteraction}
-        onTouchEnd={handleInteraction}
         className="relative aspect-video w-full bg-muted lg:rounded-xl overflow-hidden"
       >
         <iframe
@@ -165,7 +108,7 @@ export function VideoPlayer({ unit, onIframeLoad }: Props) {
           sandbox="allow-scripts allow-same-origin"
           src={getEmbedUrl(unit)}
           className="absolute inset-0 h-full w-full lg:rounded-xl"
-          allow="autoplay; fullscreen; picture-in-picture"
+          allow="accelerometer; encrypted-media; autoplay; fullscreen; picture-in-picture"
           allowFullScreen
         />
 
@@ -184,7 +127,7 @@ export function VideoPlayer({ unit, onIframeLoad }: Props) {
           onContextMenu={preventAction}
         />
 
-        <button
+        {/* <button
           onClick={handleFullscreen}
           className={cn(
             "absolute bottom-14 min-[392px]:bottom-20 sm:bottom-20 right-3 sm:right-6 z-20 flex items-center justify-center rounded bg-black/60 p-2 text-white transition-opacity duration-300",
@@ -192,7 +135,7 @@ export function VideoPlayer({ unit, onIframeLoad }: Props) {
           )}
         >
           {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
-        </button>
+        </button> */}
       </div>
 
       <div className="my-3 gap-3 px-4 lg:pr-4 lg:pl-0">

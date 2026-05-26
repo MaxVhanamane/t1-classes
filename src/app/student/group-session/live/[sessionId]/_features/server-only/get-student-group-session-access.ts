@@ -29,7 +29,7 @@ type StudentGroupSessionAccessResult =
         status: "allowed";
 
         joinUrl: string;
-
+        externalJoinUrl: string;
         session: {
             id: string;
 
@@ -210,11 +210,16 @@ export const getStudentGroupSessionAccess =
                 ? `&pwd=${session.meeting_pwd}`
                 : ""
                 }`;
-
+            const externalJoinUrl =
+                `https://zoom.us/j/${session.meeting_id}${session.meeting_pwd
+                    ? `?pwd=${session.meeting_pwd}`
+                    : ""
+                }`;
             return {
                 status: "allowed",
 
                 joinUrl,
+                externalJoinUrl,
 
                 session,
             };
