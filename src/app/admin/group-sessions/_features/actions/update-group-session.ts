@@ -12,13 +12,18 @@ import {
 type UpdateGroupSessionInput =
   CreateGroupSessionSchema & {
     meeting_id: string | null;
+
     meeting_pwd: string | null;
+
+    meeting_passcode: string | null;
   };
 
 export async function updateGroupSession(
   sessionId: string,
   input: unknown,
-): Promise<ServerActionResponse<void>> {
+): Promise<
+  ServerActionResponse<void>
+> {
   /* ---------- Auth ---------- */
 
   const staff =
@@ -74,7 +79,7 @@ export async function updateGroupSession(
     const {
       data: existingSession,
       error:
-        existingSessionError,
+      existingSessionError,
     } = await query.single();
 
     if (
@@ -103,7 +108,7 @@ export async function updateGroupSession(
 
     const {
       error:
-        updateSessionError,
+      updateSessionError,
     } = await supabase
       .from("group_sessions")
       .update({
@@ -128,6 +133,9 @@ export async function updateGroupSession(
 
         meeting_pwd:
           values.meeting_pwd,
+
+        meeting_passcode:
+          values.meeting_passcode,
       })
       .eq("id", sessionId);
 
@@ -149,7 +157,7 @@ export async function updateGroupSession(
 
     const {
       error:
-        deleteStudentsError,
+      deleteStudentsError,
     } = await supabase
       .from(
         "group_session_students",
@@ -178,13 +186,13 @@ export async function updateGroupSession(
 
     if (
       values.audience_type ===
-        "selected_students" &&
+      "selected_students" &&
       values.student_ids
         .length > 0
     ) {
       const {
         error:
-          insertStudentsError,
+        insertStudentsError,
       } = await supabase
         .from(
           "group_session_students",

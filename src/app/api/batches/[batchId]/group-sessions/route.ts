@@ -16,7 +16,7 @@ type GroupSessionRpcRow = {
     | "selected_students";
 
     meeting_id: string | null;
-
+    meeting_passcode: string | null;
     starts_at: string;
 
     expected_duration_minutes: number | null;
@@ -152,12 +152,14 @@ export async function GET(
                 audienceType:
                     row.audience_type,
 
+
                 teacherName:
                     row.teacher_name,
 
                 meetingId:
                     row.meeting_id,
-
+                meetingPasscode:
+                    row.meeting_passcode,
                 status:
                     row.status,
 

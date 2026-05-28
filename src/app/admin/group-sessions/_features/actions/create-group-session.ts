@@ -12,26 +12,35 @@ import {
 type CreateGroupSessionInput =
     CreateGroupSessionSchema & {
         meeting_id: string | null;
+
         meeting_pwd: string | null;
+
+        meeting_passcode: string | null;
     };
 
 export async function createGroupSession(
     input: unknown,
-): Promise<ServerActionResponse<string>> {
+): Promise<
+    ServerActionResponse<string>
+> {
     /* ---------- Auth ---------- */
 
-    const staff = await requireStaffServerOnly();
+    const staff =
+        await requireStaffServerOnly();
 
     try {
         /* ---------- Validate ---------- */
 
         const parsed =
-            createGroupSessionSchema.safeParse(input);
+            createGroupSessionSchema.safeParse(
+                input,
+            );
 
         if (!parsed.success) {
             return {
                 error:
-                    parsed.error.issues[0]?.message ??
+                    parsed.error.issues[0]
+                        ?.message ??
                     "Invalid session data",
             };
         }
@@ -57,7 +66,8 @@ export async function createGroupSession(
                 description:
                     values.description || null,
 
-                batch_id: values.batch_id,
+                batch_id:
+                    values.batch_id,
 
                 audience_type:
                     values.audience_type,
@@ -73,6 +83,9 @@ export async function createGroupSession(
 
                 meeting_pwd:
                     values.meeting_pwd,
+
+                meeting_passcode:
+                    values.meeting_passcode,
 
                 created_by:
                     staff.userId,
@@ -105,12 +118,17 @@ export async function createGroupSession(
             const {
                 error: studentsError,
             } = await supabase
-                .from("group_session_students")
+                .from(
+                    "group_session_students",
+                )
                 .insert(
                     values.student_ids.map(
                         (studentId) => ({
-                            session_id: session.id,
-                            student_id: studentId,
+                            session_id:
+                                session.id,
+
+                            student_id:
+                                studentId,
                         }),
                     ),
                 );

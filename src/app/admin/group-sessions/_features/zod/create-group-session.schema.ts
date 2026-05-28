@@ -7,18 +7,12 @@ export const createGroupSessionSchema =
                 .string()
                 .trim()
                 .min(3, "Title is required")
-                .max(
-                    120,
-                    "Title is too long",
-                ),
+                .max(120, "Title is too long"),
 
             description: z
                 .string()
                 .trim()
-                .max(
-                    1000,
-                    "Description is too long",
-                )
+                .max(1000, "Description is too long")
                 .optional(),
 
             batch_id: z.uuid({
@@ -34,18 +28,17 @@ export const createGroupSessionSchema =
                 z.uuid(),
             ),
 
-            expected_duration_minutes:
-                z
-                    .number()
-                    .min(
-                        5,
-                        "Duration must be at least 5 minutes",
-                    )
-                    .max(
-                        300,
-                        "Duration is too long",
-                    )
-                    .nullable(),
+            expected_duration_minutes: z
+                .number()
+                .min(
+                    5,
+                    "Duration must be at least 5 minutes",
+                )
+                .max(
+                    300,
+                    "Duration is too long",
+                )
+                .nullable(),
 
             starts_at: z.date({
                 message:
@@ -53,20 +46,30 @@ export const createGroupSessionSchema =
             }),
 
             meeting_link: z
+
+                .url(
+                    "Enter a valid Zoom meeting link",
+                )
+                .optional()
+                .or(z.literal("")),
+
+            meeting_passcode: z
                 .string()
                 .trim()
-                .url(
-                    "Enter a valid meeting link",
+                .max(
+                    100,
+                    "Passcode is too long",
                 )
                 .optional()
                 .or(z.literal("")),
         })
 
         .superRefine((values, ctx) => {
-            /* ---------- Selected Students Validation ---------- */
+            /* ---------- Selected Students ---------- */
 
             if (
-                values.audience_type === "selected_students" &&
+                values.audience_type ===
+                "selected_students" &&
                 values.student_ids.length === 0
             ) {
                 ctx.addIssue({
@@ -74,22 +77,26 @@ export const createGroupSessionSchema =
 
                     path: ["student_ids"],
 
-                    message: "Select at least one student",
+                    message:
+                        "Select at least one student",
                 });
             }
 
-            /* ---------- Duration Validation ---------- */
+            /* ---------- Duration ---------- */
 
             if (
                 values.expected_duration_minutes &&
                 values.expected_duration_minutes > 40
             ) {
                 const totalParticipants =
-                    values.audience_type === "batch"
+                    values.audience_type ===
+                        "batch"
                         ? 999
-                        : values.student_ids.length + 1; // +1 for teacher
+                        : values.student_ids.length + 1;
 
-                if (totalParticipants >= 3) {
+                if (
+                    totalParticipants >= 3
+                ) {
                     ctx.addIssue({
                         code: "custom",
 
@@ -101,6 +108,46 @@ export const createGroupSessionSchema =
                             "Sessions with 3 or more participants can run for a maximum of 40 minutes.",
                     });
                 }
+            }
+
+            /* ---------- Meeting Fields ---------- */
+
+            const hasMeetingLink =
+                !!values.meeting_link;
+
+            const hasMeetingPasscode =
+                !!values.meeting_passcode;
+
+            if (
+                hasMeetingLink &&
+                !hasMeetingPasscode
+            ) {
+                ctx.addIssue({
+                    code: "custom",
+
+                    path: [
+                        "meeting_passcode",
+                    ],
+
+                    message:
+                        "Meeting passcode is required when a meeting link is added.",
+                });
+            }
+
+            if (
+                !hasMeetingLink &&
+                hasMeetingPasscode
+            ) {
+                ctx.addIssue({
+                    code: "custom",
+
+                    path: [
+                        "meeting_link",
+                    ],
+
+                    message:
+                        "Meeting link is required when a passcode is added.",
+                });
             }
         });
 

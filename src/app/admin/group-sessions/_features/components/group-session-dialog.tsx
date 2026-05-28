@@ -69,9 +69,7 @@ function extractMeetingData(link: string) {
   try {
     const parsed = new URL(link);
 
-    const pathParts = parsed.pathname.split("/");
-
-    const meetingId = pathParts[pathParts.indexOf("j") + 1];
+    const meetingId = parsed.pathname.match(/\/(?:j|wc\/join)\/(\d+)/)?.[1];
 
     const meetingPwd = parsed.searchParams.get("pwd");
 
@@ -114,6 +112,7 @@ export function GroupSessionDialog({
       expected_duration_minutes: 40,
 
       meeting_link: "",
+      meeting_passcode: "",
     },
   });
 
@@ -190,6 +189,7 @@ export function GroupSessionDialog({
         starts_at: undefined,
 
         meeting_link: "",
+        meeting_passcode: "",
       });
 
       return;
@@ -218,6 +218,7 @@ export function GroupSessionDialog({
         starts_at: new Date(session.starts_at),
 
         meeting_link: joinUrl,
+        meeting_passcode: session.meeting_passcode ?? "",
       });
     }
   }, [open, isEdit, session, form]);
@@ -240,6 +241,7 @@ export function GroupSessionDialog({
         meeting_id: extracted?.meeting_id ?? null,
 
         meeting_pwd: extracted?.meeting_pwd ?? null,
+        meeting_passcode: values.meeting_passcode?.trim() || null,
       };
 
       const toastId = toast.loading(
@@ -540,20 +542,20 @@ export function GroupSessionDialog({
                       type="number"
                       min={5}
                       max={300}
-                      placeholder="40"
+                      placeholder="60"
                       value={field.value ?? ""}
                       onChange={(e) => {
-                        field.onChange(
-                          e.target.value ? Number(e.target.value) : null,
-                        );
+                        const value = e.target.value;
+
+                        field.onChange(value === "" ? null : Number(value));
                       }}
                     />
                   </FormControl>
 
                   <p className="text-xs leading-relaxed text-muted-foreground">
                     Sessions with 3 or more participants may automatically end
-                    after 40 minutes. If needed, the teacher can restart the
-                    session using the same meeting link.
+                    after 40 minutes. If needed, The teacher may need to start a
+                    new meeting and ask participants to rejoin.
                   </p>
 
                   <FormMessage />
@@ -568,7 +570,7 @@ export function GroupSessionDialog({
               name="meeting_link"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Meeting Link (Optional)</FormLabel>
+                  <FormLabel>Meeting Link</FormLabel>
 
                   <FormControl>
                     <Input
@@ -577,16 +579,37 @@ export function GroupSessionDialog({
                     />
                   </FormControl>
 
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* ---------- Passcode ---------- */}
+            <FormField
+              control={form.control}
+              name="meeting_passcode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Meeting Passcode</FormLabel>
+
+                  <FormControl>
+                    <Input placeholder="6Jpwa3" {...field} />
+                  </FormControl>
+
+                  <p className="text-xs text-muted-foreground">
+                    Required as a fallback if Zoom asks students to enter the
+                    passcode manually.
+                  </p>
+
                   <div className="flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950 dark:text-sky-200">
                     <Info className="mt-0.5 size-4 shrink-0" />
 
                     <div className="space-y-1">
                       <p className="font-medium">
-                        Meeting links can be added later
+                        Meeting details can be added later
                       </p>
 
                       <p className="text-xs text-sky-700 dark:text-sky-300">
-                        Students will only be able to join at the scheduled
+                        Students will only be able to join after the scheduled
                         start time.
                       </p>
                     </div>
@@ -596,7 +619,6 @@ export function GroupSessionDialog({
                 </FormItem>
               )}
             />
-
             {/* ---------- Submit ---------- */}
 
             <div className="flex justify-end">

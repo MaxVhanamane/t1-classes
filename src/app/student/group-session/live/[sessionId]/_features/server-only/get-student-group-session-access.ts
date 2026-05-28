@@ -50,6 +50,7 @@ type StudentGroupSessionAccessResult =
             meeting_id: string | null;
 
             meeting_pwd: string | null;
+            meeting_passcode: string | null;
 
             expected_duration_minutes: number | null;
         };
@@ -89,6 +90,7 @@ export const getStudentGroupSessionAccess =
           created_by,
           meeting_id,
           meeting_pwd,
+          meeting_passcode,
           expected_duration_minutes
         `,
                 )
@@ -217,10 +219,8 @@ export const getStudentGroupSessionAccess =
                 }`;
             return {
                 status: "allowed",
-
                 joinUrl,
                 externalJoinUrl,
-
                 session,
             };
         },

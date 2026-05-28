@@ -23,6 +23,8 @@ export interface GroupSession {
 
     meeting_pwd: string | null;
 
+    meeting_passcode: string | null;
+
     created_by: string;
 
     created_at: string;

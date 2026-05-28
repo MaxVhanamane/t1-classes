@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { CalendarDays, Clock3, User2, Video } from "lucide-react";
+import { CalendarDays, Clock3, Copy, User2, Video } from "lucide-react";
 
 import { format } from "date-fns";
 
@@ -17,6 +17,8 @@ import { Link } from "@/src/components/ui/link";
 import DottedBackground from "@/src/components/dotted-background";
 
 import { Card, CardContent } from "@/src/components/ui/card";
+import { toast } from "sonner";
+import { Skeleton } from "@/src/components/ui/skeleton";
 
 interface StudentGroupSession {
   id: string;
@@ -34,6 +36,7 @@ interface StudentGroupSession {
   teacherName: string;
 
   meetingId: string | null;
+  meetingPasscode: string | null;
 
   status: "scheduled" | "live" | "ended" | "waiting_for_link";
 
@@ -96,6 +99,15 @@ function SessionStatusBadge({
 }
 
 function GroupSessionCard({ session }: { session: StudentGroupSession }) {
+  const copyPasscode = async () => {
+    if (!session.meetingPasscode) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(session.meetingPasscode);
+
+    toast.success("Passcode copied");
+  };
   return (
     <Card className="relative overflow-hidden rounded-3xl border bg-black p-5">
       <DottedBackground className="opacity-50" />
@@ -176,6 +188,37 @@ function GroupSessionCard({ session }: { session: StudentGroupSession }) {
           </div>
         </div>
 
+        {session.meetingPasscode && (
+          <div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-wide text-amber-500">
+                  Zoom Passcode
+                </p>
+
+                <p className="mt-2 text-lg font-semibold tracking-wider text-foreground">
+                  {session.meetingPasscode}
+                </p>
+
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  Use this only if Zoom asks you to enter a passcode while
+                  joining.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                size="icon"
+                variant="secondary"
+                className="shrink-0 rounded-xl"
+                onClick={copyPasscode}
+              >
+                <Copy className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* ---------- Footer ---------- */}
 
         <div className="mt-6">
@@ -244,13 +287,40 @@ export default function BatchGroupSessionsPanel({ batchId }: Props) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {Array.from({
-          length: 6,
-        }).map((_, index) => (
-          <div
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Card
             key={index}
-            className="h-72 animate-pulse rounded-3xl border bg-muted/40"
-          />
+            className="min-h-[430px] overflow-hidden rounded-3xl border bg-black p-5"
+          >
+            <CardContent className="flex h-full flex-col p-0">
+              <div className="space-y-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-3">
+                    <Skeleton className="h-7 w-[70%] rounded-xl" />
+                    <Skeleton className="h-4 w-32 rounded-lg" />
+                  </div>
+
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </div>
+
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full rounded-lg" />
+                  <Skeleton className="h-4 w-[75%] rounded-lg" />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Skeleton className="h-24 rounded-2xl" />
+                  <Skeleton className="h-24 rounded-2xl" />
+                </div>
+
+                <Skeleton className="h-28 rounded-2xl" />
+              </div>
+
+              <div className="mt-auto pt-6">
+                <Skeleton className="h-11 w-full rounded-2xl" />
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     );
