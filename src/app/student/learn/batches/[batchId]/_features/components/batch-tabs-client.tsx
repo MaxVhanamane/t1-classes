@@ -86,9 +86,7 @@ function TabButton({
 function TabSlide({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-w-0 flex-[0_0_100%] overflow-hidden bg-background">
-      <div className="px-0.5">
-        <div className="min-h-[80px]">{children}</div>
-      </div>
+      <div className="min-h-20 mb-6">{children}</div>
     </div>
   );
 }
@@ -102,7 +100,7 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
     axis: "x",
 
     // faster/snappier
-    duration: 0,
+    duration: 8,
 
     containScroll: "trimSnaps",
 
