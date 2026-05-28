@@ -87,7 +87,7 @@ function TabSlide({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-w-0 flex-[0_0_100%] overflow-hidden bg-background">
       <div className="px-0.5">
-        <div className="min-h-[200px]">{children}</div>
+        <div className="min-h-[80px]">{children}</div>
       </div>
     </div>
   );
@@ -96,47 +96,24 @@ function TabSlide({ children }: { children: React.ReactNode }) {
 export default function BatchTabsClient({ batchId, courses }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>("courses");
 
-  // mount only visited tabs
-  const [visitedTabs, setVisitedTabs] = useState<Set<TabKey>>(
-    () => new Set(["courses"]),
-  );
-
   const tabsContainerRef = useRef<HTMLDivElement>(null);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: "x",
 
-    // much snappier feel
-    duration: 15,
+    // faster/snappier
+    duration: 0,
 
-    // prevents empty trailing space
     containScroll: "trimSnaps",
 
-    // enables drag/swipe
     watchDrag: true,
 
-    // proper snap behavior
     dragFree: false,
 
-    // better feel for tabs UX
     skipSnaps: false,
   });
 
   const selectedIndex = tabs.findIndex((tab) => tab.key === activeTab);
-
-  const markTabAsVisited = useCallback((tabKey: TabKey) => {
-    setVisitedTabs((prev) => {
-      if (prev.has(tabKey)) {
-        return prev;
-      }
-
-      const next = new Set(prev);
-
-      next.add(tabKey);
-
-      return next;
-    });
-  }, []);
 
   const handleSelectTab = useCallback(
     (index: number) => {
@@ -146,11 +123,9 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
 
       setActiveTab(tab.key);
 
-      markTabAsVisited(tab.key);
-
       emblaApi?.scrollTo(index);
     },
-    [emblaApi, markTabAsVisited],
+    [emblaApi],
   );
 
   const onSelect = useCallback(() => {
@@ -163,11 +138,8 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
     if (!tab) return;
 
     setActiveTab(tab.key);
+  }, [emblaApi]);
 
-    markTabAsVisited(tab.key);
-  }, [emblaApi, markTabAsVisited]);
-
-  // sync embla -> active tab
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -178,7 +150,6 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
     };
   }, [emblaApi, onSelect]);
 
-  // keep active tab button visible
   useEffect(() => {
     const activeButton = tabsContainerRef.current?.querySelector(
       '[data-active="true"]',
@@ -198,7 +169,12 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
       <div className="mb-6 border-b">
         <div
           ref={tabsContainerRef}
-          className="flex gap-2 overflow-x-auto pb-1 md:overflow-x-visible"
+          className="
+    flex gap-2 overflow-x-auto pb-1
+    [-ms-overflow-style:none]
+    [scrollbar-width:none]
+    [&::-webkit-scrollbar]:hidden
+  "
         >
           {tabs.map((tab, index) => (
             <TabButton
@@ -215,7 +191,7 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
       <div ref={emblaRef} className="overflow-hidden touch-pan-y">
         <div className="flex">
           <TabSlide>
-            {visitedTabs.has("courses") && (
+            {activeTab === "courses" && (
               <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {courses.map((course) => (
                   <CourseCard
@@ -229,7 +205,7 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
           </TabSlide>
 
           <TabSlide>
-            {visitedTabs.has("tests") && (
+            {activeTab === "tests" && (
               <section>
                 <BatchTestsPanel batchId={batchId} />
               </section>
@@ -237,7 +213,7 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
           </TabSlide>
 
           <TabSlide>
-            {visitedTabs.has("live-classes") && (
+            {activeTab === "live-classes" && (
               <section>
                 <BatchLiveClassesPanel batchId={batchId} />
               </section>
@@ -245,7 +221,7 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
           </TabSlide>
 
           <TabSlide>
-            {visitedTabs.has("mentorship") && (
+            {activeTab === "mentorship" && (
               <section>
                 <BatchMentorshipSessionsPanel batchId={batchId} />
               </section>
@@ -253,7 +229,7 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
           </TabSlide>
 
           <TabSlide>
-            {visitedTabs.has("group-sessions") && (
+            {activeTab === "group-sessions" && (
               <section>
                 <BatchGroupSessionsPanel batchId={batchId} />
               </section>
