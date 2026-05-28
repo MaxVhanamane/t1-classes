@@ -2,7 +2,7 @@ import NextLink, { LinkProps } from "next/link";
 import { AnchorHTMLAttributes, ReactNode } from "react";
 
 type Props = LinkProps &
-  AnchorHTMLAttributes<HTMLAnchorElement> & {
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
     children: ReactNode;
   };
 
