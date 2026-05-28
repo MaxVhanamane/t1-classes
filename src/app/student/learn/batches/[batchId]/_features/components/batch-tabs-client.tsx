@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import useEmblaCarousel from "embla-carousel-react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { Button } from "@/src/components/ui/button";
 
@@ -83,70 +83,46 @@ function TabButton({
   );
 }
 
-function TabSlide({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-w-0 flex-[0_0_100%] overflow-hidden bg-background">
-      <div className="min-h-20 mb-6">{children}</div>
-    </div>
-  );
-}
-
 export default function BatchTabsClient({ batchId, courses }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>("courses");
 
   const tabsContainerRef = useRef<HTMLDivElement>(null);
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    axis: "x",
+  const activeIndex = useMemo(() => {
+    return tabs.findIndex((tab) => tab.key === activeTab);
+  }, [activeTab]);
 
-    // faster/snappier
-    duration: 8,
-
-    containScroll: "trimSnaps",
-
-    watchDrag: true,
-
-    dragFree: false,
-
-    skipSnaps: false,
-  });
-
-  const selectedIndex = tabs.findIndex((tab) => tab.key === activeTab);
-
-  const handleSelectTab = useCallback(
-    (index: number) => {
-      const tab = tabs[index];
-
-      if (!tab) return;
-
-      setActiveTab(tab.key);
-
-      emblaApi?.scrollTo(index);
-    },
-    [emblaApi],
-  );
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-
-    const index = emblaApi.selectedScrollSnap();
-
+  function goToTab(index: number) {
     const tab = tabs[index];
 
     if (!tab) return;
 
     setActiveTab(tab.key);
-  }, [emblaApi]);
+  }
 
-  useEffect(() => {
-    if (!emblaApi) return;
+  function handleSwipe(
+    _: PointerEvent,
+    info: {
+      offset: {
+        x: number;
+      };
+      velocity: {
+        x: number;
+      };
+    },
+  ) {
+    const swipePower = Math.abs(info.offset.x) * info.velocity.x;
 
-    emblaApi.on("select", onSelect);
+    // swipe left
+    if (swipePower < -12000 && activeIndex < tabs.length - 1) {
+      goToTab(activeIndex + 1);
+    }
 
-    return () => {
-      emblaApi.off("select", onSelect);
-    };
-  }, [emblaApi, onSelect]);
+    // swipe right
+    if (swipePower > 12000 && activeIndex > 0) {
+      goToTab(activeIndex - 1);
+    }
+  }
 
   useEffect(() => {
     const activeButton = tabsContainerRef.current?.querySelector(
@@ -167,30 +143,51 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
       <div className="mb-6 border-b">
         <div
           ref={tabsContainerRef}
-          className="
-    flex gap-2 overflow-x-auto pb-1
-    [-ms-overflow-style:none]
-    [scrollbar-width:none]
-    [&::-webkit-scrollbar]:hidden
-  "
+          className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {tabs.map((tab, index) => (
             <TabButton
               key={tab.key}
               label={tab.label}
-              active={selectedIndex === index}
-              data-active={selectedIndex === index}
-              onClick={() => handleSelectTab(index)}
+              active={activeIndex === index}
+              data-active={activeIndex === index}
+              onClick={() => goToTab(index)}
             />
           ))}
         </div>
       </div>
 
-      <div ref={emblaRef} className="overflow-hidden touch-pan-y">
-        <div className="flex">
-          <TabSlide>
+      <div className="overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeTab}
+            drag="x"
+            dragConstraints={{
+              left: 0,
+              right: 0,
+            }}
+            dragElastic={0.08}
+            onDragEnd={handleSwipe}
+            initial={{
+              opacity: 0,
+              x: 12,
+            }}
+            animate={{
+              opacity: 1,
+              x: 0,
+            }}
+            exit={{
+              opacity: 0,
+              x: -12,
+            }}
+            transition={{
+              duration: 0.18,
+              ease: "easeOut",
+            }}
+            className="touch-pan-y"
+          >
             {activeTab === "courses" && (
-              <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {courses.map((course) => (
                   <CourseCard
                     key={course.id}
@@ -200,40 +197,32 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
                 ))}
               </section>
             )}
-          </TabSlide>
 
-          <TabSlide>
             {activeTab === "tests" && (
-              <section>
+              <section className="mb-6">
                 <BatchTestsPanel batchId={batchId} />
               </section>
             )}
-          </TabSlide>
 
-          <TabSlide>
             {activeTab === "live-classes" && (
-              <section>
+              <section className="mb-6">
                 <BatchLiveClassesPanel batchId={batchId} />
               </section>
             )}
-          </TabSlide>
 
-          <TabSlide>
             {activeTab === "mentorship" && (
-              <section>
+              <section className="mb-6">
                 <BatchMentorshipSessionsPanel batchId={batchId} />
               </section>
             )}
-          </TabSlide>
 
-          <TabSlide>
             {activeTab === "group-sessions" && (
-              <section>
+              <section className="mb-6">
                 <BatchGroupSessionsPanel batchId={batchId} />
               </section>
             )}
-          </TabSlide>
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </>
   );
