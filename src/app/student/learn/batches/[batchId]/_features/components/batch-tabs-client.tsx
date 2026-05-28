@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import useEmblaCarousel from "embla-carousel-react";
 
@@ -57,13 +57,14 @@ function TabButton({
   active,
   label,
   onClick,
+  ...props
 }: {
   active: boolean;
   label: string;
   onClick: () => void;
-}) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className="relative shrink-0">
+    <div className="relative shrink-0" {...props}>
       <Button
         variant="ghost"
         size="sm"
@@ -82,26 +83,52 @@ function TabButton({
   );
 }
 
+function TabSlide({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-w-0 flex-[0_0_100%] overflow-hidden bg-background">
+      <div className="px-0.5">
+        <div className="min-h-[200px]">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function BatchTabsClient({ batchId, courses }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>("courses");
 
-  // track which tabs were visited
+  // mount only visited tabs
   const [visitedTabs, setVisitedTabs] = useState<Set<TabKey>>(
     () => new Set(["courses"]),
   );
 
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: "x",
-    dragFree: false,
+
+    // much snappier feel
+    duration: 15,
+
+    // prevents empty trailing space
     containScroll: "trimSnaps",
+
+    // enables drag/swipe
     watchDrag: true,
+
+    // proper snap behavior
+    dragFree: false,
+
+    // better feel for tabs UX
+    skipSnaps: false,
   });
 
   const selectedIndex = tabs.findIndex((tab) => tab.key === activeTab);
 
   const markTabAsVisited = useCallback((tabKey: TabKey) => {
     setVisitedTabs((prev) => {
-      if (prev.has(tabKey)) return prev;
+      if (prev.has(tabKey)) {
+        return prev;
+      }
 
       const next = new Set(prev);
 
@@ -140,6 +167,7 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
     markTabAsVisited(tab.key);
   }, [emblaApi, markTabAsVisited]);
 
+  // sync embla -> active tab
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -150,24 +178,43 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
     };
   }, [emblaApi, onSelect]);
 
+  // keep active tab button visible
+  useEffect(() => {
+    const activeButton = tabsContainerRef.current?.querySelector(
+      '[data-active="true"]',
+    );
+
+    if (!activeButton) return;
+
+    activeButton.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [activeTab]);
+
   return (
     <>
       <div className="mb-6 border-b">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div
+          ref={tabsContainerRef}
+          className="flex gap-2 overflow-x-auto pb-1 md:overflow-x-visible"
+        >
           {tabs.map((tab, index) => (
             <TabButton
               key={tab.key}
               label={tab.label}
               active={selectedIndex === index}
+              data-active={selectedIndex === index}
               onClick={() => handleSelectTab(index)}
             />
           ))}
         </div>
       </div>
 
-      <div className="overflow-hidden" ref={emblaRef}>
+      <div ref={emblaRef} className="overflow-hidden touch-pan-y">
         <div className="flex">
-          <div className="min-w-0 flex-[0_0_100%]">
+          <TabSlide>
             {visitedTabs.has("courses") && (
               <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {courses.map((course) => (
@@ -179,39 +226,39 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
                 ))}
               </section>
             )}
-          </div>
+          </TabSlide>
 
-          <div className="min-w-0 flex-[0_0_100%]">
+          <TabSlide>
             {visitedTabs.has("tests") && (
               <section>
                 <BatchTestsPanel batchId={batchId} />
               </section>
             )}
-          </div>
+          </TabSlide>
 
-          <div className="min-w-0 flex-[0_0_100%]">
+          <TabSlide>
             {visitedTabs.has("live-classes") && (
               <section>
                 <BatchLiveClassesPanel batchId={batchId} />
               </section>
             )}
-          </div>
+          </TabSlide>
 
-          <div className="min-w-0 flex-[0_0_100%]">
+          <TabSlide>
             {visitedTabs.has("mentorship") && (
               <section>
                 <BatchMentorshipSessionsPanel batchId={batchId} />
               </section>
             )}
-          </div>
+          </TabSlide>
 
-          <div className="min-w-0 flex-[0_0_100%]">
+          <TabSlide>
             {visitedTabs.has("group-sessions") && (
               <section>
                 <BatchGroupSessionsPanel batchId={batchId} />
               </section>
             )}
-          </div>
+          </TabSlide>
         </div>
       </div>
     </>
