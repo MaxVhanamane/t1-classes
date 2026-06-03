@@ -18,7 +18,6 @@ import DottedBackground from "@/src/components/dotted-background";
 
 import { Card, CardContent } from "@/src/components/ui/card";
 import { toast } from "sonner";
-import { Skeleton } from "@/src/components/ui/skeleton";
 
 interface StudentGroupSession {
   id: string;
@@ -109,7 +108,7 @@ function GroupSessionCard({ session }: { session: StudentGroupSession }) {
     toast.success("Passcode copied");
   };
   return (
-    <Card className="relative overflow-hidden rounded-3xl border bg-black p-5">
+    <Card className="relative overflow-hidden rounded-3xl border dark:bg-black bg-background p-5">
       <DottedBackground className="opacity-50" />
 
       <CardContent className="relative z-10 p-0">
@@ -290,34 +289,76 @@ export default function BatchGroupSessionsPanel({ batchId }: Props) {
         {Array.from({ length: 3 }).map((_, index) => (
           <Card
             key={index}
-            className="min-h-[430px] overflow-hidden rounded-3xl border bg-black p-5"
+            className="relative overflow-hidden rounded-3xl border bg-background p-5"
           >
-            <CardContent className="flex h-full flex-col p-0">
-              <div className="space-y-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 space-y-3">
-                    <Skeleton className="h-7 w-[70%] rounded-xl" />
-                    <Skeleton className="h-4 w-32 rounded-lg" />
+            <DottedBackground className="opacity-50" />
+
+            <CardContent className="relative z-10 p-0">
+              {/* Top */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-44 animate-pulse rounded-md bg-muted" />
+
+                    <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
                   </div>
 
-                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className="h-4 w-4 animate-pulse rounded-full bg-muted" />
+
+                    <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+
+                    <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-full rounded-lg" />
-                  <Skeleton className="h-4 w-[75%] rounded-lg" />
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Skeleton className="h-24 rounded-2xl" />
-                  <Skeleton className="h-24 rounded-2xl" />
-                </div>
-
-                <Skeleton className="h-28 rounded-2xl" />
+                <div className="h-6 w-24 animate-pulse rounded-full bg-muted" />
               </div>
 
-              <div className="mt-auto pt-6">
-                <Skeleton className="h-11 w-full rounded-2xl" />
+              {/* Description */}
+              {/* <div className="mt-5 space-y-2">
+                <div className="h-4 w-full animate-pulse rounded bg-muted" />
+                <div className="h-4 w-[75%] animate-pulse rounded bg-muted" />
+              </div> */}
+
+              {/* Meta Cards */}
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border bg-white/5 p-3">
+                  <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+
+                  <div className="mt-3 h-4 w-24 animate-pulse rounded bg-muted" />
+
+                  <div className="mt-2 h-3 w-16 animate-pulse rounded bg-muted" />
+                </div>
+
+                <div className="rounded-2xl border bg-white/5 p-3">
+                  <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+
+                  <div className="mt-3 h-4 w-24 animate-pulse rounded bg-muted" />
+
+                  <div className="mt-2 h-3 w-20 animate-pulse rounded bg-muted" />
+                </div>
+              </div>
+
+              {/* Zoom Passcode Section */}
+              <div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+
+                    <div className="mt-3 h-7 w-28 animate-pulse rounded bg-muted" />
+
+                    <div className="mt-3 h-3 w-full animate-pulse rounded bg-muted" />
+                    <div className="mt-2 h-3 w-[80%] animate-pulse rounded bg-muted" />
+                  </div>
+
+                  <div className="h-10 w-10 animate-pulse rounded-xl bg-muted" />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-6">
+                <div className="h-11 w-full animate-pulse rounded-2xl bg-muted" />
               </div>
             </CardContent>
           </Card>

@@ -7,10 +7,12 @@ import BatchTabsClient from "./_features/components/batch-tabs-client";
 
 type Props = {
   params: Promise<{ batchId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 };
 
-export default async function BatchPage({ params }: Props) {
+export default async function BatchPage({ params, searchParams }: Props) {
   const { batchId } = await params;
+  const { tab } = await searchParams;
 
   let data: BatchDetailsResponse;
 
@@ -41,7 +43,11 @@ export default async function BatchPage({ params }: Props) {
           <BatchMetaBadges batch={{ ...batch }} />
         </header>
 
-        <BatchTabsClient batchId={batch.id} courses={courses} />
+        <BatchTabsClient
+          batchId={batch.id}
+          courses={courses}
+          initialTab={tab}
+        />
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { cn } from "@/src/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { deletePracticeQuestion } from "../../practice/[practiceSetId]/actions/practice-set/delete-practice-question";
 

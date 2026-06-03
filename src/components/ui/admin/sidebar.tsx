@@ -38,7 +38,7 @@ const navItems = [
     icon: MonitorPlay,
   },
 
-  { label: "Instructors", href: "/admin/instructors", icon: UserCheck },
+  { label: "Attendance", href: "/admin/attendance", icon: UserCheck },
   { label: "Notifications", href: "/admin/notifications", icon: Bell },
 ];
 

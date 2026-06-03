@@ -11,7 +11,7 @@ import type { CourseOutline } from "@/src/types/course-outline.types";
 import { CourseStructureTree } from "./course-structure-tree";
 import { PlayerSkeleton } from "./player-skeleton";
 import { VideoPlayer } from "./video-player";
-import { PdfViewerDialog } from "./pdf/pdf-viewer-dialog";
+// import { PdfViewerDialog } from "./pdf/pdf-viewer-dialog";
 import EmptyPlayerState from "./empty-player-state";
 import {
   Drawer,
@@ -25,10 +25,22 @@ import {
   findUnitPath,
   getFirstPlayableUnit,
 } from "../helper-functions/course-progress";
-import { PracticeSetDialog } from "./practice-set/practice-set-dialog";
+// import { PracticeSetDialog } from "./practice-set/practice-set-dialog";
 import PlayerErrorState from "./player-error-state";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
+
+import dynamic from "next/dynamic";
+
+const PdfViewerDialog = dynamic(() =>
+  import("./pdf/pdf-viewer-dialog").then((mod) => mod.PdfViewerDialog),
+);
+
+const PracticeSetDialog = dynamic(() =>
+  import("./practice-set/practice-set-dialog").then(
+    (mod) => mod.PracticeSetDialog,
+  ),
+);
 
 /* ========================================================= */
 /* Types                                                      */

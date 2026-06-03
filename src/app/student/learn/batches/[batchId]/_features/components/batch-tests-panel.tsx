@@ -102,45 +102,47 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
     return (
       <div className="space-y-8">
         <div className="space-y-3">
-          {/* Section title */}
-          <Skeleton className="text-base font-medium h-5 w-28 mb-3 rounded-sm" />
+          <Skeleton className="mb-3 h-5 w-28 rounded-sm bg-muted/70 dark:bg-white/10" />
 
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
               <Card
                 key={i}
-                className="rounded-lg border py-4 relative md:w-2xl"
+                className="relative overflow-hidden rounded-lg border py-4 md:w-2xl dark:bg-black"
               >
-                <CardContent className="p-4 space-y-4">
+                <DottedBackground />
+
+                <CardContent className="relative z-10 space-y-4 p-4">
                   {/* Header */}
                   <div className="flex items-center justify-between">
-                    <Skeleton className="h-3.5 w-40 rounded-sm" />
-                    <Skeleton className="h-5 w-20 rounded-md" />
+                    <Skeleton className="h-4 w-40 rounded-sm bg-muted/70 dark:bg-white/10" />
+
+                    <div className="h-6 w-20 animate-pulse rounded-md bg-primary/10 dark:bg-primary/15" />
                   </div>
 
                   {/* Info rows */}
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-2">
-                      <Skeleton className="h-3 w-16" />
-                      <Skeleton className="h-3 w-12" />
+                      <Skeleton className="h-4 w-16 bg-muted/70 dark:bg-white/10" />
+                      <Skeleton className="h-4 w-12 bg-muted/70 dark:bg-white/10" />
                     </div>
 
                     <div className="flex gap-3">
                       <div className="flex items-center gap-2">
-                        <Skeleton className="h-3 w-12" />
-                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-12 bg-muted/70 dark:bg-white/10" />
+                        <Skeleton className="h-4 w-24 bg-muted/70 dark:bg-white/10" />
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Skeleton className="h-3 w-10" />
-                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-10 bg-muted/70 dark:bg-white/10" />
+                        <Skeleton className="h-4 w-24 bg-muted/70 dark:bg-white/10" />
                       </div>
                     </div>
                   </div>
 
                   {/* Action */}
                   <div className="flex justify-end">
-                    <Skeleton className="h-9 w-28 rounded-md" />
+                    <div className="h-9 w-28 animate-pulse rounded-md bg-primary/10 dark:bg-primary/15" />
                   </div>
                 </CardContent>
               </Card>
@@ -150,7 +152,6 @@ export default function BatchTestsPanel({ batchId }: { batchId: string }) {
       </div>
     );
   }
-
   if (isError) {
     return (
       <Card>

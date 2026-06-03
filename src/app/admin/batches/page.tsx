@@ -1,5 +1,7 @@
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+
 import { BatchesClient } from "./_features/components/batches-client-wrapper";
+
 import { BatchListItem, CourseSelectItem } from "./_features/types/types";
 
 async function getCourses(): Promise<CourseSelectItem[]> {
@@ -9,7 +11,12 @@ async function getCourses(): Promise<CourseSelectItem[]> {
     .from("courses")
     .select("id, title, is_active")
     .order("title")
-    .overrideTypes<CourseSelectItem[], { merge: false }>();
+    .overrideTypes<
+      CourseSelectItem[],
+      {
+        merge: false;
+      }
+    >();
 
   if (error) {
     throw new Error("Failed to load courses");
@@ -25,70 +32,83 @@ async function getBatches(): Promise<BatchListItem[]> {
     .from("batches")
     .select(
       `
-      id,
-      title,
-      slug,
-      subtitle,
-      description,
-      sale_price,
-      list_price,
-      thumbnail_image,
-      subjects,
-      class_level,
-      target_exam,
-      mode,
-      location,
-      languages,
-      is_active,
-      is_admission_open,
-      start_date,
-      end_date,
-      capacity,
-      learning_outcomes,
-      target_audience,
-      location,
-      address,
-      category,
-      board,
-      courses:batch_courses (
-        course:courses (
-          id,
-          title
-        )
-      ),
+        id,
+        title,
+        slug,
+        subtitle,
+        description,
+        sale_price,
+        list_price,
+        thumbnail_image,
+        subjects,
+        class_level,
+        target_exam,
+        mode,
+        location,
+        languages,
+        is_active,
+        is_admission_open,
+        start_date,
+        end_date,
+        capacity,
+        learning_outcomes,
+        target_audience,
+        location,
+        address,
+        category,
+        board,
 
-      batch_instructors (
-        instructors (
-          id,
-          full_name
+        courses:batch_courses (
+          course:courses (
+            id,
+            title
+          )
+        ),
+
+        batch_instructors (
+          instructor:users (
+            id,
+            full_name
+          )
         )
-      )
-      `,
+        `,
     )
-    .order("created_at", { ascending: false })
+    .order("created_at", {
+      ascending: false,
+    })
     .overrideTypes<
       (BatchListItem & {
         batch_instructors?: {
-          instructors: { id: string; full_name: string } | null;
+          instructor: {
+            id: string;
+            full_name: string;
+          } | null;
         }[];
       })[],
-      { merge: false }
+      {
+        merge: false;
+      }
     >();
 
   if (error) {
+    console.error(error);
+
     throw new Error("Failed to load batches");
   }
 
-  if (!data) return [];
+  if (!data) {
+    return [];
+  }
 
   return data.map((batch) => {
     const instructors =
       batch.batch_instructors?.flatMap((bi) =>
-        bi.instructors ? [bi.instructors] : [],
+        bi.instructor ? [bi.instructor] : [],
       ) ?? [];
 
     return {
       ...batch,
+
       instructors,
     };
   });

@@ -272,9 +272,9 @@
 
   }
 
-  html {
+  /* html {
     scrollbar-gutter: stable;
-  }
+  } */
 
   html body[data-scroll-locked]:not([data-scroll-no-lock]) {
     min-width: 100%;

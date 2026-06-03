@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "motion/react";
-
 import { Button } from "@/src/components/ui/button";
 
 import { CourseCard } from "./batch-course-card";
@@ -14,13 +13,15 @@ import BatchMentorshipSessionsPanel from "./batch-mentorship-sessions-panel";
 import BatchGroupSessionsPanel from "./batch-group-sessions-panel";
 
 import { BatchDetailsResponse } from "@/src/types/batches.types";
+import { BatchAttendancePanel } from "./batch-attendance-panel";
 
 type TabKey =
   | "courses"
   | "tests"
   | "live-classes"
   | "mentorship"
-  | "group-sessions";
+  | "group-sessions"
+  | "attendance";
 
 const tabs: {
   key: TabKey;
@@ -46,11 +47,16 @@ const tabs: {
     key: "group-sessions",
     label: "Group Sessions",
   },
+  {
+    key: "attendance",
+    label: "Attendance",
+  },
 ];
 
 type Props = {
   batchId: string;
   courses: BatchDetailsResponse["courses"];
+  initialTab?: string;
 };
 
 function TabButton({
@@ -82,9 +88,16 @@ function TabButton({
     </div>
   );
 }
-
-export default function BatchTabsClient({ batchId, courses }: Props) {
-  const [activeTab, setActiveTab] = useState<TabKey>("courses");
+export default function BatchTabsClient({
+  batchId,
+  courses,
+  initialTab,
+}: Props) {
+  const [activeTab, setActiveTab] = useState<TabKey>(() =>
+    tabs.some((tab) => tab.key === initialTab)
+      ? (initialTab as TabKey)
+      : "courses",
+  );
 
   const tabsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -98,6 +111,16 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
     if (!tab) return;
 
     setActiveTab(tab.key);
+
+    const params = new URLSearchParams(window.location.search);
+
+    params.set("tab", tab.key);
+
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${window.location.pathname}?${params.toString()}`,
+    );
   }
 
   function handleSwipe(
@@ -113,12 +136,10 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
   ) {
     const swipePower = Math.abs(info.offset.x) * info.velocity.x;
 
-    // swipe left
     if (swipePower < -12000 && activeIndex < tabs.length - 1) {
       goToTab(activeIndex + 1);
     }
 
-    // swipe right
     if (swipePower > 12000 && activeIndex > 0) {
       goToTab(activeIndex - 1);
     }
@@ -137,13 +158,12 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
       block: "nearest",
     });
   }, [activeTab]);
-
   return (
     <>
       <div className="mb-6 border-b">
         <div
           ref={tabsContainerRef}
-          className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden"
         >
           {tabs.map((tab, index) => (
             <TabButton
@@ -219,6 +239,11 @@ export default function BatchTabsClient({ batchId, courses }: Props) {
             {activeTab === "group-sessions" && (
               <section className="mb-6">
                 <BatchGroupSessionsPanel batchId={batchId} />
+              </section>
+            )}
+            {activeTab === "attendance" && (
+              <section className="mb-6">
+                <BatchAttendancePanel batchId={batchId} />
               </section>
             )}
           </motion.div>

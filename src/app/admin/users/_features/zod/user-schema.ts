@@ -3,76 +3,211 @@ import { z } from "zod";
 /**
  * Enums
  */
-export const userRoles = ["student", "teacher", "admin"] as const;
-export const userStatuses = ["active", "inactive", "blocked"] as const;
 
-export const userRoleEnum = z.enum(userRoles);
-export const userStatusEnum = z.enum(userStatuses);
+export const userRoles = [
+    "student",
+    "teacher",
+    "admin",
+] as const;
+
+export const userStatuses = [
+    "active",
+    "inactive",
+    "blocked",
+] as const;
+
+export const userRoleEnum =
+    z.enum(userRoles);
+
+export const userStatusEnum =
+    z.enum(userStatuses);
 
 /**
  * Reusable Validators
  */
+
 const nameSchema = z
     .string()
-    .min(2, "Full name must be at least 2 characters")
-    .max(100, "Full name is too long")
-    .trim();
+    .trim()
+    .min(
+        2,
+        "Full name must be at least 2 characters",
+    )
+    .max(
+        100,
+        "Full name is too long",
+    );
 
 const emailSchema = z
     .string()
-    .min(1, "Email is required")
-    .email("Invalid email address")
+    .trim()
     .toLowerCase()
-    .trim();
+    .min(
+        1,
+        "Email is required",
+    )
+    .email(
+        "Invalid email address",
+    );
+
+/* ---------------------------------------- */
+/* Phone (REQUIRED)                         */
+/* ---------------------------------------- */
 
 const phoneSchema = z
     .string()
-    .regex(/^\+?[0-9\s-]*$/, "Invalid phone number")
-    .min(10, "Phone number must be at least 10 digits")
-    .max(15, "Phone number is too long")
-    .optional()
+    .trim()
+    .min(
+        1,
+        "Phone number is required",
+    )
+    .regex(
+        /^\+?[0-9\s-]{10,15}$/,
+        "Invalid phone number",
+    );
+
+/* ---------------------------------------- */
+/* Optional Guardian Phone                  */
+/* ---------------------------------------- */
+
+const optionalGuardianPhoneSchema =
+    z
+        .string()
+        .trim()
+        .refine(
+            (value) =>
+                value === "" ||
+                /^\+?[0-9\s-]{10,15}$/.test(
+                    value,
+                ),
+            {
+                message:
+                    "Invalid guardian phone number",
+            },
+        );
+
+/* ---------------------------------------- */
+/* Optional Email                           */
+/* ---------------------------------------- */
+
+const optionalEmailSchema = z
+    .string()
+    .trim()
+    .email(
+        "Invalid email address",
+    )
     .or(z.literal(""));
 
 /**
- * Base Schema
- * Contains fields shared across user operations.
+ * Shared User Schema
  */
-export const baseUserSchema = z.object({
-    email: emailSchema,
-    full_name: nameSchema,
-    phone: phoneSchema,
-    role: userRoleEnum,
-});
+
+export const userSchema =
+    z
+        .object({
+            email:
+                emailSchema,
+
+            full_name:
+                nameSchema,
+
+            /* REQUIRED */
+            phone:
+                phoneSchema,
+
+            role:
+                userRoleEnum,
+
+            status:
+                userStatusEnum,
+
+            qualification: z
+                .string()
+                .trim(),
+
+            bio: z
+                .string()
+                .trim()
+                .max(
+                    1000,
+                    "Bio is too long",
+                ),
+
+            guardian_name: z
+                .string()
+                .trim(),
+
+            /* OPTIONAL */
+            guardian_phone:
+                optionalGuardianPhoneSchema,
+
+            guardian_email:
+                optionalEmailSchema,
+        })
+        .superRefine(
+            (data, ctx) => {
+                /* ---------------------------------- */
+                /* Student Guardian Validation        */
+                /* ---------------------------------- */
+
+                if (
+                    data.role ===
+                    "student"
+                ) {
+                    if (
+                        !data.guardian_phone ||
+                        data.guardian_phone
+                            .trim()
+                            .length < 10
+                    ) {
+                        ctx.addIssue({
+                            code:
+                                z.ZodIssueCode
+                                    .custom,
+
+                            path: [
+                                "guardian_phone",
+                            ],
+
+                            message:
+                                "Guardian phone is required for students",
+                        });
+                    }
+                }
+            },
+        );
 
 /**
- * Create User Schema
+ * Aliases
  */
-export const createUserSchema = baseUserSchema;
 
-/**
- * Update User Schema
- * Excludes email since it is not editable.
- */
-export const updateUserSchema = baseUserSchema
-    .omit({ email: true })
-    .extend({
-        status: userStatusEnum,
-    });
+export const createUserSchema =
+    userSchema;
 
-/**
- * Optional: Partial Update Schema
- * Useful for PATCH-style updates.
- */
-export const partialUpdateUserSchema = updateUserSchema.partial();
+export const updateUserSchema =
+    userSchema;
 
 /**
  * Types
  */
-export type CreateUserFormValues = z.infer<typeof createUserSchema>;
-export type UpdateUserFormValues = z.infer<typeof updateUserSchema>;
-export type PartialUpdateUserFormValues = z.infer<
-    typeof partialUpdateUserSchema
->;
 
-export type UserRole = z.infer<typeof userRoleEnum>;
-export type UserStatus = z.infer<typeof userStatusEnum>;
+export type UserFormValues =
+    z.infer<
+        typeof userSchema
+    >;
+
+export type CreateUserFormValues =
+    UserFormValues;
+
+export type UpdateUserFormValues =
+    UserFormValues;
+
+export type UserRole =
+    z.infer<
+        typeof userRoleEnum
+    >;
+
+export type UserStatus =
+    z.infer<
+        typeof userStatusEnum
+    >;

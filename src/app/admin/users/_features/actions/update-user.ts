@@ -1,77 +1,144 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { updateUserSchema } from "../zod/user-schema";
-import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { ServerActionResponse } from "@/src/types/server-action";
-import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
+
+import {
+  createServerSupabaseClient,
+} from "@/src/lib/supabase/supabase-server";
+
+import {
+  requireAdminServerOnly,
+} from "@/src/lib/auth/require-role-server-only";
+
+import {
+  ServerActionResponse,
+} from "@/src/types/server-action";
+
+import {
+  UpdateUserFormValues,
+  updateUserSchema,
+} from "../zod/user-schema";
 
 export async function updateUser(
   userId: string,
-  data: unknown
+  rawData: unknown,
 ): Promise<ServerActionResponse> {
-  // redirect() throws internally; calling inside try/catch would prevent the redirect
+  /* ---------------------------------------- */
+  /* Auth                                     */
+  /* ---------------------------------------- */
+
   await requireAdminServerOnly();
+
   try {
-    /* -------------------------------------------------- */
-    /* 1. Ensure a valid user ID is provided              */
-    /* -------------------------------------------------- */
+    /* ---------------------------------------- */
+    /* Validate User ID                         */
+    /* ---------------------------------------- */
+
     if (!userId) {
-      return { error: "User ID is required" };
-    }
-
-
-
-    /* -------------------------------------------------- */
-    /* 3. Validate data using Zod                         */
-    /* -------------------------------------------------- */
-    const parsed = updateUserSchema.safeParse(data);
-    if (!parsed.success) {
       return {
         error:
-          parsed.error.issues[0]?.message || "Invalid input",
+          "User ID is required",
       };
     }
 
-    const validatedData = parsed.data;
+    /* ---------------------------------------- */
+    /* Validate Input                           */
+    /* ---------------------------------------- */
 
-    /* -------------------------------------------------- */
-    /* 4. Create Supabase client after authorization      */
-    /* -------------------------------------------------- */
-    const supabase = await createServerSupabaseClient();
+    const parsed =
+      updateUserSchema.safeParse(
+        rawData,
+      );
+    console.log("PPPPPPPPPPPPPPPPPPP update", parsed)
 
-    /* -------------------------------------------------- */
-    /* 5. Sanitize phone value                            */
-    /* -------------------------------------------------- */
-    const sanitizedData = {
-      ...validatedData,
-      ...(validatedData.phone !== undefined && {
-        phone:
-          validatedData.phone === ""
-            ? null
-            : validatedData.phone,
-      }),
-    };
-
-    /* -------------------------------------------------- */
-    /* 6. Update user                                     */
-    /* -------------------------------------------------- */
-    const { error } = await supabase
-      .from("users")
-      .update(sanitizedData)
-      .eq("id", userId);
-
-    if (error) {
-      console.error("Error updating user:", error);
-      return { error: "Failed to update user" };
+    if (!parsed.success) {
+      return {
+        error:
+          parsed.error.issues[0]
+            ?.message ??
+          "Invalid input",
+      };
     }
 
-    /* -------------------------------------------------- */
-    /* 7. Revalidate                                      */
-    /* -------------------------------------------------- */
-    revalidatePath("/admin/users");
-  } catch (err) {
-    console.error("[UPDATE_USER_ERROR]", err);
-    return { error: "Failed to update user" };
+    const data: UpdateUserFormValues =
+      parsed.data;
+
+    /* ---------------------------------------- */
+    /* Supabase                                 */
+    /* ---------------------------------------- */
+
+    const supabase =
+      await createServerSupabaseClient();
+
+    /* ---------------------------------------- */
+    /* Sanitize                                 */
+    /* ---------------------------------------- */
+
+    const sanitizedData = {
+      full_name:
+        data.full_name,
+
+      phone:
+        data.phone || null,
+
+      role: data.role,
+
+      status: data.status,
+
+      qualification:
+        data.qualification ||
+        null,
+
+      bio:
+        data.bio || null,
+
+      guardian_name:
+        data.guardian_name ||
+        null,
+
+      guardian_phone:
+        data.guardian_phone ||
+        null,
+
+      guardian_email:
+        data.guardian_email ||
+        null,
+    };
+
+    /* ---------------------------------------- */
+    /* Update                                   */
+    /* ---------------------------------------- */
+
+    const { error } =
+      await supabase
+        .from("users")
+        .update(
+          sanitizedData,
+        )
+        .eq("id", userId);
+
+    if (error) {
+      console.error(
+        "Error updating user:",
+        error,
+      );
+
+      return {
+        error:
+          "Failed to update user",
+      };
+    }
+
+
+
+  } catch (error) {
+    console.error(
+      "[UPDATE_USER_ERROR]",
+      error,
+    );
+
+    return {
+      error:
+        "Failed to update user",
+    };
   }
 }

@@ -101,14 +101,32 @@ export default function BatchLiveClassesPanel({
   if (isLoading) {
     return (
       <div className="space-y-3">
-        {Array.from({
-          length: 3,
-        }).map((_, i) => (
-          <Card key={i} className="rounded-lg py-4 md:w-2xl">
-            <CardContent className="space-y-4 p-4">
-              <Skeleton className="h-4 w-44" />
-              <Skeleton className="h-3 w-28" />
-              <Skeleton className="h-9 w-32" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Card
+            key={i}
+            className="relative overflow-hidden rounded-lg border py-4 md:w-2xl dark:bg-black"
+          >
+            <DottedBackground />
+
+            <CardContent className="relative z-10 space-y-4 p-4">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-3">
+                <Skeleton className="h-4 w-44 bg-muted/70 dark:bg-white/10" />
+
+                <div className="h-6 w-20 animate-pulse rounded-md bg-primary/10 dark:bg-primary/15" />
+              </div>
+
+              {/* Date Rows */}
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-36 bg-muted/70 dark:bg-white/10" />
+
+                <Skeleton className="h-3 w-36 bg-muted/70 dark:bg-white/10" />
+              </div>
+
+              {/* Action */}
+              <div className="flex justify-end">
+                <div className="h-9 w-32 animate-pulse rounded-md bg-primary/10 dark:bg-primary/15" />
+              </div>
             </CardContent>
           </Card>
         ))}
