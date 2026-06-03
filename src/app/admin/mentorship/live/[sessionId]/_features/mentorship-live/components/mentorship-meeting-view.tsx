@@ -5,60 +5,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createCameraVideoTrack, usePubSub } from "@videosdk.live/react-sdk";
 import { useMeeting } from "@videosdk.live/react-sdk";
-import {
-  Loader2,
-  Mic,
-  MicOff,
-  PhoneOff,
-  Users,
-  Video,
-  MonitorUp,
-  VideoOff,
-  Hand,
-  ChevronDown,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { toast } from "sonner";
-
-import { Button } from "@/src/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/src/components/ui/alert-dialog";
-
-import { MessageSquare } from "lucide-react";
-
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/src/components/ui/sheet";
 
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 import { endMentorshipSession } from "../../../actions/end-mentorship-session";
 
 import { MentorshipParticipantTile } from "./mentorship-participant-tile";
-import { MeetingCountdown } from "./meeting-countdown";
 import { MentorshipMeetingChat } from "./mentorship-meeting-chat";
-import { MeetingConnectionBadge } from "./meeting-connection-badge";
 import { useParticipantQuality } from "../../../hoooks/use-participant-quality";
 import { cn } from "@/src/lib/utils";
+import { MeetingHeader } from "./meeting-header";
+import { MeetingControls } from "./meeting-controls";
 
 type MeetingExitReason =
   | "manual_leave"
@@ -75,6 +35,7 @@ interface MentorshipMeetingViewProps {
   leaveRedirectHref: string;
 
   sessionId: string;
+  sessionTitle: string;
 }
 
 export function MentorshipMeetingView({
@@ -83,12 +44,12 @@ export function MentorshipMeetingView({
   sessionId,
   endsAt,
   isSessionOwner,
+  sessionTitle,
 }: MentorshipMeetingViewProps) {
   const router = useRouter();
 
   const [hasJoined, setHasJoined] = useState(false);
   const [isEndingMeeting, setIsEndingMeeting] = useState(false);
-  // const [dataSaverMode, setDataSaverMode] = useState(false);
   const hasInitializedRef = useRef(false);
 
   const joinedRef = useRef(false);
@@ -518,9 +479,7 @@ export function MentorshipMeetingView({
   }, [localParticipant, participants]);
 
   const handleCountdownExpire = useCallback(() => {
-    console.log("handleCountdownExpire called");
     if (!isSessionOwner) return;
-    console.log("isSessionOwner is true so calling performMeetingEnd ");
     void performMeetingEnd();
   }, [isSessionOwner, performMeetingEnd]);
 
@@ -530,144 +489,137 @@ export function MentorshipMeetingView({
 
   const hasRaisedHand = !!raisedHands[localParticipant?.id ?? ""];
 
+  const handleChangeMic = useCallback(
+    (deviceId: string) => {
+      try {
+        changeMic(deviceId);
+
+        const device = audioDevices.find(
+          (device) => device.deviceId === deviceId,
+        );
+
+        toast.success(
+          `Microphone changed to ${device?.label ?? "Unknown Microphone"}`,
+        );
+
+        const current = JSON.parse(
+          sessionStorage.getItem("mentorship-meeting-preferences") ?? "{}",
+        );
+
+        sessionStorage.setItem(
+          "mentorship-meeting-preferences",
+          JSON.stringify({
+            ...current,
+            micEnabled: localMicOn,
+            micId: deviceId,
+          }),
+        );
+      } catch (error) {
+        toast.error("Failed to change microphone");
+
+        console.error("[CHANGE_MIC_ERROR]", error);
+      }
+    },
+    [changeMic, audioDevices, localMicOn],
+  );
+
+  const handleChangeWebcam = useCallback(
+    (deviceId: string) => {
+      try {
+        changeWebcam(deviceId);
+
+        const device = videoDevices.find(
+          (device) => device.deviceId === deviceId,
+        );
+
+        toast.success(`Camera changed to ${device?.label ?? "Unknown Camera"}`);
+
+        const current = JSON.parse(
+          sessionStorage.getItem("mentorship-meeting-preferences") ?? "{}",
+        );
+
+        sessionStorage.setItem(
+          "mentorship-meeting-preferences",
+          JSON.stringify({
+            ...current,
+            webcamEnabled: localWebcamOn,
+            webcamId: deviceId,
+          }),
+        );
+      } catch (error) {
+        toast.error("Failed to change camera");
+
+        console.error("[CHANGE_CAMERA_ERROR]", error);
+      }
+    },
+    [changeWebcam, videoDevices, localWebcamOn],
+  );
+
+  const handleToggleScreenShare = useCallback(() => {
+    if (
+      typeof navigator !== "undefined" &&
+      !navigator.mediaDevices?.getDisplayMedia
+    ) {
+      toast.error("Screen sharing is not supported on this browser");
+
+      return;
+    }
+
+    toggleScreenShare();
+  }, [toggleScreenShare]);
+
+  const handleRaiseHand = useCallback(async () => {
+    if (!localParticipant) return;
+
+    if (hasRaisedHand) {
+      await publishRaiseHand(
+        JSON.stringify({
+          type: "HAND_LOWERED",
+          participantId: localParticipant.id,
+          participantName: localParticipant.displayName,
+        }),
+        {
+          persist: true,
+        },
+      );
+
+      return;
+    }
+
+    await publishRaiseHand(
+      JSON.stringify({
+        type: "HAND_RAISED",
+        participantId: localParticipant.id,
+        participantName: localParticipant.displayName,
+        raisedAt: Date.now(),
+      }),
+      {
+        persist: true,
+      },
+    );
+  }, [localParticipant, hasRaisedHand, publishRaiseHand]);
+
   return (
     <div className="flex h-(--h-viewport-minus-navbar) flex-col overflow-hidden bg-muted-soft">
       {/* Header */}
-      <div className="sticky top-0 z-20 border-b border-white/10 bg-muted-soft/95 backdrop-blur-xl">
-        <div className="px-3 py-2 sm:px-4 xl:px-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            {/* Mobile + Desktop Left */}
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="truncate text-sm font-semibold tracking-tight text-foreground sm:text-base">
-                  Mentorship Session
-                </h1>
+      <MeetingHeader
+        sessionTitle={sessionTitle}
+        participantCount={participantIds.length}
+        isWaitingForOthers={isWaitingForOthers}
+        isSessionOwner={isSessionOwner}
+        isEndingMeeting={isEndingMeeting}
+        endsAt={endsAt}
+        connectionQuality={localParticipantQuality.quality}
+        onCountdownExpire={isSessionOwner ? handleCountdownExpire : undefined}
+        onMobileCountdownExpire={() => {
+          if (!isSessionOwner) {
+            return;
+          }
 
-                {isWaitingForOthers && (
-                  <div className="rounded-full border border-amber-500/10 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium leading-none text-amber-200">
-                    Waiting for others
-                  </div>
-                )}
-              </div>
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground sm:text-xs">
-                  <Users className="size-3" />
-
-                  <span className="tabular-nums">
-                    {participantIds.length} participant
-                    {participantIds.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
-
-                <MeetingConnectionBadge
-                  quality={localParticipantQuality.quality}
-                />
-              </div>
-            </div>
-
-            {/* Desktop Actions */}
-            <div className="hidden items-center gap-2 sm:flex">
-              <MeetingCountdown
-                endsAt={endsAt}
-                onExpire={isSessionOwner ? handleCountdownExpire : undefined}
-              />
-
-              {isSessionOwner && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="h-8 rounded-full px-3 text-[11px] font-medium shadow-lg shadow-red-500/10"
-                      disabled={isEndingMeeting}
-                    >
-                      {isEndingMeeting ? "Ending..." : "End Meeting"}
-                    </Button>
-                  </AlertDialogTrigger>
-
-                  <AlertDialogContent className="rounded-3xl border-white/10 bg-zinc-950">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>End Meeting?</AlertDialogTitle>
-
-                      <AlertDialogDescription>
-                        This will disconnect all participants and permanently
-                        end the mentorship session.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10">
-                        Cancel
-                      </AlertDialogCancel>
-
-                      <AlertDialogAction
-                        className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        onClick={handleManualEndMeeting}
-                      >
-                        End Meeting
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </div>
-
-            {/* Mobile Actions Row */}
-            <div className="flex justify-end gap-2 sm:hidden">
-              <MeetingCountdown
-                endsAt={endsAt}
-                onExpire={() => {
-                  if (!isSessionOwner) {
-                    return;
-                  }
-
-                  void performMeetingEnd();
-                }}
-              />
-
-              {isSessionOwner && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="h-8 rounded-full px-3 text-[11px] font-medium shadow-lg shadow-red-500/10"
-                      disabled={isEndingMeeting}
-                    >
-                      {isEndingMeeting ? "Ending..." : "End Meeting"}
-                    </Button>
-                  </AlertDialogTrigger>
-
-                  <AlertDialogContent className="rounded-3xl border-white/10 bg-zinc-950">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>End Meeting?</AlertDialogTitle>
-
-                      <AlertDialogDescription>
-                        This will disconnect all participants and permanently
-                        end the mentorship session.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10">
-                        Cancel
-                      </AlertDialogCancel>
-
-                      <AlertDialogAction
-                        className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        onClick={handleManualEndMeeting}
-                      >
-                        End Meeting
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
+          void performMeetingEnd();
+        }}
+        onEndMeeting={handleManualEndMeeting}
+      />
       {/* Main */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Video Area */}
@@ -693,10 +645,12 @@ export function MentorshipMeetingView({
 
           {/* Outer Wrapper */}
           <div
-            className={`
-      flex w-full justify-center
-      ${participantIds.length <= 4 ? "min-h-full items-center" : "items-start"}
-    `}
+            className={cn(
+              "flex w-full justify-center",
+              participantIds.length <= 4
+                ? "min-h-full items-center"
+                : "items-start",
+            )}
           >
             {/* Grid */}
             <div
@@ -742,292 +696,23 @@ export function MentorshipMeetingView({
       </div>
 
       {/* Bottom Controls */}
-      <div className="sticky bottom-0 z-30 border-t bg-muted-soft/95 backdrop-blur supports-[padding:max(0px)]:pb-safe">
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex min-w-max items-center justify-center gap-2 px-3 py-3 sm:gap-4 sm:px-4">
-            <div className="flex items-center">
-              <Button
-                variant={localMicOn ? "outline" : "secondary"}
-                size="icon"
-                className="size-11 rounded-r-none border-r-0 shadow-sm transition active:scale-95 sm:size-14"
-                onClick={() => toggleMic()}
-              >
-                {localMicOn ? (
-                  <Mic className="size-4 sm:size-5" />
-                ) : (
-                  <MicOff className="size-4 sm:size-5" />
-                )}
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="
-    h-11 w-8 rounded-l-none border-l border-white/10
-    px-0 shadow-sm
-    transition active:scale-95
-    sm:h-14 sm:w-10
-  "
-                  >
-                    <ChevronDown className="size-3.5 opacity-70" />
-                  </Button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent align="center">
-                  {audioDevices.map((device) => (
-                    <DropdownMenuItem
-                      key={device.deviceId}
-                      onClick={() => {
-                        try {
-                          changeMic(device.deviceId);
-
-                          toast.success(
-                            `Microphone changed to ${device.label}`,
-                          );
-
-                          const current = JSON.parse(
-                            sessionStorage.getItem(
-                              "mentorship-meeting-preferences",
-                            ) ?? "{}",
-                          );
-
-                          sessionStorage.setItem(
-                            "mentorship-meeting-preferences",
-                            JSON.stringify({
-                              ...current,
-                              micEnabled: localMicOn,
-                              micId: device.deviceId,
-                            }),
-                          );
-                        } catch (error) {
-                          toast.error("Failed to change microphone");
-
-                          console.error("[CHANGE_MIC_ERROR]", error);
-                        }
-                      }}
-                    >
-                      {device.label || "Unknown Microphone"}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <div className="flex items-center">
-              <Button
-                variant={localWebcamOn ? "outline" : "secondary"}
-                size="icon"
-                className="size-11 rounded-r-none border-r-0 shadow-sm transition active:scale-95 sm:size-14"
-                onClick={handleToggleWebcam}
-              >
-                {localWebcamOn ? (
-                  <Video className="size-4 sm:size-5" />
-                ) : (
-                  <VideoOff className="size-4 sm:size-5" />
-                )}
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="
-    h-11 w-8 rounded-l-none border-l border-white/10
-    px-0 shadow-sm
-    transition active:scale-95
-    sm:h-14 sm:w-10
-  "
-                  >
-                    <ChevronDown className="size-3.5 opacity-70" />
-                  </Button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent align="center">
-                  {videoDevices.map((device) => (
-                    <DropdownMenuItem
-                      key={device.deviceId}
-                      onClick={() => {
-                        try {
-                          changeWebcam(device.deviceId);
-
-                          toast.success(`Camera changed to ${device.label}`);
-
-                          const current = JSON.parse(
-                            sessionStorage.getItem(
-                              "mentorship-meeting-preferences",
-                            ) ?? "{}",
-                          );
-
-                          sessionStorage.setItem(
-                            "mentorship-meeting-preferences",
-                            JSON.stringify({
-                              ...current,
-                              webcamEnabled: localWebcamOn,
-                              webcamId: device.deviceId,
-                            }),
-                          );
-                        } catch (error) {
-                          toast.error("Failed to change camera");
-
-                          console.error("[CHANGE_CAMERA_ERROR]", error);
-                        }
-                      }}
-                    >
-                      {device.label || "Unknown Camera"}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            {(isModerator || isSessionOwner) && (
-              <Button
-                variant={localScreenShareOn ? "default" : "outline"}
-                size="icon"
-                className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14"
-                onClick={() => {
-                  if (
-                    typeof navigator !== "undefined" &&
-                    !navigator.mediaDevices?.getDisplayMedia
-                  ) {
-                    toast.error(
-                      "Screen sharing is not supported on this browser",
-                    );
-
-                    return;
-                  }
-
-                  toggleScreenShare();
-                }}
-              >
-                <MonitorUp className="size-4 sm:size-5" />
-              </Button>
-            )}
-
-            <Button
-              variant={hasRaisedHand ? "default" : "outline"}
-              size="icon"
-              className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14"
-              onClick={async () => {
-                if (!localParticipant) return;
-
-                if (hasRaisedHand) {
-                  await publishRaiseHand(
-                    JSON.stringify({
-                      type: "HAND_LOWERED",
-                      participantId: localParticipant.id,
-                      participantName: localParticipant.displayName,
-                    }),
-                    {
-                      persist: true,
-                    },
-                  );
-
-                  return;
-                }
-
-                await publishRaiseHand(
-                  JSON.stringify({
-                    type: "HAND_RAISED",
-                    participantId: localParticipant.id,
-                    participantName: localParticipant.displayName,
-                    raisedAt: Date.now(),
-                  }),
-                  {
-                    persist: true,
-                  },
-                );
-              }}
-            >
-              <Hand className="size-4 sm:size-5" />
-            </Button>
-
-            {/* <Button
-              variant={dataSaverMode ? "default" : "outline"}
-              size="icon"
-              className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14"
-              onClick={() => setDataSaverMode((prev) => !prev)}
-            >
-              <WifiLow className="size-4 sm:size-5" />
-            </Button> */}
-
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14 xl:hidden"
-                >
-                  <MessageSquare className="size-4 sm:size-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="
-    top-4
-    flex
-    h-[80dvh]
-    w-[90vw]
-    flex-col
-    rounded-l-3xl
-    border-l
-    p-0
-    shadow-2xl
-    sm:max-w-md
-  "
-              >
-                <SheetHeader className="border-b px-4 py-3">
-                  <SheetTitle>Chat</SheetTitle>
-                </SheetHeader>
-
-                <div className="min-h-0 flex-1">
-                  <MentorshipMeetingChat />
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14"
-                >
-                  <PhoneOff className="size-4 sm:size-5" />
-                </Button>
-              </AlertDialogTrigger>
-
-              <AlertDialogContent className="rounded-3xl">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {isSessionOwner ? "End Session?" : "Leave Session?"}
-                  </AlertDialogTitle>
-
-                  <AlertDialogDescription>
-                    {isSessionOwner
-                      ? "Ending the session will disconnect all participants and permanently close the mentorship room."
-                      : "You can rejoin later if the meeting is still active."}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl">
-                    Cancel
-                  </AlertDialogCancel>
-
-                  <AlertDialogAction
-                    className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    onClick={handleLeaveMeeting}
-                  >
-                    {isSessionOwner ? "End Session" : "Leave Session"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
-      </div>
+      <MeetingControls
+        isModerator={isModerator}
+        isSessionOwner={isSessionOwner}
+        localMicOn={localMicOn}
+        localWebcamOn={localWebcamOn}
+        localScreenShareOn={localScreenShareOn}
+        hasRaisedHand={hasRaisedHand}
+        audioDevices={audioDevices}
+        videoDevices={videoDevices}
+        onToggleMic={toggleMic}
+        onToggleWebcam={handleToggleWebcam}
+        onToggleScreenShare={handleToggleScreenShare}
+        onChangeMic={handleChangeMic}
+        onChangeWebcam={handleChangeWebcam}
+        onRaiseHand={handleRaiseHand}
+        onLeaveMeeting={handleLeaveMeeting}
+      />
     </div>
   );
 }

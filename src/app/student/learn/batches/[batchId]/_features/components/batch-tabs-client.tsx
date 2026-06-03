@@ -182,11 +182,13 @@ export default function BatchTabsClient({
           <motion.div
             key={activeTab}
             drag="x"
+            dragMomentum={false}
+            dragSnapToOrigin
             dragConstraints={{
               left: 0,
               right: 0,
             }}
-            dragElastic={0.08}
+            dragElastic={0.04}
             onDragEnd={handleSwipe}
             initial={{
               opacity: 0,

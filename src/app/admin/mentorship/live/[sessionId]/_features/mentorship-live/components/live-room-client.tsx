@@ -20,6 +20,7 @@ interface LiveRoomClientProps {
 
   isModerator: boolean;
   isSessionOwner: boolean;
+  sessionTitle: string;
 }
 
 export function LiveRoomClient({
@@ -30,6 +31,7 @@ export function LiveRoomClient({
   sessionId,
   endsAt,
   isSessionOwner,
+  sessionTitle,
 }: LiveRoomClientProps) {
   return (
     <MentorshipLiveRoom
@@ -40,6 +42,7 @@ export function LiveRoomClient({
       sessionId={sessionId}
       endsAt={endsAt}
       isSessionOwner={isSessionOwner}
+      sessionTitle={sessionTitle}
     />
   );
 }

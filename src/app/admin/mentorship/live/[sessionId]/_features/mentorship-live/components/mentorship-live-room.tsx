@@ -23,6 +23,7 @@ interface MentorshipLiveRoomProps {
   isModerator: boolean;
 
   isSessionOwner: boolean;
+  sessionTitle: string;
 }
 
 interface MeetingPreferences {
@@ -57,6 +58,7 @@ export function MentorshipLiveRoom({
   sessionId,
   endsAt,
   isSessionOwner,
+  sessionTitle,
 }: MentorshipLiveRoomProps) {
   const preferences = useMemo<MeetingPreferences>(() => {
     if (typeof window === "undefined") {
@@ -145,6 +147,7 @@ export function MentorshipLiveRoom({
         sessionId={sessionId}
         endsAt={endsAt}
         isSessionOwner={isSessionOwner}
+        sessionTitle={sessionTitle}
       />
     </MeetingProvider>
   );

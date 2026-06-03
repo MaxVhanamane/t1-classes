@@ -21,6 +21,7 @@ import {
 } from "@/src/components/ui/command";
 
 import { cn } from "@/src/lib/utils";
+import { toast } from "sonner";
 
 interface MentorshipStudentOption {
   id: string;
@@ -36,6 +37,7 @@ interface MentorshipStudentsComboboxProps {
   onChange: (value: string[]) => void;
 
   disabled?: boolean;
+
   batchId: string;
 }
 
@@ -58,6 +60,14 @@ export function MentorshipStudentsCombobox({
   const toggleStudent = (studentId: string) => {
     if (value.includes(studentId)) {
       onChange(value.filter((id) => id !== studentId));
+
+      return;
+    }
+
+    if (value.length >= 2) {
+      toast.warning(
+        "Mentorship sessions are intended for one student. Maximum 2 students are allowed.",
+      );
 
       return;
     }
@@ -99,12 +109,18 @@ export function MentorshipStudentsCombobox({
             {students.map((student) => {
               const selected = value.includes(student.id);
 
+              const maxReached = value.length >= 2 && !selected;
+
               return (
                 <CommandItem
                   key={student.id}
                   value={student.full_name}
-                  onSelect={() => toggleStudent(student.id)}
-                  className="cursor-pointer"
+                  onSelect={() => {
+                    if (!maxReached) {
+                      toggleStudent(student.id);
+                    }
+                  }}
+                  className={cn("cursor-pointer", maxReached && "opacity-50")}
                 >
                   <Check
                     className={cn(

@@ -4,10 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useMeeting, usePubSub } from "@videosdk.live/react-sdk";
 
-import { Send } from "lucide-react";
+import { AlertCircle, RotateCcw, Send } from "lucide-react";
 
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
+
+type MessageStatus = "sending" | "sent" | "failed";
 
 interface ChatMessage {
   id: string;
@@ -19,6 +21,8 @@ interface ChatMessage {
   message: string;
 
   timestamp: number;
+
+  status?: MessageStatus;
 }
 
 export function MentorshipMeetingChat() {
@@ -38,7 +42,11 @@ export function MentorshipMeetingChat() {
         const parsed = oldMessages
           .map((msg) => {
             try {
-              return JSON.parse(msg.message) as ChatMessage;
+              return {
+                ...(JSON.parse(msg.message) as ChatMessage),
+
+                status: "sent" as const,
+              };
             } catch {
               return null;
             }
@@ -56,13 +64,26 @@ export function MentorshipMeetingChat() {
         const parsed = JSON.parse(sdkMessage.message) as ChatMessage;
 
         setLiveMessages((prev) => {
-          const exists = prev.some((msg) => msg.id === parsed.id);
+          const existingIndex = prev.findIndex((msg) => msg.id === parsed.id);
 
-          if (exists) {
-            return prev;
+          if (existingIndex !== -1) {
+            return prev.map((msg) =>
+              msg.id === parsed.id
+                ? {
+                    ...msg,
+                    status: "sent",
+                  }
+                : msg,
+            );
           }
 
-          return [...prev, parsed];
+          return [
+            ...prev,
+            {
+              ...parsed,
+              status: "sent",
+            },
+          ];
         });
       } catch (error) {
         console.error("[LIVE_MESSAGE_ERROR]", error);
@@ -84,11 +105,46 @@ export function MentorshipMeetingChat() {
   useEffect(() => {
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({
-        top: scrollRef.current?.scrollHeight,
+        top: scrollRef.current.scrollHeight,
         behavior: "smooth",
       });
     });
   }, [messages]);
+
+  const sendMessage = useCallback(
+    async (chatMessage: ChatMessage) => {
+      try {
+        await publish(JSON.stringify(chatMessage), {
+          persist: true,
+        });
+
+        setLiveMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === chatMessage.id
+              ? {
+                  ...msg,
+                  status: "sent",
+                }
+              : msg,
+          ),
+        );
+      } catch (error) {
+        console.error("[SEND_MESSAGE_ERROR]", error);
+
+        setLiveMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === chatMessage.id
+              ? {
+                  ...msg,
+                  status: "failed",
+                }
+              : msg,
+          ),
+        );
+      }
+    },
+    [publish],
+  );
 
   const handleSendMessage = useCallback(async () => {
     const trimmed = message.trim();
@@ -107,18 +163,43 @@ export function MentorshipMeetingChat() {
       message: trimmed,
 
       timestamp: Date.now(),
+
+      status: "sending",
     };
 
-    try {
-      await publish(JSON.stringify(chatMessage), {
-        persist: true,
-      });
+    setLiveMessages((prev) => [...prev, chatMessage]);
 
-      setMessage("");
-    } catch (error) {
-      console.error("[SEND_MESSAGE_ERROR]", error);
-    }
-  }, [message, publish, localParticipant]);
+    setMessage("");
+
+    void sendMessage(chatMessage);
+  }, [message, localParticipant, sendMessage]);
+
+  const handleRetry = useCallback(
+    (messageId: string) => {
+      const failedMessage = liveMessages.find((msg) => msg.id === messageId);
+
+      if (!failedMessage) {
+        return;
+      }
+
+      setLiveMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                status: "sending",
+              }
+            : msg,
+        ),
+      );
+
+      void sendMessage({
+        ...failedMessage,
+        status: "sending",
+      });
+    },
+    [liveMessages, sendMessage],
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -141,22 +222,50 @@ export function MentorshipMeetingChat() {
                 key={msg.id}
                 className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
-                    isOwn
-                      ? "bg-primary text-primary-foreground"
-                      : "border bg-card"
-                  }`}
-                >
-                  {!isOwn && (
-                    <p className="mb-1 text-xs font-semibold text-muted-foreground">
-                      {msg.senderName}
+                <div className="max-w-[85%]">
+                  <div
+                    className={`rounded-2xl px-4 py-3 shadow-sm ${
+                      isOwn
+                        ? "bg-primary text-primary-foreground"
+                        : "border bg-card"
+                    }`}
+                  >
+                    {!isOwn && (
+                      <p className="mb-1 text-xs font-semibold text-muted-foreground">
+                        {msg.senderName}
+                      </p>
+                    )}
+
+                    <p className="wrap-break-word text-sm leading-relaxed">
+                      {msg.message}
+                    </p>
+                  </div>
+
+                  {isOwn && msg.status === "sending" && (
+                    <p className="mt-1 text-right text-xs text-muted-foreground">
+                      Sending...
                     </p>
                   )}
 
-                  <p className="wrap-break-word text-sm leading-relaxed">
-                    {msg.message}
-                  </p>
+                  {isOwn && msg.status === "failed" && (
+                    <div className="mt-1 flex items-center justify-end gap-2">
+                      <span className="flex items-center gap-1 text-xs text-destructive">
+                        <AlertCircle className="size-3" />
+                        Failed
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleRetry(msg.id);
+                        }}
+                        className="flex items-center gap-1 text-xs text-primary hover:underline"
+                      >
+                        <RotateCcw className="size-3" />
+                        Retry
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -181,6 +290,7 @@ export function MentorshipMeetingChat() {
           />
 
           <Button
+            disabled={!message.trim()}
             onClick={() => {
               void handleSendMessage();
             }}

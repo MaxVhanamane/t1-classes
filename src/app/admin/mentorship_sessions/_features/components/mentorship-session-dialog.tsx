@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 
-import { RadioGroup, RadioGroupItem } from "@/src/components/ui/radio-group";
+// import { RadioGroup, RadioGroupItem } from "@/src/components/ui/radio-group";
 
 import {
   createMentorshipSessionSchema,
@@ -50,7 +50,7 @@ import { createMentorshipSession } from "../actions/create-mentorship-session";
 import { mentorshipQueryKeys } from "../constants/query-keys";
 import { MentorshipSession } from "../types/mentorship.types";
 import { updateMentorshipSession } from "../actions/update-mentorship-session";
-import { cn } from "@/src/lib/utils";
+// import { cn } from "@/src/lib/utils";
 
 interface MentorshipSessionDialogProps {
   open: boolean;
@@ -81,7 +81,7 @@ export function MentorshipSessionDialog({
 
       description: "",
 
-      audience_type: "batch",
+      audience_type: "selected_students",
 
       student_ids: [],
 
@@ -95,6 +95,7 @@ export function MentorshipSessionDialog({
     name: "batch_id",
   });
 
+  // maybe we will use this in future
   const audienceType = useWatch({
     control: form.control,
 
@@ -138,7 +139,7 @@ export function MentorshipSessionDialog({
         title: "",
         description: "",
         batch_id: undefined,
-        audience_type: "batch",
+        audience_type: "selected_students",
         student_ids: [],
         duration_minutes: 15,
         starts_at: undefined,
@@ -155,7 +156,7 @@ export function MentorshipSessionDialog({
 
         batch_id: session.batch_id,
 
-        audience_type: session.audience_type,
+        audience_type: "selected_students",
 
         student_ids: [],
 
@@ -222,6 +223,8 @@ export function MentorshipSessionDialog({
       toast.error(firstError?.message ?? "Please fix form errors");
     },
   );
+
+  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -317,7 +320,7 @@ export function MentorshipSessionDialog({
 
             {/* ---------- Audience ---------- */}
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="audience_type"
               render={({ field }) => {
@@ -422,7 +425,7 @@ export function MentorshipSessionDialog({
                   </FormItem>
                 );
               }}
-            />
+            /> */}
 
             {/* ---------- Selected Students ---------- */}
 
@@ -449,6 +452,12 @@ export function MentorshipSessionDialog({
                       />
                     </FormControl>
 
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+                      Mentorship sessions are intended for one-on-one guidance.
+                      Select only one student whenever possible. A maximum of 2
+                      students is allowed. For sessions involving more students,
+                      please use Group Sessions instead.
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -523,8 +532,14 @@ export function MentorshipSessionDialog({
             {/* ---------- Submit ---------- */}
 
             <div className="flex justify-end">
-              <Button type="submit">
-                {isEdit ? "Update Session" : "Create Session"}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? isEdit
+                    ? "Updating..."
+                    : "Creating..."
+                  : isEdit
+                    ? "Update Session"
+                    : "Create Session"}
               </Button>
             </div>
           </form>

@@ -115,6 +115,7 @@ export default async function LiveMentorshipPage({
       isSessionOwner={access.isSessionOwner}
       sessionId={sessionId}
       endsAt={access.session.ends_at}
+      sessionTitle={access.session.title}
     />
   );
 }

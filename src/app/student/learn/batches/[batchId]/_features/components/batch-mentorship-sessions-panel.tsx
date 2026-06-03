@@ -95,6 +95,10 @@ function MentorshipSessionCard({
 }: {
   session: StudentMentorshipSession;
 }) {
+  const startTimePassed = new Date(session.startsAt) <= new Date();
+
+  const isWaitingForTeacher =
+    session.status === "scheduled" && startTimePassed && !session.meetingId;
   return (
     <Card className="relative overflow-hidden rounded-3xl border dark:bg-black bg-background p-5 ">
       <DottedBackground className="opacity-50" />
@@ -107,7 +111,7 @@ function MentorshipSessionCard({
               <h3 className="truncate text-xl font-semibold tracking-tight">
                 {session.title}
               </h3>
-
+              {/* 
               {session.audienceType === "selected_students" && (
                 <Badge
                   variant="secondary"
@@ -115,7 +119,7 @@ function MentorshipSessionCard({
                 >
                   Personal
                 </Badge>
-              )}
+              )} */}
             </div>
 
             <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
@@ -184,6 +188,20 @@ function MentorshipSessionCard({
                 Join Live Session
               </Link>
             </Button>
+          ) : isWaitingForTeacher ? (
+            <>
+              <Button
+                disabled
+                variant="secondary"
+                className="h-11 w-full rounded-2xl text-sm font-medium"
+              >
+                Waiting for Teacher
+              </Button>
+
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                The teacher has not started the meeting yet.
+              </p>
+            </>
           ) : session.status === "scheduled" ? (
             <Button
               disabled

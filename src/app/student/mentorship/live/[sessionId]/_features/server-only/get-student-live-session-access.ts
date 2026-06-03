@@ -119,13 +119,15 @@ export const getStudentLiveSessionAccess = cache(
 
         /* ---------- Selected Students ---------- */
 
+
         if (session.audience_type === "selected_students") {
             const { data: selectedStudent } = await supabase
                 .from("mentorship_session_students")
                 .select("student_id")
-                .eq("mentorship_session_id", session.id)
+                .eq("session_id", session.id)
                 .eq("student_id", user.userId)
                 .maybeSingle();
+
 
             if (!selectedStudent) {
                 return { status: "forbidden" };

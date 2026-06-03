@@ -30,9 +30,9 @@ export const createMentorshipSessionSchema =
                 "selected_students",
             ]),
 
-            student_ids: z.array(
-                z.uuid(),
-            ),
+            student_ids: z
+                .array(z.uuid())
+                .max(2, "Maximum 2 students can be selected"),
 
             duration_minutes: z.union([
                 z.literal(15),
@@ -55,7 +55,7 @@ export const createMentorshipSessionSchema =
                     values.student_ids.length === 0
                 ) {
                     ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
+                        code: "custom",
 
                         path: ["student_ids"],
 
