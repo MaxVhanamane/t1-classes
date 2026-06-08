@@ -201,6 +201,9 @@ export function MeetingControls({
             </SheetTrigger>
 
             <SheetContent
+              onOpenAutoFocus={(e) => {
+                e.preventDefault();
+              }}
               side="right"
               className="top-4 flex h-[80dvh] w-[90vw] flex-col rounded-l-3xl border-l p-0 shadow-2xl sm:max-w-md"
             >

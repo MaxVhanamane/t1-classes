@@ -1,8 +1,20 @@
-import { NextResponse } from "next/server";
+import {
+    connection,
+    NextResponse,
+} from "next/server";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import {
+    createServerSupabaseClient,
+} from "@/src/lib/supabase/supabase-server";
 
-import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
+import {
+    requireStudentApiRoute,
+} from "@/src/lib/auth/require-role-api-route";
+
+type GroupSessionStatus =
+    | "live"
+    | "scheduled"
+    | "ended";
 
 type GroupSessionRpcRow = {
     id: string;
@@ -16,7 +28,9 @@ type GroupSessionRpcRow = {
     | "selected_students";
 
     meeting_id: string | null;
+
     meeting_passcode: string | null;
+
     starts_at: string;
 
     expected_duration_minutes: number | null;
@@ -36,7 +50,6 @@ type GroupSessionRpcRow = {
 
 export async function GET(
     req: Request,
-
     {
         params,
     }: {
@@ -45,7 +58,7 @@ export async function GET(
         }>;
     },
 ) {
-    /* ---------- Auth ---------- */
+    await connection();
 
     const auth =
         await requireStudentApiRoute();
@@ -54,34 +67,48 @@ export async function GET(
         return auth.response;
     }
 
-    const user =
-        auth.user;
-
     const supabase =
         await createServerSupabaseClient();
 
     const batchId =
         (await params).batchId;
 
-    /* ---------- Pagination ---------- */
-
     const {
         searchParams,
     } = new URL(req.url);
 
-    const page =
-        Math.max(
-            1,
-            Number(
-                searchParams.get(
-                    "page",
-                ) ?? "1",
-            ),
+    const page = Math.max(
+        1,
+        Number(
+            searchParams.get(
+                "page",
+            ) ?? "1",
+        ),
+    );
+
+    const status =
+        (
+            searchParams.get(
+                "status",
+            ) as GroupSessionStatus | null
+        ) ?? "live";
+
+    if (
+        status !== "live" &&
+        status !== "scheduled" &&
+        status !== "ended"
+    ) {
+        return NextResponse.json(
+            {
+                error: "Invalid status",
+            },
+            {
+                status: 400,
+            },
         );
+    }
 
     const limit = 10;
-
-    /* ---------- Fetch Sessions ---------- */
 
     const {
         data,
@@ -90,14 +117,19 @@ export async function GET(
         "get_student_group_sessions",
         {
             p_student_id:
-                user.userId,
+                auth.user.userId,
 
             p_batch_id:
                 batchId,
 
-            p_page: page,
+            p_status:
+                status,
 
-            p_limit: limit,
+            p_page:
+                page,
+
+            p_limit:
+                limit,
         },
     );
 
@@ -125,20 +157,21 @@ export async function GET(
         );
     }
 
-    /* ---------- Normalize ---------- */
-
     const rows =
         (data as
             | GroupSessionRpcRow[]
             | null) ?? [];
 
-    const result =
-        rows.map(
+    const total =
+        rows[0]?.total_count ??
+        0;
+
+    return NextResponse.json({
+        items: rows.map(
             (row) => ({
                 id: row.id,
 
-                title:
-                    row.title,
+                title: row.title,
 
                 description:
                     row.description,
@@ -152,28 +185,24 @@ export async function GET(
                 audienceType:
                     row.audience_type,
 
-
                 teacherName:
                     row.teacher_name,
 
                 meetingId:
                     row.meeting_id,
+
                 meetingPasscode:
                     row.meeting_passcode,
+
                 status:
                     row.status,
 
                 canJoin:
                     row.can_join,
             }),
-        );
+        ),
 
-    const total =
-        rows[0]
-            ?.total_count ?? 0;
-
-    return NextResponse.json({
-        items: result,
+        status,
 
         page,
 
@@ -184,6 +213,7 @@ export async function GET(
                 total / limit,
             ),
 
-        pageSize: limit,
+        pageSize:
+            limit,
     });
 }

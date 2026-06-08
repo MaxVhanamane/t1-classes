@@ -4,6 +4,11 @@ import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
 import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
 
+type MentorshipSessionStatus =
+    | "scheduled"
+    | "live"
+    | "ended";
+
 type MentorshipSessionRpcRow = {
     id: string;
 
@@ -25,10 +30,7 @@ type MentorshipSessionRpcRow = {
 
     teacher_name: string;
 
-    status:
-    | "scheduled"
-    | "live"
-    | "ended";
+    status: MentorshipSessionStatus;
 
     can_join: boolean;
 
@@ -46,6 +48,7 @@ export async function GET(
     },
 ) {
     await connection();
+
     /* -------------------------------------------- */
     /* Auth */
     /* -------------------------------------------- */
@@ -66,7 +69,7 @@ export async function GET(
         (await params).batchId;
 
     /* -------------------------------------------- */
-    /* Pagination */
+    /* Query Params */
     /* -------------------------------------------- */
 
     const { searchParams } =
@@ -80,6 +83,27 @@ export async function GET(
             ) ?? "1",
         ),
     );
+
+    const status =
+        (searchParams.get(
+            "status",
+        ) as MentorshipSessionStatus | null) ??
+        "live";
+
+    if (
+        status !== "live" &&
+        status !== "scheduled" &&
+        status !== "ended"
+    ) {
+        return NextResponse.json(
+            {
+                error: "Invalid status",
+            },
+            {
+                status: 400,
+            },
+        );
+    }
 
     const limit = 10;
 
@@ -99,9 +123,14 @@ export async function GET(
             p_batch_id:
                 batchId,
 
-            p_page: page,
+            p_status:
+                status,
 
-            p_limit: limit,
+            p_page:
+                page,
+
+            p_limit:
+                limit,
         },
     );
 
@@ -138,48 +167,46 @@ export async function GET(
             | MentorshipSessionRpcRow[]
             | null) ?? [];
 
-    const result = rows.map(
-        (row) => ({
-            id: row.id,
-
-            title:
-                row.title,
-
-            description:
-                row.description,
-
-            startsAt:
-                row.starts_at,
-
-            endsAt:
-                row.ends_at,
-
-            durationMinutes:
-                row.duration_minutes,
-
-            audienceType:
-                row.audience_type,
-
-            teacherName:
-                row.teacher_name,
-
-            meetingId:
-                row.meeting_id,
-
-            status:
-                row.status,
-
-            canJoin:
-                row.can_join,
-        }),
-    );
-
     const total =
         rows[0]?.total_count ??
         0;
 
     return NextResponse.json({
-        items: result,
+        items: rows.map(
+            (row) => ({
+                id: row.id,
+
+                title:
+                    row.title,
+
+                description:
+                    row.description,
+
+                startsAt:
+                    row.starts_at,
+
+                endsAt:
+                    row.ends_at,
+
+                durationMinutes:
+                    row.duration_minutes,
+
+                audienceType:
+                    row.audience_type,
+
+                teacherName:
+                    row.teacher_name,
+
+                meetingId:
+                    row.meeting_id,
+
+                status:
+                    row.status,
+
+                canJoin:
+                    row.can_join,
+            }),
+        ),
 
         page,
 
@@ -190,6 +217,7 @@ export async function GET(
                 total / limit,
             ),
 
-        pageSize: limit,
+        pageSize:
+            limit,
     });
 }

@@ -1,4 +1,4 @@
-import AdminShell from "@/src/components/ui/admin/admin-shell";
+import AdminShell from "@/src/components/admin/admin-shell";
 import { Suspense } from "react";
 
 export default async function AdminLayout({

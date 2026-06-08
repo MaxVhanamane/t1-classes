@@ -507,17 +507,20 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
       {/* DIALOGS                                      */}
       {/* ============================================= */}
 
-      {playerState.status === "pdf" && playerState.isOpen && (
-        <PdfViewerDialog
-          unit={playerState.unit}
-          loading={playerState.isLoading}
-          onClose={() =>
-            setPlayerState((prev) =>
-              prev.status === "pdf" ? { ...prev, isOpen: false } : prev,
-            )
-          }
-        />
-      )}
+      {playerState.status === "pdf" &&
+        playerState.isOpen &&
+        playerState.unit && (
+          <PdfViewerDialog
+            title={playerState.unit?.title ?? null}
+            pdfUrl={playerState.unit?.contentUrl ?? null}
+            loading={playerState.isLoading}
+            onClose={() =>
+              setPlayerState((prev) =>
+                prev.status === "pdf" ? { ...prev, isOpen: false } : prev,
+              )
+            }
+          />
+        )}
 
       {activePracticeSetId && (
         <PracticeSetDialog

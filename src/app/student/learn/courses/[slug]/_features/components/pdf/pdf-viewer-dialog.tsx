@@ -19,8 +19,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-import { CourseUnitContent } from "../../types/course-unit-content";
-
 import { cn } from "@/src/lib/utils";
 
 import { Button } from "@/src/components/ui/button";
@@ -32,13 +30,22 @@ const PdfViewerClient = dynamic(() => import("./pdf-viewer-client"), {
   ssr: false,
 });
 
-type Props = {
-  unit: CourseUnitContent | null;
+type PdfViewerDialogProps = {
+  title: string | null;
+
+  pdfUrl: string | null;
+
   loading: boolean;
+
   onClose: () => void;
 };
 
-export function PdfViewerDialog({ unit, loading, onClose }: Props) {
+export function PdfViewerDialog({
+  title,
+  pdfUrl,
+  loading,
+  onClose,
+}: PdfViewerDialogProps) {
   const [pdfReady, setPdfReady] = useState(false);
   const [zoomBarOpen, setZoomBarOpen] = useState(true);
   const [scale, setScale] = useState(1);
@@ -109,7 +116,7 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
 
           <div className="mr-10 flex items-center justify-between gap-6">
             <div className="line-clamp-1 text-base font-medium">
-              {unit?.title ?? "Loading document"}
+              {title ?? "Loading document"}
             </div>
 
             <div className="flex items-center gap-2 ">
@@ -154,11 +161,11 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
         <div className="relative flex-1 overflow-hidden bg-background">
           {loading && <CenteredState message="Preparing your document…" />}
 
-          {!loading && unit?.contentUrl && !pdfReady && (
+          {!loading && pdfUrl && !pdfReady && (
             <CenteredState message="Loading document…" />
           )}
 
-          {!loading && unit?.contentUrl && (
+          {!loading && pdfUrl && (
             <>
               <div className="h-full overflow-auto overscroll-contain bg-background pb-24">
                 <div className="min-h-full px-4 pb-6">
@@ -166,7 +173,7 @@ export function PdfViewerDialog({ unit, loading, onClose }: Props) {
                     <div className="mx-auto w-fit">
                       <PdfViewerClient
                         scale={scale}
-                        url={unit.contentUrl}
+                        url={pdfUrl}
                         onLoad={() => setPdfReady(true)}
                       />
                     </div>

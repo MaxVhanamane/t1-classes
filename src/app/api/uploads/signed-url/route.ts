@@ -132,7 +132,12 @@ export async function POST(req: NextRequest) {
 
         let ext: string | undefined;
 
-        if (assetType === "course_pdf") {
+        if (
+            assetType ===
+            "course_pdf" ||
+            assetType ===
+            "question_paper"
+        ) {
             ext =
                 PDF_TYPES[
                 fileType as keyof typeof PDF_TYPES
@@ -223,6 +228,15 @@ export async function POST(req: NextRequest) {
                 bucket = R2_PRIVATE_BUCKET_NAME;
 
                 key = `courses/${courseId}/topics/${topicId}/pdfs/${timestamp}_${uuid}.${ext}`;
+                break;
+            }
+            case "question_paper": {
+                bucket =
+                    R2_PRIVATE_BUCKET_NAME;
+
+                key =
+                    `question-papers/${timestamp}_${uuid}.${ext}`;
+
                 break;
             }
         }

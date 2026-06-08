@@ -1,21 +1,37 @@
-import { NextResponse } from "next/server";
+import {
+    connection,
+    NextResponse,
+} from "next/server";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
-import { getEnrollmentAccess } from "@/src/lib/server/enrollment-access";
+import {
+    createServerSupabaseClient,
+} from "@/src/lib/supabase/supabase-server";
 
-type LiveClassRow = {
+import {
+    requireStudentApiRoute,
+} from "@/src/lib/auth/require-role-api-route";
+
+type LiveClassStatus =
+    | "live"
+    | "upcoming"
+    | "completed";
+
+type BatchLiveClassRpcRow = {
     id: string;
-    title: string;
-    description: string | null;
-    youtube_live_id: string;
-    starts_at: string;
-    ends_at: string;
-};
 
-type LiveClassJoinRow = {
-    live_class_id: string;
-    live_classes: LiveClassRow | null;
+    title: string;
+
+    description: string | null;
+
+    youtube_live_id: string;
+
+    starts_at: string;
+
+    ends_at: string;
+
+    status: LiveClassStatus;
+
+    total_count: number;
 };
 
 export async function GET(
@@ -28,6 +44,8 @@ export async function GET(
         }>;
     },
 ) {
+    await connection();
+
     const auth =
         await requireStudentApiRoute();
 
@@ -35,151 +53,135 @@ export async function GET(
         return auth.response;
     }
 
-    const user = auth.user;
-
     const supabase =
         await createServerSupabaseClient();
 
-    const { batchId } =
-        await params;
+    const batchId =
+        (await params).batchId;
 
-    /* ---------------------------------- */
-    /* Enrollment Gate                    */
-    /* ---------------------------------- */
-    const enrollment =
-        await getEnrollmentAccess(
-            supabase,
-            user.userId,
-            {
-                type: "batch",
-                batchId,
-            },
-        );
-
-    if (
-        !enrollment.hasAccess
-    ) {
-        return NextResponse.json(
-            {
-                error:
-                    "Access denied",
-            },
-            {
-                status: 403,
-            },
-        );
-    }
-
-    /* ---------------------------------- */
-    /* Pagination                         */
-    /* ---------------------------------- */
-    const url =
+    const { searchParams } =
         new URL(req.url);
 
-    const page = Math.max(
-        1,
-        Number(
-            url.searchParams.get(
-                "page",
-            ),
-        ) || 1,
+    const rawPage = Number(
+        searchParams.get("page") ??
+        "1",
     );
 
-    const limit = Math.min(
-        20,
-        Math.max(
-            1,
-            Number(
-                url.searchParams.get(
-                    "limit",
-                ),
-            ) || 6,
-        ),
-    );
-
-    const from =
-        (page - 1) * limit;
-
-    const to =
-        from + limit - 1;
-
-    /* ---------------------------------- */
-    /* Fetch                              */
-    /* ---------------------------------- */
-    const {
-        data,
-        count,
-        error,
-    } = await supabase
-        .from(
-            "live_class_batches",
-        )
-        .select(
-            `
-      live_class_id,
-      live_classes (
-        id,
-        title,
-        description,
-        youtube_live_id,
-        starts_at,
-        ends_at
-      )
-    `,
-            {
-                count: "exact",
-            },
-        )
-        .eq("batch_id", batchId)
-        .order(
-            "starts_at",
-            {
-                referencedTable:
-                    "live_classes",
-                ascending: false,
-            },
-        )
-        .range(from, to)
-        .overrideTypes<
-            LiveClassJoinRow[]
-        >();
+    const status =
+        (searchParams.get(
+            "status",
+        ) as LiveClassStatus | null) ??
+        "live";
 
     if (
-        error ||
-        !data
+        status !== "live" &&
+        status !== "upcoming" &&
+        status !== "completed"
     ) {
         return NextResponse.json(
             {
-                error:
-                    "Failed to load live classes",
+                error: "Invalid status",
             },
             {
-                status: 500,
+                status: 400,
             },
         );
     }
 
-    /* ---------------------------------- */
-    /* Normalize                          */
-    /* ---------------------------------- */
-    const rows: LiveClassRow[] =
-        data
-            .map(
-                (item) =>
-                    item.live_classes,
-            )
-            .filter(
-                (
-                    item,
-                ): item is LiveClassRow =>
-                    item !== null,
-            );
+    const page =
+        Number.isFinite(rawPage) &&
+            rawPage > 0
+            ? rawPage
+            : 1;
+
+    const limit = 10;
+
+    const {
+        data,
+        error,
+    } = await supabase.rpc(
+        "get_student_batch_live_classes",
+        {
+            p_student_id:
+                auth.user.userId,
+
+            p_batch_id:
+                batchId,
+
+            p_status:
+                status,
+
+            p_page:
+                page,
+
+            p_limit:
+                limit,
+        },
+    );
+
+    if (error) {
+        console.error(
+            "[FETCH_BATCH_LIVE_CLASSES_ERROR]",
+            error,
+        );
+
+        return NextResponse.json(
+            {
+                error:
+                    error.message ===
+                        "Access denied"
+                        ? "Access denied"
+                        : "Failed to load live classes",
+            },
+            {
+                status:
+                    error.message ===
+                        "Access denied"
+                        ? 403
+                        : 500,
+            },
+        );
+    }
+
+    const rows =
+        (data as
+            | BatchLiveClassRpcRow[]
+            | null) ?? [];
+
+    const total =
+        rows[0]?.total_count ?? 0;
 
     return NextResponse.json({
-        rows,
-        total:
-            count ?? 0,
+        items: rows.map((row) => ({
+            id: row.id,
+
+            title: row.title,
+
+            description:
+                row.description,
+
+            youtubeLiveId:
+                row.youtube_live_id,
+
+            startsAt:
+                row.starts_at,
+
+            endsAt:
+                row.ends_at,
+
+            status:
+                row.status,
+        })),
+
         page,
-        limit,
+
+        total,
+
+        totalPages:
+            Math.ceil(
+                total / limit,
+            ),
+
+        pageSize: limit,
     });
 }

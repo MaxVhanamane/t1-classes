@@ -144,10 +144,8 @@ function mapRowToForm(course: CourseRow): CourseFormValues {
 
 export function CourseDialog({ course, open, onOpenChange }: Props) {
   const isEdit = Boolean(course);
-
   const { uploadFile } = useR2Upload();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
 
@@ -388,7 +386,10 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
     >
       <DialogContent
         className="sm:max-w-150 max-h-[95vh] overflow-y-auto"
-        onInteractOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Course" : "Create Course"}</DialogTitle>
@@ -724,8 +725,7 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
                       />
 
                       <p
-                        className={`
-            text-xs text-right
+                        className={`text-xs text-right
             ${
               value.length > LIMIT * 0.85
                 ? "text-destructive"
@@ -782,8 +782,7 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
                       />
 
                       <p
-                        className={`
-            text-xs text-right
+                        className={`text-xs text-right
             ${
               value.length > LIMIT * 0.85
                 ? "text-destructive"
@@ -887,10 +886,7 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         disabled={saving}
-                        className="
-
-    disabled:opacity-50
-  "
+                        className="disabled:opacity-50"
                       />
                     </FormControl>
                   </div>

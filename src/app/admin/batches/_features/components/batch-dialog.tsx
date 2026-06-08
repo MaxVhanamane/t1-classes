@@ -465,7 +465,8 @@ export function BatchDialog({
         onInteractOutside={(e) => {
           e.preventDefault();
         }}
-        className="sm:max-w-150 max-h-[90vh] overflow-y-auto"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="sm:max-w-150 max-h-[90dvh] overflow-y-auto"
       >
         <DialogHeader>
           <DialogTitle>{batch ? "Edit Batch" : "Create Batch"}</DialogTitle>

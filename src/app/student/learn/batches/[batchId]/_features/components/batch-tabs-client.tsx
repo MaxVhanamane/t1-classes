@@ -1,23 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/src/components/ui/button";
-
 import { CourseCard } from "./batch-course-card";
-
-import BatchTestsPanel from "./batch-tests-panel";
-import BatchLiveClassesPanel from "./batch-live-classes-panel";
-import BatchMentorshipSessionsPanel from "./batch-mentorship-sessions-panel";
-import BatchGroupSessionsPanel from "./batch-group-sessions-panel";
-
 import { BatchDetailsResponse } from "@/src/types/batches.types";
-import { BatchAttendancePanel } from "./batch-attendance-panel";
+import BatchQuestionPapersPanel from "./question-papers/batch-question-papers-panel";
+import BatchTestsPanel from "./tests/batch-tests-panel";
+import BatchLiveClassesPanel from "./live-classes/batch-live-classes-panel";
+import BatchMentorshipSessionsPanel from "./mentorship-sessions/batch-mentorship-sessions-panel";
+import BatchGroupSessionsPanel from "./group-sessions/batch-group-sessions-panel";
+import { BatchAttendancePanel } from "./batch-attendance/batch-attendance-panel";
 
 type TabKey =
   | "courses"
   | "tests"
+  | "question-papers"
   | "live-classes"
   | "mentorship"
   | "group-sessions"
@@ -34,6 +32,10 @@ const tabs: {
   {
     key: "tests",
     label: "Tests",
+  },
+  {
+    key: "question-papers",
+    label: "Question Papers",
   },
   {
     key: "live-classes",
@@ -206,7 +208,7 @@ export default function BatchTabsClient({
               duration: 0.18,
               ease: "easeOut",
             }}
-            className="touch-pan-y"
+            className="touch-pan-y min-h-[50dvh]"
           >
             {activeTab === "courses" && (
               <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -223,6 +225,11 @@ export default function BatchTabsClient({
             {activeTab === "tests" && (
               <section className="mb-6">
                 <BatchTestsPanel batchId={batchId} />
+              </section>
+            )}
+            {activeTab === "question-papers" && (
+              <section className="mb-6">
+                <BatchQuestionPapersPanel batchId={batchId} />
               </section>
             )}
 

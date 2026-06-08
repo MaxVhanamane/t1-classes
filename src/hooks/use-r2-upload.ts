@@ -11,7 +11,8 @@ export type UploadAssetType =
     | "instructor_avatar"
     | "user_avatar"
     | "course_pdf"
-    | "batch_thumbnail";
+    | "batch_thumbnail"
+    | "question_paper";
 
 type UploadParams = {
     file: File
@@ -87,15 +88,9 @@ export function useR2Upload() {
             });
 
             if (!uploadRes.ok) {
-                const text = await uploadRes.text();
-                console.error("xxxxxxxxxxxxxx", text);
                 throw new Error("Upload failed");
             }
 
-
-            if (!uploadRes.ok) {
-                throw new Error("Upload failed");
-            }
 
             return {
                 key: data.key,

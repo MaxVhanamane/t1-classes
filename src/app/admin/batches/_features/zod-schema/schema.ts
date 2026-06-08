@@ -69,7 +69,27 @@ export const SUBJECTS = [
     "economics",
 ] as const;
 
-export type Subject = (typeof SUBJECTS)[number];
+export type Subject =
+    (typeof SUBJECTS)[number];
+
+export const SUBJECT_LABELS: Record<
+    Subject,
+    string
+> = {
+    physics: "Physics",
+    chemistry: "Chemistry",
+    mathematics: "Mathematics",
+    biology: "Biology",
+    science: "Science",
+    english: "English",
+    marathi: "Marathi",
+    hindi: "Hindi",
+    history: "History",
+    geography: "Geography",
+    civics: "Civics",
+    economics: "Economics",
+};
+
 
 /* --------------------------------------------------------- */
 /* NEW: Languages                                            */
