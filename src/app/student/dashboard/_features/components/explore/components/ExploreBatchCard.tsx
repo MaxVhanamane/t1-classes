@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Link } from "@/src/components/ui/link";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
-import { ExploreBatch } from "@/src/app/api/explore-batches/types";
+import { ExploreBatch } from "@/src/app/(marketing)/explore/[category]/courses/page/[page]/_features/types/types";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { formatPriceWithComma } from "@/src/lib/helper-functions/format-price-with-comma";
 import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";

@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Button } from "@/src/components/ui/button";
 import { formatPriceWithComma } from "@/src/lib/helper-functions/format-price-with-comma";
 import { CheckCircle2 } from "lucide-react";
-import { ExploreBatchDetail } from "@/src/app/api/explore-batches/[slug]/types";
 import { EnrollmentCTADialog } from "../../../../../courses/details/[slug]/components/enrollment-cta-dialog";
+import { ExploreBatchDetail } from "../types/batch.types";
 
 export function BatchCTA({ batch }: { batch: ExploreBatchDetail }) {
   const [openEnrollmentDialog, setOpenEnrollmentDialog] = useState(false);

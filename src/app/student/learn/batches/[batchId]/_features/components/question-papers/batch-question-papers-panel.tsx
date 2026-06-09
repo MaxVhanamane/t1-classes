@@ -43,7 +43,7 @@ async function fetchQuestionPapers(
   page: number,
 ): Promise<Response> {
   const response = await fetch(
-    `/api/batches/${batchId}/question-papers?page=${page}&paperCategory=${paperCategory}`,
+    `/api/student/batches/${batchId}/question-papers?page=${page}&paperCategory=${paperCategory}`,
     {
       credentials: "include",
     },

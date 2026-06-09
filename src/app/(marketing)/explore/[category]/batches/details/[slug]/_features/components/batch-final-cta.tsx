@@ -5,8 +5,8 @@ import { CheckCircle2, Clock, Users } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { formatPriceWithComma } from "@/src/lib/helper-functions/format-price-with-comma";
-import { ExploreBatchDetail } from "@/src/app/api/explore-batches/[slug]/types";
 import { EnrollmentCTADialog } from "../../../../../courses/details/[slug]/components/enrollment-cta-dialog";
+import { ExploreBatchDetail } from "../types/batch.types";
 
 export function BatchFinalCTA({ batch }: { batch: ExploreBatchDetail }) {
   const [openEnrollmentDialog, setOpenEnrollmentDialog] = useState(false);

@@ -1,6 +1,5 @@
 import { JSONContent } from "@tiptap/react";
 
-import { ExploreCourseMarketing } from "../types";
 
 import type {
     Category,
@@ -10,6 +9,37 @@ import type {
     Language,
     Location,
 } from "@/src/app/admin/batches/_features/zod-schema/schema";
+
+export interface ExploreCourseMarketing {
+    id: string;
+    title: string;
+    slug: string;
+
+    description: JSONContent | null;
+    subtitle: string | null;
+
+    learning_outcomes: string[] | null;
+    target_audience: string[] | null;
+
+    thumbnail_image: string | null;
+
+    /* ---------- category ---------- */
+    category: Category;
+
+    /* ---------- academic ---------- */
+    class_level: number | null;
+    board: Board | null;
+    target_exam: TargetExam | null;
+    subjects: Subject[] | null;
+
+    /* ---------- pricing ---------- */
+    list_price: number;
+    sale_price: number;
+
+    /* ---------- delivery ---------- */
+    languages: Language[] | null;
+}
+
 
 export type ExploreCourseForBatch =
     ExploreCourseMarketing;

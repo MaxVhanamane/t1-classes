@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import { ExploreBatchDetail } from "@/src/app/api/explore-batches/[slug]/types";
 import { Calendar, Clock, Globe, MapPin, Users } from "lucide-react";
 import { differenceInDays, format } from "date-fns";
 import { Badge } from "@/src/components/ui/badge";
+import { ExploreBatchDetail } from "../types/batch.types";
 
 export function BatchMetaInline({ batch }: { batch: ExploreBatchDetail }) {
   const [daysLeft] = useState<number>(() => {

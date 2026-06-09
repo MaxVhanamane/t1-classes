@@ -22,7 +22,7 @@ export function useStudentNotifications() {
 
         queryFn: () =>
             fetchWrapper<Response>(
-                "/api/notifications/student"
+                "/api/student/notifications"
             ),
 
         staleTime: 1000 * 60, // 1 min (no unnecessary refetch)

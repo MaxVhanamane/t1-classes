@@ -29,7 +29,7 @@ async function fetchMentorshipSessions(
   page: number,
 ): Promise<StudentMentorshipSessionsResponse> {
   return fetchWrapper<StudentMentorshipSessionsResponse>(
-    `/api/batches/${batchId}/mentorship-sessions?page=${page}&status=${status}`,
+    `/api/student/batches/${batchId}/mentorship-sessions?page=${page}&status=${status}`,
   );
 }
 

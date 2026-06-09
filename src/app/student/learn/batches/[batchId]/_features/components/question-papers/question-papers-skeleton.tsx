@@ -7,7 +7,7 @@ export function QuestionPapersSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 3 }).map((_, index) => (
-        <Card key={index} className="relative md:w-2xl dark:bg-black">
+        <Card key={index} className="relative dark:bg-black">
           <DottedBackground />
 
           <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -16,7 +16,7 @@ export function QuestionPapersSkeleton() {
                 <div className="bg-muted size-9 animate-pulse rounded-md" />
 
                 <div className="min-w-0 flex-1 space-y-2">
-                  <div className="bg-muted h-5 w-64 animate-pulse rounded" />
+                  <div className="bg-muted h-5 w-44 md:w-64 animate-pulse rounded" />
 
                   <div className="bg-muted h-4 w-28 animate-pulse rounded" />
                 </div>

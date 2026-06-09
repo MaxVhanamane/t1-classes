@@ -64,10 +64,11 @@ export function Pagination({
         <span className="text-foreground font-medium">{totalCount}</span> total
       </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-1.5">
         <Button
           variant="outline"
           size="sm"
+          className="shrink-0"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
         >
@@ -80,6 +81,7 @@ export function Pagination({
             key={pageNumber}
             size="sm"
             variant={pageNumber === page ? "default" : "outline"}
+            className="w-9 shrink-0"
             onClick={() => onPageChange(pageNumber)}
           >
             {pageNumber}
@@ -89,6 +91,7 @@ export function Pagination({
         <Button
           variant="outline"
           size="sm"
+          className="shrink-0"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
         >

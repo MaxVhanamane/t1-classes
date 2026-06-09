@@ -32,7 +32,7 @@ async function fetchLiveClasses(
   page: number,
 ): Promise<LiveClassesResponse> {
   return fetchWrapper<LiveClassesResponse>(
-    `/api/batches/${batchId}/live-classes?page=${page}&status=${status}`,
+    `/api/student/batches/${batchId}/live-classes?page=${page}&status=${status}`,
   );
 }
 

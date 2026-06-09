@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { ExploreBatchDetail } from "@/src/app/api/explore-batches/[slug]/types";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { CheckCircle2 } from "lucide-react";
 import { BatchCTA } from "./batch-cta";
 import { BatchMetaInline } from "./batch-meta-inline";
+import { ExploreBatchDetail } from "../types/batch.types";
 
 export function BatchHero({ batch }: { batch: ExploreBatchDetail }) {
   return (

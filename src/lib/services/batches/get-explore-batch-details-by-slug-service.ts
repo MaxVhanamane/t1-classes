@@ -1,8 +1,6 @@
-import {
-    ExploreBatchDetail,
-    ExploreCourseForBatch,
-} from "@/src/app/api/explore-batches/[slug]/types";
 
+
+import { ExploreBatchDetail, ExploreCourseForBatch } from "@/src/app/(marketing)/explore/[category]/batches/details/[slug]/_features/types/batch.types";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function getExploreBatchDetailBySlugService(

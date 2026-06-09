@@ -1,5 +1,5 @@
 import { ExploreCourseCard } from "@/src/app/student/dashboard/_features/components/explore/components/ExploreCourseCard";
-import { ExploreCourseForBatch } from "@/src/app/api/explore-batches/[slug]/types";
+import { ExploreCourseForBatch } from "../types/batch.types";
 
 export function BatchCoursesSection({
   courses,

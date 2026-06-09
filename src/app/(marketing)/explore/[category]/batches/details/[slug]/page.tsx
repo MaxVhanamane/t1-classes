@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 
-import type { ExploreBatchDetail } from "@/src/app/api/explore-batches/[slug]/types";
 import { createStaticSupabaseClient } from "@/src/lib/supabase/supabase-static";
 import { getExploreBatchDetailBySlugService } from "@/src/lib/services/batches/get-explore-batch-details-by-slug-service";
 import { BatchHero } from "./_features/components/batch-hero";
@@ -14,6 +13,7 @@ import { BatchFAQSection } from "./_features/components/batch-faq-section";
 import { InstructorsSection } from "@/src/components/instructors/instructors-section";
 import { SectionDivider } from "../../../../../../../components/ui/section-divider";
 import { cacheLife, cacheTag } from "next/cache";
+import { ExploreBatchDetail } from "./_features/types/batch.types";
 
 // export const revalidate = false; // never revalidate — permanent static
 

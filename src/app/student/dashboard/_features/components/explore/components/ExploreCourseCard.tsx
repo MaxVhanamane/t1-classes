@@ -3,7 +3,7 @@ import { Link } from "@/src/components/ui/link";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import { ExploreCourse } from "@/src/app/api/explore-batches/types";
+import { ExploreCourse } from "@/src/app/(marketing)/explore/[category]/courses/page/[page]/_features/types/types";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { formatPriceWithComma } from "@/src/lib/helper-functions/format-price-with-comma";
 

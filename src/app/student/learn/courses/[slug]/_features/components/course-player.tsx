@@ -8,10 +8,8 @@ import {
   useState,
 } from "react";
 import type { CourseOutline } from "@/src/types/course-outline.types";
-import { CourseStructureTree } from "./course-structure-tree";
 import { PlayerSkeleton } from "./player-skeleton";
 import { VideoPlayer } from "./video-player";
-// import { PdfViewerDialog } from "./pdf/pdf-viewer-dialog";
 import EmptyPlayerState from "./empty-player-state";
 import {
   Drawer,
@@ -25,12 +23,13 @@ import {
   findUnitPath,
   getFirstPlayableUnit,
 } from "../helper-functions/course-progress";
-// import { PracticeSetDialog } from "./practice-set/practice-set-dialog";
 import PlayerErrorState from "./player-error-state";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 
 import dynamic from "next/dynamic";
+import { CourseSidebar } from "./course-sidebar";
+import { CourseMobileContent } from "./course-mobile-content";
 
 const PdfViewerDialog = dynamic(() =>
   import("./pdf/pdf-viewer-dialog").then((mod) => mod.PdfViewerDialog),
@@ -72,7 +71,7 @@ type PlayerState =
 /* ========================================================= */
 const fetchUnit = (unitId: string): Promise<CourseUnitContent> => {
   return fetchWrapper<CourseUnitContent>(
-    `/api/learning/courses/units/${unitId}`,
+    `/api/student/courses/units/${unitId}`,
   );
 };
 
@@ -423,10 +422,11 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
 
         {/* Mobile — inline tree */}
         {mobileMode === "inline" && (
-          <div className="lg:hidden mt-3">
-            <div className="mx-1 border border-border rounded-sm">
-              <CourseStructureTree {...treeProps} />
-            </div>
+          <div className="mt-3 px-1 lg:hidden">
+            <CourseMobileContent
+              courseId={outline.courseId}
+              treeProps={treeProps}
+            />
           </div>
         )}
 
@@ -447,38 +447,11 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
       {/* RIGHT — SIDEBAR                              */}
       {/* ============================================= */}
 
-      <aside
-        className={cn(
-          "hidden lg:block",
-          mode === "preview" && "w-full lg:w-95 shrink-0",
-        )}
-      >
-        <div
-          className={cn(
-            "bg-background",
-            mode === "learn" && "fixed top-14 right-7 w-md h-screen",
-            mode === "preview" &&
-              "relative border rounded-xl h-150 overflow-hidden",
-          )}
-        >
-          <div
-            className={cn(
-              "flex flex-col",
-              mode === "learn" && "h-[calc(100vh-56px)]",
-              mode === "preview" && "h-full",
-            )}
-          >
-            <h1 className="px-4 py-3 text-lg font-semibold shrink-0">
-              Course Content
-            </h1>
-            <div className="flex-1 overflow-y-auto relative px-4 py-4">
-              <div className="mx-auto border border-border rounded-sm">
-                <CourseStructureTree {...treeProps} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <CourseSidebar
+        mode={mode}
+        courseId={outline.courseId}
+        treeProps={treeProps}
+      />
 
       {/* ============================================= */}
       {/* DRAWER (mobile)                              */}
@@ -489,16 +462,19 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
           <DrawerHeader className="border-b">
             <DrawerTitle>Course Content</DrawerTitle>
           </DrawerHeader>
-          <div className="flex-1 overflow-y-auto mt-1.5">
-            <div className="mx-1 border border-border rounded-sm">
-              <CourseStructureTree
-                {...treeProps}
-                onUnitSelect={(id, type) => {
+
+          <div className="mt-1.5 flex-1 overflow-y-auto px-1 py-4">
+            <CourseMobileContent
+              courseId={outline.courseId}
+              treeProps={{
+                ...treeProps,
+                onUnitSelect: (id, type) => {
                   void loadUnit(id, type);
+
                   setMobileOpen(false);
-                }}
-              />
-            </div>
+                },
+              }}
+            />
           </div>
         </DrawerContent>
       </Drawer>

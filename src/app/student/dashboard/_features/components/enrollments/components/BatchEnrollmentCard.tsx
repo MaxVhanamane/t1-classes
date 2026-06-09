@@ -2,7 +2,7 @@ import { Link } from "@/src/components/ui/link";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import type { BatchEnrollment } from "../../../../../../api/my-enrollments/types";
+import type { BatchEnrollment } from "../../../../../../../lib/services/enrollments/types";
 import { formatDateShort } from "@/src/lib/date";
 import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";
 import { GrafanaBackground } from "@/src/components/ui/grafana-background";

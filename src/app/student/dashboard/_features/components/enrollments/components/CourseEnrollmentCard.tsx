@@ -2,7 +2,7 @@ import { Link } from "@/src/components/ui/link";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import type { CourseEnrollment } from "../../../../../../api/my-enrollments/types";
+import type { CourseEnrollment } from "../../../../../../../lib/services/enrollments/types";
 import { formatDateShort } from "@/src/lib/date";
 import { GrafanaBackground } from "@/src/components/ui/grafana-background";
 

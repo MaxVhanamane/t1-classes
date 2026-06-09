@@ -5,7 +5,7 @@ import type {
     CourseEnrollment,
     BatchEnrollment,
     RawEnrollmentRow,
-} from "@/src/app/api/my-enrollments/types";
+} from "@/src/lib/services/enrollments/types";
 
 import { SupabaseClient } from "@supabase/supabase-js";
 

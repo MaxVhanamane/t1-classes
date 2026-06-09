@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/src/components/ui/dialog";
@@ -112,8 +113,11 @@ export function PdfViewerDialog({
         {/* ================= HEADER ================= */}
 
         <DialogHeader className="border-b bg-background px-4 py-3">
-          <DialogTitle className="sr-only">Course PDF document</DialogTitle>
+          <DialogTitle className="sr-only">PDF document viewer</DialogTitle>
 
+          <DialogDescription className="sr-only">
+            View and navigate the PDF document using the available controls.
+          </DialogDescription>
           <div className="mr-10 flex items-center justify-between gap-6">
             <div className="line-clamp-1 text-base font-medium">
               {title ?? "Loading document"}

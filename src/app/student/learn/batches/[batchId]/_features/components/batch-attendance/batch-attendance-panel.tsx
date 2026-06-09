@@ -53,7 +53,7 @@ async function fetchAttendance(
   searchParams.set("year", year);
 
   const response = await fetch(
-    `/api/batches/${batchId}/attendance?${searchParams.toString()}`,
+    `/api/student/batches/${batchId}/attendance?${searchParams.toString()}`,
     {
       credentials: "include",
     },

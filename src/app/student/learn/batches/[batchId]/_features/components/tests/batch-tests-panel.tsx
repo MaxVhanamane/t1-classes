@@ -29,7 +29,7 @@ async function fetchBatchTests(
   page: number,
 ): Promise<BatchTestsResponse> {
   return fetchWrapper<BatchTestsResponse>(
-    `/api/batches/${batchId}/tests?page=${page}&status=${status}`,
+    `/api/student/batches/${batchId}/tests?page=${page}&status=${status}`,
   );
 }
 

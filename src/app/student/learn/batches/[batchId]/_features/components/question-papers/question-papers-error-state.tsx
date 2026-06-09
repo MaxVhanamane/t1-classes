@@ -11,7 +11,7 @@ type Props = {
 
 export function QuestionPapersErrorState({ message, onRetry }: Props) {
   return (
-    <Card className="md:w-2xl">
+    <Card>
       <CardContent className="space-y-3 py-10 text-center">
         <p className="text-sm text-muted-foreground">
           {message ?? "Failed to load question papers."}

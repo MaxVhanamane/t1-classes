@@ -42,7 +42,7 @@ async function fetchPracticeSet(
   practiceSetId: string,
 ): Promise<PracticeSetContent> {
   return fetchWrapper<PracticeSetContent>(
-    `/api/practice-sets/${practiceSetId}`,
+    `/api/student/practice-sets/${practiceSetId}`,
   );
 }
 

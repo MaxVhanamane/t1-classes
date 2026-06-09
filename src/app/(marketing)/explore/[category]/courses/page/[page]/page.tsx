@@ -4,7 +4,7 @@ import { CATEGORY_LABELS } from "@/src/app/admin/batches/_features/zod-schema/sc
 import { ExploreCourseCard } from "@/src/app/student/dashboard/_features/components/explore/components/ExploreCourseCard";
 import { SectionError } from "@/src/components/system/SectionError";
 import { Link } from "@/src/components/ui/link";
-import type { ExploreCourse } from "@/src/app/api/explore-batches/types";
+import type { ExploreCourse } from "@/src/app/(marketing)/explore/[category]/courses/page/[page]/_features/types/types";
 import { cacheLife, cacheTag } from "next/cache";
 
 // export const dynamic = "force-static";

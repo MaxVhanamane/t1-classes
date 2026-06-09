@@ -31,7 +31,7 @@ export function QuestionPapersEmptyState({ category }: Props) {
   const Icon = config.icon;
 
   return (
-    <Card className="relative overflow-hidden border border-dashed md:w-2xl dark:bg-black">
+    <Card className="relative overflow-hidden border border-dashed  dark:bg-black">
       <DottedBackground />
 
       <CardContent className="relative flex flex-col items-center justify-center px-6 py-12 text-center">

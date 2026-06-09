@@ -1,4 +1,4 @@
-import { BatchMode } from "../explore-batches/types";
+import { BatchMode } from "../../../app/(marketing)/explore/[category]/courses/page/[page]/_features/types/types";
 import type { Category } from "@/src/app/admin/batches/_features/zod-schema/schema";
 
 /* -------------------------------------------------------------------------- */

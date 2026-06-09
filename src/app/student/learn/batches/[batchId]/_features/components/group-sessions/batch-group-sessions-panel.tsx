@@ -29,7 +29,7 @@ async function fetchGroupSessions(
   page: number,
 ): Promise<GroupSessionsResponse> {
   return fetchWrapper<GroupSessionsResponse>(
-    `/api/batches/${batchId}/group-sessions?page=${page}&status=${status}`,
+    `/api/student/batches/${batchId}/group-sessions?page=${page}&status=${status}`,
   );
 }
 

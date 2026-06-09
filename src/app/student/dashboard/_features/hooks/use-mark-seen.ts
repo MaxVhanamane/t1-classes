@@ -9,7 +9,7 @@ export function useMarkNotificationsSeen() {
     return useMutation({
         mutationFn: () =>
             fetchWrapper<{ success: true }>(
-                "/api/notifications/student/seen",
+                "/api/student/notifications/seen",
                 {
                     method: "POST",
                 }

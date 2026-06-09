@@ -1,4 +1,4 @@
-import type { MyEnrollment } from "../../../../../../api/my-enrollments/types";
+import type { MyEnrollment } from "../../../../../../../lib/services/enrollments/types";
 import { CourseEnrollmentCard } from "./CourseEnrollmentCard";
 import { BatchEnrollmentCard } from "./BatchEnrollmentCard";
 import { SectionError } from "@/src/components/system/SectionError";

@@ -54,7 +54,7 @@ export function QuestionPaperCard({
   const hasDescription = !!questionPaper.description?.trim();
 
   return (
-    <Card className="relative md:w-2xl dark:bg-black">
+    <Card className="relative dark:bg-black">
       <DottedBackground />
 
       <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
