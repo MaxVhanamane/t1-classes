@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CourseOutline } from "@/src/types/course-outline.types";
 import { PlayerSkeleton } from "./player-skeleton";
 import { VideoPlayer } from "./video-player";
@@ -120,15 +114,16 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   // Reset transient UI state on route leave/unmount.
   // Next.js App Router may preserve cached client state, so close dialogs/drawers
   // here to prevent PDF/practice/mobile panels reopening when returning.
-  useLayoutEffect(() => {
-    return () => {
-      setPlayerState((prev) =>
-        prev.status === "pdf" ? { ...prev, isOpen: false } : prev,
-      );
-      setActivePracticeSetId(null);
-      setMobileOpen(false);
-    };
-  }, []);
+  // useLayoutEffect(() => {
+  //   return () => {
+  //
+  //     setPlayerState((prev) =>
+  //       prev.status === "pdf" ? { ...prev, isOpen: false } : prev,
+  //     );
+  //     setActivePracticeSetId(null);
+  //     setMobileOpen(false);
+  //   };
+  // }, []);
   /* -------------------------------------------------- */
   /* Load unit                                           */
   /* -------------------------------------------------- */

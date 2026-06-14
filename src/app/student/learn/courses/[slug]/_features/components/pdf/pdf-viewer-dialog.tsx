@@ -48,6 +48,7 @@ export function PdfViewerDialog({
   onClose,
 }: PdfViewerDialogProps) {
   const [pdfReady, setPdfReady] = useState(false);
+
   const [zoomBarOpen, setZoomBarOpen] = useState(true);
   const [scale, setScale] = useState(1);
 

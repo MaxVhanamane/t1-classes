@@ -34,6 +34,15 @@ export default function LoadingCoursePlayer() {
 
         {/* ================= MOBILE STRUCTURE ================= */}
         <div className="lg:hidden mt-3 border-t">
+          {/* Mobile — toggle bar skeleton */}
+          <div className="px-4 flex justify-between items-center border-t border-b py-2">
+            <Skeleton className="h-4 w-28 rounded-md" />
+
+            <div className="flex rounded-lg border p-1 gap-1">
+              <Skeleton className="h-7 w-16 rounded" />
+              <Skeleton className="h-7 w-16 rounded" />
+            </div>
+          </div>
           <div className="space-y-4 p-3">
             {Array.from({ length: 2 }).map((_, chapterIdx) => (
               <div
