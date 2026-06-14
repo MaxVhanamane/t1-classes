@@ -47,6 +47,7 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   section: TestSection;
   editingQuestion: TestQuestion | null;
+  onQuestionCreated?: (question: TestQuestion) => void;
 }
 
 const emptyDoc = {
@@ -252,6 +253,7 @@ export function QuestionBuilderDialog({
   onOpenChange,
   section,
   editingQuestion,
+  onQuestionCreated,
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const queryClient = useQueryClient();
@@ -364,8 +366,12 @@ export function QuestionBuilderDialog({
     });
 
     await queryClient.invalidateQueries({
-      queryKey: ["section-questions", section.id],
+      queryKey: ["admin", "tests", "sections", section.id, "questions"],
     });
+
+    if (!editingQuestion) {
+      onQuestionCreated?.(buildPreviewQuestion(values));
+    }
 
     onOpenChange(false);
     setSubmitting(false);
@@ -489,4 +495,79 @@ export function QuestionBuilderDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+function isNumericalCorrectAnswer(
+  value: CreateQuestionInput["correctAnswer"],
+): value is {
+  target?: number;
+  tolerance?: number;
+} {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    "target" in value
+  );
+}
+
+function buildPreviewQuestion(values: CreateQuestionInput): TestQuestion {
+  const options =
+    values.options?.map((option) => ({
+      id: option.label,
+      label: option.label,
+      text: option.text,
+    })) ?? [];
+
+  let correctAnswer: CorrectAnswer;
+
+  // Single Select
+  if (typeof values.correctAnswer === "string") {
+    const option = options.find(
+      (option) => option.label === values.correctAnswer,
+    );
+
+    correctAnswer = {
+      option_id: option?.id ?? values.correctAnswer,
+    };
+  }
+
+  // Multi Select
+  else if (Array.isArray(values.correctAnswer)) {
+    const selectedLabels = values.correctAnswer;
+
+    correctAnswer = {
+      option_ids: options
+        .filter((option) => selectedLabels.includes(option.label))
+        .map((option) => option.id),
+    };
+  }
+
+  // Numerical
+  else if (isNumericalCorrectAnswer(values.correctAnswer)) {
+    correctAnswer = {
+      target: values.correctAnswer.target ?? 0,
+
+      tolerance: values.correctAnswer.tolerance ?? 0,
+    };
+  }
+
+  // Match Matrix
+  else {
+    correctAnswer = {
+      matrix: values.correctAnswer,
+    };
+  }
+
+  return {
+    id: "__preview__",
+
+    questionText: values.questionText,
+
+    explanation: values.explanation,
+
+    correctAnswer,
+
+    options,
+  };
 }

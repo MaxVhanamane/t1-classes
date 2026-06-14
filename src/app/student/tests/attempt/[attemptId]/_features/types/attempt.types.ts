@@ -14,7 +14,6 @@ export type AttemptSection = {
     fullMarks: number
     negativeMarks: number
     maxSelections: number | null
-    scoringQuestionCount: number | null
     questions: {
         id: string
         questionText: string

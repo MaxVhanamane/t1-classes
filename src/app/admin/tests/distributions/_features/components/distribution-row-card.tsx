@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
@@ -28,13 +27,14 @@ import { ScheduleTestDialog } from "../../../schedule/_features/components/sched
 import { DangerConfirmInput } from "@/src/components/ui/danger-confirm-input";
 import { Link } from "@/src/components/ui/link";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   item: DistributionItem;
 }
 
 export function DistributionRowCard({ item }: Props) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [extendOpen, setExtendOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -73,17 +73,31 @@ export function DistributionRowCard({ item }: Props) {
 
     if (error) {
       toast.error(error);
+
       setDeleting(false);
+
       return;
     }
 
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "test-distributions"],
+      }),
+
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "tests"],
+      }),
+    ]);
+
     toast.success("Distribution deleted");
+
     setDeleteOpen(false);
+
     setCanDelete(false);
-    router.refresh();
 
     setDeleting(false);
   }
+
   return (
     <Card className="p-4 transition hover:bg-muted/40 shadow-none">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

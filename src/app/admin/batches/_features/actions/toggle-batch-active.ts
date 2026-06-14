@@ -1,7 +1,6 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { revalidatePath } from "next/cache";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
 
@@ -30,7 +29,6 @@ export async function toggleBatchActive(
             };
         }
 
-        revalidatePath("/admin/batches");
     } catch (err) {
         console.error("[TOGGLE_BATCH_ACTIVE_FATAL]", err);
         return {

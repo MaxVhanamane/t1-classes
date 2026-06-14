@@ -1,24 +1,20 @@
-import { notFound } from "next/navigation";
-import { getSectionById } from "./_features/actions/get-section";
-import { QuestionBuilderClient } from "./_features/components/question-builder-client";
+"use client";
 
-type Props = {
-  params: Promise<{
-    testId: string;
-    sectionId: string;
-  }>;
-};
+import dynamic from "next/dynamic";
 
-export default async function SectionBuilderPage({ params }: Props) {
-  const { testId, sectionId } = await params;
+import CenteredLoader from "@/src/components/ui/loading/centered-loader";
 
-  let section;
+const QuestionBuilderClient = dynamic(
+  () =>
+    import("./_features/components/question-builder-client").then(
+      (mod) => mod.QuestionBuilderClient,
+    ),
+  {
+    ssr: false,
+    loading: () => <CenteredLoader />,
+  },
+);
 
-  try {
-    section = await getSectionById(testId, sectionId);
-  } catch {
-    notFound();
-  }
-
-  return <QuestionBuilderClient testId={testId} section={section} />;
+export default function SectionBuilderPage() {
+  return <QuestionBuilderClient />;
 }

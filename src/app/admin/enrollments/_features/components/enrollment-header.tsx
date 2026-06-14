@@ -7,8 +7,13 @@ type Props = {
 export function EnrollmentHeader({ onCreate }: Props) {
   return (
     <div className="flex items-center justify-between">
-      <h1 className="text-2xl font-semibold">Enrollments</h1>
+      <div>
+        <h1 className="text-2xl font-semibold">Enrollments</h1>
 
+        <p className="text-muted-foreground text-sm hidden md:block">
+          Manage your enrollments and their details.
+        </p>
+      </div>
       <Button
         onClick={onCreate}
         className="cursor-pointer flex items-center justify-center gap-0"

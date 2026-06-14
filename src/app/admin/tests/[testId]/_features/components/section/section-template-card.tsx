@@ -1,15 +1,26 @@
-import { Card } from "@/src/components/ui/card";
+"use client";
+
+import { CheckCircle2 } from "lucide-react";
+
 import { Badge } from "@/src/components/ui/badge";
+import { Card } from "@/src/components/ui/card";
+
 import { cn } from "@/src/lib/utils";
+
 import type { SectionTemplate } from "../../types/section-template.types";
+
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 interface Props {
   template: SectionTemplate;
+
   selected: boolean;
+
   onSelect: () => void;
+
   disabled: boolean;
+
   disabledReason: string;
 }
 
@@ -23,62 +34,75 @@ export function SectionTemplateCard({
   const hasPartialMarking =
     template.answerMode === "multi_select" &&
     template.defaultPartialMarks !== null;
+
   return (
     <Card
       onClick={disabled ? undefined : onSelect}
       className={cn(
-        "relative p-4 transition border",
-        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
-        selected
-          ? "border-primary bg-primary/5"
-          : !disabled && "hover:border-muted-foreground/40",
+        "relative overflow-hidden border p-5 transition-all duration-200",
+
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer ",
+
+        selected &&
+          "border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20",
+
+        !selected && !disabled && "hover:border-primary/40",
       )}
     >
-      {/* Disabled overlay hint */}
-      {disabled && disabledReason && (
-        <div className="absolute inset-x-0 top-0 rounded-t-md bg-muted px-3 py-1 text-xs text-muted-foreground">
-          {disabledReason}
+      {/* Selected indicator */}
+      {selected && (
+        <div className="absolute right-4 top-4">
+          <CheckCircle2 className="size-5 text-green-500" />
         </div>
       )}
 
-      <div className="flex items-start justify-between gap-3 pt-2">
-        <div className="space-y-2">
-          <h3 className="font-medium">{template.name}</h3>
+      {/* Disabled badge */}
+      {disabled && disabledReason && (
+        <Badge variant="secondary" className="absolute right-4 top-4">
+          {disabledReason}
+        </Badge>
+      )}
 
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {template.description}
-            </ReactMarkdown>
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 pr-10">
+          <div className="space-y-2">
+            <h3 className="text-base font-semibold">{template.name}</h3>
+
+            <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {template.description}
+              </ReactMarkdown>
+            </div>
           </div>
+
+          <Badge variant="outline" className="shrink-0 capitalize">
+            {template.answerMode.replaceAll("_", " ")}
+          </Badge>
         </div>
 
-        <Badge variant="outline" className="capitalize shrink-0">
-          {template.answerMode.replace("_", " ")}
-        </Badge>
-      </div>
+        {/* Marks */}
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary">
+            +{template.defaultFullMarks} Correct
+          </Badge>
 
-      {/* Marks summary */}
-      <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
-        <span>
-          <span className="font-medium text-foreground">Correct</span>: +
-          {template.defaultFullMarks}
-        </span>
+          <Badge variant="secondary">
+            {template.defaultNegativeMarks} Incorrect
+          </Badge>
 
-        {template.defaultNegativeMarks < 0 && (
-          <span>
-            <span className="font-medium text-foreground">Incorrect</span>:{" "}
-            {template.defaultNegativeMarks}
-          </span>
-        )}
+          <Badge variant="secondary">0 Unanswered</Badge>
 
-        <span>
-          <span className="font-medium text-foreground">Unanswered</span>: 0
-        </span>
-        {hasPartialMarking && (
-          <span className="italic text-muted-foreground">
-            Partial marking enabled
-          </span>
-        )}
+          {hasPartialMarking && (
+            <Badge variant="outline">Partial Marking</Badge>
+          )}
+
+          {template.maxSelections && (
+            <Badge variant="outline">
+              Max {template.maxSelections} selections
+            </Badge>
+          )}
+        </div>
       </div>
     </Card>
   );

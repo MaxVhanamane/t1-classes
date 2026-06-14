@@ -1,18 +1,21 @@
-import { PaymentsList } from "./payments-list";
 import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
-import { Payment } from "../../types/payment.types";
+
+import { PaymentsList } from "./payments-list";
 import { RecordPaymentDialog } from "./record-payment-dialog";
 import { RefundDialog } from "./refund-dialog";
 
+import {
+  EnrollmentPayment,
+  FeeStatus,
+} from "../../types/enrollment-fees-data.types";
+
 interface PaymentsSectionProps {
   enrollmentId: string;
-  feeStatus: {
-    final_amount: number;
-    paid_amount: number;
-    pending_amount: number;
-  } | null;
-  payments: Payment[];
+
+  feeStatus: FeeStatus | null;
+
+  payments: EnrollmentPayment[];
 }
 
 export function PaymentsSection({
@@ -20,31 +23,36 @@ export function PaymentsSection({
   feeStatus,
   payments,
 }: PaymentsSectionProps) {
-  if (!feeStatus) return null;
+  if (!feeStatus) {
+    return null;
+  }
 
-  const total = Number(feeStatus.final_amount ?? 0);
+  const total = Number(feeStatus.final_amount);
 
-  const paid = Number(feeStatus.paid_amount ?? 0);
+  const paid = Number(feeStatus.paid_amount);
 
-  const pending = Math.max(total - paid, 0);
+  const pending = Number(feeStatus.pending_amount);
 
-  const extraPaid = Math.max(paid - total, 0);
+  const extraPaid = Number(feeStatus.overpaid_amount);
 
   const status =
     extraPaid > 0
       ? {
           label: "Overpaid",
+
           className:
             "bg-sky-100 text-sky-800 hover:bg-sky-100 border-transparent",
         }
       : pending === 0
         ? {
             label: "Fully paid",
+
             className:
               "bg-green-100 text-green-800 hover:bg-green-100 border-transparent",
           }
         : {
             label: "Pending payment",
+
             className:
               "bg-amber-100 text-amber-800 hover:bg-amber-100 border-transparent",
           };
@@ -84,13 +92,8 @@ export function PaymentsSection({
             <MetricCard label="Paid" value={paid} />
 
             <MetricCard label="Pending" value={pending} />
-            {extraPaid > 0 && (
-              <MetricCard
-                label="Overpaid"
-                value={extraPaid}
-                muted={extraPaid === 0}
-              />
-            )}
+
+            {extraPaid > 0 && <MetricCard label="Overpaid" value={extraPaid} />}
           </div>
 
           {/* Overpaid Notice */}
@@ -141,7 +144,9 @@ function MetricCard({
   muted = false,
 }: {
   label: string;
+
   value: number;
+
   muted?: boolean;
 }) {
   return (

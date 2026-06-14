@@ -148,6 +148,15 @@ export const CATEGORY_TARGET_EXAMS: Record<Category, TargetExam[]> = {
     gate: [],
 };
 
+export const BATCH_MODES = [
+    "offline",
+    "online",
+    "hybrid",
+] as const;
+
+export type BatchMode =
+    (typeof BATCH_MODES)[number];
+
 /* --------------------------------------------------------- */
 /* Schema                                                    */
 /* --------------------------------------------------------- */

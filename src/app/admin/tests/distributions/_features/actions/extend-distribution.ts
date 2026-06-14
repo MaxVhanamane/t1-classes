@@ -1,7 +1,6 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { revalidatePath } from "next/cache";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
@@ -71,7 +70,6 @@ export async function extendDistribution(
             };
         }
 
-        revalidatePath("/admin/tests/distributions");
 
     } catch (err) {
         console.error("[EXTEND_DISTRIBUTION_FATAL]", err);

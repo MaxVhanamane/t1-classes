@@ -1,72 +1,161 @@
 "use client";
 
 import { useState } from "react";
-import { QuestionBuilderHeader } from "./question-builder-header";
-import { SectionRulesCard } from "./section-rules-card";
-import { QuestionsList } from "./questions/questions-list";
-import { QuestionsEmptyState } from "./questions/questions-empty-state";
-import { QuestionBuilderDialog } from "./question-builder/question-builder-dialog";
-import { TestSection } from "../types/section.types";
-import { TestQuestion } from "../types/question.types";
-import { useQuestions } from "../react-query-hooks/use-questions";
+
+import { useParams } from "next/navigation";
+
 import { toast } from "sonner";
+
 import { Card } from "@/src/components/ui/card";
 
-interface Props {
-  testId: string;
-  section: TestSection;
-}
+import { QuestionBuilderHeader } from "./question-builder-header";
 
-export function QuestionBuilderClient({ testId, section }: Props) {
+import { SectionRulesCard } from "./section-rules-card";
+
+import { QuestionsList } from "./questions/questions-list";
+
+import { QuestionsEmptyState } from "./questions/questions-empty-state";
+
+import { QuestionBuilderDialog } from "./question-builder/question-builder-dialog";
+
+import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+
+import { useSectionDetails } from "../hooks/use-section-details";
+
+import { useQuestions } from "../hooks/use-questions";
+
+import type { TestQuestion } from "../types/question.types";
+import { RecentlyAddedQuestion } from "./questions/recently-added-question";
+import { Pagination } from "@/src/components/ui/pagination/pagination";
+import { cn } from "@/src/lib/utils";
+import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
+
+export function QuestionBuilderClient() {
+  const params = useParams<{
+    testId: string;
+    sectionId: string;
+  }>();
+
+  const testId = params.testId;
+
+  const sectionId = params.sectionId;
+
+  const [page, setPage] = useState(1);
+
   const [open, setOpen] = useState(false);
+
   const [editing, setEditing] = useState<TestQuestion | null>(null);
 
-  const { data: questions = [], isLoading } = useQuestions(section.id);
+  const [recentQuestion, setRecentQuestion] = useState<TestQuestion | null>(
+    null,
+  );
+
+  const {
+    data: section,
+    isLoading: isSectionLoading,
+    error: sectionError,
+    refetch: refetchSection,
+  } = useSectionDetails(testId, sectionId);
+
+  const {
+    data: questionsData,
+    isLoading: isQuestionsLoading,
+    isFetching,
+  } = useQuestions(sectionId, page);
+
+  const questions = questionsData?.items ?? [];
+
+  const totalQuestions = questionsData?.total ?? 0;
+
+  const totalPages = questionsData?.totalPages ?? 0;
+
+  const pageSize = questionsData?.pageSize ?? 10;
+
+  function dismissRecentQuestion() {
+    setRecentQuestion(null);
+  }
 
   function handleAdd() {
+    if (!section) {
+      return;
+    }
+
     if (section.is_locked) {
       toast.info(
         "This test is locked because it has already been scheduled or attempted.",
       );
+
       return;
     }
+    dismissRecentQuestion();
+
     setEditing(null);
+
     setOpen(true);
   }
 
-  function handleEdit(q: TestQuestion) {
+  function handleEdit(question: TestQuestion) {
+    if (!section) {
+      return;
+    }
+
     if (section.is_locked) {
       toast.info("Locked tests cannot be modified.");
+
       return;
     }
-    setEditing(q);
-    setOpen(true);
-  }
-  if (isLoading) {
-    return (
-      <div className="mx-auto w-full max-w-5xl md:px-4 py-2 space-y-6">
-        <QuestionBuilderHeader
-          testId={testId}
-          section={section}
-          questionCount={0}
-          onAddQuestion={() => {}}
-          isLoading={isLoading}
-        />
 
-        <SectionRulesCard section={section} />
+    setEditing(question);
+    setOpen(true);
+    dismissRecentQuestion();
+  }
+
+  if (sectionError instanceof Error) {
+    return (
+      <BatchTestsErrorState
+        message={sectionError.message}
+        onRetry={() => {
+          void refetchSection();
+        }}
+      />
+    );
+  }
+
+  if (isSectionLoading || !section) {
+    return (
+      <div className="mx-auto w-full max-w-5xl space-y-6 py-4 px-1 sm:px-2 md:px-4">
+        <div className="space-y-3">
+          <div className="h-9 w-72 animate-pulse rounded-md bg-muted" />
+
+          <div className="h-4 w-40 animate-pulse rounded-md bg-muted" />
+        </div>
+
+        <Card className="space-y-4 p-6">
+          <div className="h-5 w-48 animate-pulse rounded bg-muted" />
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {[...Array(6)].map((_, index) => (
+              <div
+                key={index}
+                className="h-10 animate-pulse rounded bg-muted"
+              />
+            ))}
+          </div>
+        </Card>
 
         <div className="space-y-4">
-          <div className="h-6 w-40 bg-muted animate-pulse rounded-md" />
-
-          {[...Array(3)].map((_, i) => (
-            <Card key={i} className="rounded-lg border p-4 space-y-3 bg-card">
-              <div className="h-8 w-3/4 bg-muted animate-pulse rounded" />
+          {[...Array(3)].map((_, index) => (
+            <Card key={index} className="space-y-3 rounded-lg border p-4">
+              <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
 
               <div className="grid gap-2 pt-2">
-                <div className="h-8 bg-muted animate-pulse rounded" />
-                <div className="h-8 bg-muted animate-pulse rounded" />
-                <div className="h-8 bg-muted animate-pulse rounded" />
-                <div className="h-8 bg-muted animate-pulse rounded" />
+                <div className="h-8 animate-pulse rounded bg-muted" />
+
+                <div className="h-8 animate-pulse rounded bg-muted" />
+
+                <div className="h-8 animate-pulse rounded bg-muted" />
+
+                <div className="h-8 animate-pulse rounded bg-muted" />
               </div>
             </Card>
           ))}
@@ -76,38 +165,104 @@ export function QuestionBuilderClient({ testId, section }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl md:px-4 py-2 space-y-6">
+    <div className="mx-auto mb-10 w-full max-w-5xl space-y-6 py-4 px-1.5 sm:px-2 md:px-4">
       <QuestionBuilderHeader
         testId={testId}
         section={section}
-        questionCount={questions.length}
+        questionCount={totalQuestions}
         onAddQuestion={handleAdd}
+        isLoading={isQuestionsLoading}
       />
 
       <SectionRulesCard section={section} />
 
-      {questions.length === 0 ? (
-        <QuestionsEmptyState
-          answerMode={section.answerMode}
-          onAddQuestion={handleAdd}
-        />
-      ) : (
-        <QuestionsList
+      {recentQuestion && (
+        <RecentlyAddedQuestion
+          question={recentQuestion}
           section={section}
-          questions={questions}
-          onAddQuestion={handleAdd}
-          onEditQuestion={handleEdit}
+          totalQuestions={totalQuestions}
+          questionsPerPage={pageSize}
+          onDismiss={dismissRecentQuestion}
+          currentPage={page}
         />
+      )}
+
+      {isQuestionsLoading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, index) => (
+            <Card key={index} className="space-y-3 rounded-lg border p-4">
+              <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
+
+              <div className="grid gap-2 pt-2">
+                <div className="h-8 animate-pulse rounded bg-muted" />
+
+                <div className="h-8 animate-pulse rounded bg-muted" />
+
+                <div className="h-8 animate-pulse rounded bg-muted" />
+
+                <div className="h-8 animate-pulse rounded bg-muted" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <>
+          <div
+            className={cn(
+              "space-y-3 transition-opacity duration-200",
+              isFetching && "opacity-50",
+            )}
+          >
+            {totalQuestions === 0 ? (
+              <QuestionsEmptyState
+                answerMode={section.answerMode}
+                onAddQuestion={handleAdd}
+              />
+            ) : (
+              <>
+                <QuestionsList
+                  section={section}
+                  questions={questions}
+                  onAddQuestion={handleAdd}
+                  onEditQuestion={handleEdit}
+                  dismissRecentQuestion={dismissRecentQuestion}
+                />
+                <div className="min-h-8 ">
+                  {isFetching && (
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                      <LoadingIndicator className="size-4" />
+                      Loading questions...
+                    </div>
+                  )}
+                </div>
+
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  totalCount={totalQuestions}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                />
+              </>
+            )}
+          </div>
+        </>
       )}
 
       <QuestionBuilderDialog
         open={open}
-        onOpenChange={(v) => {
-          setOpen(v);
-          if (!v) setEditing(null);
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+
+          if (!nextOpen) {
+            setEditing(null);
+          }
         }}
         section={section}
         editingQuestion={editing}
+        onQuestionCreated={(question) => {
+          setRecentQuestion(question);
+        }}
       />
     </div>
   );

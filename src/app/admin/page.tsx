@@ -5,8 +5,8 @@ import {
   EnrollmentsStat,
   CoursesStat,
   BatchesStat,
-  PendingFeesStat,
   AdminStat,
+  FinancialOverviewStat,
 } from "./_features/components/stats";
 import { StatCardSkeleton } from "./_features/components/stat-card-skeleton";
 
@@ -48,7 +48,7 @@ export default function AdminDashboardPage() {
         </Suspense>
 
         <Suspense fallback={<StatCardSkeleton />}>
-          <PendingFeesStat />
+          <FinancialOverviewStat />
         </Suspense>
       </div>
     </div>

@@ -7,7 +7,6 @@ export type TestSection = {
     answerMode: string
     fullMarks: number
     negativeMarks: number
-    scoringQuestionCount: number | null
     partialMarks: Record<string, number> | null
     sortOrder: number
     is_locked: boolean

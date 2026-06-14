@@ -11,20 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/src/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/src/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/src/components/ui/command";
-import { Badge } from "@/src/components/ui/badge";
-import { ChevronsUpDown } from "lucide-react";
+
 import {
   Form,
   FormField,
@@ -59,8 +46,6 @@ import { validateImage } from "@/src/lib/helper-functions/validate-image";
 import { ImageCropper } from "@/src/components/ui/media/ImageCropper";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { MARKETING_LIMITS } from "@/src/lib/constants/marketing-limits";
-import { useQuery } from "@tanstack/react-query";
-import { InstructorOption } from "../types/course.types";
 import { extractFirstErrorMessage } from "../../../batches/_features/components/batch-dialog";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import {
@@ -76,12 +61,14 @@ import {
 } from "../../../batches/_features/zod-schema/schema";
 import { Label } from "@/src/components/ui/label";
 import { Separator } from "@/src/components/ui/separator";
-import { CourseRow } from "../actions/get-courses";
+
 import { createCourse } from "../actions/create-course";
 import { updateCourse } from "../actions/update-course";
 import { updateCourseThumbnail } from "../actions/update-course-thumbnail";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
-import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
+import { CourseRow, InstructorOption } from "../types/course.types";
+import { CourseInstructorsMultiSelect } from "./course-instructors-multi-select";
+import { useQueryClient } from "@tanstack/react-query";
 
 /* -------------------------------------------------- */
 
@@ -89,6 +76,8 @@ type Props = {
   course?: CourseRow | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isInstructorsLoading: boolean;
+  instructors: InstructorOption[];
 };
 const THUMBNAIL_MAX_SIZE = SIZE_LIMITS.course_thumbnail;
 
@@ -142,18 +131,19 @@ function mapRowToForm(course: CourseRow): CourseFormValues {
 }
 /* -------------------------------------------------- */
 
-export function CourseDialog({ course, open, onOpenChange }: Props) {
+export function CourseDialog({
+  course,
+  open,
+  onOpenChange,
+  instructors,
+  isInstructorsLoading,
+}: Props) {
   const isEdit = Boolean(course);
   const { uploadFile } = useR2Upload();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
-
-  const { data: instructors } = useQuery<InstructorOption[]>({
-    queryKey: ["instructor-options"],
-    queryFn: () =>
-      fetchWrapper<InstructorOption[]>("/api/admin/instructors/options"),
-  });
+  const queryClient = useQueryClient();
   /* -------------------------------------------------- */
   /* Form                                               */
   /* -------------------------------------------------- */
@@ -318,6 +308,7 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
             toast.error(error ?? "Failed to create course", {
               id: toastId,
             });
+
             return;
           }
 
@@ -326,7 +317,9 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
 
         /* ---------- Thumbnail Upload ---------- */
         if (thumbnailFile) {
-          toast.loading("Uploading thumbnail...", { id: toastId });
+          toast.loading("Uploading thumbnail...", {
+            id: toastId,
+          });
 
           const upload = await uploadFile({
             file: thumbnailFile,
@@ -340,19 +333,32 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
             );
 
             if (error) {
-              toast.error(error, { id: toastId });
+              toast.error(error, {
+                id: toastId,
+              });
+
               return;
             }
           }
         }
 
+        /* ---------- Refresh React Query ---------- */
+        await queryClient.invalidateQueries({
+          queryKey: ["admin", "courses"],
+        });
+
         /* ---------- Success ---------- */
-        toast.success("Saved", { id: toastId });
+        toast.success("Saved", {
+          id: toastId,
+        });
 
         onOpenChange(false);
+
         form.reset();
       } catch {
-        toast.error("Save failed", { id: toastId });
+        toast.error("Save failed", {
+          id: toastId,
+        });
       }
     },
 
@@ -362,7 +368,8 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
     (errors) => {
       const message = extractFirstErrorMessage(errors);
 
-      toast.dismiss(); // prevents stuck loading toast
+      toast.dismiss();
+
       toast.error(message ?? "Please fix the form errors");
     },
   );
@@ -897,96 +904,14 @@ export function CourseDialog({ course, open, onOpenChange }: Props) {
             <FormField
               control={form.control}
               name="instructor_ids"
-              render={({ field }) => {
-                const selectedIds = field.value ?? [];
-
-                return (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Instructors</FormLabel>
-
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className="justify-between"
-                          >
-                            {selectedIds.length > 0
-                              ? `${selectedIds.length} instructor(s) selected`
-                              : "Select instructors"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-
-                      <PopoverContent className="p-0 w-75">
-                        <Command>
-                          <CommandInput placeholder="Search instructors..." />
-                          <CommandEmpty>No instructors found.</CommandEmpty>
-
-                          <CommandGroup className="max-h-64 overflow-auto">
-                            {instructors?.map((inst) => {
-                              const isSelected = selectedIds.includes(inst.id);
-
-                              return (
-                                <CommandItem
-                                  key={inst.id}
-                                  className="flex items-center gap-2"
-                                >
-                                  <Checkbox
-                                    checked={isSelected}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        field.onChange([
-                                          ...selectedIds,
-                                          inst.id,
-                                        ]);
-                                      } else {
-                                        field.onChange(
-                                          selectedIds.filter(
-                                            (id) => id !== inst.id,
-                                          ),
-                                        );
-                                      }
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-
-                                  <span>{inst.full_name}</span>
-                                </CommandItem>
-                              );
-                            })}
-                          </CommandGroup>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-
-                    {selectedIds.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {instructors
-                          ?.filter((inst) => selectedIds.includes(inst.id))
-                          .map((inst) => (
-                            <Badge
-                              key={inst.id}
-                              variant="secondary"
-                              className="cursor-pointer rounded-sm"
-                              onClick={() =>
-                                field.onChange(
-                                  selectedIds.filter((id) => id !== inst.id),
-                                )
-                              }
-                            >
-                              {inst.full_name}
-                            </Badge>
-                          ))}
-                      </div>
-                    )}
-
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
+              render={({ field }) => (
+                <CourseInstructorsMultiSelect
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                  instructors={instructors}
+                  isLoading={isInstructorsLoading}
+                />
+              )}
             />
 
             {/* ---------------- Submit ---------------- */}

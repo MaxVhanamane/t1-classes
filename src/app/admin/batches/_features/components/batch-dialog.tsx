@@ -10,8 +10,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { ChevronDown, Loader } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -30,27 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/src/components/ui/collapsible";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/src/components/ui/popover";
 
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/src/components/ui/command";
-
-import { Badge } from "@/src/components/ui/badge";
-import { ChevronsUpDown } from "lucide-react";
 import {
   BatchFormValues,
   batchSchema,
@@ -66,11 +45,14 @@ import {
   TARGET_EXAM_LABELS,
   CATEGORY_TARGET_EXAMS,
 } from "../zod-schema/schema";
-import { BatchDialogProps, BatchListItem } from "../types/types";
+import {
+  BatchListItem,
+  CourseSelectItem,
+  InstructorSelectItem,
+} from "../types/types";
 import { createBatch } from "../actions/create-batch";
 import { updateBatch } from "../actions/update-batch";
 import { getBatchEditState } from "../actions/get-batch-edit-state";
-import { cn } from "@/src/lib/utils";
 import { useR2Upload } from "@/src/hooks/use-r2-upload";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import Image from "next/image";
@@ -88,15 +70,12 @@ import { updateBatchThumbnail } from "../actions/update-batch-thumbnail";
 import { TipTapEditor } from "../../../courses/_features/components/tiptap-editor";
 import { FormField } from "@/src/components/ui/form";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
-import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 import { formatFileSize } from "@/src/lib/helper-functions/format-file-size";
+import { CourseMultiSelectCombobox } from "./course-multi-select-combobox";
+import { InstructorMultiSelectCombobox } from "./instructor-multi-select-combobox";
 
 const CLASS_LEVELS = [6, 7, 8, 9, 10, 11, 12] as const;
 
-type InstructorOption = {
-  id: string;
-  full_name: string;
-};
 /* ---------------- helpers ---------------- */
 
 function mapBatchToForm(batch: BatchListItem): BatchFormValues {
@@ -170,25 +149,35 @@ function toDateInput(v?: string | null) {
 const THUMBNAIL_MAX_SIZE = SIZE_LIMITS.batch_thumbnail;
 /* ---------------- component ---------------- */
 
+/* ---------------- Dialog Props ---------------- */
+
+export type BatchDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  batch?: BatchListItem;
+  isCoursesLoading: boolean;
+  isInstructorsLoading: boolean;
+  courses: CourseSelectItem[];
+  instructors: InstructorSelectItem[];
+};
+
 export function BatchDialog({
   open,
   onOpenChange,
   batch,
+  instructors,
   courses,
+  isCoursesLoading,
+  isInstructorsLoading,
 }: BatchDialogProps) {
   const isEdit = Boolean(batch);
   const { uploadFile } = useR2Upload();
   const [editLocked, setEditLocked] = useState<boolean>(false);
   const [checkingLock, setCheckingLock] = useState<boolean>(false);
-
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
-  const { data: instructors } = useQuery<InstructorOption[]>({
-    queryKey: ["instructor-options"],
-    queryFn: () =>
-      fetchWrapper<InstructorOption[]>("/api/admin/instructors/options"),
-  });
 
   const form = useForm({
     resolver: zodResolver(batchSchema),
@@ -378,12 +367,18 @@ export function BatchDialog({
         if (values.list_price < values.sale_price) {
           toast.error(
             "List price must be greater than or equal to sale price",
-            { id: toastId },
+            {
+              id: toastId,
+            },
           );
+
           return;
         }
 
-        const payload = { ...values };
+        const payload = {
+          ...values,
+        };
+
         let batchId: string;
 
         /* -------------------------------------------------- */
@@ -397,7 +392,10 @@ export function BatchDialog({
           );
 
           if (error) {
-            toast.error(error, { id: toastId });
+            toast.error(error, {
+              id: toastId,
+            });
+
             return;
           }
         } else {
@@ -407,6 +405,7 @@ export function BatchDialog({
             toast.error(error ?? "Failed to create batch", {
               id: toastId,
             });
+
             return;
           }
 
@@ -417,7 +416,9 @@ export function BatchDialog({
         /* Thumbnail upload                                   */
         /* -------------------------------------------------- */
         if (thumbnailFile) {
-          toast.loading("Uploading thumbnail...", { id: toastId });
+          toast.loading("Uploading thumbnail...", {
+            id: toastId,
+          });
 
           const upload = await uploadFile({
             file: thumbnailFile,
@@ -431,20 +432,39 @@ export function BatchDialog({
             );
 
             if (error) {
-              toast.error(error, { id: toastId });
+              toast.error(error, {
+                id: toastId,
+              });
+
               return;
             }
           }
         }
 
         /* -------------------------------------------------- */
+        /* Refresh batches                                    */
+        /* -------------------------------------------------- */
+        await queryClient.invalidateQueries({
+          queryKey: ["admin", "batches"],
+        });
+
+        /* -------------------------------------------------- */
         /* Success                                            */
         /* -------------------------------------------------- */
-        toast.success("Saved", { id: toastId });
+        toast.success(
+          isEdit ? "Batch updated successfully" : "Batch created successfully",
+          {
+            id: toastId,
+          },
+        );
+
         onOpenChange(false);
+
         form.reset();
       } catch {
-        toast.error("Save failed", { id: toastId });
+        toast.error("Save failed", {
+          id: toastId,
+        });
       }
     },
 
@@ -453,7 +473,9 @@ export function BatchDialog({
     /* -------------------------------------------------- */
     (errors) => {
       const message = extractFirstErrorMessage(errors);
+
       toast.dismiss();
+
       toast.error(message ?? "Please fix the form errors");
     },
   );
@@ -475,95 +497,13 @@ export function BatchDialog({
         <FormProvider {...form}>
           <form onSubmit={onSubmit} className="space-y-6">
             {/* COURSES */}
-            <div className="space-y-2">
-              <Label>Courses</Label>
-
-              <Collapsible>
-                <CollapsibleTrigger
-                  asChild
-                  disabled={editLocked || checkingLock}
-                >
-                  <button
-                    disabled={editLocked || checkingLock}
-                    type="button"
-                    className={cn(
-                      "w-full flex items-center justify-between rounded-md border px-3 py-2 text-sm",
-                      editLocked || checkingLock
-                        ? "cursor-not-allowed bg-muted text-muted-foreground"
-                        : "hover:bg-muted cursor-pointer",
-                    )}
-                  >
-                    <span className="truncate">
-                      {courseIds.length === 0
-                        ? "Select courses"
-                        : courseIds.length === 1
-                          ? courses.find((c) => c.id === courseIds[0])?.title
-                          : `${courseIds.length} courses selected`}
-                    </span>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent className="mt-2 border rounded-md p-3 space-y-2 max-h-56 overflow-y-auto">
-                  {courses.map((c) => {
-                    const checked = courseIds.includes(c.id);
-                    const disabled = editLocked || !c.is_active;
-
-                    return (
-                      <div
-                        key={c.id}
-                        className={cn(
-                          "flex items-center gap-2",
-                          !c.is_active && "opacity-60",
-                        )}
-                      >
-                        <Checkbox
-                          checked={checked}
-                          disabled={disabled}
-                          onCheckedChange={(v) => {
-                            if (disabled) return;
-
-                            const next = v
-                              ? [...courseIds, c.id]
-                              : courseIds.filter((id) => id !== c.id);
-
-                            form.setValue("course_ids", next);
-                          }}
-                        />
-
-                        <span className="text-sm">
-                          {c.title}
-                          {!c.is_active && (
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              (inactive)
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </CollapsibleContent>
-              </Collapsible>
-
-              {checkingLock && (
-                <p className="text-xs text-muted-foreground flex items-center gap-2">
-                  <Loader className="w-4 h-4 animate-spin" /> Checking
-                  enrollment status…
-                </p>
-              )}
-
-              {!editLocked && !checkingLock && (
-                <p className="text-xs text-muted-foreground">
-                  Select one or more courses included in this batch
-                </p>
-              )}
-              {editLocked && (
-                <p className="text-xs text-amber-600">
-                  Students are already enrolled in this batch. Courses cannot be
-                  added or removed once enrollment has started.
-                </p>
-              )}
-            </div>
+            <CourseMultiSelectCombobox
+              value={courseIds}
+              onChange={(ids) => form.setValue("course_ids", ids)}
+              courses={courses}
+              isLoading={isCoursesLoading}
+              disabled={editLocked || checkingLock}
+            />
             {/* NAME */}
             <div className="space-y-3 relative">
               <Label>Batch Name</Label>
@@ -1024,94 +964,19 @@ export function BatchDialog({
             <FormField
               control={form.control}
               name="instructor_ids"
-              render={({ field }) => {
-                const selectedIds = field.value ?? [];
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label>Instructors</Label>
 
-                return (
-                  <div className="flex flex-col space-y-2">
-                    <Label>Instructors</Label>
-
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          role="combobox"
-                          className="justify-between"
-                        >
-                          {selectedIds.length > 0
-                            ? `${selectedIds.length} instructor(s) selected`
-                            : "Select instructors"}
-
-                          <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-
-                      <PopoverContent className="p-0 w-75">
-                        <Command>
-                          <CommandInput placeholder="Search instructors..." />
-                          <CommandEmpty>No instructors found.</CommandEmpty>
-
-                          <CommandGroup className="max-h-64 overflow-auto">
-                            {instructors?.map((inst) => {
-                              const isSelected = selectedIds.includes(inst.id);
-
-                              return (
-                                <CommandItem
-                                  key={inst.id}
-                                  className="flex items-center gap-2"
-                                >
-                                  <Checkbox
-                                    checked={isSelected}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        field.onChange([
-                                          ...selectedIds,
-                                          inst.id,
-                                        ]);
-                                      } else {
-                                        field.onChange(
-                                          selectedIds.filter(
-                                            (id) => id !== inst.id,
-                                          ),
-                                        );
-                                      }
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-
-                                  <span>{inst.full_name}</span>
-                                </CommandItem>
-                              );
-                            })}
-                          </CommandGroup>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-
-                    {selectedIds.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {instructors
-                          ?.filter((inst) => selectedIds.includes(inst.id))
-                          .map((inst) => (
-                            <Badge
-                              key={inst.id}
-                              variant="secondary"
-                              className="cursor-pointer rounded-sm"
-                              onClick={() =>
-                                field.onChange(
-                                  selectedIds.filter((id) => id !== inst.id),
-                                )
-                              }
-                            >
-                              {inst.full_name}
-                            </Badge>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              }}
+                  <InstructorMultiSelectCombobox
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    instructors={instructors}
+                    isLoading={isInstructorsLoading}
+                    disabled={editLocked || checkingLock}
+                  />
+                </div>
+              )}
             />
             {/* ACTIVE */}
             <div className="flex items-center justify-between">

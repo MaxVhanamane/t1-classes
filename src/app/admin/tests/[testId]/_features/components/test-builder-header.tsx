@@ -13,7 +13,7 @@ export function TestBuilderHeader({ test }: Props) {
     <>
       <BackButtonClient />
 
-      <Card className="p-4 space-y-3 shadow-none">
+      <Card className="p-4 space-y-3 shadow-none rounded-md">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-semibold leading-tight">

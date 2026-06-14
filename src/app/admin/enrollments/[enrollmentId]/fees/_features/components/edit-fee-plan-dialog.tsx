@@ -26,29 +26,44 @@ import {
 } from "../zod/feePlan.schema";
 
 import { MoneyInput } from "./money-input";
+
 import { toast } from "sonner";
+
 import { updateFeePlan } from "../actions/fee/update-fee-plan";
+
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   feePlan: {
     id: string;
-    offered_amount: number;
+
+    sale_price_at_creation: number;
+
     discount_amount: number;
+
     discount_reason?: string | null;
   };
+
+  enrollmentId: string;
 }
 
-export function EditFeePlanDialog({ feePlan }: Props) {
+export function EditFeePlanDialog({ feePlan, enrollmentId }: Props) {
   const [open, setOpen] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const [loading, setLoading] = useState(false);
 
   const form = useForm<FeePlanFormInput>({
     resolver: zodResolver(feePlanFormSchema),
+
     mode: "onChange",
+
     defaultValues: {
       discountAmount: "",
+
       discountReason: "",
     },
   });
@@ -57,6 +72,7 @@ export function EditFeePlanDialog({ feePlan }: Props) {
     if (open) {
       form.reset({
         discountAmount: String(feePlan.discount_amount),
+
         discountReason: feePlan.discount_reason ?? "",
       });
     }
@@ -65,8 +81,8 @@ export function EditFeePlanDialog({ feePlan }: Props) {
   const discount = Number(form.watch("discountAmount") || 0);
 
   const finalAmount = useMemo(
-    () => Math.max(feePlan.offered_amount - discount, 0),
-    [feePlan.offered_amount, discount],
+    () => Math.max(feePlan.sale_price_at_creation - discount, 0),
+    [feePlan.sale_price_at_creation, discount],
   );
 
   const { isDirty, isValid } = form.formState;
@@ -87,15 +103,21 @@ export function EditFeePlanDialog({ feePlan }: Props) {
 
       if (error) {
         toast.error(error);
+
         return;
       }
 
-      toast.success("Fee plan updated.");
+      await queryClient.invalidateQueries({
+        queryKey: ["enrollment-fees", enrollmentId],
+      });
 
       setOpen(false);
+
+      toast.success("Fee plan updated.");
     } catch (err) {
       if (err instanceof ZodError) {
         toast.error(err.issues[0]?.message ?? "Invalid form input");
+
         return;
       }
 
@@ -127,26 +149,26 @@ export function EditFeePlanDialog({ feePlan }: Props) {
           </DialogHeader>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            {/* Locked Offered Amount */}
+            {/* Sale Price Snapshot */}
             <div className="rounded-xl border p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Offered Amount</p>
+                  <p className="text-sm font-medium">Sale Price</p>
 
                   <p className="text-xs text-muted-foreground">
-                    Fixed for this fee plan
+                    Locked when this fee plan was created
                   </p>
                 </div>
 
                 <p className="text-lg font-semibold">
-                  ₹{feePlan.offered_amount.toLocaleString()}
+                  ₹{feePlan.sale_price_at_creation.toLocaleString()}
                 </p>
               </div>
             </div>
 
             {/* Discount */}
             <div className="space-y-2">
-              <Label>Extra Discount</Label>
+              <Label>Discount</Label>
 
               <MoneyInput
                 placeholder="e.g. 500"
@@ -160,11 +182,11 @@ export function EditFeePlanDialog({ feePlan }: Props) {
               )}
             </div>
 
-            {/* Final */}
+            {/* Final Payable */}
             <div className="rounded-xl border bg-muted/40 p-4">
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">
-                  Final Amount
+                  Final Payable
                 </span>
 
                 <span className="text-xl font-semibold">

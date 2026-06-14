@@ -28,6 +28,7 @@ import { createPayment } from "../../actions/payments/create-payment";
 import { toast } from "sonner";
 import { PaymentMethodSelect } from "./payment-method-select";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   enrollmentId: string;
@@ -37,7 +38,7 @@ interface Props {
 export function RecordPaymentDialog({ enrollmentId, pendingAmount }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const queryClient = useQueryClient();
   const form = useForm<RecordPaymentFormInput>({
     resolver: zodResolver(recordPaymentFormSchema),
     mode: "onChange",
@@ -76,8 +77,11 @@ export function RecordPaymentDialog({ enrollmentId, pendingAmount }: Props) {
     try {
       const parsed = recordPaymentSubmitSchema.parse({
         amount: Number(data.amount),
+
         paymentMethod: data.paymentMethod,
+
         paidAt: data.paidAt,
+
         notes: data.notes,
       });
 
@@ -90,7 +94,12 @@ export function RecordPaymentDialog({ enrollmentId, pendingAmount }: Props) {
         return;
       }
 
+      await queryClient.invalidateQueries({
+        queryKey: ["enrollment-fees", enrollmentId],
+      });
+
       setOpen(false);
+
       toast.success("Payment recorded successfully.");
     } catch {
       toast.error("Failed to record payment.");

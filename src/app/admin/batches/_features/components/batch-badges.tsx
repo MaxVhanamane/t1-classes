@@ -87,7 +87,6 @@ type Props = {
   batch: {
     start_date: string;
     end_date: string;
-    is_active: boolean;
   };
 };
 
@@ -98,25 +97,33 @@ export function LifecycleBadge({ batch }: Props) {
     <Badge
       variant="outline"
       className={cn(
-        "capitalize font-medium px-2 py-0.5",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium capitalize border",
 
         // UPCOMING
         lifecycle === "upcoming" &&
-          "border-yellow-500/60 text-yellow-700 dark:text-yellow-500 dark:border-yellow-500/40",
+          "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300",
 
         // ONGOING
         lifecycle === "ongoing" &&
-          "border-green-500/60 text-green-700 dark:text-green-500 dark:border-green-500/40",
+          "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300",
 
         // COMPLETED
         lifecycle === "completed" &&
-          "border-gray-400 text-gray-700 dark:text-gray-400 dark:border-gray-500",
-
-        // INACTIVE
-        lifecycle === "inactive" &&
-          "border-red-500/60 text-red-700 dark:text-red-500 dark:border-red-500/40",
+          "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300",
       )}
     >
+      <span
+        className={cn(
+          "h-1.5 w-1.5 rounded-full",
+
+          lifecycle === "upcoming" && "bg-amber-500 dark:bg-amber-400",
+
+          lifecycle === "ongoing" && "bg-emerald-500 dark:bg-emerald-400",
+
+          lifecycle === "completed" && "bg-slate-500 dark:bg-slate-400",
+        )}
+      />
+
       {lifecycle}
     </Badge>
   );

@@ -29,12 +29,13 @@ import { supersedeFeePlan } from "../actions/fee/super-sede-fee-plan";
 import { MoneyInput } from "./money-input";
 import { toast } from "sonner";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   enrollmentId: string;
   oldFeePlanId: string;
 
-  currentOfferedAmount: number;
+  currentSalePrice: number;
   currentDiscountAmount: number;
   currentDiscountReason?: string | null;
 }
@@ -42,11 +43,13 @@ interface Props {
 export function SupersedeFeePlanDialog({
   enrollmentId,
   oldFeePlanId,
-  currentOfferedAmount,
+  currentSalePrice,
   currentDiscountAmount,
   currentDiscountReason,
 }: Props) {
   const [open, setOpen] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const [loading, setLoading] = useState(false);
 
@@ -71,8 +74,8 @@ export function SupersedeFeePlanDialog({
   const discount = Number(form.watch("discountAmount") || 0);
 
   const finalAmount = useMemo(
-    () => Math.max(currentOfferedAmount - discount, 0),
-    [currentOfferedAmount, discount],
+    () => Math.max(currentSalePrice - discount, 0),
+    [currentSalePrice, discount],
   );
 
   const { isDirty, isValid } = form.formState;
@@ -93,15 +96,21 @@ export function SupersedeFeePlanDialog({
 
       if (error) {
         toast.error(error);
+
         return;
       }
 
-      toast.success("Revised fee plan created.");
+      await queryClient.invalidateQueries({
+        queryKey: ["enrollment-fees", enrollmentId],
+      });
 
       setOpen(false);
+
+      toast.success("Revised fee plan created.");
     } catch (err) {
       if (err instanceof ZodError) {
         toast.error(err.issues[0]?.message ?? "Invalid form input");
+
         return;
       }
 
@@ -133,11 +142,11 @@ export function SupersedeFeePlanDialog({
           </DialogHeader>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            {/* Fixed Offered Amount */}
+            {/* Sale Price */}
             <div className="rounded-xl border p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Offered Amount</p>
+                  <p className="text-sm font-medium">Sale Price</p>
 
                   <p className="text-xs text-muted-foreground">
                     Locked from previous plan
@@ -145,7 +154,7 @@ export function SupersedeFeePlanDialog({
                 </div>
 
                 <p className="text-lg font-semibold">
-                  ₹{currentOfferedAmount.toLocaleString()}
+                  ₹{currentSalePrice.toLocaleString()}
                 </p>
               </div>
             </div>

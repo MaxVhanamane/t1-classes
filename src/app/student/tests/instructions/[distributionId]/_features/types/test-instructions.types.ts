@@ -23,7 +23,6 @@ export type SectionRow = {
     negative_marks: number
     partial_marks: string | null
     max_selections: number | null
-    scoring_question_count: number | null
     subject_label: string
 }
 

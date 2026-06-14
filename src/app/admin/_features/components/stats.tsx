@@ -81,20 +81,76 @@ export async function BatchesStat() {
   return <StatCard icon={Layers} label="Batches" value={count ?? 0} />;
 }
 
-export async function PendingFeesStat() {
-  const supabase = await supabaseClient();
-  const { data } = await supabase
-    .from("enrollment_fee_status")
-    .select("pending_amount");
+function formatCurrency(value: number | null | undefined) {
+  return `₹${Number(value ?? 0).toLocaleString("en-IN")}`;
+}
 
-  const total = data?.reduce((sum, r) => sum + (r.pending_amount || 0), 0) ?? 0;
+export async function FinancialOverviewStat() {
+  const supabase = await supabaseClient();
+
+  const { data, error } = await supabase
+    .from("dashboard_fee_summary")
+    .select("*")
+    .single();
+
+  if (error || !data) {
+    return (
+      <StatCard
+        icon={Wallet}
+        label="Financial Overview"
+        value="Unavailable"
+        accent="destructive"
+      />
+    );
+  }
 
   return (
-    <StatCard
-      icon={Wallet}
-      label="Pending Fees"
-      value={`₹${total.toLocaleString("en-IN")}`}
-      accent="destructive"
-    />
+    <div className="rounded-xl border bg-card p-4 shadow-sm">
+      <div className="mb-4 flex items-center gap-2">
+        <Wallet className="size-5 text-primary" />
+
+        <div>
+          <h3 className="text-sm font-medium">Financial Overview</h3>
+
+          <p className="text-xs text-muted-foreground">
+            Current enrollment fees
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <div className="text-xs text-muted-foreground">Total Fees</div>
+
+          <div className="text-lg font-semibold">
+            {formatCurrency(data.total_amount)}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs text-muted-foreground">Collected</div>
+
+          <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+            {formatCurrency(data.total_paid)}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs text-muted-foreground">Pending</div>
+
+          <div className="text-lg font-semibold text-red-600 dark:text-red-400">
+            {formatCurrency(data.total_pending)}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs text-muted-foreground">Overpaid</div>
+
+          <div className="text-lg font-semibold text-amber-600 dark:text-amber-400">
+            {formatCurrency(data.total_overpaid)}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

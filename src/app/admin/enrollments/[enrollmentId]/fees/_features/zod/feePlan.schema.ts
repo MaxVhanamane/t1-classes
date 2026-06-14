@@ -3,6 +3,7 @@ import { z } from "zod";
 /**
  * 1 CLIENT FORM SCHEMA (strings only)
  */
+
 export const feePlanFormSchema = z
     .object({
         discountAmount: z

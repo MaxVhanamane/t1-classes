@@ -138,12 +138,6 @@ function getStatusStyles(status: BatchLifecycle) {
         dark:bg-muted dark:text-muted-foreground dark:border-border
       `;
 
-    case "inactive":
-      return `
-        bg-red-100 text-red-800 border-red-200
-        dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/50
-      `;
-
     default:
       return `
         bg-gray-100 text-gray-700 border-gray-200
@@ -166,7 +160,6 @@ export const BATCH_STATUS_UI_LABELS: Record<BatchLifecycle, string> = {
   upcoming: "Starting Soon",
   ongoing: "Classes Ongoing",
   completed: "Completed",
-  inactive: "Inactive",
 };
 
 /* ------------------------------------------------ */
@@ -183,5 +176,4 @@ export const BATCH_STATUS_EXPLANATION: Record<BatchLifecycle, string> = {
   upcoming: "Classes for this batch will begin soon",
   ongoing: "Classes for this batch are currently running",
   completed: "Classes for this batch have been completed",
-  inactive: "This batch is currently inactive and not open for enrollment",
 };

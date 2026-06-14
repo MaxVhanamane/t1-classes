@@ -1,19 +1,25 @@
 "use client";
 
-import { Plus, AlertTriangle } from "lucide-react";
+import { Plus } from "lucide-react";
+
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { Separator } from "@/src/components/ui/separator";
-import { TestSection } from "../types/section.types";
 import { BackLink } from "@/src/components/ui/navigation/back-link";
 import LockedBadge from "@/src/components/ui/common/locked-badge";
 import { Skeleton } from "@/src/components/ui/skeleton";
 
+import { TestSection } from "../types/section.types";
+
 interface Props {
   testId: string;
+
   section: TestSection;
+
   questionCount: number;
+
   onAddQuestion: () => void;
+
   isLoading?: boolean;
 }
 
@@ -24,13 +30,6 @@ export function QuestionBuilderHeader({
   onAddQuestion,
   isLoading,
 }: Props) {
-  const scoringLimit = section.scoringQuestionCount;
-
-  const needsMoreQuestions =
-    section.answerMode === "numerical_input" &&
-    scoringLimit !== null &&
-    questionCount <= scoringLimit;
-
   return (
     <div className="space-y-4">
       {/* Top Row */}
@@ -42,8 +41,8 @@ export function QuestionBuilderHeader({
               label="Back to Sections"
             />
 
-            <div className="flex items-center gap-2 mt-1">
-              <h1 className="text-xl font-semibold tracking-tight line-clamp-2">
+            <div className="mt-1 flex items-center gap-2">
+              <h1 className="line-clamp-2 text-xl font-semibold tracking-tight">
                 {section.title}
               </h1>
 
@@ -52,9 +51,9 @@ export function QuestionBuilderHeader({
           </div>
 
           {isLoading ? (
-            <Skeleton className="w-full max-w-lg h-24 rounded-md" />
+            <Skeleton className="h-24 w-full max-w-lg rounded-md" />
           ) : (
-            <div className="rounded-lg border bg-muted/30 px-4 py-3 space-y-3">
+            <div className="space-y-3 rounded-lg border bg-muted/30 px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Section Summary
               </p>
@@ -100,22 +99,6 @@ export function QuestionBuilderHeader({
 
                 {section.partialMarks && (
                   <Badge variant="secondary">Partial marking</Badge>
-                )}
-
-                {section.answerMode === "numerical_input" && (
-                  <Badge variant="outline">
-                    {scoringLimit ? `Best ${scoringLimit} count` : "All count"}
-                  </Badge>
-                )}
-
-                {needsMoreQuestions && (
-                  <Badge
-                    variant="destructive"
-                    className="flex items-center gap-1"
-                  >
-                    <AlertTriangle className="h-3 w-3" />
-                    Add at least {scoringLimit + 1} questions
-                  </Badge>
                 )}
               </div>
             </div>

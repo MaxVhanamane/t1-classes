@@ -16,6 +16,7 @@ import { extendDistribution } from "../actions/extend-distribution";
 import { ISODatePicker } from "./iso-date-picker";
 import { dateToISO } from "../../../schedule/_features/components/schedule-test-dialog";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   open: boolean;
@@ -49,6 +50,7 @@ export function ExtendDistributionDialog({
   distributionId,
   currentEndsAt,
 }: Props) {
+  const queryClient = useQueryClient();
   const form = useForm<FormValues>({
     defaultValues: {
       ends_at: dateToISO(new Date(currentEndsAt)),
@@ -80,13 +82,16 @@ export function ExtendDistributionDialog({
 
   async function onSubmit(values: FormValues) {
     const newEnd = new Date(values.ends_at);
+
     const current = new Date(currentEndsAt);
 
     if (isBefore(newEnd, current)) {
       const formattedCurrent = format(current, "PPP p");
+
       toast.error(
         `New end time must be after the current end time (${formattedCurrent})`,
       );
+
       return;
     }
 
@@ -94,6 +99,7 @@ export function ExtendDistributionDialog({
       toast.message(
         "The selected end time is the same as the current end time.",
       );
+
       return;
     }
 
@@ -103,13 +109,18 @@ export function ExtendDistributionDialog({
 
     if (error) {
       toast.error(error);
+
       return;
     }
 
+    await queryClient.invalidateQueries({
+      queryKey: ["admin", "test-distributions"],
+    });
+
     toast.success("Test duration extended");
+
     onOpenChange(false);
   }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">

@@ -99,14 +99,7 @@ export type BatchEditState =
     | "unlocked"
     | "locked";
 
-/* ---------------- Dialog Props ---------------- */
 
-export type BatchDialogProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    batch?: BatchListItem;
-    courses: CourseSelectItem[];
-};
 
 /* ---------------- Course Selector ---------------- */
 
@@ -114,4 +107,12 @@ export interface CourseSelectItem {
     id: string;
     title: string;
     is_active: boolean;
+}
+
+/* ---------------- Instructor Selector ---------------- */
+
+export interface InstructorSelectItem {
+    id: string;
+
+    full_name: string;
 }

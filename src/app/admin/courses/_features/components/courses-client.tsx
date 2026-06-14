@@ -2,55 +2,139 @@
 
 import { useState } from "react";
 
-import { CoursesTable } from "./courses-table";
-import { Button } from "@/src/components/ui/button";
+import { Pagination } from "@/src/components/ui/pagination/pagination";
+import { CardSkeleton } from "@/src/components/ui/skeleton/table/table-cards-skeleton";
+import { TableSkeleton } from "@/src/components/ui/skeleton/table/table-skeleton";
+
 import { CourseDialog } from "./course-dialog";
-import { CourseRow } from "../actions/get-courses";
+import { CoursesTable } from "./courses-table";
+import { CoursesHeader } from "./courses-header";
 
-interface CoursesClientProps {
-  courses: CourseRow[];
-}
+import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
 
-export function CoursesClient({ courses }: CoursesClientProps) {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<CourseRow | null>(null);
+import { DEFAULT_COURSE_FILTERS } from "../constants/course-filters.constants";
 
-  return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Courses</h1>
+import { useCourses } from "../hooks/use-courses";
 
-        <Button
-          onClick={() => {
-            setSelectedCourse(null);
-            setDialogOpen(true);
-          }}
-          className="cursor-pointer"
-        >
-          Create Course
-        </Button>
-      </div>
+import type { CourseRow } from "../types/course.types";
 
-      <CoursesTable
-        data={courses}
-        onEdit={(course) => {
-          setSelectedCourse(course);
-          setDialogOpen(true);
+import { useInstructorOptions } from "@/src/hooks/use-instructor-options";
+import { CourseFiltersBar } from "./filter/course-filter-bar";
+import { CoursesEmptyState } from "./courses-empty-state";
+
+export function CoursesClient() {
+  const [open, setOpen] = useState(false);
+
+  const [editing, setEditing] = useState<CourseRow | null>(null);
+
+  const [filters, setFilters] = useState(DEFAULT_COURSE_FILTERS);
+
+  const [searchInput, setSearchInput] = useState("");
+
+  const { data, isLoading, error, refetch } = useCourses(filters);
+
+  const { data: instructors = [], isLoading: isInstructorsLoading } =
+    useInstructorOptions();
+
+  const hasActiveFilters =
+    filters.search !== DEFAULT_COURSE_FILTERS.search ||
+    filters.active !== DEFAULT_COURSE_FILTERS.active ||
+    filters.category !== DEFAULT_COURSE_FILTERS.category ||
+    filters.board !== DEFAULT_COURSE_FILTERS.board ||
+    filters.classLevel !== DEFAULT_COURSE_FILTERS.classLevel ||
+    filters.targetExam !== DEFAULT_COURSE_FILTERS.targetExam ||
+    filters.instructorId !== DEFAULT_COURSE_FILTERS.instructorId;
+
+  if (error instanceof Error) {
+    return (
+      <BatchTestsErrorState
+        message={error.message}
+        onRetry={() => {
+          void refetch();
         }}
       />
-      {dialogOpen && (
-        <CourseDialog
-          open={dialogOpen}
-          onOpenChange={(open) => {
-            setDialogOpen(open);
+    );
+  }
 
-            if (!open) {
-              setSelectedCourse(null);
-            }
+  return (
+    <>
+      <CoursesHeader
+        onCreate={() => {
+          setEditing(null);
+
+          setOpen(true);
+        }}
+      />
+
+      <CourseFiltersBar
+        filters={filters}
+        searchInput={searchInput}
+        onSearchInputChange={setSearchInput}
+        onFiltersChange={setFilters}
+        instructors={instructors}
+        isInstructorsLoading={isInstructorsLoading}
+      />
+
+      {isLoading ? (
+        <>
+          <TableSkeleton rows={4} columns={9} showTableHeader />
+
+          <CardSkeleton extraFields={4} />
+        </>
+      ) : !data || data.items.length === 0 ? (
+        <CoursesEmptyState
+          hasFilters={hasActiveFilters}
+          onResetFilters={() => {
+            setSearchInput("");
+
+            setFilters(DEFAULT_COURSE_FILTERS);
           }}
-          course={selectedCourse}
+          onCreateCourse={() => {
+            setEditing(null);
+
+            setOpen(true);
+          }}
         />
+      ) : (
+        <>
+          <CoursesTable
+            data={data.items}
+            onEdit={(course) => {
+              setEditing(course);
+
+              setOpen(true);
+            }}
+          />
+
+          <Pagination
+            page={data.page}
+            totalPages={data.totalPages}
+            totalCount={data.total}
+            pageSize={data.pageSize}
+            onPageChange={(page) =>
+              setFilters((prev) => ({
+                ...prev,
+                page,
+              }))
+            }
+          />
+        </>
       )}
-    </div>
+
+      <CourseDialog
+        key={editing?.id ?? "create"}
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+
+          if (!nextOpen) {
+            setEditing(null);
+          }
+        }}
+        course={editing ?? undefined}
+        instructors={instructors}
+        isInstructorsLoading={isInstructorsLoading}
+      />
+    </>
   );
 }

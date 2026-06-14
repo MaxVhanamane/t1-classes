@@ -136,13 +136,11 @@ export function CreateTestForm() {
       </Card>
 
       {/* ACTION */}
-      <Button
-        type="submit"
-        className="w-full cursor-pointer"
-        disabled={isPending}
-      >
-        {isPending ? "Creating…" : "Create test"}
-      </Button>
+      <div className="flex items-center justify-end">
+        <Button type="submit" className="w-full md:w-fit" disabled={isPending}>
+          {isPending ? "Creating…" : "Create test"}
+        </Button>
+      </div>
     </form>
   );
 }

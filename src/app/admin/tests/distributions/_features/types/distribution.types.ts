@@ -1,59 +1,78 @@
 export type DistributionStatus =
     | "scheduled"
     | "ongoing"
-    | "completed"
-    | "all";
+    | "completed";
 
 export interface DistributionItem {
-    id: string; // REQUIRED for edit dialog
+    id: string;
 
     test_id: string;
+
     batch_id: string;
 
-    // Display
+    /* ---------- Display ---------- */
+
     test_title: string;
+
     batch_name: string | null;
 
     starts_at: string;
+
     ends_at: string;
 
     status: DistributionStatus;
 
     duration_minutes: number;
+
     created_at: string;
 }
 
 export interface DistributionRow {
     id: string;
+
     test_id: string;
+
     batch_id: string;
 
     starts_at: string;
+
     ends_at: string;
 
     duration_minutes: number;
+
     created_at: string;
 
-    tests?: {
+    tests: {
         title: string;
     } | null;
 
-    batches?: {
+    batches: {
         title: string;
     } | null;
 }
 
-export interface DistributionQueryParams {
-    page: number;
-    pageSize?: number;
+export type DistributionQueryParams = {
+    search: string;
+
+    createdBy: string | "me" | null;
+
     status: DistributionStatus;
-    search?: string;
-}
+
+    page: number;
+};
 
 export interface PagedDistributions {
     items: DistributionItem[];
+
     page: number;
+
     pageSize: number;
+
     total: number;
-    hasMore: boolean;
+
+    totalPages: number;
+
+    currentUserId: string;
+
+    isAdmin: boolean;
 }

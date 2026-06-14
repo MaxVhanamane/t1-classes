@@ -16,7 +16,7 @@ import {
 } from "@/src/components/ui/command";
 import { ChevronsUpDown } from "lucide-react";
 import { cn } from "@/src/lib/utils";
-import { CourseOption } from "../types/enrollments";
+import { CourseOption } from "../types/enrollments.types";
 
 type CourseComboboxProps = {
   courses: CourseOption[];
@@ -31,7 +31,7 @@ export function CourseCombobox({
 }: CourseComboboxProps) {
   const selected = useMemo(
     () => courses.find((c) => c.id === value),
-    [courses, value]
+    [courses, value],
   );
 
   return (
@@ -70,7 +70,7 @@ export function CourseCombobox({
                         "h-2.5 w-2.5 rounded-full border",
                         course.id === value
                           ? "bg-primary border-primary"
-                          : "border-muted-foreground"
+                          : "border-muted-foreground",
                       )}
                     />
                   </div>

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
 import {
@@ -155,13 +155,7 @@ export async function createRefund(
             };
         }
 
-        /* ---------------------------------------
-           5. Refresh UI
-        --------------------------------------- */
 
-        revalidatePath(
-            `/admin/enrollments/${enrollmentId}/fees`,
-        );
 
     } catch (error) {
         console.error(

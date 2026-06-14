@@ -1,24 +1,26 @@
-import { getFeeData } from "../actions/queries";
-import { CreateFeePlanDialog } from "./create-fee-plan-dialog";
-import { SupersedeFeePlanDialog } from "./create-supersede-fee-plan";
-import { EditFeePlanDialog } from "./edit-fee-plan-dialog";
-import { FeePlanSummaryCard } from "./fee-plan-summary-card";
-import { FeePlanHistoryList } from "./fee-plan-history-list";
-import { PaymentsSection } from "./payment/payments-section";
-import { Payment } from "../types/payment.types";
-import { EnrollmentPricingContext } from "../types/fee-types";
+"use client";
+
 import { Separator } from "@/src/components/ui/separator";
+
+import { CreateFeePlanDialog } from "./create-fee-plan-dialog";
 import { DeleteFeePlanDialog } from "./delete-fee-plan-dialog";
+import { EditFeePlanDialog } from "./edit-fee-plan-dialog";
+import { FeePlanHistoryList } from "./fee-plan-history-list";
+import { FeePlanSummaryCard } from "./fee-plan-summary-card";
+import { SupersedeFeePlanDialog } from "./create-supersede-fee-plan";
+
+import { PaymentsSection } from "./payment/payments-section";
+
+import { EnrollmentFeesData } from "../types/enrollment-fees-data.types";
 
 interface Props {
   enrollmentId: string;
-  pricing: EnrollmentPricingContext;
-  payments: Payment[];
+
+  data: EnrollmentFeesData;
 }
 
-export async function FeeSection({ enrollmentId, pricing, payments }: Props) {
-  const { activeFeePlan, feeHistory, feeStatus } =
-    await getFeeData(enrollmentId);
+export function FeeSection({ enrollmentId, data }: Props) {
+  const { pricing, payments, activeFeePlan, feeHistory, feeStatus } = data;
 
   const paymentsExist = (feeStatus?.paid_amount ?? 0) > 0;
 
@@ -27,7 +29,6 @@ export async function FeeSection({ enrollmentId, pricing, payments }: Props) {
       {activeFeePlan ? (
         <>
           <FeePlanSummaryCard
-            offeredAmount={activeFeePlan.offered_amount}
             discountAmount={activeFeePlan.discount_amount}
             finalAmount={activeFeePlan.final_amount}
             listPriceAtCreation={activeFeePlan.list_price_at_creation}
@@ -44,14 +45,21 @@ export async function FeeSection({ enrollmentId, pricing, payments }: Props) {
                 <SupersedeFeePlanDialog
                   enrollmentId={enrollmentId}
                   oldFeePlanId={activeFeePlan.id}
-                  currentOfferedAmount={activeFeePlan.offered_amount}
+                  currentSalePrice={activeFeePlan.sale_price_at_creation}
                   currentDiscountAmount={activeFeePlan.discount_amount}
                   currentDiscountReason={activeFeePlan.discount_reason}
                 />
               ) : (
                 <div className="flex gap-2">
-                  <EditFeePlanDialog feePlan={activeFeePlan} />
-                  <DeleteFeePlanDialog feePlanId={activeFeePlan.id} />
+                  <EditFeePlanDialog
+                    feePlan={activeFeePlan}
+                    enrollmentId={enrollmentId}
+                  />
+
+                  <DeleteFeePlanDialog
+                    feePlanId={activeFeePlan.id}
+                    enrollmentId={enrollmentId}
+                  />
                 </div>
               )
             }

@@ -6,16 +6,58 @@ import type {
     Language,
 } from "../../../batches/_features/zod-schema/schema";
 
-/* ---------------- Course Instructor ---------------- */
+/* ---------------- Course List Item ---------------- */
 
-export type CourseInstructor = {
+export type CourseRow = {
     id: string;
-    course_id: string;
-    user_id: string | null;
-    name: string;
-    qualification: string | null;
-    bio: string | null;
-    avatar_url: string | null;
+
+    title: string;
+
+    slug: string;
+
+    subtitle: string | null;
+
+    thumbnail_image: string | null;
+
+    /* ---------- Category ---------- */
+
+    category: Category;
+
+    /* ---------- Academic ---------- */
+
+    class_level: number | null;
+
+    board: Board | null;
+
+    target_exam: TargetExam | null;
+
+    subjects: Subject[] | null;
+
+    languages: Language[];
+
+    /* ---------- Pricing ---------- */
+
+    list_price: number;
+
+    sale_price: number;
+
+    /* ---------- Status ---------- */
+
+    is_active: boolean;
+
+    /* ---------- Content ---------- */
+
+    description: RichTextJSON | null;
+
+    learning_outcomes: string[] | null;
+
+    target_audience: string[] | null;
+
+    /* ---------- Relations ---------- */
+
+    instructors?: InstructorOption[];
+
+    created_at: string;
 };
 
 /* ---------------- Rich Text ---------------- */

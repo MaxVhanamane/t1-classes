@@ -9,7 +9,7 @@ interface Props {
 
 export function SectionsEmptyState({ testType, testId, isLocked }: Props) {
   return (
-    <Card className="p-6 text-center space-y-3">
+    <Card className="p-6 text-center space-y-3 border-dashed rounded-md">
       <h2 className="text-base font-medium">No sections added yet</h2>
 
       <p className="text-sm text-muted-foreground">

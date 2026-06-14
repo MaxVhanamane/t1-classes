@@ -1,21 +1,19 @@
 "use client";
+import dynamic from "next/dynamic";
 
-import { NotificationDialog } from "./_features/components/notification-dialog";
-import { NotificationsTable } from "./_features/components/notifications-table";
-import { useNotifications } from "./_features/hooks/use-notifications";
+import CenteredLoader from "@/src/components/ui/loading/centered-loader";
+
+const NotificationsPageClient = dynamic(
+  () =>
+    import("./_features/components/notifications-page-client").then(
+      (mod) => mod.NotificationsPageClient,
+    ),
+  {
+    ssr: false,
+    loading: () => <CenteredLoader />,
+  },
+);
 
 export default function AdminNotificationsPage() {
-  const { data, isLoading } = useNotifications();
-
-  return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Notifications</h1>
-
-        <NotificationDialog />
-      </div>
-
-      <NotificationsTable notifications={data ?? []} loading={isLoading} />
-    </div>
-  );
+  return <NotificationsPageClient />;
 }

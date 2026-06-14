@@ -9,11 +9,19 @@ import { cn } from "@/src/lib/utils";
 import { CorrectAnswer } from "../../types/correct-answer.types";
 import { QuestionActionsMenu } from "./question-actions-menu";
 import { JSONContent } from "@tiptap/react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/src/components/ui/accordion";
 interface Props {
   question: TestQuestion;
   index: number;
   section: TestSection;
   onEdit: (q: TestQuestion) => void;
+  isPreview?: boolean;
+  dismissRecentQuestion: () => void;
 }
 
 /* ------------------ Answer Type Guards ------------------ */
@@ -107,7 +115,14 @@ function formatNumericAnswer(target: number, tolerance: number) {
 
 /* ------------------ Component ------------------ */
 
-export function QuestionCard({ question, index, section, onEdit }: Props) {
+export function QuestionCard({
+  question,
+  index,
+  section,
+  onEdit,
+  dismissRecentQuestion,
+  isPreview = false,
+}: Props) {
   const correct = question.correctAnswer;
 
   return (
@@ -122,13 +137,16 @@ export function QuestionCard({ question, index, section, onEdit }: Props) {
           </div>
         </div>
 
-        <QuestionActionsMenu
-          question={question}
-          onEdit={() => onEdit(question)}
-          sectionId={section.id}
-          testId={section.testId}
-          is_locked={section.is_locked}
-        />
+        {!isPreview && (
+          <QuestionActionsMenu
+            question={question}
+            onEdit={() => onEdit(question)}
+            sectionId={section.id}
+            testId={section.testId}
+            is_locked={section.is_locked}
+            dismissRecentQuestion={dismissRecentQuestion}
+          />
+        )}
       </div>
 
       {/* Options OR Numerical Answer */}
@@ -170,15 +188,22 @@ export function QuestionCard({ question, index, section, onEdit }: Props) {
       ) : null}
 
       {hasRichTextContent(question.explanation) && (
-        <div className="mt-4 rounded-md border border-muted bg-muted/40 px-3 py-3">
-          <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
-            Explanation
-          </div>
+        <Accordion type="single" collapsible className="mt-4">
+          <AccordionItem
+            value="explanation"
+            className="rounded-md border border-border/60 bg-muted/30 px-3"
+          >
+            <AccordionTrigger className="py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:no-underline">
+              Explanation
+            </AccordionTrigger>
 
-          <div className="text-sm text-foreground/90">
-            <RichTextRenderer content={question.explanation} />
-          </div>
-        </div>
+            <AccordionContent className="pb-3">
+              <div className="text-sm text-foreground/90">
+                <RichTextRenderer content={question.explanation} />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       )}
     </Card>
   );

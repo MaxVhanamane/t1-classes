@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { revalidatePath } from "next/cache";
+
 import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 import {
@@ -13,7 +13,7 @@ import { ServerActionResponse } from "@/src/types/server-action";
 
 export async function updateFeePlan(
     feePlanId: string,
-    rawData: FeePlanSubmitInput
+    rawData: FeePlanSubmitInput,
 ): Promise<ServerActionResponse> {
     const admin =
         await requireAdminServerOnly();
@@ -24,7 +24,7 @@ export async function updateFeePlan(
          */
         const parsed =
             feePlanSubmitSchema.safeParse(
-                rawData
+                rawData,
             );
 
         if (!parsed.success) {
@@ -93,11 +93,11 @@ export async function updateFeePlan(
             .select("amount")
             .eq(
                 "enrollment_id",
-                enrollmentId
+                enrollmentId,
             )
             .eq(
                 "status",
-                "success"
+                "success",
             );
 
         if (paymentError) {
@@ -108,15 +108,11 @@ export async function updateFeePlan(
         }
 
         const netPaid =
-            (
-                payments ?? []
-            ).reduce(
+            (payments ?? []).reduce(
                 (sum, row) =>
                     sum +
-                    Number(
-                        row.amount
-                    ),
-                0
+                    Number(row.amount),
+                0,
             );
 
         if (netPaid > 0) {
@@ -128,7 +124,6 @@ export async function updateFeePlan(
 
         /**
          * 4. Update fee plan
-         * Offered amount remains locked
          */
         const { error } =
             await supabase
@@ -152,7 +147,7 @@ export async function updateFeePlan(
                 .eq("id", feePlanId)
                 .eq(
                     "status",
-                    "active"
+                    "active",
                 );
 
         if (error) {
@@ -162,16 +157,11 @@ export async function updateFeePlan(
             };
         }
 
-        /**
-         * 5. Refresh UI
-         */
-        revalidatePath(
-            `/admin/enrollments/${enrollmentId}/fees`
-        );
+
     } catch (error) {
         console.error(
             "[UPDATE_FEE_PLAN_ERROR]",
-            error
+            error,
         );
 
         return {

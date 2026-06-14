@@ -16,7 +16,7 @@ import {
 } from "@/src/components/ui/command";
 import { ChevronsUpDown } from "lucide-react";
 import { cn } from "@/src/lib/utils";
-import { BatchOption } from "../types/enrollments";
+import { BatchOption } from "../types/enrollments.types";
 
 type BatchComboboxProps = {
   batches: BatchOption[];
@@ -59,7 +59,7 @@ export function BatchCombobox({
 
             <CommandGroup>
               {batches.map((batch) => {
-                const courseTitles = batch.course.map((c) => c.title);
+                const courseTitles = batch.courses.map((c) => c.title);
                 const primaryCourse = courseTitles[0];
                 const extraCount = courseTitles.length - 1;
 

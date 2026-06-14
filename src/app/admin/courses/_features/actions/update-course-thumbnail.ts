@@ -2,7 +2,7 @@
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { deleteR2Object } from "@/src/lib/r2/deleteObject";
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
@@ -71,7 +71,7 @@ export async function updateCourseThumbnail(
         }
 
         /* ---------- revalidate ---------- */
-        revalidatePath("/admin/courses");
+
         updateTag(`course-detail-${data.slug}`);
         updateTag(`course-list-${data.category}`);
     } catch (error) {

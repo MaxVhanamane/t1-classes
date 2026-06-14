@@ -33,6 +33,8 @@ interface Props {
   testId: string;
   sectionId: string;
   onEdit: () => void;
+  dismissRecentQuestion: () => void;
+
   is_locked: boolean;
 }
 
@@ -42,6 +44,7 @@ export function QuestionActionsMenu({
   sectionId,
   is_locked,
   onEdit,
+  dismissRecentQuestion,
 }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,6 +52,7 @@ export function QuestionActionsMenu({
   const queryClient = useQueryClient();
   async function handleDelete() {
     setLoading(true);
+    dismissRecentQuestion();
     const toastId = toast.loading("Deleting question...");
 
     const { error } = await callServerAction(
@@ -56,16 +60,26 @@ export function QuestionActionsMenu({
     );
 
     if (error) {
-      toast.error(error, { id: toastId });
-    } else {
-      toast.success("Deleted", { id: toastId });
+      toast.error(error, {
+        id: toastId,
+      });
+
+      setLoading(false);
+
+      return;
     }
 
-    setLoading(false);
-    setConfirmOpen(false);
     await queryClient.invalidateQueries({
-      queryKey: ["section-questions", sectionId],
+      queryKey: ["admin", "tests", "sections", sectionId, "questions"],
     });
+
+    toast.success("Deleted", {
+      id: toastId,
+    });
+
+    setLoading(false);
+
+    setConfirmOpen(false);
   }
 
   function handleDeleteBtnClick() {

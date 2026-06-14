@@ -4,7 +4,6 @@ import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
 
 const TABS = [
-  { id: "all", label: "All" },
   { id: "scheduled", label: "Scheduled" },
   { id: "ongoing", label: "Ongoing" },
   { id: "completed", label: "Completed" },
@@ -27,7 +26,7 @@ export function DistributionTabs({ value, onChange }: Props) {
             "px-3 py-1.5 rounded-md text-sm transition",
             value === tab.id
               ? "bg-primary text-primary-foreground"
-              : "hover:bg-muted text-muted-foreground"
+              : "hover:bg-muted text-muted-foreground",
           )}
         >
           {tab.label}

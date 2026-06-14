@@ -2,7 +2,7 @@
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { courseSchema } from "../zod/course.schema";
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
@@ -187,7 +187,7 @@ export async function updateCourse(
         }
 
         /* ---------- revalidate ---------- */
-        revalidatePath("/admin/courses");
+
 
         updateTag(`course-detail-${course.slug}`);
         updateTag(`course-list-${values.category}`);

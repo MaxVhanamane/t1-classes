@@ -1,20 +1,24 @@
 import { format } from "date-fns";
 import { Children } from "react";
+
 import { Badge } from "@/src/components/ui/badge";
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/src/components/ui/accordion";
-import { FeePlanAuditTrigger } from "./fee-plan-audit-trigger";
+
+import { AuditUser } from "../types/enrollment-fees-data.types";
 
 type FeePlanSummaryCardProps = {
-  offeredAmount: number;
   discountAmount: number;
+
   finalAmount: number;
 
   listPriceAtCreation: number;
+
   salePriceAtCreation: number;
 
   currency?: string;
@@ -24,9 +28,12 @@ type FeePlanSummaryCardProps = {
   discountReason: string | null;
 
   createdAt: string;
-  createdBy: string;
+
+  createdBy: AuditUser | null;
+
   updatedAt: string | null;
-  updatedBy: string | null;
+
+  updatedBy: AuditUser | null;
 
   actions?: React.ReactNode;
 };
@@ -41,7 +48,6 @@ const reasonLabels: Record<string, string> = {
 };
 
 export function FeePlanSummaryCard({
-  offeredAmount,
   discountAmount,
   finalAmount,
   listPriceAtCreation,
@@ -61,6 +67,7 @@ export function FeePlanSummaryCard({
 
   const statusStyles = {
     active: "bg-green-100 text-green-700 hover:bg-green-100",
+
     superseded: "bg-amber-100 text-amber-800 hover:bg-amber-100",
   };
 
@@ -84,7 +91,7 @@ export function FeePlanSummaryCard({
 
       {/* Body */}
       <div className="space-y-5 px-6 py-5">
-        {/* Snapshot */}
+        {/* Pricing Snapshot */}
         <Accordion
           type="single"
           collapsible
@@ -119,10 +126,11 @@ export function FeePlanSummaryCard({
         </Accordion>
 
         {/* Fee rows */}
+        {/* Fee rows */}
         <div className="space-y-2 text-sm">
-          <Row label="Offered Amount">
+          <Row label="Sale Amount">
             {symbol}
-            {offeredAmount.toLocaleString()}
+            {salePriceAtCreation.toLocaleString()}
           </Row>
 
           <Row label="Extra Discount" destructive>
@@ -133,7 +141,7 @@ export function FeePlanSummaryCard({
 
         {/* Final */}
         <div className="rounded-xl bg-muted/50 px-4 py-4 text-center">
-          <p className="text-xs text-muted-foreground">Final Amount</p>
+          <p className="text-xs text-muted-foreground">Final Payable</p>
 
           <p className="mt-1 text-2xl font-semibold tracking-tight">
             {symbol}
@@ -168,7 +176,25 @@ export function FeePlanSummaryCard({
             </p>
           )}
 
-          <FeePlanAuditTrigger createdBy={createdBy} updatedBy={updatedBy} />
+          <div className="space-y-1 pt-2">
+            {createdBy && (
+              <p>
+                Created by{" "}
+                <span className="font-medium text-foreground">
+                  {createdBy.fullName ?? "Unknown"}
+                </span>
+              </p>
+            )}
+
+            {updatedBy && (
+              <p>
+                Updated by{" "}
+                <span className="font-medium text-foreground">
+                  {updatedBy.fullName ?? "Unknown"}
+                </span>
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -190,7 +216,9 @@ function Row({
   destructive = false,
 }: {
   label: string;
+
   children: React.ReactNode;
+
   destructive?: boolean;
 }) {
   return (

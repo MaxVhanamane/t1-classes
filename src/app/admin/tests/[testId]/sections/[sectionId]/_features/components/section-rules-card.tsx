@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import { Card, CardContent, CardHeader } from "@/src/components/ui/card";
-import { Badge } from "@/src/components/ui/badge";
-import { Button } from "@/src/components/ui/button";
-import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/src/components/ui/accordion";
 
 import type { TestSection } from "../types/section.types";
 
@@ -16,71 +17,32 @@ interface Props {
 }
 
 export function SectionRulesCard({ section }: Props) {
-  const [open, setOpen] = useState(false);
-
-  const hasPartialMarking =
-    section.answerMode === "multi_select" && section.partialMarks !== null;
+  if (!section.description?.trim()) {
+    return null;
+  }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="flex items-center gap-2">
-          <Info className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Section Rules</h3>
+    <Accordion type="single" collapsible className="mt-3">
+      <AccordionItem value="instructions" className="border-none">
+        <div className="overflow-hidden rounded-md border border-border/60 bg-muted/30 shadow-sm transition-colors hover:border-border">
+          <AccordionTrigger className="group px-4 py-3 hover:no-underline">
+            <div className="flex flex-col items-start text-left">
+              <span className="text-sm font-medium">Section Instructions</span>
+
+              <span className="text-xs text-muted-foreground">
+                Expand to review section-specific guidelines
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="border-t border-border/50 px-4 pb-4 pt-3">
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {section.description}
+              </ReactMarkdown>
+            </div>
+          </AccordionContent>
         </div>
-
-        <Button variant="ghost" size="sm" onClick={() => setOpen((v) => !v)}>
-          {open ? (
-            <>
-              Hide
-              <ChevronUp className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            <>
-              Show
-              <ChevronDown className="ml-2 h-4 w-4" />
-            </>
-          )}
-        </Button>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {/* Summary Row */}
-        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-          <Badge variant="outline" className="capitalize">
-            {section.answerMode.replace("_", " ")}
-          </Badge>
-
-          <span>
-            <span className="font-medium text-foreground">Correct</span>: +
-            {section.fullMarks}
-          </span>
-
-          {section.negativeMarks < 0 && (
-            <span>
-              <span className="font-medium text-foreground">Incorrect</span>:{" "}
-              {section.negativeMarks}
-            </span>
-          )}
-
-          <span>
-            <span className="font-medium text-foreground">Unanswered</span>: 0
-          </span>
-
-          {hasPartialMarking && (
-            <span className="italic">Partial marking enabled</span>
-          )}
-        </div>
-
-        {/* Expanded Rules */}
-        {open && section.description && (
-          <div className="prose prose-sm dark:prose-invert max-w-none border-t pt-3">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {section.description}
-            </ReactMarkdown>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </AccordionItem>
+    </Accordion>
   );
 }

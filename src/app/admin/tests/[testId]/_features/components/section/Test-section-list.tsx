@@ -27,6 +27,7 @@ import { TestSection } from "../../types/test-section.types";
 import { Trash2 } from "lucide-react";
 import { deleteSection } from "../../actions/sections/delete-section";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   testId: string;
@@ -42,7 +43,7 @@ export function TestSectionsList({
   isLocked,
 }: Props) {
   const router = useRouter();
-
+  const queryClient = useQueryClient();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TestSection | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -83,14 +84,20 @@ export function TestSectionsList({
 
     if (error) {
       toast.error(error);
+
       setDeleting(false);
+
       return;
     }
 
+    await queryClient.invalidateQueries({
+      queryKey: ["admin", "tests", testId, "details"],
+    });
+
     toast.success("Section deleted");
-    router.refresh();
 
     setDeleting(false);
+
     setDeleteTarget(null);
   }
   return (
@@ -156,18 +163,8 @@ export function TestSectionsList({
                         <span className="font-medium text-foreground">
                           Subject:
                         </span>{" "}
-                        {section.subjectLabel}
-                      </div>
-                    )}
-
-                    {section.answerMode === "numerical_input" && (
-                      <div className="text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">
-                          Scoring:
-                        </span>{" "}
-                        {section.scoringQuestionCount
-                          ? `Best ${section.scoringQuestionCount} questions count`
-                          : "All questions count"}
+                        {section.subjectLabel.charAt(0).toUpperCase() +
+                          section.subjectLabel.slice(1)}
                       </div>
                     )}
                   </div>

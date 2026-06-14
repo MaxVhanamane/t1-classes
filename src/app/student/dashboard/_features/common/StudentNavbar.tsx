@@ -45,7 +45,7 @@ export function StudentNavbar({
   const isApp = variant === "authenticated";
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/60 backdrop-blur">
+    <header className="sticky top-0 z-50  border-b bg-background md:bg-background/60 backdrop-blur">
       <div className="flex h-14 items-center justify-between px-4 sm:px-7">
         {/* Left: Logo */}
         <div className="flex gap-2 items-center">

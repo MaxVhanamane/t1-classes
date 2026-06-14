@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { batchSchema } from "../zod-schema/schema";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { generateBatchSlug } from "@/src/lib/helper-functions/generate-slug";
@@ -132,7 +132,7 @@ export async function createBatch(
         }
 
         /* ---------------- Revalidate ---------------- */
-        revalidatePath("/admin/batches");
+
         updateTag(`batch-list-${data.category}`);
 
         return { data: batchId };

@@ -29,6 +29,7 @@ import { ConfirmRefundDialog } from "./confirm-refund-dialog";
 import { createRefund } from "../../actions/payments/create-refund";
 import { PaymentMethodSelect } from "./payment-method-select";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   enrollmentId: string;
@@ -37,7 +38,7 @@ interface Props {
 
 export function RefundDialog({ enrollmentId, refundableAmount }: Props) {
   const [open, setOpen] = useState(false);
-
+  const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -95,8 +96,11 @@ export function RefundDialog({ enrollmentId, refundableAmount }: Props) {
 
       const parsed = refundSubmitSchema.parse({
         amount: Number(data.amount),
+
         refundedAt: data.refundedAt,
+
         paymentMethod: data.paymentMethod,
+
         refundReason: data.refundReason,
       });
 
@@ -109,10 +113,15 @@ export function RefundDialog({ enrollmentId, refundableAmount }: Props) {
         return;
       }
 
-      toast.success("Refund recorded successfully");
+      await queryClient.invalidateQueries({
+        queryKey: ["enrollment-fees", enrollmentId],
+      });
 
       setConfirmOpen(false);
+
       setOpen(false);
+
+      toast.success("Refund recorded successfully");
     } catch {
       toast.error("Failed to record refund.");
     } finally {

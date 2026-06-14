@@ -101,7 +101,7 @@ export async function GET(
             ? rawPage
             : 1;
 
-    const limit = 1;
+    const limit = 10;
 
     const {
         data,

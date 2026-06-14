@@ -47,7 +47,6 @@ async function fetchInstructions(
       negative_marks,
       partial_marks,
       max_selections,
-      scoring_question_count,
       subject_label
     `,
     )

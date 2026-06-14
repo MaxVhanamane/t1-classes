@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+
 import { PostgrestError } from "@supabase/supabase-js";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
@@ -8,7 +8,7 @@ import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only"
 
 import { ServerActionResponse } from "@/src/types/server-action";
 
-import { CreateEnrollmentInput } from "../types/enrollments";
+import { CreateEnrollmentInput } from "../types/enrollments.types";
 import { createEnrollmentSchema } from "../zod-schema/enrollments";
 
 export async function updateEnrollment(
@@ -231,13 +231,7 @@ export async function updateEnrollment(
             };
         }
 
-        /* =====================================
-           7. Refresh
-        ===================================== */
 
-        revalidatePath(
-            "/admin/enrollments",
-        );
 
 
     } catch (error) {

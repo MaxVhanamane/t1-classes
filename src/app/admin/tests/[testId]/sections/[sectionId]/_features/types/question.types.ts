@@ -15,3 +15,16 @@ export type TestQuestion = {
     correctAnswer: CorrectAnswer
 
 }
+
+
+export type PaginatedQuestionsResponse = {
+    items: TestQuestion[];
+
+    total: number;
+
+    page: number;
+
+    pageSize: number;
+
+    totalPages: number;
+};

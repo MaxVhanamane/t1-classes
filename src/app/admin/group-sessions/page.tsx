@@ -1,12 +1,20 @@
-import { GroupSessionsPageHeader } from "./_features/components/group-sessions-page-header";
-import { GroupSessionsTable } from "./_features/components/group-sessions-table";
+"use client";
 
-export default async function GroupSessionsPage() {
-  return (
-    <div className="space-y-6 p-4 md:p-6">
-      <GroupSessionsPageHeader />
+import dynamic from "next/dynamic";
 
-      <GroupSessionsTable />
-    </div>
-  );
+import CenteredLoader from "@/src/components/ui/loading/centered-loader";
+
+const GroupSessionsPageClient = dynamic(
+  () =>
+    import("./_features/components/group-sessions-page-client").then(
+      (mod) => mod.GroupSessionsPageClient,
+    ),
+  {
+    ssr: false,
+    loading: () => <CenteredLoader />,
+  },
+);
+
+export default function GroupSessionsPage() {
+  return <GroupSessionsPageClient />;
 }

@@ -29,6 +29,7 @@ import { TruncatedWithTooltip } from "@/src/components/ui/TruncatedWithTooltip";
 import { createFeePlan } from "../actions/fee/create-fee-plan";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   enrollmentId: string;
@@ -44,7 +45,7 @@ export function CreateFeePlanDialog({
   salePrice,
 }: Props) {
   const [open, setOpen] = useState(false);
-
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<FeePlanFormInput>({
@@ -93,6 +94,10 @@ export function CreateFeePlanDialog({
         return;
       }
 
+      await queryClient.invalidateQueries({
+        queryKey: ["enrollment-fees", enrollmentId],
+      });
+
       toast.success("Fee plan created.");
 
       setOpen(false);
@@ -112,7 +117,7 @@ export function CreateFeePlanDialog({
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Fee Plan</DialogTitle>
 
@@ -154,14 +159,14 @@ export function CreateFeePlanDialog({
               )}
             </div>
 
-            {/* Offered Amount */}
-            <div className="rounded-xl border p-4">
+            {/* Sale Price */}
+            {/* <div className="rounded-xl border p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Offered Amount</p>
+                  <p className="text-sm font-medium">Sale Price</p>
 
                   <p className="text-xs text-muted-foreground">
-                    Fixed to current sale price
+                    Current standard fee before any additional concessions
                   </p>
                 </div>
 
@@ -169,8 +174,7 @@ export function CreateFeePlanDialog({
                   ₹{salePrice.toLocaleString()}
                 </p>
               </div>
-            </div>
-
+            </div> */}
             {/* Extra Discount */}
             <div className="space-y-2">
               <Label>Extra Discount</Label>
@@ -181,7 +185,7 @@ export function CreateFeePlanDialog({
               />
 
               <p className="text-xs text-muted-foreground">
-                Additional concession beyond sale price.
+                Additional concession applied on top of the sale price.
               </p>
 
               {form.formState.errors.discountAmount && (

@@ -2,7 +2,6 @@
 
 import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { revalidatePath } from "next/cache";
 import { ServerActionResponse } from "@/src/types/server-action";
 
 export async function deleteFeePlan(
@@ -127,12 +126,7 @@ export async function deleteFeePlan(
             };
         }
 
-        /**
-         * 4. Refresh page
-         */
-        revalidatePath(
-            `/admin/enrollments/${enrollmentId}/fees`
-        );
+
     } catch (error) {
         console.error(
             "[DELETE_FEE_PLAN_ERROR]",

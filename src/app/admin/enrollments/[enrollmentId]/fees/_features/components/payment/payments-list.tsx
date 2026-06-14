@@ -1,28 +1,36 @@
-import type { Payment } from "../../types/payment.types";
-import { PaymentStatusBadge } from "./payment-status-badge";
-import { PaymentMethodBadge } from "./payment-method-badge";
+import { Badge } from "@/src/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
-import { Badge } from "@/src/components/ui/badge";
+
+import { PaymentMethodBadge } from "./payment-method-badge";
+import { PaymentStatusBadge } from "./payment-status-badge";
+
+import { EnrollmentPayment } from "../../types/enrollment-fees-data.types";
 
 interface PaymentsListProps {
-  payments: Payment[];
+  payments: EnrollmentPayment[];
 }
 
 const refundReasonLabels: Record<
-  NonNullable<Payment["refund_reason"]>,
+  NonNullable<EnrollmentPayment["refund_reason"]>,
   string
 > = {
   overpayment: "Overpayment",
+
   duplicate_payment: "Duplicate payment",
+
   entry_error: "Incorrect payment entry",
+
   service_issue: "Service issue",
+
   course_withdrawal: "Student withdrew",
+
   batch_cancelled: "Batch cancelled",
+
   special_approval: "Special approval",
 };
 
@@ -44,7 +52,7 @@ export function PaymentsList({ payments }: PaymentsListProps) {
 
         const processedByLabel = isRefund ? "Refund issued by" : "Processed by";
 
-        const actorName = payment?.created_by ?? null;
+        const actor = payment.created_by;
 
         const refundLabel = payment.refund_reason
           ? refundReasonLabels[payment.refund_reason]
@@ -53,7 +61,10 @@ export function PaymentsList({ payments }: PaymentsListProps) {
         return (
           <div
             key={payment.id}
-            className="flex items-start justify-between gap-4 p-4 text-sm"
+            className="
+              flex items-start justify-between
+              gap-4 p-4 text-sm
+            "
           >
             {/* LEFT */}
             <div className="min-w-0 space-y-1.5">
@@ -80,7 +91,9 @@ export function PaymentsList({ payments }: PaymentsListProps) {
               {/* Meta */}
               <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
                 <PaymentMethodBadge method={payment.payment_method} />
+
                 <span>·</span>
+
                 <span>{new Date(payment.paid_at).toLocaleDateString()}</span>
               </div>
 
@@ -95,16 +108,16 @@ export function PaymentsList({ payments }: PaymentsListProps) {
               )}
 
               {/* Processed by */}
-              {actorName && (
+              {actor && (
                 <div className="text-xs text-muted-foreground">
                   {processedByLabel}{" "}
                   <span className="font-medium text-foreground">
-                    {actorName}
+                    {actor.fullName ?? "Unknown"}
                   </span>
                 </div>
               )}
 
-              {/* Notes only for payments */}
+              {/* Notes */}
               {!isRefund && payment.notes && (
                 <div className="text-xs text-muted-foreground">
                   {payment.notes}

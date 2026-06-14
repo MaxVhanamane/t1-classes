@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -25,21 +25,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-
 import { toast } from "sonner";
-
 import { createTestDistribution } from "../actions/create-test-distribution";
-
 import {
   ScheduleTestInput,
   scheduleTestSchema,
 } from "../zod/schedule-test.schema";
-
-import { BatchRow } from "../types/audience.types";
 import { updateTestDistribution } from "../../../distributions/_features/actions/update-test-distribution";
 import { ISODatePicker } from "../../../distributions/_features/components/iso-date-picker";
-import { useRouter } from "nextjs-toploader/app";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useBatchOptions } from "@/src/hooks/use-batch-options";
+import { useQueryClient } from "@tanstack/react-query";
 
 /* ---------------- Types ---------------- */
 export function dateToISO(date: Date) {
@@ -68,10 +64,19 @@ export function ScheduleTestDialog({
   onOpenChange,
   distribution,
 }: Props) {
+  const queryClient = useQueryClient();
   const isEditMode = !!distribution;
-  const router = useRouter();
-  const [batches, setBatches] = useState<BatchRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: batches = [],
+    isLoading: isBatchesLoading,
+    error: batchesError,
+  } = useBatchOptions();
+
+  useEffect(() => {
+    if (batchesError instanceof Error) {
+      toast.error(batchesError.message);
+    }
+  }, [batchesError]);
 
   const form = useForm<ScheduleTestInput>({
     resolver: zodResolver(scheduleTestSchema),
@@ -98,34 +103,6 @@ export function ScheduleTestDialog({
 
   /* ---------------- Load Batches ---------------- */
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-
-      try {
-        const res = await fetch("/api/admin/schedule/batches");
-
-        if (res.status === 401) {
-          router.push("/login");
-          return;
-        }
-
-        if (!res.ok) {
-          throw new Error();
-        }
-
-        const data: BatchRow[] = await res.json();
-        setBatches(data);
-      } catch {
-        toast.error("Failed to load batches");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   /* ---------------- Populate Edit Mode ---------------- */
 
   useEffect(() => {
@@ -149,20 +126,24 @@ export function ScheduleTestDialog({
   async function onSubmit(values: ScheduleTestInput) {
     try {
       const start = new Date(values.starts_at);
+
       const end = new Date(values.ends_at);
 
       if (!values.batch_id) {
         toast.error("Please select a batch");
+
         return;
       }
 
       if (end <= start) {
         toast.error("End time must be after start time");
+
         return;
       }
 
       if (start < new Date()) {
         toast.error("Cannot schedule a test in the past");
+
         return;
       }
 
@@ -170,6 +151,7 @@ export function ScheduleTestDialog({
 
       if (values.duration_minutes > windowMinutes) {
         toast.error("Duration cannot exceed the test window");
+
         return;
       }
 
@@ -180,8 +162,19 @@ export function ScheduleTestDialog({
 
         if (error) {
           handleDistributionError(error);
+
           return;
         }
+
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["admin", "test-distributions"],
+          }),
+
+          queryClient.invalidateQueries({
+            queryKey: ["admin", "tests"],
+          }),
+        ]);
 
         toast.success("Distribution updated");
       } else {
@@ -191,8 +184,19 @@ export function ScheduleTestDialog({
 
         if (error) {
           handleDistributionError(error);
+
           return;
         }
+
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["admin", "test-distributions"],
+          }),
+
+          queryClient.invalidateQueries({
+            queryKey: ["admin", "tests"],
+          }),
+        ]);
 
         toast.success("Test scheduled");
       }
@@ -207,7 +211,7 @@ export function ScheduleTestDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
-        className="sm:max-w-lg max-h-[95vh] overflow-y-scroll"
+        className="sm:max-w-lg max-h-[95vh] overflow-y-auto bg-card"
       >
         <DialogHeader>
           <DialogTitle>
@@ -222,7 +226,7 @@ export function ScheduleTestDialog({
         >
           {/* Batch */}
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label>Batch</Label>
 
             <Controller
@@ -230,14 +234,14 @@ export function ScheduleTestDialog({
               name="batch_id"
               render={({ field }) => (
                 <Select
-                  disabled={loading || isSubmitting}
+                  disabled={isBatchesLoading || isSubmitting}
                   value={field.value ?? ""}
                   onValueChange={field.onChange}
                 >
                   <SelectTrigger>
                     <SelectValue
                       placeholder={
-                        loading ? "Loading batches..." : "Select batch"
+                        isBatchesLoading ? "Loading batches..." : "Select batch"
                       }
                     />
                   </SelectTrigger>
@@ -278,7 +282,7 @@ export function ScheduleTestDialog({
 
           {/* Duration */}
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label>Duration (minutes)</Label>
 
             <Input

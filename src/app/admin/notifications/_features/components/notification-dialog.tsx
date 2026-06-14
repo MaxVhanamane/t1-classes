@@ -43,14 +43,9 @@ import {
   notificationSchema,
 } from "../zod/notification.schema";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
-
-type BatchRow = {
-  id: string;
-  title: string;
-};
+import { useBatchOptions } from "@/src/hooks/use-batch-options";
 
 type NotificationRow = {
   id: string;
@@ -69,10 +64,7 @@ export function NotificationDialog({ notification }: Props) {
 
   const queryClient = useQueryClient();
 
-  const { data: batches = [] } = useQuery<BatchRow[]>({
-    queryKey: ["notification-batches"],
-    queryFn: () => fetchWrapper<BatchRow[]>("/api/admin/schedule/batches"),
-  });
+  const { data: batches = [] } = useBatchOptions();
 
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),

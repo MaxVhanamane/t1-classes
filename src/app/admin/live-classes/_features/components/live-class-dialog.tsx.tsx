@@ -24,13 +24,13 @@ import {
   CreateLiveClassInput,
 } from "../zod/create-live-class.schema";
 
-import { useBatches } from "../hooks/use-batches";
 import { createLiveClass } from "../actions/create-live-class";
 import { updateLiveClass } from "../actions/update-live-class";
 
 import { BatchMultiSelect } from "./batch-multi-select";
 import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useBatchOptions } from "@/src/hooks/use-batch-options";
 
 interface EditValue {
   id: string;
@@ -115,7 +115,7 @@ export function LiveClassDialog({ open, onOpenChange, liveClass }: Props) {
 
   const queryClient = useQueryClient();
 
-  const { data: batches = [], isLoading: loadingBatches } = useBatches();
+  const { data: batches = [], isLoading: loadingBatches } = useBatchOptions();
 
   const form = useForm<CreateLiveClassInput>({
     resolver: zodResolver(createLiveClassSchema),

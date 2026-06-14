@@ -25,6 +25,7 @@ import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { RichTextRenderer } from "../../../tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 import { TableThumbnailPreview } from "../../../courses/_features/components/Table-thumbnail-preview";
 import { TitleSubtitleTooltip } from "@/src/components/ui/common/title-subtitle-tooltip";
+import { format } from "date-fns";
 
 type Props = {
   batches: BatchListItem[];
@@ -42,8 +43,10 @@ export function BatchesTable({ batches, onEdit }: Props) {
                 Thumbnail
               </TableHead>
               <TableHead>Batch</TableHead>
+              <TableHead>Schedule</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Board</TableHead>
+              <TableHead>Class</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Courses</TableHead>
               <TableHead>Price</TableHead>
@@ -96,6 +99,18 @@ export function BatchesTable({ batches, onEdit }: Props) {
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
+                  <TableCell className="py-2">
+                    <div className="flex flex-col text-xs leading-tight">
+                      <div>
+                        <span className="text-muted-foreground">Start:</span>{" "}
+                        {format(batch.start_date, "dd MMM yyyy")}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">End:</span>{" "}
+                        {format(batch.end_date, "dd MMM yyyy")}
+                      </div>
+                    </div>
+                  </TableCell>
                   {/* category */}
                   <TableCell>
                     <Badge variant="outline">
@@ -118,6 +133,10 @@ export function BatchesTable({ batches, onEdit }: Props) {
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
+                  </TableCell>
+                  {/* Class Level  */}
+                  <TableCell>
+                    <Badge variant="outline">{batch.class_level}</Badge>
                   </TableCell>
                   {/* ---------------------------------- */}
                   {/* Description (TipTap JSON) */}

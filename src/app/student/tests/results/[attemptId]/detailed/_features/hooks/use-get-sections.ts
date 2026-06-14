@@ -20,7 +20,6 @@ export type SectionItem = {
     negativeMarks: number;
     partialMarks: PartialMarkingByCorrectCount | null;
     maxSelections: number | null;
-    scoringQuestionCount: number | null;
     questionCount: number;
 };
 

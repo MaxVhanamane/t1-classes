@@ -6,6 +6,7 @@ import { Button } from "@/src/components/ui/button";
 import { Trash2, Plus } from "lucide-react";
 import { UseFormReturn, useWatch } from "react-hook-form";
 import { CreateQuestionInput } from "../../zod/question.schema";
+import { toast } from "sonner";
 
 /* -------------------------------------------- */
 const emptyDoc: JSONContent = {
@@ -38,6 +39,12 @@ export function MultiSelectBuilder({ form }: Props) {
 
   /* -------------------------------------------- */
   const addOption = () => {
+    if (options.length >= 4) {
+      toast.error(
+        "Only 4 options are allowed for multi-select as it affects marking.",
+      );
+      return;
+    }
     const labels = options.map((o) => o.label);
     const label = nextLabel(labels);
 

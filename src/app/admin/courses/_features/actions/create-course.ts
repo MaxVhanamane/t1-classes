@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { courseSchema } from "../zod/course.schema";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { generateBatchSlug } from "@/src/lib/helper-functions/generate-slug";
@@ -126,7 +126,7 @@ export async function createCourse(
         }
 
         /* ---------- revalidate ---------- */
-        revalidatePath("/admin/courses");
+
         updateTag(`course-list-${values.category}`);
 
         return { data: courseId };

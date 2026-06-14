@@ -31,7 +31,7 @@ import {
   CourseOption,
   CreateEnrollmentInput,
   EnrollmentRow,
-} from "../types/enrollments";
+} from "../types/enrollments.types";
 
 import {
   createEnrollmentSchema,
@@ -50,6 +50,7 @@ import { localDateTimeToUTCISO, toDateTimeLocal } from "@/src/lib/date";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { Switch } from "@/src/components/ui/switch";
 import { Sparkles } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 type CreateEnrollmentDialogProps = {
   batches: BatchOption[];
@@ -64,6 +65,7 @@ export function EnrollmentDialog({
   enrollment,
   onClose,
 }: CreateEnrollmentDialogProps) {
+  const queryClient = useQueryClient();
   const isEdit = Boolean(enrollment);
 
   const [accessTouched, setAccessTouched] = useState(false);
@@ -201,6 +203,7 @@ export function EnrollmentDialog({
             toast.error(error, {
               id: toastId,
             });
+
             return;
           }
 
@@ -214,6 +217,7 @@ export function EnrollmentDialog({
             toast.error(error, {
               id: toastId,
             });
+
             return;
           }
 
@@ -222,9 +226,15 @@ export function EnrollmentDialog({
           });
         }
 
+        await queryClient.invalidateQueries({
+          queryKey: ["admin", "enrollments"],
+        });
+
         onClose();
       } catch {
-        toast.error("Something went wrong", { id: toastId });
+        toast.error("Something went wrong", {
+          id: toastId,
+        });
       }
     },
 
@@ -470,7 +480,7 @@ export function EnrollmentDialog({
           </div>
 
           {!isEdit && targetType === "batch" && (
-            <div className="rounded-xl border bg-gradient-to-r from-primary/5 via-primary/10 to-transparent p-4">
+            <div className="rounded-xl border bg-linear-to-r from-primary/5 via-primary/10 to-transparent p-4">
               <div className="flex items-start gap-3">
                 <div className="rounded-lg bg-primary/10 p-2">
                   <Sparkles className="h-4 w-4 text-primary" />

@@ -1,13 +1,20 @@
 "use client";
 
+import { useState } from "react";
+
+import { Pencil, Trash2 } from "lucide-react";
+
+import { toast } from "sonner";
+
+import { useRouter } from "nextjs-toploader/app";
+
+import { useQueryClient } from "@tanstack/react-query";
+
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
-import { Trash2, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { deleteTest } from "../actions/delete-test";
+
 import {
   AlertDialog,
-  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -15,62 +22,34 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/src/components/ui/alert-dialog";
-import { Link } from "@/src/components/ui/link";
-import { TestRow } from "../types/test.types";
-import { useState } from "react";
-import { EditTestDialog } from "./edit-test-dialog";
-import { useRouter } from "nextjs-toploader/app";
+
 import LockedBadge from "@/src/components/ui/common/locked-badge";
+
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 
-function generatePages(current: number, total: number) {
-  const pages: (number | "...")[] = [];
-  const delta = 2;
+import { deleteTest } from "../actions/delete-test";
 
-  for (let i = 1; i <= total; i++) {
-    if (
-      i === 1 ||
-      i === total ||
-      (i >= current - delta && i <= current + delta)
-    ) {
-      pages.push(i);
-    } else if (pages[pages.length - 1] !== "...") {
-      pages.push("...");
-    }
-  }
+import { EditTestDialog } from "./edit-test-dialog";
 
-  return pages;
-}
+import type { TestRow } from "../types/test.types";
 
-export function TestsList({
-  tests,
-  currentPage,
-  totalPages,
-}: {
+type Props = {
   tests: TestRow[];
-  currentPage: number;
-  totalPages: number;
-}) {
+};
+
+export function TestsList({ tests }: Props) {
   const router = useRouter();
 
+  const queryClient = useQueryClient();
+
   const [editingTest, setEditingTest] = useState<TestRow | null>(null);
+
   const [deleteOpen, setDeleteOpen] = useState<string | null>(null);
+
   const [deleting, setDeleting] = useState(false);
 
-  const pages = generatePages(currentPage, totalPages);
-
   return (
-    <div className="mt-6 space-y-4">
-      {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Your Tests</h2>
-
-        <Button size="sm" onClick={() => router.push("/admin/tests/create")}>
-          + Create Test
-        </Button>
-      </div>
-
-      {/* TEST LIST */}
+    <>
       <div className="space-y-3">
         {tests.map((test) => {
           const locked = test.is_locked;
@@ -79,12 +58,12 @@ export function TestsList({
             <div
               key={test.id}
               onClick={() => router.push(`/admin/tests/${test.id}`)}
-              className="flex items-start justify-between gap-4 border rounded-lg p-4 hover:bg-muted/40 hover:shadow-sm transition cursor-pointer"
+              className="flex cursor-pointer items-start justify-between gap-4 rounded-lg border p-4 transition hover:bg-muted/40 hover:shadow-sm"
             >
-              {/* LEFT CONTENT */}
-              <div className="flex flex-col gap-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium truncate">{test.title}</span>
+              {/* LEFT */}
+              <div className="min-w-0 flex flex-col gap-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="truncate font-medium">{test.title}</span>
 
                   <Badge variant="outline" className="capitalize text-xs">
                     {test.test_type}
@@ -92,24 +71,30 @@ export function TestsList({
                 </div>
 
                 {test.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <p className="line-clamp-2 text-sm text-muted-foreground">
                     {test.description}
                   </p>
                 )}
 
-                <span className="text-xs text-muted-foreground">
-                  Created{" "}
-                  {new Date(test.created_at).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </span>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                  <span>
+                    Created{" "}
+                    {new Date(test.created_at).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+
+                  {test.created_by && (
+                    <span>By {test.created_by.full_name}</span>
+                  )}
+                </div>
               </div>
 
-              {/* RIGHT SIDE */}
+              {/* RIGHT */}
               <div
-                className="flex items-center gap-2 shrink-0"
+                className="flex shrink-0 items-center gap-2"
                 onClick={(e) => e.stopPropagation()}
               >
                 {locked && <LockedBadge />}
@@ -117,29 +102,33 @@ export function TestsList({
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingTest(test);
+                  onClick={() => setEditingTest(test)}
+                >
+                  <Pencil className="size-4" />
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    if (locked) {
+                      toast.info(
+                        "Locked tests cannot be deleted because students have already attempted the test.",
+                      );
+
+                      return;
+                    }
+
+                    setDeleteOpen(test.id);
                   }}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Trash2 className="size-4" />
                 </Button>
 
                 <AlertDialog
                   open={deleteOpen === test.id}
-                  onOpenChange={(v) => setDeleteOpen(v ? test.id : null)}
+                  onOpenChange={(open) => setDeleteOpen(open ? test.id : null)}
                 >
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      disabled={locked}
-                      aria-label="Delete test"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete this test?</AlertDialogTitle>
@@ -147,6 +136,7 @@ export function TestsList({
                       <AlertDialogDescription>
                         This will permanently delete this test and all its
                         sections, questions, attempts, and results.
+                        <br />
                         <br />
                         <strong>This action cannot be undone.</strong>
                       </AlertDialogDescription>
@@ -163,22 +153,27 @@ export function TestsList({
                         onClick={async () => {
                           setDeleting(true);
 
-                          const { error } = await callServerAction(
-                            deleteTest(test.id),
-                          );
+                          try {
+                            const { error } = await callServerAction(
+                              deleteTest(test.id),
+                            );
 
-                          if (error) {
-                            toast.error(error);
-                            setDeleting(false);
-                            return;
-                          }
+                            if (error) {
+                              toast.error(error);
 
-                          toast.success("Test deleted");
-                          setDeleting(false);
+                              return;
+                            }
 
-                          setTimeout(() => {
+                            await queryClient.invalidateQueries({
+                              queryKey: ["admin", "tests"],
+                            });
+
+                            toast.success("Test deleted");
+
                             setDeleteOpen(null);
-                          }, 400);
+                          } finally {
+                            setDeleting(false);
+                          }
                         }}
                       >
                         {deleting ? "Deleting..." : "Confirm Delete"}
@@ -192,60 +187,13 @@ export function TestsList({
         })}
       </div>
 
-      {/* EDIT DIALOG */}
       {editingTest && (
         <EditTestDialog
           test={editingTest}
-          open={true}
+          open
           onOpenChange={() => setEditingTest(null)}
         />
       )}
-
-      {/* PAGINATION */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-6">
-          <Button
-            variant="outline"
-            disabled={currentPage === 1}
-            asChild={currentPage !== 1}
-          >
-            {currentPage === 1 ? (
-              <span>Prev</span>
-            ) : (
-              <Link href={`?page=${currentPage - 1}`}>Prev</Link>
-            )}
-          </Button>
-
-          {pages.map((p, i) =>
-            p === "..." ? (
-              <span key={i} className="px-2 text-muted-foreground">
-                ...
-              </span>
-            ) : (
-              <Button
-                key={p}
-                variant={p === currentPage ? "default" : "outline"}
-                size="sm"
-                asChild
-              >
-                <Link href={`?page=${p}`}>{p}</Link>
-              </Button>
-            ),
-          )}
-
-          <Button
-            variant="outline"
-            disabled={currentPage === totalPages}
-            asChild={currentPage !== totalPages}
-          >
-            {currentPage === totalPages ? (
-              <span>Next</span>
-            ) : (
-              <Link href={`?page=${currentPage + 1}`}>Next</Link>
-            )}
-          </Button>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

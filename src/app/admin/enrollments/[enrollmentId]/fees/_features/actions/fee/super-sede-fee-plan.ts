@@ -7,41 +7,31 @@ import {
     feePlanSubmitSchema,
 } from "../../zod/feePlan.schema";
 
-import { revalidatePath } from "next/cache";
 import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
 import { ServerActionResponse } from "@/src/types/server-action";
 
 export async function supersedeFeePlan(
     oldFeePlanId: string,
     enrollmentId: string,
-    rawData: FeePlanSubmitInput
+    rawData: FeePlanSubmitInput,
 ): Promise<ServerActionResponse> {
-    const admin =
-        await requireAdminServerOnly();
+    await requireAdminServerOnly();
 
     try {
         /**
          * 1. Validate input
          */
-        const parsed =
-            feePlanSubmitSchema.safeParse(
-                rawData
-            );
+        const parsed = feePlanSubmitSchema.safeParse(rawData);
 
         if (!parsed.success) {
             return {
-                error:
-                    "Invalid fee plan data.",
+                error: "Invalid fee plan data.",
             };
         }
 
-        const {
-            discountAmount,
-            discountReason,
-        } = parsed.data;
+        const { discountAmount, discountReason } = parsed.data;
 
-        const supabase =
-            await createServerSupabaseClient();
+        const supabase = await createServerSupabaseClient();
 
         /**
          * 2. Ensure old plan exists
@@ -55,7 +45,6 @@ export async function supersedeFeePlan(
         id,
         enrollment_id,
         status,
-        offered_amount,
         final_amount,
         currency,
         list_price_at_creation,
@@ -67,14 +56,11 @@ export async function supersedeFeePlan(
         if (
             oldPlanError ||
             !oldPlan ||
-            oldPlan.status !==
-            "active" ||
-            oldPlan.enrollment_id !==
-            enrollmentId
+            oldPlan.status !== "active" ||
+            oldPlan.enrollment_id !== enrollmentId
         ) {
             return {
-                error:
-                    "Fee plan cannot be superseded.",
+                error: "Fee plan cannot be superseded.",
             };
         }
 
@@ -87,33 +73,19 @@ export async function supersedeFeePlan(
         } = await supabase
             .from("payments")
             .select("amount")
-            .eq(
-                "enrollment_id",
-                enrollmentId
-            )
-            .eq(
-                "status",
-                "success"
-            );
+            .eq("enrollment_id", enrollmentId)
+            .eq("status", "success");
 
         if (paymentError) {
             return {
-                error:
-                    "Failed to verify payments.",
+                error: "Failed to verify payments.",
             };
         }
 
-        const paidAmount =
-            (
-                payments ?? []
-            ).reduce(
-                (sum, row) =>
-                    sum +
-                    Number(
-                        row.amount
-                    ),
-                0
-            );
+        const paidAmount = (payments ?? []).reduce(
+            (sum, row) => sum + Number(row.amount),
+            0,
+        );
 
         if (paidAmount <= 0) {
             return {
@@ -124,84 +96,54 @@ export async function supersedeFeePlan(
 
         /**
          * 4. Prevent new plan below already paid amount
-         * (unless refunded first)
          */
         const newFinalAmount =
-            Number(
-                oldPlan
-                    .offered_amount
-            ) -
-            Number(
-                discountAmount
-            );
+            Number(oldPlan.sale_price_at_creation) -
+            Number(discountAmount);
 
-        if (
-            newFinalAmount <
-            paidAmount
-        ) {
+        if (newFinalAmount < paidAmount) {
             return {
-                error:
-                    `Student has already paid ₹${paidAmount.toLocaleString()}. Refund excess amount before reducing fee below paid total.`,
+                error: `Student has already paid ₹${paidAmount.toLocaleString()}. Refund excess amount before reducing fee below paid total.`,
             };
         }
 
         /**
          * 5. Supersede plan
-         * Offered amount stays locked
          */
-        const { error } =
-            await supabase.rpc(
-                "supersede_fee_plan",
-                {
-                    p_old_fee_plan_id:
-                        oldFeePlanId,
+        const { error } = await supabase.rpc(
+            "supersede_fee_plan",
+            {
+                p_old_fee_plan_id: oldFeePlanId,
 
-                    p_enrollment_id:
-                        enrollmentId,
+                p_enrollment_id: enrollmentId,
 
-                    p_offered_amount:
-                        oldPlan.offered_amount,
+                p_discount_amount: discountAmount,
 
-                    p_discount_amount:
-                        discountAmount,
+                p_discount_reason:
+                    discountReason?.trim().toLowerCase() ??
+                    null,
 
-                    p_discount_reason:
-                        discountReason
-                            ?.trim()
-                            .toLowerCase() ||
-                        null,
+                p_currency: oldPlan.currency,
 
-                    p_currency:
-                        oldPlan.currency,
+                p_list_price_at_creation:
+                    oldPlan.list_price_at_creation,
 
-                    p_list_price_at_creation:
-                        oldPlan.list_price_at_creation,
-
-                    p_sale_price_at_creation:
-                        oldPlan.sale_price_at_creation,
-
-                    p_admin_id:
-                        admin.userId,
-                }
-            );
+                p_sale_price_at_creation:
+                    oldPlan.sale_price_at_creation,
+            },
+        );
 
         if (error) {
             return {
-                error:
-                    error.message,
+                error: error.message,
             };
         }
 
-        /**
-         * 6. Refresh UI
-         */
-        revalidatePath(
-            `/admin/enrollments/${enrollmentId}/fees`
-        );
+
     } catch (error) {
         console.error(
             "[SUPERSEDE_FEE_PLAN_ERROR]",
-            error
+            error,
         );
 
         return {

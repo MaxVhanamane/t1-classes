@@ -134,7 +134,6 @@ export async function loadAttempt(attemptId: string): Promise<LoadAttemptRespons
                 full_marks,
                 negative_marks,
                 max_selections,
-                scoring_question_count,
                 questions:test_questions (
                     id,
                     question_text,
@@ -182,7 +181,6 @@ export async function loadAttempt(attemptId: string): Promise<LoadAttemptRespons
                 fullMarks: s.full_marks,
                 negativeMarks: s.negative_marks,
                 maxSelections: s.max_selections,
-                scoringQuestionCount: s.scoring_question_count,
                 questions: (s.questions ?? []).map((q) => ({
                     id: q.id,
                     questionText: q.question_text,

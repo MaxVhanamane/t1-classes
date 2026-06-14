@@ -3,7 +3,7 @@
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { deleteR2Object } from "@/src/lib/r2/deleteObject";
 import { ServerActionResponse } from "@/src/types/server-action";
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 export async function updateBatchThumbnail(
@@ -71,7 +71,7 @@ export async function updateBatchThumbnail(
         }
 
         /* ---------- revalidate ---------- */
-        revalidatePath("/admin/batches");
+
         updateTag(`batch-detail-${data.slug}`);
         updateTag(`batch-list-${data.category}`);
     } catch (error) {

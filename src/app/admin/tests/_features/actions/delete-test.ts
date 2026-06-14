@@ -1,7 +1,6 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { revalidatePath } from "next/cache";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 
@@ -47,8 +46,7 @@ export async function deleteTest(
             return { error: "Failed to delete test. Please try again." };
         }
 
-        // Revalidate cache
-        revalidatePath("/admin/tests");
+
     } catch (error) {
         console.error("[DELETE_TEST_FATAL]", error);
         return {

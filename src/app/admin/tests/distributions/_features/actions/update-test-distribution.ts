@@ -2,7 +2,6 @@
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { ScheduleTestInput } from "../../../schedule/_features/zod/schedule-test.schema";
-import { revalidatePath } from "next/cache";
 import { computeDistributionStatus } from "../helpers/compute-distribution-status";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
@@ -69,9 +68,7 @@ export async function updateTestDistribution(
             return { error: error.message };
         }
 
-        /* ---------------- Revalidate UI ---------------- */
-        revalidatePath("/admin/tests/distributions");
-        revalidatePath("/admin/tests/schedule");
+
     } catch (err) {
         console.error("[UPDATE_TEST_DISTRIBUTION_ERROR]", err);
         return {

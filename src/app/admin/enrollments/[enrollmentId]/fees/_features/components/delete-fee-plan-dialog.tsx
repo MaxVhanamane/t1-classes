@@ -13,14 +13,20 @@ import { Button } from "@/src/components/ui/button";
 import { toast } from "sonner";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { deleteFeePlan } from "../actions/fee/delete-fee-plan";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface DeleteFeePlanDialogProps {
   feePlanId: string;
+  enrollmentId: string;
 }
 
-export function DeleteFeePlanDialog({ feePlanId }: DeleteFeePlanDialogProps) {
+export function DeleteFeePlanDialog({
+  feePlanId,
+  enrollmentId,
+}: DeleteFeePlanDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   async function handleConfirm() {
     setLoading(true);
@@ -33,7 +39,12 @@ export function DeleteFeePlanDialog({ feePlanId }: DeleteFeePlanDialogProps) {
         return;
       }
 
+      await queryClient.invalidateQueries({
+        queryKey: ["enrollment-fees", enrollmentId],
+      });
+
       setOpen(false);
+
       toast.success("Fee plan deleted.");
     } catch {
       toast.error("Failed to delete fee plan.");

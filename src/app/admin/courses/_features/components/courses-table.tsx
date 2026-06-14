@@ -21,7 +21,7 @@ import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { TableThumbnailPreview } from "./Table-thumbnail-preview";
 import { TitleSubtitleTooltip } from "@/src/components/ui/common/title-subtitle-tooltip";
 import { BOARD_LABELS } from "../../../batches/_features/zod-schema/schema";
-import { CourseRow } from "../actions/get-courses";
+import { CourseRow } from "../types/course.types";
 
 interface CoursesTableProps {
   data: CourseRow[];

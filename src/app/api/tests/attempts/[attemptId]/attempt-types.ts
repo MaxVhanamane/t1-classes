@@ -27,7 +27,6 @@ export type Section = {
     fullMarks: number
     negativeMarks: number
     maxSelections: number | null
-    scoringQuestionCount: number | null
     questions: Question[]
 }
 

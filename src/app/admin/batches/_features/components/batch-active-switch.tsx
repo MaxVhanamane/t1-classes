@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { toggleBatchActive } from "../actions/toggle-batch-active";
 import { Switch } from "@/src/components/ui/switch";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   batchId: string;
@@ -15,6 +16,7 @@ type Props = {
 export function BatchActiveSwitch({ batchId, initialValue }: Props) {
   const [checked, setChecked] = useState(initialValue);
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   return (
     <Switch
@@ -23,7 +25,9 @@ export function BatchActiveSwitch({ batchId, initialValue }: Props) {
       disabled={loading}
       onCheckedChange={async (next) => {
         const prev = checked;
+
         setChecked(next);
+
         setLoading(true);
 
         const { error } = await callServerAction(
@@ -32,12 +36,20 @@ export function BatchActiveSwitch({ batchId, initialValue }: Props) {
 
         if (error) {
           setChecked(prev);
+
           toast.error(error);
+
           setLoading(false);
+
           return;
         }
 
+        await queryClient.invalidateQueries({
+          queryKey: ["admin", "batches"],
+        });
+
         toast.success(next ? "Batch activated" : "Batch deactivated");
+
         setLoading(false);
       }}
     />

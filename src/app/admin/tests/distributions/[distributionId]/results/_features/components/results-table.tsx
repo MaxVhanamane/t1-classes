@@ -1,9 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
-import { Button } from "@/src/components/ui/button";
+import { Card } from "@/src/components/ui/card";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -13,140 +12,28 @@ import {
   TableRow,
 } from "@/src/components/ui/table";
 
-import { Skeleton } from "@/src/components/ui/skeleton";
-import { AlertCircle, Loader, Search } from "lucide-react";
-import { ResultsSort, PagedResults } from "../types/results.types";
-import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
+import { DistributionResultRow } from "../types/results.types";
 
 interface Props {
-  distributionId: string;
-  page: number;
-  pageSize: number;
-  search: string;
-  sort: ResultsSort;
-  onPageChange: (page: number) => void;
-}
-
-async function fetchResults(params: {
-  distributionId: string;
-  page: number;
-  pageSize: number;
-  search: string;
-  sort: ResultsSort;
-}): Promise<PagedResults> {
-  return fetchWrapper<PagedResults>(
-    `/api/admin/distributions/${params.distributionId}/results`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(params),
-    },
-  );
+  items: DistributionResultRow[];
+  isFetching?: boolean;
 }
 
 function formatTime(seconds: number) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}m ${s}s`;
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  return `${minutes}m ${secs}s`;
 }
 
-export function ResultsTable({
-  distributionId,
-  page,
-  pageSize,
-  search,
-  sort,
-  onPageChange,
-}: Props) {
-  const { data, isPending, isFetching, isError } = useQuery<PagedResults>({
-    queryKey: ["results", distributionId, page, pageSize, search, sort],
-    queryFn: () =>
-      fetchResults({
-        distributionId,
-        page,
-        pageSize,
-        search,
-        sort,
-      }),
-    placeholderData: (prev) => prev,
-  });
-
-  if (isPending) {
-    return (
-      <Card className="p-4">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Student</TableHead>
-              <TableHead>Score</TableHead>
-              <TableHead>Accuracy</TableHead>
-              <TableHead>Time</TableHead>
-              <TableHead>Rank</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                  <Skeleton className="h-4 w-40" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-15" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-17" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-10" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-8 w-22.5" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
-    );
-  }
-
-  if (isError || !data) {
-    return (
-      <Card className="flex flex-col items-center justify-center py-14 text-center">
-        <AlertCircle className="h-6 w-6 text-destructive mb-2" />
-        <p className="text-sm font-medium">Failed to load results</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Please refresh the page or try again later.
-        </p>
-      </Card>
-    );
-  }
-  if (data.items.length === 0) {
-    return (
-      <Card className="flex flex-col items-center justify-center py-14 text-center">
-        <Search className="h-6 w-6 text-muted-foreground mb-2" />
-        <p className="text-sm font-medium">No results found</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Try adjusting your search or filters.
-        </p>
-      </Card>
-    );
-  }
-
+export function ResultsTable({ items, isFetching = false }: Props) {
   return (
-    <div className="overflow-hidden relative rounded-lg border bg-card">
-      {isFetching && (
-        <div className="absolute top-2 right-2">
-          <Loader className="animate-spin w-4 h-4" />
-        </div>
-      )}
+    <Card className="overflow-hidden">
       <div
         className={
           isFetching ? "opacity-60 transition-opacity" : "transition-opacity"
@@ -156,30 +43,42 @@ export function ResultsTable({
           <TableHeader>
             <TableRow>
               <TableHead>Student</TableHead>
-              <TableHead>Score</TableHead>
-              <TableHead>Percentage</TableHead>
-              <TableHead>Correct</TableHead>
-              <TableHead>Wrong</TableHead>
-              <TableHead>Unanswered</TableHead>
-              <TableHead>Time Spent</TableHead>
+
               <TableHead>Rank</TableHead>
-              {/* <TableHead className="text-right">Actions</TableHead> */}
+              <TableHead>Score</TableHead>
+
+              <TableHead>Percentage</TableHead>
+
+              <TableHead>Percentile</TableHead>
+
+              <TableHead>Correct</TableHead>
+
+              <TableHead>Partial</TableHead>
+
+              <TableHead>Wrong</TableHead>
+
+              <TableHead>Unanswered</TableHead>
+
+              <TableHead>Completion</TableHead>
+
+              <TableHead>Time Spent</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {data.items.map((row) => {
+            {items.map((row) => {
               const percentage =
                 row.total_marks > 0
                   ? Number(
                       ((row.obtained_marks / row.total_marks) * 100).toFixed(2),
                     )
                   : 0;
+
               return (
                 <TableRow key={row.id}>
-                  <TableCell className="max-w-30">
+                  <TableCell className="max-w-52">
                     <div
-                      className="font-medium truncate"
+                      className="truncate font-medium"
                       title={row.student_name}
                     >
                       {row.student_name}
@@ -187,13 +86,14 @@ export function ResultsTable({
 
                     {row.student_email && (
                       <div
-                        className="text-xs text-muted-foreground truncate"
+                        className="truncate text-xs text-muted-foreground"
                         title={row.student_email}
                       >
                         {row.student_email}
                       </div>
                     )}
                   </TableCell>
+                  <TableCell>{row.rank ?? "—"}</TableCell>
 
                   <TableCell>
                     {row.obtained_marks} / {row.total_marks}
@@ -203,57 +103,133 @@ export function ResultsTable({
                     <Badge variant="secondary">{percentage}%</Badge>
                   </TableCell>
 
-                  <TableCell className="text-green-600 font-medium">
+                  <TableCell>
+                    {row.percentile !== null ? (
+                      <Badge variant="outline">{row.percentile}%</Badge>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+
+                  <TableCell className="font-medium text-green-600">
                     {row.correct_count}
                   </TableCell>
 
-                  <TableCell className="text-red-500 font-medium">
+                  <TableCell className="font-medium text-blue-600">
+                    {row.partial_correct_count}
+                  </TableCell>
+
+                  <TableCell className="font-medium text-red-500">
                     {row.wrong_count}
                   </TableCell>
-                  <TableCell className="text-yellow-500 font-medium">
+
+                  <TableCell className="font-medium text-yellow-600">
                     {row.unanswered_count}
                   </TableCell>
 
+                  <TableCell>
+                    <Badge variant="outline">
+                      {row.completion_percentage}%
+                    </Badge>
+                  </TableCell>
+
                   <TableCell>{formatTime(row.time_spent_seconds)}</TableCell>
-
-                  <TableCell>{row.rank ?? "—"}</TableCell>
-
-                  {/* <TableCell className="text-right">
-                    <Button size="sm" variant="outline">
-                      View Attempt
-                    </Button>
-                  </TableCell> */}
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between px-4 py-3 border-t text-sm">
-        <div className="text-muted-foreground">
-          Page {data.page} of {Math.ceil(data.total / data.pageSize)}
-        </div>
-
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={page === 1 || isFetching}
-            onClick={() => onPageChange(page - 1)}
-          >
-            Previous
-          </Button>
-
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={!data.hasMore || isFetching}
-            onClick={() => onPageChange(page + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Card>
   );
 }
+
+ResultsTable.Skeleton = function ResultsTableSkeleton() {
+  return (
+    <Card className="overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Student</TableHead>
+
+            <TableHead>Score</TableHead>
+
+            <TableHead>Percentage</TableHead>
+
+            <TableHead>Percentile</TableHead>
+
+            <TableHead>Rank</TableHead>
+
+            <TableHead>Correct</TableHead>
+
+            <TableHead>Partial</TableHead>
+
+            <TableHead>Wrong</TableHead>
+
+            <TableHead>Unanswered</TableHead>
+
+            <TableHead>Completion</TableHead>
+
+            <TableHead>Time</TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {Array.from({
+            length: 10,
+          }).map((_, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+
+                  <Skeleton className="h-3 w-40" />
+                </div>
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-4 w-16" />
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-4 w-10" />
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-4 w-8" />
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-4 w-8" />
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-4 w-8" />
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-4 w-8" />
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </TableCell>
+
+              <TableCell>
+                <Skeleton className="h-4 w-14" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
+  );
+};

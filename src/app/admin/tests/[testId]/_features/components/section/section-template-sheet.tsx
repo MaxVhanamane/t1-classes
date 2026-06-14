@@ -1,26 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
+import { useQueryClient } from "@tanstack/react-query";
+
 import { toast } from "sonner";
+
+import {
+  SUBJECTS,
+  SUBJECT_LABELS,
+  type Subject,
+} from "@/src/app/admin/batches/_features/zod-schema/schema";
 
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/src/components/ui/sheet";
 
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/src/components/ui/dialog";
 
 import { Button } from "@/src/components/ui/button";
-import { Skeleton } from "@/src/components/ui/skeleton";
 
 import {
   Select,
@@ -30,30 +38,31 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 
-import type { SectionTemplate } from "../../types/section-template.types";
-import { SectionTemplateCard } from "./section-template-card";
-import { getSectionTemplates } from "../../server/sections/get-section-templates";
-import { addTestSectionFromTemplate } from "../../actions/sections/add-test-section";
-import { TestType } from "../../../../create/_features/types/create-test.types";
+import { Label } from "@/src/components/ui/label";
+
+import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
+
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+
+import { addTestSectionFromTemplate } from "../../actions/sections/add-test-section";
+
+import { useSectionTemplates } from "../../hooks/use-section-templates";
+
+import type { SectionTemplate } from "../../types/section-template.types";
+
+import type { TestType } from "../../../../create/_features/types/create-test.types";
+
+import { SectionTemplateCard } from "./section-template-card";
 
 interface Props {
   open: boolean;
+
   onOpenChange: (v: boolean) => void;
+
   testId: string;
+
   testType: TestType;
 }
-
-/**
- * Predefined Subjects for Classes 8–12 and Competitive Exams
- */
-export const SUBJECT_OPTIONS = [
-  // Core Subjects (Classes 11–12 and Competitive Exams)
-  { label: "Mathematics", value: "mathematics" },
-  { label: "Physics", value: "physics" },
-  { label: "Chemistry", value: "chemistry" },
-  { label: "Biology", value: "biology" },
-];
 
 export function SectionTemplateSheet({
   open,
@@ -61,109 +70,110 @@ export function SectionTemplateSheet({
   testId,
   testType,
 }: Props) {
-  const [templates, setTemplates] = useState<SectionTemplate[]>([]);
+  const queryClient = useQueryClient();
+
+  const {
+    data: templates = [],
+    isLoading,
+    error: templatesError,
+  } = useSectionTemplates(open);
+
   const [selected, setSelected] = useState<SectionTemplate | null>(null);
-  const [loading, setLoading] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
 
   const [subjectOpen, setSubjectOpen] = useState(false);
-  const [subject, setSubject] = useState("");
 
-  // Scoring rule
-  const [scoringMode, setScoringMode] = useState<"all" | "best">("all");
-  const [bestCount, setBestCount] = useState("");
+  const [subject, setSubject] = useState<Subject | "">("");
 
   const isStandard = testType === "standard";
-  const isNumerical = selected?.answerMode === "numerical_input";
 
-  useEffect(() => {
-    if (!open) return;
-
-    setLoading(true);
-
-    getSectionTemplates()
-      .then(setTemplates)
-      .catch(() => {
-        toast.error("Failed to load section templates");
-      })
-      .finally(() => setLoading(false));
-  }, [open]);
-
-  const handleCreate = async () => {
-    if (!selected || !subject) return;
-
-    let scoringCount: number | null = null;
-
-    if (isNumerical && scoringMode === "best") {
-      const n = Number(bestCount);
-      if (!n || n < 1) {
-        toast.error("Enter a valid number of questions to score");
-        return;
-      }
-      scoringCount = n;
-    }
-
-    setSubmitting(true);
-    const toastId = toast.loading("Adding section…");
-
-    const { error } = await callServerAction(
-      addTestSectionFromTemplate(testId, selected.id, subject, scoringCount),
-    );
-
-    if (error) {
-      toast.error(error, { id: toastId });
-      setSubmitting(false);
+  async function handleCreate() {
+    if (!selected || !subject) {
       return;
     }
 
-    toast.success("Section added", { id: toastId });
+    setSubmitting(true);
 
-    // Reset UI
+    const toastId = toast.loading("Adding section...");
+
+    const { error } = await callServerAction(
+      addTestSectionFromTemplate(testId, selected.id, subject),
+    );
+
+    if (error) {
+      toast.error(error, {
+        id: toastId,
+      });
+
+      setSubmitting(false);
+
+      return;
+    }
+
+    await queryClient.invalidateQueries({
+      queryKey: ["admin", "tests", testId, "details"],
+    });
+
+    toast.success("Section added", {
+      id: toastId,
+    });
+
     setSubject("");
+
     setSelected(null);
-    setScoringMode("all");
-    setBestCount("");
+
     setSubjectOpen(false);
+
     onOpenChange(false);
+
     setSubmitting(false);
-  };
+  }
 
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-xl px-2 overflow-y-auto pb-10"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          className="flex h-full w-full flex-col gap-0 p-0 sm:max-w-xl"
         >
-          <SheetHeader>
-            <SheetTitle>Select section type</SheetTitle>
+          <SheetHeader className="border-b px-6 py-3">
+            <SheetTitle>Select Section Type</SheetTitle>
+
             <SheetDescription>
               Choose how questions in this section will be evaluated.
             </SheetDescription>
           </SheetHeader>
 
-          <div className="mt-6 space-y-4">
-            {loading ? (
-              <>
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
-              </>
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <LoadingIndicator />
+              </div>
+            ) : templatesError ? (
+              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+                Failed to load section templates.
+              </div>
             ) : (
-              templates.map((t) => (
-                <SectionTemplateCard
-                  key={t.id}
-                  template={t}
-                  selected={selected?.id === t.id}
-                  onSelect={() => setSelected(t)}
-                  disabled={isStandard && t.answerMode !== "single_select"}
-                  disabledReason="Available only for sectioned tests"
-                />
-              ))
+              <div className="space-y-4">
+                {templates.map((template) => (
+                  <SectionTemplateCard
+                    key={template.id}
+                    template={template}
+                    selected={selected?.id === template.id}
+                    onSelect={() => setSelected(template)}
+                    disabled={
+                      isStandard && template.answerMode !== "single_select"
+                    }
+                    disabledReason="Sectioned tests only"
+                  />
+                ))}
+              </div>
             )}
           </div>
 
-          <div className="mt-6">
+          <div className="border-t bg-background/95 px-6 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
             <Button
               className="w-full"
               disabled={!selected || submitting}
@@ -175,75 +185,44 @@ export function SectionTemplateSheet({
         </SheetContent>
       </Sheet>
 
-      {/* Subject + Scoring Dialog */}
       <Dialog open={subjectOpen} onOpenChange={setSubjectOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Section Settings</DialogTitle>
+
             <DialogDescription>
-              Select the subject for this section to organize the test structure
-              clearly for students.
+              Select the subject for this section.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Subject Dropdown */}
-            <div>
-              <label className="text-sm font-medium">Subject</label>
-              <Select value={subject} onValueChange={setSubject}>
-                <SelectTrigger className="mt-1">
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Subject</Label>
+
+              <Select
+                value={subject}
+                onValueChange={(value) => setSubject(value as Subject)}
+              >
+                <SelectTrigger>
                   <SelectValue placeholder="Select a subject" />
                 </SelectTrigger>
+
                 <SelectContent>
-                  {SUBJECT_OPTIONS.map((subj) => (
-                    <SelectItem key={subj.value} value={subj.value}>
-                      {subj.label}
+                  {SUBJECTS.map((subject) => (
+                    <SelectItem key={subject} value={subject}>
+                      {SUBJECT_LABELS[subject]}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Scoring Rules */}
-            {isNumerical && (
-              <div className="space-y-3">
-                <div className="text-sm font-medium">Scoring Rule</div>
-
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="radio"
-                    checked={scoringMode === "all"}
-                    onChange={() => setScoringMode("all")}
-                  />
-                  Score all questions
-                </label>
-
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="radio"
-                    checked={scoringMode === "best"}
-                    onChange={() => setScoringMode("best")}
-                  />
-                  Score best
-                  <input
-                    type="number"
-                    min={1}
-                    className="w-20 border rounded px-2 py-1"
-                    value={bestCount}
-                    disabled={scoringMode !== "best"}
-                    onChange={(e) => setBestCount(e.target.value)}
-                  />
-                  questions
-                </label>
-              </div>
-            )}
-
             <Button
               className="w-full"
               disabled={!subject || submitting}
               onClick={handleCreate}
             >
-              Create Section
+              {submitting ? "Creating Section..." : "Create Section"}
             </Button>
           </div>
         </DialogContent>

@@ -9,6 +9,7 @@ interface Props {
   section: TestSection;
   questions: TestQuestion[];
   onAddQuestion: () => void;
+  dismissRecentQuestion: () => void;
   onEditQuestion: (q: TestQuestion) => void;
 }
 
@@ -17,13 +18,14 @@ export function QuestionsList({
   questions,
   onAddQuestion,
   onEditQuestion,
+  dismissRecentQuestion,
 }: Props) {
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">
-          Questions ({questions.length})
+          All Questions ({questions.length})
         </h2>
 
         <Button onClick={onAddQuestion}>Add Question</Button>
@@ -38,6 +40,7 @@ export function QuestionsList({
             index={index}
             section={section}
             onEdit={onEditQuestion}
+            dismissRecentQuestion={dismissRecentQuestion}
           />
         ))}
       </div>

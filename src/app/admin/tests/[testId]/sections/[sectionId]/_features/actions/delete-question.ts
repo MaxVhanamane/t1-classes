@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
@@ -28,7 +27,7 @@ export async function deleteQuestion(
             return { error: "Failed to delete question. Please try again." };
         }
 
-        revalidatePath(`/admin/tests/${testId}/sections/${sectionId}`);
+
     } catch (err) {
         console.error("[DELETE_QUESTION_FATAL]", err);
         return { error: "Something went wrong. Please try again." };

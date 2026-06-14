@@ -1,7 +1,6 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { revalidatePath } from "next/cache";
 import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
 
 import {
@@ -33,21 +32,16 @@ type EnrollmentPricingRow =
 
 export async function createFeePlan(
     enrollmentId: string,
-    rawData: FeePlanSubmitInput
+    rawData: FeePlanSubmitInput,
 ): Promise<ServerActionResponse> {
-    const admin =
-        await requireAdminServerOnly();
+    const admin = await requireAdminServerOnly();
 
     try {
-        const parsed =
-            feePlanSubmitSchema.safeParse(
-                rawData
-            );
+        const parsed = feePlanSubmitSchema.safeParse(rawData);
 
         if (!parsed.success) {
             return {
-                error:
-                    "Invalid fee plan data.",
+                error: "Invalid fee plan data.",
             };
         }
 
@@ -60,7 +54,7 @@ export async function createFeePlan(
             await createServerSupabaseClient();
 
         /**
-         * Fetch pricing
+         * Fetch pricing snapshot
          */
         const {
             data: enrollment,
@@ -87,8 +81,7 @@ export async function createFeePlan(
             !enrollment
         ) {
             return {
-                error:
-                    "Enrollment not found.",
+                error: "Enrollment not found.",
             };
         }
 
@@ -107,13 +100,11 @@ export async function createFeePlan(
             }
 
             listPrice = Number(
-                enrollment.course
-                    .list_price
+                enrollment.course.list_price,
             );
 
             salePrice = Number(
-                enrollment.course
-                    .sale_price
+                enrollment.course.sale_price,
             );
         } else {
             if (!enrollment.batch) {
@@ -124,13 +115,11 @@ export async function createFeePlan(
             }
 
             listPrice = Number(
-                enrollment.batch
-                    .list_price
+                enrollment.batch.list_price,
             );
 
             salePrice = Number(
-                enrollment.batch
-                    .sale_price
+                enrollment.batch.sale_price,
             );
         }
 
@@ -144,7 +133,7 @@ export async function createFeePlan(
             .select("id")
             .eq(
                 "enrollment_id",
-                enrollmentId
+                enrollmentId,
             )
             .eq("status", "active")
             .maybeSingle();
@@ -157,13 +146,7 @@ export async function createFeePlan(
         }
 
         /**
-         * Offered amount locked to sale price
-         */
-        const offeredAmount =
-            salePrice;
-
-        /**
-         * Insert
+         * Create fee plan
          */
         const { error } =
             await supabase
@@ -171,9 +154,6 @@ export async function createFeePlan(
                 .insert({
                     enrollment_id:
                         enrollmentId,
-
-                    offered_amount:
-                        offeredAmount,
 
                     discount_amount:
                         discountAmount,
@@ -200,8 +180,7 @@ export async function createFeePlan(
 
         if (error) {
             if (
-                error.code ===
-                "23505"
+                error.code === "23505"
             ) {
                 return {
                     error:
@@ -210,18 +189,15 @@ export async function createFeePlan(
             }
 
             return {
-                error:
-                    error.message,
+                error: error.message,
             };
         }
 
-        revalidatePath(
-            `/admin/enrollments/${enrollmentId}/fees`
-        );
+
     } catch (error) {
         console.error(
             "[CREATE_FEE_PLAN_ERROR]",
-            error
+            error,
         );
 
         return {
