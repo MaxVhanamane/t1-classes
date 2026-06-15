@@ -40,12 +40,19 @@ export function StudentNavbar({
 }: StudentNavbarProps) {
   const pathname = usePathname();
   const isCoursePage = pathname.startsWith("/student/learn/courses/");
+  const hideOnMobile = pathname.startsWith("/student/tests/attempt/");
   const params = useParams();
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
   const isApp = variant === "authenticated";
 
   return (
-    <header className="sticky top-0 z-50  border-b bg-background md:bg-background/60 backdrop-blur">
+    <header
+      className={cn(
+        "sticky top-0 z-50 border-b bg-background md:bg-background/60 backdrop-blur",
+
+        hideOnMobile && "hidden min-[820px]:block",
+      )}
+    >
       <div className="flex h-14 items-center justify-between px-4 sm:px-7">
         {/* Left: Logo */}
         <div className="flex gap-2 items-center">

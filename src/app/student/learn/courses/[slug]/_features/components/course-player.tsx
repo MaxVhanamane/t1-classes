@@ -25,14 +25,21 @@ import dynamic from "next/dynamic";
 import { CourseSidebar } from "./course-sidebar";
 import { CourseMobileContent } from "./course-mobile-content";
 
-const PdfViewerDialog = dynamic(() =>
-  import("./pdf/pdf-viewer-dialog").then((mod) => mod.PdfViewerDialog),
+const PdfViewerDialog = dynamic(
+  () => import("./pdf/pdf-viewer-dialog").then((mod) => mod.PdfViewerDialog),
+  {
+    loading: () => null,
+  },
 );
 
-const PracticeSetDialog = dynamic(() =>
-  import("./practice-set/practice-set-dialog").then(
-    (mod) => mod.PracticeSetDialog,
-  ),
+const PracticeSetDialog = dynamic(
+  () =>
+    import("./practice-set/practice-set-dialog").then(
+      (mod) => mod.PracticeSetDialog,
+    ),
+  {
+    loading: () => null,
+  },
 );
 
 /* ========================================================= */

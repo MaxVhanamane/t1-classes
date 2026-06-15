@@ -115,7 +115,7 @@ export function GroupSessionLiveView({
 
   useEffect(() => {
     if (isExpanded) {
-      window.history.pushState({ expanded: true }, "");
+      window.history.pushState({ ...window.history.state, expanded: true }, "");
     }
 
     const handlePopState = async () => {

@@ -64,7 +64,9 @@ export function PdfViewerDialog({
   }
 
   useEffect(() => {
-    window.history.pushState({ pdfModal: true }, "");
+    // Preserve Next.js App Router's internal history state and
+    // append our modal marker for swipe-back support.
+    window.history.pushState({ ...window.history.state, pdfModal: true }, "");
 
     const handlePopState = () => {
       onClose();

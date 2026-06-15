@@ -1,7 +1,7 @@
 import { GridState } from "../types/grid.types"
 
 export function getGridClasses(state: GridState) {
-    const base = `
+  const base = `
     relative
     rounded-md
     border
@@ -13,41 +13,39 @@ export function getGridClasses(state: GridState) {
     focus-visible:ring-offset-2
   `;
 
-    switch (state) {
-        case "answered":
-            return `${base}
+  switch (state) {
+    case "answered":
+      return `${base}
         bg-green-500/10
-        text-green-700 dark:text-green-400
+        text-foreground
         border-green-500/40
       `;
 
-        case "review":
-            return `${base}
+    case "review":
+      return `${base}
         bg-purple-500/10
-        text-purple-700 dark:text-purple-400
+        text-foreground
         border-purple-500/40
       `;
 
-        case "answered_review":
-            return `${base}
-        bg-teal-500/10
-        text-blue-700 dark:text-blue-400
-        border-teal-500/40
+    case "answered_review":
+      return `${base}
+       dark:bg-blue-500/10 bg-blue-200 border-blue-500/40 text-foreground
       `;
 
-        case "not_answered":
-            return `${base}
+    case "not_answered":
+      return `${base}
         bg-yellow-500/10
-        text-yellow-800 dark:text-yellow-400
+        text-foreground
         border-yellow-500/40
       `;
 
-        case "not_visited":
-        default:
-            return `${base}
+    case "not_visited":
+    default:
+      return `${base}
         bg-muted
-        text-muted-foreground
+        text-foreground
         border-border
       `;
-    }
+  }
 }

@@ -202,7 +202,7 @@ export function PracticeSetDialog({ practiceSetId, onClose }: Props) {
   }
 
   useEffect(() => {
-    window.history.pushState({ modal: true }, "");
+    window.history.pushState({ ...window.history.state, modal: true }, "");
 
     const handlePopState = () => {
       onClose();

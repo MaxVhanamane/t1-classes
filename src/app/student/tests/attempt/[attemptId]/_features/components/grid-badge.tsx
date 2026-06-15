@@ -17,7 +17,7 @@ export default function GridBadge({
 
   const badgeClass = cn(
     className,
-    "inline-flex w-[calc(50%-4px)] min-w-0 flex-col items-center justify-center gap-1 rounded-sm px-2 py-2 text-[11px] font-semibold shadow-sm",
+    "inline-flex w-[calc(50%-4px)] min-w-0 flex-col items-center justify-center gap-1 rounded-sm px-2 py-2 text-[11px] font-semibold",
   );
 
   const labelClass =
@@ -27,7 +27,7 @@ export default function GridBadge({
     "inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums text-white",
     state === "answered" && "bg-green-500 dark:bg-green-700",
     state === "review" && "bg-purple-500 dark:bg-purple-700",
-    state === "answered_review" && "bg-teal-500 dark:bg-teal-700",
+    state === "answered_review" && "bg-blue-500 dark:bg-blue-700",
     state === "not_answered" && "bg-yellow-500 dark:bg-yellow-700",
     state === "not_visited" && "bg-slate-500 dark:bg-slate-700",
   );

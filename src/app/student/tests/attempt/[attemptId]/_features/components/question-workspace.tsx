@@ -15,6 +15,7 @@ import { isEmptyAnswer } from "../helpers/is-empty-answer";
 import { toast } from "sonner";
 import { useTestSubmit } from "../hooks/use-test-submit";
 import SubmitOverlay from "./submit-overlay";
+import { cn } from "@/src/lib/utils";
 
 type Props = {
   attemptId: string;
@@ -67,14 +68,14 @@ export default function QuestionWorkspace({
         onRetry={submit.submit}
       />
 
-      <Card className="relative flex flex-col pt-7 lg:h-[calc(100vh-140px)]">
+      <Card className="relative flex flex-col pt-0 min-[820px]:pt-7 lg:h-[calc(100vh-130px)] rounded-md border-0 min-[820px]:border bg-background min-[820px]:bg-muted-soft ">
         {/* Sync */}
-        <div className="absolute top-2 right-2 flex items-center justify-start min-w-18.75 ">
+        <div className="absolute top-2 right-2 items-center justify-start min-w-18.75 hidden min-[820px]:flex">
           <SyncDot status={syncStatus} />
         </div>
 
         {/* Header */}
-        <CardHeader className="shrink-0 space-y-2 px-4 sm:px-6">
+        <CardHeader className="shrink-0 space-y-2 px-0 min-[820px]:px-6">
           <div className="flex items-center justify-between gap-3">
             <div className="line-clamp-2 text-sm font-semibold">
               {session.current.section.title}
@@ -94,10 +95,18 @@ export default function QuestionWorkspace({
           </div>
         </CardHeader>
 
-        <Separator />
+        <Separator className="hidden min-[820px]:block" />
+        <div
+          className={cn(
+            "relative my-0 flex items-center justify-center min-[820px]:hidden",
+          )}
+        >
+          <div className="h-px w-44 bg-border/40" />
+          <div className="absolute h-1 w-12 rounded-full bg-border/80" />
+        </div>
 
         {/* Content */}
-        <CardContent className="flex min-h-0 flex-1 flex-col px-4 py-4 sm:px-6">
+        <CardContent className="flex min-h-0 flex-1 flex-col px-0 min-[820px]:px-6 py-0 ">
           {/* Question Body */}
           <div className="min-h-0 flex-1 overflow-y-auto pr-1">
             <QuestionBody

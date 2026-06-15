@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { motion } from "motion/react";
 import { Loader2, WifiOff, RefreshCcw, LayoutDashboard } from "lucide-react";
+
 import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
 import { useSubmissionGuard } from "../hooks/use-submission-guard";
@@ -13,11 +16,39 @@ type Props = {
 };
 
 export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
-  // Guard only while submitting (not after failure)
   const router = useRouter();
+
+  // Guard only while submitting (not after failure)
   useSubmissionGuard({ active: visible && !failed });
 
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!visible || failed) {
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setProgress(0);
+
+    let current = 0;
+
+    const interval = setInterval(() => {
+      current += Math.max((95 - current) * 0.08, 0.5);
+
+      if (current >= 95) {
+        current = 95;
+      }
+
+      setProgress(current);
+    }, 200);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [visible, failed]);
+
   if (!visible && !failed) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-in fade-in duration-300 px-4">
       {/* Card */}
@@ -60,7 +91,7 @@ export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
         </h2>
 
         {/* Description */}
-        <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {!failed
             ? "Please wait while we securely upload your answers. Don’t close or refresh this tab."
             : "We couldn’t submit your test due to a network error. Please retry."}
@@ -69,21 +100,32 @@ export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
         {/* Progress bar */}
         {!failed && (
           <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div className="h-full w-1/2 animate-pulse rounded-full bg-primary" />
+            <motion.div
+              className="h-full rounded-full bg-primary"
+              animate={{
+                width: `${progress}%`,
+              }}
+              transition={{
+                duration: 0.25,
+                ease: "easeOut",
+              }}
+            />
           </div>
         )}
+
         <div className="mt-6 flex flex-col gap-3">
           {/* Retry */}
           {failed && (
             <Button
               onClick={onRetry}
               variant="destructive"
-              className="mt-6 w-full gap-2"
+              className="w-full gap-2"
             >
               <RefreshCcw className="h-4 w-4" />
               Retry Submission
             </Button>
           )}
+
           <Button
             variant="outline"
             className="w-full gap-2"

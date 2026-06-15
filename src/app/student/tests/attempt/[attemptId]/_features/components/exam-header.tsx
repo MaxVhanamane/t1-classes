@@ -2,6 +2,7 @@
 
 import { Clock } from "lucide-react";
 import { useServerTimer } from "../hooks/use-server-timer";
+import { cn } from "@/src/lib/utils";
 
 type Props = {
   testTitle: string;
@@ -13,22 +14,27 @@ export default function ExamHeader({ testTitle, expiresAt }: Props) {
     window.dispatchEvent(new Event("exam-autosubmit"));
   });
 
+  const isCritical = seconds < 60;
+
   return (
-    <header className="flex items-center justify-between border-b px-6 py-2">
+    <header className="flex items-center justify-between min-[820px]:border-b bg-background px-3 py-2 md:px-6 sticky top-0 z-30">
       {/* Left */}
-      <div>
-        <h1 className="text-sm font-semibold truncate max-w-50">{testTitle}</h1>
+      <div className="min-w-0">
+        <h1 className="truncate text-sm font-semibold tracking-tight md:text-base">
+          {testTitle}
+        </h1>
       </div>
 
-      {/* Center — Timer */}
+      {/* Right */}
       <div
-        className={`flex items-center gap-2 font-mono text-lg ${
-          seconds < 60 ? "text-red-600" : ""
-        }`}
-      >
-        <Clock className={seconds < 60 ? "text-red-600" : ""} />
+        className={cn(
+          "inline-flex shrink-0 items-center gap-1.5  py-1 font-mono text-sm font-semibold tabular-nums transition-colors ",
 
-        {/* Prevent hydration mismatch */}
+          isCritical ? " text-red-600 dark:text-red-400" : " text-foreground",
+        )}
+      >
+        <Clock className="h-3.5 w-3.5" />
+
         <span suppressHydrationWarning>{formatTime(seconds)}</span>
       </div>
     </header>

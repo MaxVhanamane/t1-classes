@@ -98,12 +98,12 @@ export default function QuestionActions({
   }, [sections, state]);
 
   return (
-    <div className="space-y-4 rounded-lg border bg-card p-3 shadow-sm sm:p-4">
+    <div className="space-y-4 rounded-lg min-[820px]:border bg-background min-[820px]:bg-card px-0  shadow-sm min-[820px]:p-4 ">
       {/* PRIMARY ACTIONS */}
       <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         <Button
           disabled={disabled}
-          className="w-full col-span-1 sm:w-auto bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+          className="w-full col-span-1 text-xs md:text-sm sm:w-auto bg-green-600 text-white hover:bg-green-700 dark:bg-green-700/60 dark:hover:bg-green-800"
           onClick={onSaveAndNext}
         >
           <Save className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -113,7 +113,7 @@ export default function QuestionActions({
         <Button
           disabled={disabled}
           variant="outline"
-          className="w-full col-span-1 sm:w-auto"
+          className="w-full col-span-1 sm:w-auto text-xs md:text-sm"
           onClick={onClear}
         >
           <X className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -122,7 +122,7 @@ export default function QuestionActions({
 
         <Button
           disabled={disabled}
-          className="w-full col-span-2 sm:w-auto bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className="w-full col-span-1 text-xs md:text-sm sm:w-auto bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700/60 dark:hover:bg-blue-800"
           onClick={onSaveAndMark}
         >
           <Flag className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -131,7 +131,7 @@ export default function QuestionActions({
 
         <Button
           disabled={disabled}
-          className="w-full col-span-2 sm:w-auto bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
+          className="w-full col-span-1 text-xs md:text-sm sm:w-auto bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-700/60 dark:hover:bg-purple-800"
           onClick={onMarkAndNext}
         >
           <Flag className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -146,7 +146,7 @@ export default function QuestionActions({
             variant="outline"
             disabled={isFirst || disabled}
             onClick={onBack}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto text-xs md:text-sm"
           >
             <ArrowLeft className="h-4 w-4 shrink-0" />
             Back
@@ -156,7 +156,7 @@ export default function QuestionActions({
             variant="outline"
             disabled={isLast || disabled}
             onClick={onNext}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto text-xs md:text-sm"
           >
             Next
             <ArrowRight className="ml-2 h-4 w-4 shrink-0" />

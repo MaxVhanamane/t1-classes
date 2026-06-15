@@ -73,7 +73,7 @@ export async function getCourseOutlineForPlayer(
         ]);
 
         if (accessResult.error) {
-            console.error("[COURSE_ACCESS_ERROR]", accessResult.error);
+
             return { success: false, status: 500, message: "Failed to check course access" };
         }
 
