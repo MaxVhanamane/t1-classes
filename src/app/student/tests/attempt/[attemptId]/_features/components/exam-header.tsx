@@ -7,17 +7,20 @@ import { cn } from "@/src/lib/utils";
 type Props = {
   testTitle: string;
   expiresAt: string;
+  onAutoSubmit: () => void;
 };
 
-export default function ExamHeader({ testTitle, expiresAt }: Props) {
-  const seconds = useServerTimer(expiresAt, () => {
-    window.dispatchEvent(new Event("exam-autosubmit"));
-  });
+export default function ExamHeader({
+  testTitle,
+  expiresAt,
+  onAutoSubmit,
+}: Props) {
+  const seconds = useServerTimer(expiresAt, onAutoSubmit);
 
   const isCritical = seconds < 60;
 
   return (
-    <header className="flex items-center justify-between min-[820px]:border-b bg-background px-3 py-2 md:px-6 sticky top-0 z-30">
+    <header className="sticky top-0 z-30 flex items-center justify-between bg-background px-3 pt-2 min-[820px]:py-2 min-[820px]:border-b md:px-6">
       {/* Left */}
       <div className="min-w-0">
         <h1 className="truncate text-sm font-semibold tracking-tight md:text-base">
@@ -28,9 +31,8 @@ export default function ExamHeader({ testTitle, expiresAt }: Props) {
       {/* Right */}
       <div
         className={cn(
-          "inline-flex shrink-0 items-center gap-1.5  py-1 font-mono text-sm font-semibold tabular-nums transition-colors ",
-
-          isCritical ? " text-red-600 dark:text-red-400" : " text-foreground",
+          "inline-flex shrink-0 items-center gap-1.5 py-1 font-mono text-sm font-semibold tabular-nums transition-colors",
+          isCritical ? "text-rose-600 dark:text-rose-400" : "text-foreground",
         )}
       >
         <Clock className="h-3.5 w-3.5" />
@@ -44,5 +46,6 @@ export default function ExamHeader({ testTitle, expiresAt }: Props) {
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
+
   return `${m}:${s.toString().padStart(2, "0")}`;
 }

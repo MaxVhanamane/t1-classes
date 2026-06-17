@@ -1,14 +1,9 @@
 "use client";
 
 import { useEditor, EditorContent, JSONContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Subscript from "@tiptap/extension-subscript";
-import Superscript from "@tiptap/extension-superscript";
-import Mathematics from "@tiptap/extension-mathematics";
-import Image from "@tiptap/extension-image";
 import { cn } from "@/src/lib/utils";
-import { TableKit } from "@tiptap/extension-table";
 import { useEffect, useRef } from "react";
+import { TiptapExtensions } from "@/src/lib/rich-text/tiptap-extensions";
 
 type StyleVariant = "rich-content" | "prose";
 
@@ -29,18 +24,7 @@ export function RichTextRenderer({
   const isProse = variant === "prose";
 
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image,
-      Subscript,
-      Superscript,
-      Mathematics,
-      TableKit.configure({
-        table: {
-          HTMLAttributes: { class: "tiptap-table" },
-        },
-      }),
-    ],
+    extensions: TiptapExtensions,
     content: content ?? {
       type: "doc",
       content: [{ type: "paragraph" }],

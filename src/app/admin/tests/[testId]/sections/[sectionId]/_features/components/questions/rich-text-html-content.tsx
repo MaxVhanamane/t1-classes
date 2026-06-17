@@ -1,13 +1,9 @@
 import { JSONContent } from "@tiptap/react";
 import { generateHTML } from "@tiptap/html";
-import StarterKit from "@tiptap/starter-kit";
-import Subscript from "@tiptap/extension-subscript";
-import Superscript from "@tiptap/extension-superscript";
-import Mathematics from "@tiptap/extension-mathematics";
-import Image from "@tiptap/extension-image";
-import { TableKit } from "@tiptap/extension-table";
 
 import { cn } from "@/src/lib/utils";
+import { TiptapExtensions } from "@/src/lib/rich-text/tiptap-extensions";
+import { useMemo } from "react";
 
 type StyleVariant = "rich-content" | "prose";
 
@@ -18,6 +14,11 @@ interface Props {
   className?: string;
 }
 
+const EMPTY_DOC: JSONContent = {
+  type: "doc",
+  content: [{ type: "paragraph" }],
+};
+
 export function RichTextHTMLContent({
   content,
   clamp = false,
@@ -27,25 +28,9 @@ export function RichTextHTMLContent({
   const isProse = variant === "prose";
 
   // Generate HTML on server
-  const html = generateHTML(
-    content ?? {
-      type: "doc",
-      content: [{ type: "paragraph" }],
-    },
-    [
-      StarterKit,
-      Image,
-      Subscript,
-      Superscript,
-      Mathematics,
-      TableKit.configure({
-        table: {
-          HTMLAttributes: {
-            class: "tiptap-table",
-          },
-        },
-      }),
-    ],
+  const html = useMemo(
+    () => generateHTML(content ?? EMPTY_DOC, TiptapExtensions),
+    [content],
   );
 
   return (

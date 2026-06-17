@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { connection, NextRequest, NextResponse } from "next/server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
@@ -100,6 +100,7 @@ type CourseListResponse = {
 export async function GET(
     request: NextRequest,
 ) {
+    await connection();
     try {
         /* -------------------------------------------------- */
         /* Auth                                               */

@@ -22,10 +22,10 @@ import { BatchActiveSwitch } from "./batch-active-switch";
 import { Badge } from "@/src/components/ui/badge";
 import { CATEGORY_LABELS, BOARD_LABELS } from "../zod-schema/schema";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
-import { RichTextRenderer } from "../../../tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 import { TableThumbnailPreview } from "../../../courses/_features/components/Table-thumbnail-preview";
 import { TitleSubtitleTooltip } from "@/src/components/ui/common/title-subtitle-tooltip";
 import { format } from "date-fns";
+import { RichTextHTMLContent } from "../../../tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-html-content";
 
 type Props = {
   batches: BatchListItem[];
@@ -146,7 +146,7 @@ export function BatchesTable({ batches, onEdit }: Props) {
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
                           <div className="cursor-help max-w-xs">
-                            <RichTextRenderer
+                            <RichTextHTMLContent
                               content={batch.description}
                               className="line-clamp-1"
                             />
@@ -155,7 +155,7 @@ export function BatchesTable({ batches, onEdit }: Props) {
 
                         <TooltipContent align="start" className="max-w-md ">
                           <div className="max-h-64 overflow-y-auto pr-2">
-                            <RichTextRenderer
+                            <RichTextHTMLContent
                               content={batch.description}
                               variant="prose"
                               className="text-white! dark:text-gray-900!"

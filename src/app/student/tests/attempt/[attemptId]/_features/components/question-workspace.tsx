@@ -15,7 +15,9 @@ import { isEmptyAnswer } from "../helpers/is-empty-answer";
 import { toast } from "sonner";
 import { useTestSubmit } from "../hooks/use-test-submit";
 import SubmitOverlay from "./submit-overlay";
-import { cn } from "@/src/lib/utils";
+import { getAnswerModeLabel } from "../helpers/question-map";
+import { ShortDivider } from "@/src/components/ui/divider/short-divider";
+import { MobileActionLayout } from "../hooks/use-mobile-action-layout";
 
 type Props = {
   attemptId: string;
@@ -23,6 +25,8 @@ type Props = {
   state: StateItem[];
   activeQuestionId: string;
   onNavigate: (id: string) => void;
+  testSubmission: ReturnType<typeof useTestSubmit>;
+  layoutMode: MobileActionLayout;
 };
 
 export default function QuestionWorkspace({
@@ -31,6 +35,8 @@ export default function QuestionWorkspace({
   activeQuestionId,
   onNavigate,
   state,
+  testSubmission,
+  layoutMode,
 }: Props) {
   const session = useQuestionSession({
     attemptId,
@@ -41,34 +47,31 @@ export default function QuestionWorkspace({
   });
 
   const syncStatus = useSyncStatus(attemptId);
-  const submit = useTestSubmit(attemptId);
 
   const [draft, setDraft] = useState<unknown | null>(null);
 
+  const serverAnswer = session.answerState?.answer ?? null;
+  const answerMode = session.current.section.answerMode;
   useEffect(() => {
-    const serverAnswer = session.answerState?.answer ?? null;
-
     const uiValue = serverAnswer
-      ? denormalizeStudentAnswer(
-          session.current.section.answerMode,
-          serverAnswer,
-        )
+      ? denormalizeStudentAnswer(answerMode, serverAnswer)
       : null;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(uiValue);
-  }, [session.current?.id, session.answerState?.answer]);
+  }, [session.current?.id, serverAnswer, answerMode]);
 
   if (!session.current) return null;
+  const isFixedLayout = layoutMode === "fixed";
 
   return (
     <>
       <SubmitOverlay
-        visible={submit.locked}
-        failed={submit.failed}
-        onRetry={submit.submit}
+        visible={testSubmission.locked}
+        failed={testSubmission.failed}
+        onRetry={() => testSubmission.submitTest("manual")}
       />
 
-      <Card className="relative flex flex-col pt-0 min-[820px]:pt-7 lg:h-[calc(100vh-130px)] rounded-md border-0 min-[820px]:border bg-background min-[820px]:bg-muted-soft ">
+      <Card className="relative flex flex-col pt-0 min-[820px]:pt-7 h-full rounded-md border-0 min-[820px]:border bg-background min-[820px]:bg-muted-soft gap-2 min-[820px]:gap-4 pb-0 min-[820px]:pb-3">
         {/* Sync */}
         <div className="absolute top-2 right-2 items-center justify-start min-w-18.75 hidden min-[820px]:flex">
           <SyncDot status={syncStatus} />
@@ -76,90 +79,157 @@ export default function QuestionWorkspace({
 
         {/* Header */}
         <CardHeader className="shrink-0 space-y-2 px-0 min-[820px]:px-6">
-          <div className="flex items-center justify-between gap-3">
+          <div className=" items-center justify-between gap-3 hidden min-[820px]:flex">
             <div className="line-clamp-2 text-sm font-semibold">
               {session.current.section.title}
             </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-xs text-muted-foreground">
-              Question {session.index + 1} of {session.flat.length}
+            {/* Question position */}
+            <div className="font-medium text-foreground text-xs min-[820px]:text-sm">
+              <span className="min-[820px]:hidden rounded-full border bg-card px-3 py-1 shadow-sm">
+                Q {session.index + 1}/{session.flat.length}
+              </span>
+
+              <span className="hidden min-[820px]:inline">
+                Question {session.index + 1} of {session.flat.length}
+              </span>
             </div>
 
-            <div className="flex items-center gap-2 text-xs">
-              <span>+{session.current.section.fullMarks} correct</span>
-              <span className="text-muted-foreground">•</span>
-              <span>{session.current.section.negativeMarks} wrong</span>
+            {/* Metadata */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground shadow-sm">
+                <span className="font-medium text-foreground">Type:</span>{" "}
+                {getAnswerModeLabel(session.current.section.answerMode)}
+              </div>
+
+              <div className="rounded-full border bg-card px-3 py-1 text-xs shadow-sm">
+                <span className="font-medium text-foreground">Marks:</span>{" "}
+                <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                  +{session.current.section.fullMarks}
+                </span>
+                <span className="mx-2 text-muted-foreground min-[820px]:hidden">
+                  /
+                </span>
+                <span className="mx-2 hidden text-muted-foreground min-[820px]:inline">
+                  •
+                </span>
+                <span className="font-medium text-rose-700 dark:text-rose-400">
+                  {session.current.section.negativeMarks}
+                </span>
+              </div>
             </div>
           </div>
         </CardHeader>
-
-        <Separator className="hidden min-[820px]:block" />
-        <div
-          className={cn(
-            "relative my-0 flex items-center justify-center min-[820px]:hidden",
-          )}
-        >
-          <div className="h-px w-44 bg-border/40" />
-          <div className="absolute h-1 w-12 rounded-full bg-border/80" />
+        <div className="flex items-center justify-center min-[820px]:hidden">
+          <ShortDivider className=" w-52" />
         </div>
+        <Separator className="hidden min-[820px]:block" />
 
         {/* Content */}
-        <CardContent className="flex min-h-0 flex-1 flex-col px-0 min-[820px]:px-6 py-0 ">
+        <CardContent className="flex min-h-0 flex-1 flex-col px-0 min-[820px]:px-6 py-0">
           {/* Question Body */}
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 scrollbar-thin pb-3">
             <QuestionBody
               question={session.current}
               section={session.current.section}
               value={draft}
               onChange={setDraft}
             />
+            {!isFixedLayout && (
+              <div className="shrink-0 pt-4">
+                <QuestionActions
+                  disabled={testSubmission.locked}
+                  isFirst={session.isFirst}
+                  isLast={session.isLast}
+                  onBack={session.goBack}
+                  onNext={session.goNext}
+                  attemptId={attemptId}
+                  sections={sections}
+                  onClear={() => {
+                    setDraft(null);
+                    session.clearAnswer();
+                  }}
+                  onSaveAndNext={() => {
+                    if (isEmptyAnswer(draft)) {
+                      toast.warning("Please select an answer before saving");
+                      return;
+                    }
+
+                    session.saveAnswerAndNext(draft);
+                  }}
+                  onSaveAndMark={() => {
+                    if (isEmptyAnswer(draft)) {
+                      toast.warning(
+                        "Select an answer to save & mark for review",
+                      );
+                      return;
+                    }
+
+                    session.saveAnswerAndMarkForReview(draft);
+                  }}
+                  onMarkAndNext={() => {
+                    if (!isEmptyAnswer(draft)) {
+                      toast.warning(
+                        "Use Save & Mark for Review if you want to keep this answer",
+                      );
+                      return;
+                    }
+
+                    session.markForReviewAndNext();
+                  }}
+                  onSubmit={() => testSubmission.submitTest("manual")}
+                />
+              </div>
+            )}
           </div>
 
           {/* Actions */}
-          <div className="shrink-0 pt-4">
-            <QuestionActions
-              disabled={submit.locked}
-              isFirst={session.isFirst}
-              isLast={session.isLast}
-              onBack={session.goBack}
-              onNext={session.goNext}
-              attemptId={attemptId}
-              sections={sections}
-              onClear={() => {
-                setDraft(null);
-                session.clearAnswer();
-              }}
-              onSaveAndNext={() => {
-                if (isEmptyAnswer(draft)) {
-                  toast.warning("Please select an answer before saving");
-                  return;
-                }
+          {isFixedLayout && (
+            <div className="shrink-0 pt-4">
+              <QuestionActions
+                disabled={testSubmission.locked}
+                isFirst={session.isFirst}
+                isLast={session.isLast}
+                onBack={session.goBack}
+                onNext={session.goNext}
+                attemptId={attemptId}
+                sections={sections}
+                onClear={() => {
+                  setDraft(null);
+                  session.clearAnswer();
+                }}
+                onSaveAndNext={() => {
+                  if (isEmptyAnswer(draft)) {
+                    toast.warning("Please select an answer before saving");
+                    return;
+                  }
 
-                session.saveAnswerAndNext(draft);
-              }}
-              onSaveAndMark={() => {
-                if (isEmptyAnswer(draft)) {
-                  toast.warning("Select an answer to save & mark for review");
-                  return;
-                }
+                  session.saveAnswerAndNext(draft);
+                }}
+                onSaveAndMark={() => {
+                  if (isEmptyAnswer(draft)) {
+                    toast.warning("Select an answer to save & mark for review");
+                    return;
+                  }
 
-                session.saveAnswerAndMarkForReview(draft);
-              }}
-              onMarkAndNext={() => {
-                if (!isEmptyAnswer(draft)) {
-                  toast.warning(
-                    "Use Save & Mark for Review if you want to keep this answer",
-                  );
-                  return;
-                }
+                  session.saveAnswerAndMarkForReview(draft);
+                }}
+                onMarkAndNext={() => {
+                  if (!isEmptyAnswer(draft)) {
+                    toast.warning(
+                      "Use Save & Mark for Review if you want to keep this answer",
+                    );
+                    return;
+                  }
 
-                session.markForReviewAndNext();
-              }}
-              onSubmit={submit.submit}
-            />
-          </div>
+                  session.markForReviewAndNext();
+                }}
+                onSubmit={() => testSubmission.submitTest("manual")}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </>

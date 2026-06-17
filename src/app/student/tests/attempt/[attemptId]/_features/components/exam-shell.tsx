@@ -19,35 +19,31 @@ import {
   DrawerTitle,
 } from "@/src/components/ui/drawer";
 import { buildQuestionMap } from "../helpers/question-map";
+import { useTestSubmit } from "../hooks/use-test-submit";
+import { useMobileActionLayout } from "../hooks/use-mobile-action-layout";
+import { cn } from "@/src/lib/utils";
 
 type Props = {
   attemptId: string;
   sections: Section[];
   state: StateItem[];
+  testSubmission: ReturnType<typeof useTestSubmit>;
 };
 
-export default function ExamShell({ attemptId, sections, state }: Props) {
+export default function ExamShell({
+  attemptId,
+  sections,
+  state,
+  testSubmission,
+}: Props) {
   const queryClient = useQueryClient();
   const didInitFirstVisit = useRef(false);
   // ----------------------------------
   // Hydrate cache ONCE from server
   // ----------------------------------
   const { state: attemptState } = useAttemptState(attemptId, state);
-
+  const { layoutMode, setLayoutMode } = useMobileActionLayout();
   const [navigatorOpen, setNavigatorOpen] = useState(false);
-
-  // ----------------------------------
-  // Hydrate cache ONCE from server
-  // ----------------------------------
-  // useEffect(() => {
-  //   const key = ["attempt-state", attemptId];
-
-  //   const existing = queryClient.getQueryData<StateItem[]>(key);
-
-  //   if (!existing) {
-  //     queryClient.setQueryData<StateItem[]>(key, state);
-  //   }
-  // }, [attemptId, state, queryClient]);
 
   const flat = useMemo(() => {
     return sections.flatMap((s) =>
@@ -138,43 +134,41 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
 
   return (
     <>
-      <div className="flex h-full min-[820px]:h-[calc(100vh-101.6px)]  flex-col min-[820px]:flex-row">
+      <div className="flex h-full min-[820px]:h-[calc(100dvh-101.6px)] flex-col min-[820px]:flex-row">
         {/* MOBILE STRIP */}
-        <div className="sticky top-11 z-20 min-[820px]:hidden">
+        <div className="sticky top-9 z-20 min-[820px]:hidden">
           <MobileQuestionStrip
             sections={mappedSections}
             activeId={activeId}
             onJump={handleNavigate}
             onOpenNavigator={() => setNavigatorOpen(true)}
             attemptId={attemptId}
+            layoutMode={layoutMode}
+            onLayoutModeChange={setLayoutMode}
           />
         </div>
 
         {/* MAIN */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="space-y-4 p-3 md:p-4">
-            <QuestionWorkspace
-              attemptId={attemptId}
-              sections={sections}
-              activeQuestionId={activeId}
-              onNavigate={handleNavigate}
-              state={state}
-            />
-
-            {/* MOBILE GRID FALLBACK */}
-            {/* <div className="min-[820px]:hidden">
-              <QuestionGrid
-                sections={mappedSections}
-                onJump={handleNavigate}
-                activeId={activeId}
-              />
-            </div> */}
-          </div>
-        </main>
+        <div
+          className={cn(
+            "p-3 md:p-4 h-[calc(100dvh-108px)] min-[820px]:h-[calc(100dvh-101.6px)] w-full",
+            !(layoutMode === "fixed") && "pb-0",
+          )}
+        >
+          <QuestionWorkspace
+            attemptId={attemptId}
+            sections={sections}
+            activeQuestionId={activeId}
+            onNavigate={handleNavigate}
+            state={state}
+            testSubmission={testSubmission}
+            layoutMode={layoutMode}
+          />
+        </div>
 
         {/* SIDE GRID */}
-        <aside className="hidden h-[calc(100vh-101.6px)] w-82.5 border-l bg-background min-[820px]:block">
-          <div className="sticky top-0 h-full overflow-y-auto p-4">
+        <aside className="hidden w-82.5 border-l bg-background min-[820px]:block shrink-0">
+          <div className="sticky top-0 h-[calc(100dvh-101.6px)]  p-4">
             <QuestionGrid
               sections={mappedSections}
               onJump={handleNavigate}
@@ -186,10 +180,10 @@ export default function ExamShell({ attemptId, sections, state }: Props) {
 
       {/* MOBILE NAVIGATOR DRAWER */}
       <Drawer open={navigatorOpen} onOpenChange={setNavigatorOpen}>
-        <DrawerContent className="h-[90vh] data-[vaul-drawer-direction=bottom]:max-h-[90vh] rounded-t-3xl border-x-0 border-b-0 ">
+        <DrawerContent className="h-[90dvh] data-[vaul-drawer-direction=bottom]:max-h-[90dvh] rounded-t-3xl border-x-0 border-b-0 ">
           {/* Accessibility */}
-          <DrawerHeader>
-            <DrawerTitle className="sr-only">Question navigator</DrawerTitle>
+          <DrawerHeader className=" pb-1.5">
+            <DrawerTitle>Navigator</DrawerTitle>
             <DrawerDescription className="sr-only">
               Navigate between questions in the exam.
             </DrawerDescription>

@@ -3,7 +3,7 @@
 import { cn } from "@/src/lib/utils";
 import { JSONContent } from "@tiptap/react";
 import { Badge } from "@/src/components/ui/badge";
-import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
+import { RichTextHTMLContent } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-html-content";
 
 type Option = {
   id: string;
@@ -92,7 +92,7 @@ export function OptionItem({ option }: { option: Option }) {
         </div>
 
         <div className="min-w-0 pt-0.5 text-sm leading-relaxed text-foreground">
-          <RichTextRenderer content={option.text} />
+          <RichTextHTMLContent content={option.text} />
         </div>
       </div>
     </div>

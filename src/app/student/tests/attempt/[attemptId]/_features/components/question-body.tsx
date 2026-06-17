@@ -4,12 +4,12 @@ import { RadioGroup, RadioGroupItem } from "@/src/components/ui/radio-group";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
-import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 
 import {
   Question,
   Section,
 } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
+import { RichTextHTMLContent } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-html-content";
 
 type Props = {
   question: Question;
@@ -49,7 +49,7 @@ export default function QuestionBody({
     <div className="space-y-4">
       {/* Question text (includes matrix table if match_matrix) */}
       <div className="text-sm font-medium w-fit">
-        <RichTextRenderer content={question.questionText} />
+        <RichTextHTMLContent content={question.questionText} />
       </div>
 
       {/* SINGLE SELECT + MATCH MATRIX (MCQ STYLE) */}
@@ -58,11 +58,11 @@ export default function QuestionBody({
           {question.options.map((opt) => (
             <div
               key={opt.id}
-              className="flex items-center space-x-2 rounded-md  p-2 hover:bg-muted/50"
+              className="flex items-center space-x-2 rounded-md  p-2 py-0.5 hover:bg-muted/50"
             >
               <RadioGroupItem value={opt.id} id={opt.id} />
               <Label htmlFor={opt.id}>
-                {opt.label}. <RichTextRenderer content={opt.text} />
+                {opt.label}. <RichTextHTMLContent content={opt.text} />
               </Label>
             </div>
           ))}
@@ -86,7 +86,7 @@ export default function QuestionBody({
                   onCheckedChange={() => toggleMulti(opt.id)}
                 />
                 <Label htmlFor={opt.id}>
-                  {opt.label}. <RichTextRenderer content={opt.text} />
+                  {opt.label}. <RichTextHTMLContent content={opt.text} />
                 </Label>
               </div>
             );

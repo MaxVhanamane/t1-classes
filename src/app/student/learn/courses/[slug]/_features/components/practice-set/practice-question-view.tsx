@@ -5,7 +5,6 @@ import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/button";
 import { PracticeProgressBar } from "./practice-progress-bar";
 import { PracticeSessionQuestion } from "../../types/practice-session.types";
-import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 import { useEffect, useState } from "react";
 import {
   Accordion,
@@ -20,6 +19,7 @@ import {
   PopoverTrigger,
   Popover,
 } from "@/src/components/ui/popover";
+import { RichTextHTMLContent } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-html-content";
 
 type Props = {
   question: PracticeSessionQuestion;
@@ -235,7 +235,7 @@ export function PracticeQuestionView({
               <div className="flex gap-3 items-start">
                 <span className="font-semibold">{index + 1}.</span>
                 <div className="text-lg font-semibold">
-                  <RichTextRenderer content={question.question} />
+                  <RichTextHTMLContent content={question.question} />
                 </div>
               </div>
 
@@ -339,7 +339,7 @@ export function PracticeQuestionView({
                           <span className="w-6 font-medium">
                             {option.option_label}.
                           </span>
-                          <RichTextRenderer content={option.option_text} />
+                          <RichTextHTMLContent content={option.option_text} />
                         </div>
                       </label>
                     </div>
@@ -366,7 +366,10 @@ export function PracticeQuestionView({
                       </AccordionTrigger>
 
                       <AccordionContent className="pt-2 text-sm text-muted-foreground">
-                        <RichTextRenderer content={question.explanation} />
+                        <RichTextHTMLContent
+                          content={question.explanation}
+                          variant="prose"
+                        />
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>

@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 
-import ExamShell from "./_features/components/exam-shell";
-import ExamHeader from "./_features/components/exam-header";
 import AttemptDeniedCard from "./_features/components/attempt-denied-card";
+import ExamClient from "./_features/components/exam-client";
 import { loadAttempt } from "./_features/server/load-attempt";
 
 export default async function AttemptPage({
@@ -24,13 +23,12 @@ export default async function AttemptPage({
   }
 
   return (
-    <div className="flex flex-col">
-      <ExamHeader testTitle={data.test.title} expiresAt={data.expiresAt} />
-      <ExamShell
-        attemptId={attemptId}
-        sections={data.test.sections}
-        state={data.state}
-      />
-    </div>
+    <ExamClient
+      attemptId={attemptId}
+      testTitle={data.test.title}
+      expiresAt={data.expiresAt}
+      sections={data.test.sections}
+      state={data.state}
+    />
   );
 }

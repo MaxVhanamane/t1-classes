@@ -5,8 +5,8 @@ import { QuestionReview } from "@/src/app/api/tests/results/[attemptId]/sections
 import { ExplanationAccordion } from "./explanation-accordion";
 import { Badge } from "@/src/components/ui/badge";
 import { OptionItem } from "./option-item";
-import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 import { cn } from "@/src/lib/utils";
+import { RichTextHTMLContent } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-html-content";
 
 type Props = {
   index: number;
@@ -121,9 +121,9 @@ export function QuestionCard({ index, question }: Props) {
         <h3 className="font-medium flex gap-1">
           <span className="text-sm mt-0.5">Q{index}.</span>
 
-          <RichTextRenderer
+          <RichTextHTMLContent
             content={question.questionText}
-            className="text-sm"
+            className="text-sm "
           />
         </h3>
       </div>

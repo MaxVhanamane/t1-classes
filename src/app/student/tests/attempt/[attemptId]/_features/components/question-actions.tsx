@@ -98,12 +98,12 @@ export default function QuestionActions({
   }, [sections, state]);
 
   return (
-    <div className="space-y-4 rounded-lg min-[820px]:border bg-background min-[820px]:bg-card px-0  shadow-sm min-[820px]:p-4 ">
+    <div className="space-y-3 rounded-lg min-[820px]:border bg-background min-[820px]:bg-card px-0  shadow-sm min-[820px]:p-4 ">
       {/* PRIMARY ACTIONS */}
       <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         <Button
           disabled={disabled}
-          className="w-full col-span-1 text-xs md:text-sm sm:w-auto bg-green-600 text-white hover:bg-green-700 dark:bg-green-700/60 dark:hover:bg-green-800"
+          className="w-full col-span-1 text-xs lg:text-sm sm:w-auto bg-green-600 text-white hover:bg-green-700 dark: dark:bg-green-500/20 dark:hover:bg-green-500/30 dark:border-green-500/40 border"
           onClick={onSaveAndNext}
         >
           <Save className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -113,7 +113,7 @@ export default function QuestionActions({
         <Button
           disabled={disabled}
           variant="outline"
-          className="w-full col-span-1 sm:w-auto text-xs md:text-sm"
+          className="w-full col-span-1 sm:w-auto text-xs lg:text-sm"
           onClick={onClear}
         >
           <X className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -122,7 +122,7 @@ export default function QuestionActions({
 
         <Button
           disabled={disabled}
-          className="w-full col-span-1 text-xs md:text-sm sm:w-auto bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700/60 dark:hover:bg-blue-800"
+          className="w-full col-span-1 text-xs lg:text-sm sm:w-auto bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500/20 dark:hover:bg-blue-500/30 dark:border-blue-500/40 border"
           onClick={onSaveAndMark}
         >
           <Flag className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -131,7 +131,7 @@ export default function QuestionActions({
 
         <Button
           disabled={disabled}
-          className="w-full col-span-1 text-xs md:text-sm sm:w-auto bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-700/60 dark:hover:bg-purple-800"
+          className="w-full col-span-1 text-xs lg:text-sm sm:w-auto bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-500/20 dark:border-purple-500/40 border dark:hover:bg-purple-500/30"
           onClick={onMarkAndNext}
         >
           <Flag className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -146,7 +146,7 @@ export default function QuestionActions({
             variant="outline"
             disabled={isFirst || disabled}
             onClick={onBack}
-            className="w-full sm:w-auto text-xs md:text-sm"
+            className="w-full sm:w-auto text-xs lg:text-sm"
           >
             <ArrowLeft className="h-4 w-4 shrink-0" />
             Back
@@ -156,7 +156,7 @@ export default function QuestionActions({
             variant="outline"
             disabled={isLast || disabled}
             onClick={onNext}
-            className="w-full sm:w-auto text-xs md:text-sm"
+            className="w-full sm:w-auto text-xs lg:text-sm"
           >
             Next
             <ArrowRight className="ml-2 h-4 w-4 shrink-0" />
@@ -169,7 +169,7 @@ export default function QuestionActions({
             <Button
               disabled={disabled}
               variant="destructive"
-              className="w-full sm:w-auto sm:min-w-40"
+              className="w-full sm:w-auto sm:min-w-40 dark:bg-red-400/40 dark:border-red-400/50 dark:hover:bg-red-400/60 border"
             >
               <Send className="h-4 w-4 shrink-0" />
               Submit Test
@@ -204,20 +204,12 @@ export default function QuestionActions({
                 <SummaryCard label="Not Answered" value={counts.not_answered} />
               </div>
 
-              {/* warning */}
-              {/* {(counts.not_answered > 0 || counts.not_visited > 0) && (
-                <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-                  You still have unanswered or review-marked questions. You may
-                  review them before submitting.
-                </div>
-              )} */}
-
               <AlertDialogFooter className="pt-2">
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
 
                 <AlertDialogAction
                   onClick={onSubmit}
-                  className="bg-destructive text-white"
+                  className="bg-destructive text-white dark:bg-red-500/20 dark:border-red-500/40 border"
                 >
                   Submit Test
                 </AlertDialogAction>

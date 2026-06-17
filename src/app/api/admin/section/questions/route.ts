@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { connection, NextRequest, NextResponse } from "next/server";
 
 import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route";
 
 import { getQuestionsForSection } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/services/get-questions-for-section";
 
 export async function GET(req: NextRequest) {
+    await connection();
     try {
         /* ---------- Auth ---------- */
         const auth = await requireStaffApiRoute();

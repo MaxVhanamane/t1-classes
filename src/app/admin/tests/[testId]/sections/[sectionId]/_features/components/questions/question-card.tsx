@@ -4,7 +4,6 @@ import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { TestQuestion } from "../../types/question.types";
 import { TestSection } from "../../types/section.types";
-import { RichTextRenderer } from "./rich-text-renderer";
 import { cn } from "@/src/lib/utils";
 import { CorrectAnswer } from "../../types/correct-answer.types";
 import { QuestionActionsMenu } from "./question-actions-menu";
@@ -15,6 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/src/components/ui/accordion";
+import { RichTextHTMLContent } from "./rich-text-html-content";
 interface Props {
   question: TestQuestion;
   index: number;
@@ -133,7 +133,10 @@ export function QuestionCard({
           <span className="font-medium">Q{index + 1}.</span>
 
           <div className="flex flex-col gap-1">
-            <RichTextRenderer content={question.questionText} variant="prose" />
+            <RichTextHTMLContent
+              content={question.questionText}
+              variant="prose"
+            />
           </div>
         </div>
 
@@ -167,7 +170,7 @@ export function QuestionCard({
               >
                 <span className="font-medium w-6">{opt.label}.</span>
                 <div className="flex-1">
-                  <RichTextRenderer content={opt.text} />
+                  <RichTextHTMLContent content={opt.text} />
                 </div>
 
                 {correctOption && (
@@ -199,7 +202,7 @@ export function QuestionCard({
 
             <AccordionContent className="pb-3">
               <div className="text-sm text-foreground/90">
-                <RichTextRenderer content={question.explanation} />
+                <RichTextHTMLContent content={question.explanation} />
               </div>
             </AccordionContent>
           </AccordionItem>

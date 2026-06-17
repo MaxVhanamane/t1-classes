@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
 import { StateItem } from "../types/workspace.types";
 import { useQuestionNavigator } from "./use-question-navigator";
 import { useAnswerSave } from "./use-answer-save";
 import { Section } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
 import { normalizeStudentAnswer } from "../helpers/normalize-student-answer";
 import { useAttemptState } from "./use-attempt-state";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 export function useQuestionSession({
     attemptId,
@@ -48,49 +45,6 @@ export function useQuestionSession({
     // =========================================
     const save = useAnswerSave({ attemptId });
 
-    // =========================================
-    // SUBMIT LAYER
-    // =========================================
-    const submitMutation = useMutation({
-        mutationFn: async () => {
-            const res = await fetch(
-                `/api/tests/attempts/${attemptId}/submit`,
-                {
-                    method: "POST",
-                    credentials: "include",
-                },
-            );
-
-            if (!res.ok) {
-                const msg = await res.text();
-                throw new Error(msg || "Submit failed");
-            }
-
-            return res.json();
-        },
-        onSuccess: () => {
-            toast.success("Test submitted successfully");
-            window.location.href = `/student/tests/results/${attemptId}`;
-        },
-        onError: () => {
-            toast.error("Submit failed — please try again");
-        },
-    });
-
-    // =========================================
-    // AUTOSUBMIT LISTENER
-    // =========================================
-    useEffect(() => {
-        const handler = () => {
-            toast.warning("Time’s up — auto submitting test");
-            submitMutation.mutate();
-        };
-
-        window.addEventListener("exam-autosubmit", handler);
-        return () => {
-            window.removeEventListener("exam-autosubmit", handler);
-        };
-    }, [submitMutation]);
 
     // =========================================
     // COMMANDS
@@ -159,10 +113,6 @@ export function useQuestionSession({
         nav.goNext();
     }
 
-    function submitTest() {
-        toast.warning("Submitting test…");
-        submitMutation.mutate();
-    }
 
     // =========================================
     // RETURN
@@ -177,6 +127,6 @@ export function useQuestionSession({
         markForReview,
         markForReviewAndNext,
         saveAnswerAndMarkForReview,
-        submitTest,
+
     };
 }

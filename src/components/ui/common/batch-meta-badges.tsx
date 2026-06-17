@@ -83,7 +83,14 @@ function SkeletonBadge({ className }: { className?: string }) {
 /* ------------------------------------------------ */
 /* Reusable Badge With Tooltip */
 /* ------------------------------------------------ */
-
+function LiveDot() {
+  return (
+    <span className="relative flex h-2 w-2 items-center justify-center">
+      <span className="absolute h-3 w-3 rounded-full bg-emerald-400/25 animate-[ping_3s_cubic-bezier(0,0,.2,1)_infinite]" />
+      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+    </span>
+  );
+}
 function BadgeWithTooltip({
   label,
   description,
@@ -103,6 +110,7 @@ function BadgeWithTooltip({
           className={cn("cursor-pointer select-none", className)}
           onClick={() => setOpen((prev) => !prev)}
         >
+          {label === "Classes Ongoing" && <LiveDot />}
           {label}
         </Badge>
       </TooltipTrigger>
@@ -128,8 +136,8 @@ function getStatusStyles(status: BatchLifecycle) {
 
     case "ongoing":
       return `
-        bg-green-100 text-green-800 border-green-200
-        dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/50
+        bg-emerald-100 text-emerald-800 border-emerald-200
+        dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800/50
       `;
 
     case "completed":

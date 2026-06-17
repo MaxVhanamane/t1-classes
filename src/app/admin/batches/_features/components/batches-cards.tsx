@@ -13,7 +13,6 @@ import {
 } from "@/src/components/ui/collapsible";
 
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
-import { RichTextRenderer } from "../../../tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 import { TableThumbnailPreview } from "../../../courses/_features/components/Table-thumbnail-preview";
 import { CATEGORY_LABELS, BOARD_LABELS } from "../zod-schema/schema";
 
@@ -22,6 +21,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
+import { RichTextHTMLContent } from "../../../tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-html-content";
 type Props = {
   batches: BatchListItem[];
   onEdit: (batch: BatchListItem) => void;
@@ -109,7 +109,7 @@ export function BatchesCards({ batches, onEdit }: Props) {
             {/* ---------------------------------- */}
             {batch.description && (
               <div className="text-sm">
-                <RichTextRenderer content={batch.description} clamp />
+                <RichTextHTMLContent content={batch.description} clamp />
               </div>
             )}
 

@@ -145,7 +145,7 @@ export default function LoginForm() {
           disabled={loading}
           autoComplete="email"
           required
-          className="h-10 rounded-md bg-background/70 backdrop-blur border-white/10 focus-visible:ring-2 focus-visible:ring-gray-400/40"
+          className="h-10 rounded-md shadow-none bg-background/70 backdrop-blur border-border focus-visible:ring-2 focus-visible:ring-gray-400/40"
         />
 
         <div className="relative">
@@ -157,7 +157,7 @@ export default function LoginForm() {
             disabled={loading}
             autoComplete="current-password"
             required
-            className="h-10 pr-10 rounded-md bg-background/70 backdrop-blur border-white/10 focus-visible:ring-2 focus-visible:ring-gray-400/40"
+            className="h-10 pr-10 shadow-none rounded-md bg-background/70 backdrop-blur border-border focus-visible:ring-2 focus-visible:ring-gray-400/40"
           />
 
           <button

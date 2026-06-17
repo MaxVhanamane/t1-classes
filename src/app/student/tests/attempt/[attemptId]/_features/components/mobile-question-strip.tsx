@@ -11,6 +11,8 @@ import { getGridClasses } from "../helpers/grid-colors";
 import { getAnswerModeLabel, MappedSection } from "../helpers/question-map";
 import SyncDot from "./sync-dot";
 import { useSyncStatus } from "../hooks/use-sync-status";
+import { MobileActionLayout } from "../hooks/use-mobile-action-layout";
+import ExamPreferencesPopover from "./exam-preference";
 
 type Props = {
   sections: MappedSection[];
@@ -18,6 +20,8 @@ type Props = {
   attemptId: string;
   onJump: (questionId: string) => void;
   onOpenNavigator: () => void;
+  layoutMode: MobileActionLayout;
+  onLayoutModeChange: (mode: MobileActionLayout) => void;
 };
 
 export default function MobileQuestionStrip({
@@ -26,6 +30,8 @@ export default function MobileQuestionStrip({
   onJump,
   onOpenNavigator,
   attemptId,
+  layoutMode,
+  onLayoutModeChange,
 }: Props) {
   const activeButtonRef = useRef<HTMLButtonElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -80,41 +86,70 @@ export default function MobileQuestionStrip({
   if (!currentSection) return null;
 
   return (
-    <div className="min-[820px]:hidden border-b border-border/60 bg-background px-3 pb-2 pt-0.5">
+    <div className="min-[820px]:hidden bg-background px-3">
       {/* Header */}
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="min-w-0 overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSection.id}
-              initial={{
-                opacity: 0,
-                y: 6,
-                filter: "blur(2px)",
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                filter: "blur(0px)",
-              }}
-              exit={{
-                opacity: 0,
-                y: -6,
-                filter: "blur(2px)",
-              }}
-              transition={{
-                duration: 0.18,
-                ease: "easeOut",
-              }}
-              className="truncate text-xs font-medium text-muted-foreground"
-            >
-              <span className="capitalize">{currentSection.subjectLabel}</span>
+          <div className="flex items-center gap-1 truncate text-xs font-medium text-muted-foreground">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={currentSection.subjectLabel}
+                initial={{
+                  opacity: 0,
+                  y: 4,
+                  filter: "blur(4px)",
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                  filter: "blur(0px)",
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -4,
+                  filter: "blur(4px)",
+                }}
+                transition={{
+                  duration: 0.22,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="flex items-center gap-1 truncate text-xs font-medium text-muted-foreground"
+              >
+                <span className="capitalize">
+                  {currentSection.subjectLabel}
+                </span>
 
-              {" • "}
+                <span>•</span>
 
-              {getAnswerModeLabel(currentSection.answerMode)}
-            </motion.div>
-          </AnimatePresence>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={currentSection.answerMode}
+                    initial={{
+                      opacity: 0,
+                      y: 4,
+                      filter: "blur(4px)",
+                    }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      filter: "blur(0px)",
+                    }}
+                    exit={{
+                      opacity: 0,
+                      y: -4,
+                      filter: "blur(4px)",
+                    }}
+                    transition={{
+                      duration: 0.2,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    {getAnswerModeLabel(currentSection.answerMode)}
+                  </motion.span>
+                </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
         <div className="flex items-center gap-1.5">
           <div className=" flex items-center justify-start min-w-18.75 ">
@@ -129,6 +164,11 @@ export default function MobileQuestionStrip({
 
             <span className="tabular-nums">{allQuestions.length}</span>
           </span>
+
+          <ExamPreferencesPopover
+            layoutMode={layoutMode}
+            onLayoutModeChange={onLayoutModeChange}
+          />
         </div>
       </div>
 

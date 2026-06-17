@@ -1,7 +1,7 @@
-import Loading from "@/src/components/ui/loading";
+import CenteredLoader from "@/src/components/ui/loading/centered-loader";
 
 function loading() {
-  return <Loading />;
+  return <CenteredLoader />;
 }
 
 export default loading;

@@ -19,10 +19,10 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/src/components/ui/alert-dialog";
-import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
 import { PracticeMcqBuilderDialog } from "./mcq-builder";
 import { PracticeQuestion } from "../../types/practice-question.types";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { RichTextHTMLContent } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-html-content";
 
 interface Props {
   index: number;
@@ -94,7 +94,7 @@ export function PracticeQuestionItem({
           <div className="flex items-start gap-2 text-sm font-medium leading-relaxed">
             <span className="shrink-0">{index}.</span>
             <div className="flex-1 [&>p]:inline [&>p]:m-0">
-              <RichTextRenderer content={question.question} />
+              <RichTextHTMLContent content={question.question} />
             </div>
           </div>
           <div
@@ -186,7 +186,7 @@ export function PracticeQuestionItem({
                             </span>
 
                             <div className="flex-1">
-                              <RichTextRenderer content={opt.option_text} />
+                              <RichTextHTMLContent content={opt.option_text} />
                             </div>
 
                             {isCorrect && (
@@ -208,7 +208,10 @@ export function PracticeQuestionItem({
                         <p className="mb-1 text-xs font-medium text-muted-foreground">
                           Explanation
                         </p>
-                        <RichTextRenderer content={question.explanation} />
+                        <RichTextHTMLContent
+                          content={question.explanation}
+                          variant="prose"
+                        />
                       </div>
                     )}
                   </div>

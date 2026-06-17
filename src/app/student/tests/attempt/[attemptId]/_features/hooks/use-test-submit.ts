@@ -2,9 +2,11 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "nextjs-toploader/app";
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
+
+type SubmitSource = "manual" | "auto";
 
 export function useTestSubmit(attemptId: string) {
     const [locked, setLocked] = useState(false);
@@ -13,18 +15,32 @@ export function useTestSubmit(attemptId: string) {
     const router = useRouter();
     const queryClient = useQueryClient();
 
-    const mutation = useMutation({
-        mutationFn: () =>
-            fetchWrapper(
-                `/api/tests/attempts/${attemptId}/submit`,
-                {
-                    method: "POST",
-                }
-            ),
+    // Prevent duplicate submissions
+    const hasSubmittedRef = useRef(false);
 
-        onMutate: () => {
+    const mutation = useMutation({
+        mutationFn: ({
+
+        }: {
+            source: SubmitSource;
+        }) => fetchWrapper(
+            `/api/tests/attempts/${attemptId}/submit`,
+            {
+                method: "POST",
+            }
+        ),
+
+        onMutate: ({ source }) => {
+            hasSubmittedRef.current = true;
+
             setLocked(true);
             setFailed(false);
+
+            if (source === "auto") {
+                toast.warning(
+                    "Time's up! Auto-submitting your test..."
+                );
+            }
         },
 
         onSuccess: (data) => {
@@ -33,42 +49,53 @@ export function useTestSubmit(attemptId: string) {
                 data
             );
 
-            router.replace(
-                `/student/tests/results/${attemptId}`
+            toast.success(
+                "Test submitted successfully"
             );
+
+            // Remove submission guard before navigation
+            setLocked(false);
+
+            // Let React flush state updates first
+            setTimeout(() => {
+                router.replace(
+                    `/student/tests/results/${attemptId}`
+                );
+            }, 0);
         },
 
-        onError: () => {
+        onError: (
+            _error,
+            { source }
+        ) => {
             toast.error(
-                "Autosubmit failed — you can retry manually"
+                source === "auto"
+                    ? "Autosubmit failed! You can retry manually."
+                    : "Submission failed! Please retry."
             );
 
             setFailed(true);
             setLocked(false);
+
+            // Allow another attempt
+            hasSubmittedRef.current = false;
         },
     });
 
-    useEffect(() => {
-        function handler() {
-            if (!mutation.isPending) {
-                mutation.mutate();
-            }
+    function submitTest(source: SubmitSource) {
+        // Prevent double submits
+        if (
+            hasSubmittedRef.current ||
+            mutation.isPending
+        ) {
+            return;
         }
 
-        window.addEventListener(
-            "exam-autosubmit",
-            handler
-        );
-
-        return () =>
-            window.removeEventListener(
-                "exam-autosubmit",
-                handler
-            );
-    }, [mutation]);
+        mutation.mutate({ source });
+    }
 
     return {
-        submit: mutation.mutate,
+        submitTest,
         locked,
         failed,
         isSubmitting: mutation.isPending,

@@ -17,7 +17,7 @@ export default function GridBadge({
 
   const badgeClass = cn(
     className,
-    "inline-flex w-[calc(50%-4px)] min-w-0 flex-col items-center justify-center gap-1 rounded-sm px-2 py-2 text-[11px] font-semibold",
+    "inline-flex w-[calc(50%-4px)] relative min-w-0 flex-col items-center justify-center gap-1 rounded-sm px-2 py-2 text-[11px] font-semibold",
   );
 
   const labelClass =

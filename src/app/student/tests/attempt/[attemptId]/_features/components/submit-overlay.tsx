@@ -18,8 +18,10 @@ type Props = {
 export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
   const router = useRouter();
 
-  // Guard only while submitting (not after failure)
-  useSubmissionGuard({ active: visible && !failed });
+  // Guard only while actively submitting
+  useSubmissionGuard({
+    active: visible && !failed,
+  });
 
   const [progress, setProgress] = useState(0);
 
@@ -47,11 +49,12 @@ export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
     };
   }, [visible, failed]);
 
-  if (!visible && !failed) return null;
+  if (!visible && !failed) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-in fade-in duration-300 px-4">
-      {/* Card */}
       <div
         className={cn(
           "relative w-full max-w-sm rounded-2xl border bg-background/95 p-8 text-center shadow-2xl",
@@ -60,7 +63,6 @@ export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
       >
         {/* Status Icon */}
         <div className="relative mx-auto mb-4 flex h-16 w-16 items-center justify-center">
-          {/* Glow Ring */}
           <div
             className={cn(
               "absolute inset-0 rounded-full blur-xl opacity-40",
@@ -68,7 +70,6 @@ export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
             )}
           />
 
-          {/* Icon Circle */}
           <div
             className={cn(
               "relative flex h-16 w-16 items-center justify-center rounded-full border",
@@ -77,27 +78,27 @@ export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
                 : "border-primary/40 bg-primary/10",
             )}
           >
-            {!failed ? (
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            ) : (
+            {failed ? (
               <WifiOff className="h-8 w-8 text-destructive" />
+            ) : (
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             )}
           </div>
         </div>
 
         {/* Title */}
         <h2 className="text-xl font-semibold tracking-tight">
-          {!failed ? "Submitting your test…" : "Submission Failed"}
+          {failed ? "Submission Failed" : "Submitting your test…"}
         </h2>
 
         {/* Description */}
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {!failed
-            ? "Please wait while we securely upload your answers. Don’t close or refresh this tab."
-            : "We couldn’t submit your test due to a network error. Please retry."}
+          {failed
+            ? "We couldn’t submit your test due to a network error. Please retry."
+            : "Please wait while we securely upload your answers. Don’t close or refresh this tab."}
         </p>
 
-        {/* Progress bar */}
+        {/* Progress */}
         {!failed && (
           <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <motion.div
@@ -113,9 +114,9 @@ export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
           </div>
         )}
 
-        <div className="mt-6 flex flex-col gap-3">
-          {/* Retry */}
-          {failed && (
+        {/* Actions */}
+        {failed && (
+          <div className="mt-6 flex flex-col gap-3">
             <Button
               onClick={onRetry}
               variant="destructive"
@@ -124,17 +125,17 @@ export default function SubmitOverlay({ visible, failed, onRetry }: Props) {
               <RefreshCcw className="h-4 w-4" />
               Retry Submission
             </Button>
-          )}
 
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={() => router.push("/student/dashboard")}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Go to Dashboard
-          </Button>
-        </div>
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() => router.push("/student/dashboard")}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

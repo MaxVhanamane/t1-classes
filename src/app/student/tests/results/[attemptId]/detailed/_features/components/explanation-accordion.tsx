@@ -1,6 +1,6 @@
 "use client";
 
-import { RichTextRenderer } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-renderer";
+import { RichTextHTMLContent } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-html-content";
 import {
   Accordion,
   AccordionItem,
@@ -19,7 +19,7 @@ export function ExplanationAccordion({
       <AccordionItem value="exp">
         <AccordionTrigger>View Explanation</AccordionTrigger>
         <AccordionContent>
-          <RichTextRenderer content={explanation} />
+          <RichTextHTMLContent content={explanation} variant="prose" />
         </AccordionContent>
       </AccordionItem>
     </Accordion>

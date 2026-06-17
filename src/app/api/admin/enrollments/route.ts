@@ -1,4 +1,5 @@
 import {
+    connection,
     NextRequest,
     NextResponse,
 } from "next/server";
@@ -22,6 +23,7 @@ const PAGE_SIZE = 20;
 export async function GET(
     request: NextRequest,
 ) {
+    await connection();
     try {
         /* ------------------------------------------ */
         /* Auth                                       */
