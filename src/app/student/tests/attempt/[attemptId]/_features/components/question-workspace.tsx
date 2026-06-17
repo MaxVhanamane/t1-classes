@@ -88,7 +88,7 @@ export default function QuestionWorkspace({
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Question position */}
             <div className="font-medium text-foreground text-xs min-[820px]:text-sm">
-              <span className="min-[820px]:hidden rounded-full border bg-card px-3 py-1 shadow-sm">
+              <span className="min-[820px]:hidden rounded-full border bg-card px-3 py-1">
                 Q {session.index + 1}/{session.flat.length}
               </span>
 
@@ -99,12 +99,12 @@ export default function QuestionWorkspace({
 
             {/* Metadata */}
             <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground shadow-sm">
+              <div className="rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">Type:</span>{" "}
                 {getAnswerModeLabel(session.current.section.answerMode)}
               </div>
 
-              <div className="rounded-full border bg-card px-3 py-1 text-xs shadow-sm">
+              <div className="rounded-full border bg-card px-3 py-1 text-xs">
                 <span className="font-medium text-foreground">Marks:</span>{" "}
                 <span className="font-medium text-emerald-700 dark:text-emerald-400">
                   +{session.current.section.fullMarks}

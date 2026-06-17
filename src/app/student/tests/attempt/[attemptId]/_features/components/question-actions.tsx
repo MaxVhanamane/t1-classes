@@ -103,7 +103,15 @@ export default function QuestionActions({
       <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         <Button
           disabled={disabled}
-          className="w-full col-span-1 text-xs lg:text-sm sm:w-auto bg-green-600 text-white hover:bg-green-700 dark: dark:bg-green-500/20 dark:hover:bg-green-500/30 dark:border-green-500/40 border"
+          className="
+      w-full col-span-1 text-xs lg:text-sm sm:w-auto
+      bg-green-200 text-foreground border-green-600 border
+      hover:bg-green-300
+
+      dark:bg-green-500/20
+      dark:hover:bg-green-500/30
+      dark:border-green-500/40
+    "
           onClick={onSaveAndNext}
         >
           <Save className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -113,7 +121,13 @@ export default function QuestionActions({
         <Button
           disabled={disabled}
           variant="outline"
-          className="w-full col-span-1 sm:w-auto text-xs lg:text-sm"
+          className="
+    w-full col-span-1 sm:w-auto text-xs lg:text-sm
+
+    bg-slate-100
+    border-slate-400
+    hover:bg-slate-200
+  "
           onClick={onClear}
         >
           <X className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -122,7 +136,15 @@ export default function QuestionActions({
 
         <Button
           disabled={disabled}
-          className="w-full col-span-1 text-xs lg:text-sm sm:w-auto bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500/20 dark:hover:bg-blue-500/30 dark:border-blue-500/40 border"
+          className="
+      w-full col-span-1 text-xs lg:text-sm sm:w-auto
+      bg-blue-200 text-foreground border-blue-600 border
+      hover:bg-blue-300
+
+      dark:bg-blue-500/20
+      dark:hover:bg-blue-500/30
+      dark:border-blue-500/40
+    "
           onClick={onSaveAndMark}
         >
           <Flag className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -131,7 +153,15 @@ export default function QuestionActions({
 
         <Button
           disabled={disabled}
-          className="w-full col-span-1 text-xs lg:text-sm sm:w-auto bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-500/20 dark:border-purple-500/40 border dark:hover:bg-purple-500/30"
+          className="
+      w-full col-span-1 text-xs lg:text-sm sm:w-auto
+      bg-fuchsia-200 text-foreground border-fuchsia-600 border
+      hover:bg-fuchsia-300
+
+      dark:bg-purple-500/20
+      dark:border-purple-500/40
+      dark:hover:bg-purple-500/30
+    "
           onClick={onMarkAndNext}
         >
           <Flag className="h-4 w-4 shrink-0 hidden sm:block" />
@@ -168,8 +198,18 @@ export default function QuestionActions({
           <AlertDialogTrigger asChild>
             <Button
               disabled={disabled}
-              variant="destructive"
-              className="w-full sm:w-auto sm:min-w-40 dark:bg-red-400/40 dark:border-red-400/50 dark:hover:bg-red-400/60 border"
+              className="
+    w-full sm:w-auto sm:min-w-40
+
+    bg-red-500/90
+    text-white
+    border border-red-600
+    hover:bg-red-500
+
+    dark:bg-red-500/20
+    dark:border-red-500/40
+    dark:hover:bg-red-500/30
+  "
             >
               <Send className="h-4 w-4 shrink-0" />
               Submit Test
