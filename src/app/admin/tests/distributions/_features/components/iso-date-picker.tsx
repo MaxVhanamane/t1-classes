@@ -42,7 +42,7 @@ export function ISODatePicker({
   const date = isoToDate(value);
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <Label>{label}</Label>
 
       <Popover open={open} onOpenChange={setOpen} modal={false}>

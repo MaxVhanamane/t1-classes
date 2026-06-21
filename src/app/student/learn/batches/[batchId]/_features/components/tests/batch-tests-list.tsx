@@ -5,7 +5,7 @@ import { BatchTestCard } from "./batch-test-card";
 import { BatchTest } from "../../types/test.types";
 
 type BatchTestsListProps = {
-  items: BatchTest[];
+  tests: BatchTest[];
   onStartTest: (distributionId: string) => void;
 
   onResumeAttempt: (attemptId: string) => void;
@@ -14,14 +14,14 @@ type BatchTestsListProps = {
 };
 
 export function BatchTestsList({
-  items,
+  tests,
   onStartTest,
   onResumeAttempt,
   onViewResult,
 }: BatchTestsListProps) {
   return (
     <div className="space-y-3">
-      {items.map((test) => (
+      {tests.map((test) => (
         <BatchTestCard
           key={test.distributionId}
           test={test}

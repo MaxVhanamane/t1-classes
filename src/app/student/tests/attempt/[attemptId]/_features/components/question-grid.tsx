@@ -28,7 +28,7 @@ export default function QuestionGrid({ sections, onJump, activeId }: Props) {
 
   return (
     <Card className="relative h-full overflow-y-auto scrollbar-none rounded-md bg-background border-0 min-[820px]:border min-[820px]:bg-muted-soft py-2">
-      <CardContent className="p-0 py-3">
+      <CardContent className="p-0 pt-0.5 pb-3 min-[820px]:py-3">
         {/* Header */}
         <div className="mb-3 flex items-center justify-between px-3">
           <h3 className="text-sm font-semibold tracking-tight">

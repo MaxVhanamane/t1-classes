@@ -3,7 +3,7 @@
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
-
+import { updateTag } from "next/cache";
 export async function extendDistribution(
     distributionId: string,
     newEndsAtISO: string
@@ -69,6 +69,7 @@ export async function extendDistribution(
                 error: updateError.message || "Failed to extend test",
             };
         }
+        updateTag(`distribution:${distributionId}`)
 
 
     } catch (err) {

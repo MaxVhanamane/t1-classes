@@ -1,12 +1,13 @@
 "use client";
 
-import { SectionReviewSummary } from "@/src/app/api/tests/results/[attemptId]/sections/[sectionId]/questions/route";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/src/components/ui/accordion";
+import { SectionReviewSummary } from "../types/question-details.types";
+import { secondsToDurationString } from "@/src/lib/helper-functions/seconds-to-duration-string";
 
 type Props = {
   summary: SectionReviewSummary;
@@ -126,10 +127,17 @@ export function SectionSummaryAccordion({ summary }: Props) {
                   hint="Correct ÷ attempted"
                 />
               </div>
+              <div className="mt-4 rounded-xl border bg-muted/5 px-4 py-3">
+                <div className="text-sm font-medium">Time Spent Answering</div>
 
-              <div className="mt-4 rounded-xl border bg-background/60 px-4 py-3 text-xs text-muted-foreground">
-                Strong performance comes from maximizing correct answers while
-                reducing penalties and skipped questions.
+                <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  You spent{" "}
+                  <span className="font-medium text-foreground">
+                    {secondsToDurationString(summary.totalTimeSpentSeconds)}
+                  </span>{" "}
+                  answering questions in this section. Time spent viewing
+                  questions without submitting an answer is not included.
+                </div>
               </div>
             </div>
           </AccordionContent>

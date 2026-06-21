@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { QuestionReview } from "@/src/app/api/tests/results/[attemptId]/sections/[sectionId]/questions/route";
 import { ExplanationAccordion } from "./explanation-accordion";
 import { Badge } from "@/src/components/ui/badge";
 import { OptionItem } from "./option-item";
 import { cn } from "@/src/lib/utils";
 import { RichTextHTMLContent } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/components/questions/rich-text-html-content";
+import { QuestionReview } from "../types/question-details.types";
+import { secondsToDurationString } from "@/src/lib/helper-functions/seconds-to-duration-string";
 
 type Props = {
   index: number;
@@ -46,17 +47,15 @@ function formatRangeText(min: number, max: number) {
   return `Any value between ${min} and ${max} (inclusive) is correct`;
 }
 
-function getMarksTone(question: QuestionReview) {
+function getMarksTone(isAnswered: boolean, question: QuestionReview) {
   const marks = question.marksAwarded;
 
-  const unattended =
-    (!question.options?.some((o) => o.isSelected) &&
-      !question.numericalMeta?.studentValue) ||
-    marks === 0;
+  if (!isAnswered) return "unattended";
 
-  if (unattended) return "unattended";
   if (marks < 0) return "incorrect";
+
   if (marks > 0 && !question.isCorrect) return "partial";
+
   if (marks > 0 && question.isCorrect) return "correct";
 
   return "default";
@@ -66,20 +65,20 @@ function getMarksBadgeClass(tone: string) {
   switch (tone) {
     case "correct":
       return `
-        bg-green-200 text-green-900 border-green-400
-        dark:bg-green-800 dark:text-green-100 dark:border-green-600
+        bg-green-200 text-foreground border-green-300
+        dark:bg-green-700/70 dark:border-green-600
       `;
 
     case "partial":
       return `
-        bg-yellow-200 text-yellow-900 border-yellow-400
-        dark:bg-yellow-800 dark:text-yellow-100 dark:border-yellow-600
+        bg-yellow-200 text-foreground border-yellow-300
+        dark:bg-yellow-700/70 dark:border-yellow-600
       `;
 
     case "incorrect":
       return `
-        bg-red-200 text-red-900 border-red-400
-        dark:bg-red-800 dark:text-red-100 dark:border-red-600
+        bg-red-200 text-foreground border-red-300
+        dark:bg-red-700/70 dark:border-red-600
       `;
 
     case "unattended":
@@ -111,10 +110,12 @@ export function QuestionCard({ index, question }: Props) {
 
   /* Marks tone */
 
-  const marksTone = getMarksTone(question);
-
+  const isAnswered = hasOptions
+    ? question.options.some((o) => o.isSelected)
+    : numerical?.studentValue != null;
+  const marksTone = getMarksTone(isAnswered, question);
   return (
-    <div className="border rounded-2xl p-5 space-y-4 bg-background">
+    <div className="border rounded-2xl py-5 p-3 md:p-5 space-y-4 bg-background">
       {/* ================= Header ================= */}
 
       <div className="flex items-start gap-3">
@@ -182,14 +183,31 @@ export function QuestionCard({ index, question }: Props) {
         </div>
       )}
 
-      {/* ================= Marks (Moved Bottom) ================= */}
+      {/* ================= Marks ================= */}
+      <div className="flex items-center justify-between pt-1">
+        <div>
+          {!isAnswered ? (
+            <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-200/50 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-400">
+              Not Answered
+            </span>
+          ) : question.timeSpentSeconds > 0 ? (
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="text-muted-foreground">Solved in:</span>
 
-      <div className="flex justify-end pt-1">
+              <span className="font-semibold text-foreground">
+                {secondsToDurationString(question.timeSpentSeconds)}
+              </span>
+            </div>
+          ) : null}
+        </div>
+
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-muted-foreground">Marks Rewarded:</span>
-
+          <span className="text-muted-foreground">Marks Awarded:</span>
           <Badge
-            className={cn("border font-medium", getMarksBadgeClass(marksTone))}
+            className={cn(
+              "h-6 min-w-6 rounded-full px-1 flex items-center justify-center border font-medium",
+              getMarksBadgeClass(marksTone),
+            )}
           >
             {question.marksAwarded}
           </Badge>

@@ -5,16 +5,14 @@ import { Section } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types"
 import { StateItem } from "../types/workspace.types";
 import dynamic from "next/dynamic";
 import CenteredLoader from "@/src/components/ui/loading/centered-loader";
+import { useQuestionTimeTracker } from "../hooks/use-question-time-tracker";
+import { Suspense } from "react";
 
 const ExamShell = dynamic(() => import("./exam-shell"), {
   ssr: false,
-
-  loading: () => <CenteredLoader />,
 });
 const ExamHeader = dynamic(() => import("./exam-header"), {
   ssr: false,
-
-  loading: () => <CenteredLoader />,
 });
 
 type Props = {
@@ -32,22 +30,26 @@ export default function ExamClient({
   sections,
   state,
 }: Props) {
-  const testSubmission = useTestSubmit(attemptId);
+  const timer = useQuestionTimeTracker(attemptId);
+  const testSubmission = useTestSubmit(attemptId, timer);
 
   return (
     <div className="flex flex-col h-full">
-      <ExamHeader
-        testTitle={testTitle}
-        expiresAt={expiresAt}
-        onAutoSubmit={() => testSubmission.submitTest("auto")}
-      />
+      <Suspense fallback={<CenteredLoader />}>
+        <ExamHeader
+          testTitle={testTitle}
+          expiresAt={expiresAt}
+          onAutoSubmit={() => testSubmission.submitTest("auto")}
+        />
 
-      <ExamShell
-        attemptId={attemptId}
-        sections={sections}
-        state={state}
-        testSubmission={testSubmission}
-      />
+        <ExamShell
+          attemptId={attemptId}
+          sections={sections}
+          state={state}
+          testSubmission={testSubmission}
+          timer={timer}
+        />
+      </Suspense>
     </div>
   );
 }

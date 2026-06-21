@@ -61,5 +61,6 @@ export type LoadAttemptResponse =
             answer: unknown | null
             visited: boolean
             markedForReview: boolean
+            timeSpentSeconds: number;
         }[]
     }

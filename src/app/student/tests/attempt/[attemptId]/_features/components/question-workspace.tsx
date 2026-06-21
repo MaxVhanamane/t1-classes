@@ -18,6 +18,26 @@ import SubmitOverlay from "./submit-overlay";
 import { getAnswerModeLabel } from "../helpers/question-map";
 import { ShortDivider } from "@/src/components/ui/divider/short-divider";
 import { MobileActionLayout } from "../hooks/use-mobile-action-layout";
+import { QuestionTimer } from "../hooks/use-question-time-tracker";
+import { QuestionTimerBadge } from "./question-timer-badge";
+
+export function formatSeconds(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600);
+
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+
+  return `${seconds}s`;
+}
 
 type Props = {
   attemptId: string;
@@ -27,6 +47,7 @@ type Props = {
   onNavigate: (id: string) => void;
   testSubmission: ReturnType<typeof useTestSubmit>;
   layoutMode: MobileActionLayout;
+  timer: QuestionTimer;
 };
 
 export default function QuestionWorkspace({
@@ -37,6 +58,7 @@ export default function QuestionWorkspace({
   state,
   testSubmission,
   layoutMode,
+  timer,
 }: Props) {
   const session = useQuestionSession({
     attemptId,
@@ -44,6 +66,7 @@ export default function QuestionWorkspace({
     activeQuestionId,
     onNavigate,
     state,
+    timer,
   });
 
   const syncStatus = useSyncStatus(attemptId);
@@ -51,6 +74,8 @@ export default function QuestionWorkspace({
   const [draft, setDraft] = useState<unknown | null>(null);
 
   const serverAnswer = session.answerState?.answer ?? null;
+  const serverTimeSeconds = session.answerState?.timeSpentSeconds ?? 0;
+
   const answerMode = session.current.section.answerMode;
   useEffect(() => {
     const uiValue = serverAnswer
@@ -85,9 +110,9 @@ export default function QuestionWorkspace({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center">
             {/* Question position */}
-            <div className="font-medium text-foreground text-xs min-[820px]:text-sm">
+            <div className="shrink-0 font-medium text-foreground text-xs min-[820px]:text-sm mr-1">
               <span className="min-[820px]:hidden rounded-full border bg-card px-3 py-1">
                 Q {session.index + 1}/{session.flat.length}
               </span>
@@ -97,27 +122,46 @@ export default function QuestionWorkspace({
               </span>
             </div>
 
-            {/* Metadata */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">Type:</span>{" "}
-                {getAnswerModeLabel(session.current.section.answerMode)}
-              </div>
+            {/* Mobile divider */}
+            <div
+              aria-hidden
+              className="h-[25.5px] opacity-80 w-[1.2px] shrink-0 bg-border min-[820px]:hidden"
+            />
 
-              <div className="rounded-full border bg-card px-3 py-1 text-xs">
-                <span className="font-medium text-foreground">Marks:</span>{" "}
-                <span className="font-medium text-emerald-700 dark:text-emerald-400">
-                  +{session.current.section.fullMarks}
-                </span>
-                <span className="mx-2 text-muted-foreground min-[820px]:hidden">
-                  /
-                </span>
-                <span className="mx-2 hidden text-muted-foreground min-[820px]:inline">
-                  •
-                </span>
-                <span className="font-medium text-rose-700 dark:text-rose-400">
-                  {session.current.section.negativeMarks}
-                </span>
+            {/* Metadata */}
+            <div className="min-w-0 flex-1 overflow-x-auto scrollbar-none">
+              <div className="flex w-max items-center gap-2 pl-1 min-[820px]:w-auto min-[820px]:justify-end min-[820px]:pl-0">
+                {/* Timer */}
+                <div className="shrink-0">
+                  <QuestionTimerBadge
+                    timer={timer}
+                    serverTimeSeconds={serverTimeSeconds}
+                    key={session.current.id}
+                  />
+                </div>
+
+                {/* Marks */}
+                <div className="shrink-0 rounded-full border bg-card px-3 py-1 text-xs">
+                  <span className="font-medium text-foreground">Marks:</span>{" "}
+                  <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                    +{session.current.section.fullMarks}
+                  </span>
+                  <span className="mx-0.5 text-muted-foreground min-[820px]:hidden">
+                    /
+                  </span>
+                  <span className="mx-2 hidden text-muted-foreground min-[820px]:inline">
+                    •
+                  </span>
+                  <span className="font-medium text-rose-700 dark:text-rose-400">
+                    {session.current.section.negativeMarks}
+                  </span>
+                </div>
+
+                {/* Type */}
+                <div className="shrink-0 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Type:</span>{" "}
+                  {getAnswerModeLabel(session.current.section.answerMode)}
+                </div>
               </div>
             </div>
           </div>

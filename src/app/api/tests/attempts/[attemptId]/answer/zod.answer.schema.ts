@@ -23,6 +23,11 @@ export const SaveAnswerSchema = z.object({
     questionId: z.uuid(),
     answer: AnswerSchema,
     markedForReview: z.boolean().optional(),
+
+    timeSpentSeconds: z
+        .number()
+        .int()
+        .min(0),
 });
 
 export type SaveAnswerBody = z.infer<

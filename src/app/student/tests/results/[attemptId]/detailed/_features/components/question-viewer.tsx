@@ -2,14 +2,14 @@
 
 import { Loader } from "lucide-react";
 import { cn } from "@/src/lib/utils";
-
 import { QuestionCard } from "./question-card";
-import { PaginationBar } from "./pagination-bar";
 import { MetaStrip } from "./meta-strip";
 import { SectionSummaryAccordion } from "./section-summary-accordion";
 
 import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
-import { QuestionsPageResponse } from "@/src/app/api/tests/results/[attemptId]/sections/[sectionId]/questions/route";
+import { QuestionsPageResponse } from "../types/question-details.types";
+import { Pagination } from "@/src/components/ui/pagination/pagination";
+import { LIMIT } from "../hooks/use-section-questions";
 
 type Props = {
   loading: boolean;
@@ -24,8 +24,6 @@ type Props = {
   negativeMarks?: number;
   partialMarks?: PartialMarkingByCorrectCount | null | undefined;
 };
-
-const LIMIT = 10;
 
 export function QuestionViewer({
   loading,
@@ -87,7 +85,7 @@ export function QuestionViewer({
       </div>
 
       {/* Questions */}
-      <div className="p-4 space-y-6">
+      <div className="p-3 md:p-6 space-y-6">
         {questions.map((q, i) => (
           <QuestionCard
             key={q.id}
@@ -96,10 +94,13 @@ export function QuestionViewer({
           />
         ))}
 
-        <PaginationBar
+        <Pagination
           page={currentPage}
           totalPages={totalPages}
-          onChange={setPage}
+          totalCount={summary.totalQuestions}
+          pageSize={LIMIT}
+          onPageChange={setPage}
+          itemLabel="Questions"
         />
       </div>
     </div>

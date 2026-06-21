@@ -126,7 +126,7 @@ export default function BatchTestsPanel({ batchId }: Props) {
               }
             >
               <BatchTestsList
-                items={data.items}
+                tests={data.items}
                 onStartTest={handleStartTest}
                 onResumeAttempt={handleResumeAttempt}
                 onViewResult={handleViewResult}

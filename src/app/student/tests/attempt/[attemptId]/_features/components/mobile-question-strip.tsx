@@ -233,7 +233,7 @@ export default function MobileQuestionStrip({
 
         {hasOverflow && (
           <div className="flex items-center gap-1.5">
-            <div aria-hidden className="h-8 w-px bg-border mb-1" />
+            <div aria-hidden className="h-8 w-px bg-border mb-1 opacity-80" />
 
             <Button
               size="sm"

@@ -6,6 +6,7 @@ import { useAnswerSave } from "./use-answer-save";
 import { Section } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
 import { normalizeStudentAnswer } from "../helpers/normalize-student-answer";
 import { useAttemptState } from "./use-attempt-state";
+import { QuestionTimer } from "./use-question-time-tracker";
 
 export function useQuestionSession({
     attemptId,
@@ -13,12 +14,14 @@ export function useQuestionSession({
     state: initialState,
     activeQuestionId,
     onNavigate,
+    timer
 }: {
     attemptId: string;
     sections: Section[];
     state: StateItem[]; // server seed
     activeQuestionId: string;
     onNavigate: (id: string) => void;
+    timer: QuestionTimer
 }) {
     // =========================================
     // LIVE STATE (CACHE SOURCE OF TRUTH)
@@ -43,7 +46,7 @@ export function useQuestionSession({
     // =========================================
     // SAVE LAYER
     // =========================================
-    const save = useAnswerSave({ attemptId });
+    const save = useAnswerSave({ attemptId, timer });
 
 
     // =========================================
@@ -51,11 +54,17 @@ export function useQuestionSession({
     // =========================================
     function clearAnswer() {
         if (!nav.current) return;
+        timer.flushCurrentQuestion();
 
+        const timeSpentSeconds =
+            timer.getQuestionTime(
+                nav.current.id,
+            );
         save.mutate({
             questionId: nav.current.id,
             answer: null,
             markedForReview: false,
+            timeSpentSeconds
         });
     }
 
@@ -66,21 +75,33 @@ export function useQuestionSession({
             nav.current.section.answerMode,
             draft,
         );
+        timer.flushCurrentQuestion();
 
+        const timeSpentSeconds =
+            timer.getQuestionTime(
+                nav.current.id,
+            );
         save.mutate({
             questionId: nav.current.id,
             answer: normalized,
             markedForReview: false,
+            timeSpentSeconds
         });
     }
 
     function markForReview() {
         if (!nav.current) return;
+        timer.flushCurrentQuestion();
 
+        const timeSpentSeconds =
+            timer.getQuestionTime(
+                nav.current.id,
+            );
         save.mutate({
             questionId: nav.current.id,
             answer: null,
             markedForReview: true,
+            timeSpentSeconds
         });
     }
 
@@ -91,11 +112,17 @@ export function useQuestionSession({
             nav.current.section.answerMode,
             draft,
         );
+        timer.flushCurrentQuestion();
 
+        const timeSpentSeconds =
+            timer.getQuestionTime(
+                nav.current.id,
+            );
         save.mutate({
             questionId: nav.current.id,
             answer: normalized,
             markedForReview: true,
+            timeSpentSeconds
         });
         nav.goNext();
     }

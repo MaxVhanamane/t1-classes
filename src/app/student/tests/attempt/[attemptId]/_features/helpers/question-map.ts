@@ -82,10 +82,10 @@ export function getQuestionCounts(
 
 
 export const ANSWER_MODE_LABELS: Record<AnswerMode, string> = {
-  single_select: "Single Select",
-  multi_select: "Multiple Select",
-  numerical_input: "Numerical Input",
-  match_matrix: "Match Matrix",
+  single_select: "Single",
+  multi_select: "Multi",
+  numerical_input: "Numeric",
+  match_matrix: "Match",
 };
 
 export function getAnswerModeLabel(mode: AnswerMode) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import QuestionGrid from "./question-grid";
@@ -22,12 +22,14 @@ import { buildQuestionMap } from "../helpers/question-map";
 import { useTestSubmit } from "../hooks/use-test-submit";
 import { useMobileActionLayout } from "../hooks/use-mobile-action-layout";
 import { cn } from "@/src/lib/utils";
+import { QuestionTimer } from "../hooks/use-question-time-tracker";
 
 type Props = {
   attemptId: string;
   sections: Section[];
   state: StateItem[];
   testSubmission: ReturnType<typeof useTestSubmit>;
+  timer: QuestionTimer;
 };
 
 export default function ExamShell({
@@ -35,6 +37,7 @@ export default function ExamShell({
   sections,
   state,
   testSubmission,
+  timer,
 }: Props) {
   const queryClient = useQueryClient();
   const didInitFirstVisit = useRef(false);
@@ -53,6 +56,16 @@ export default function ExamShell({
       })),
     );
   }, [sections]);
+
+  // ======================================================
+  // Ensure the first question is marked as visited.
+  //
+  // A student starts on Question 1 automatically,
+  // even before clicking anything.
+  //
+  // We update React Query cache once so navigator,
+  // counts, and review state remain consistent.
+  // ======================================================
 
   useEffect(() => {
     if (didInitFirstVisit.current) return;
@@ -88,6 +101,7 @@ export default function ExamShell({
           answer: null,
           visited: true,
           markedForReview: false,
+          timeSpentSeconds: 0,
         },
       ];
     });
@@ -95,6 +109,33 @@ export default function ExamShell({
 
   const [activeId, setActiveId] = useState(flat[0]?.id);
 
+  // ======================================================
+  // Notify timer whenever active question changes.
+  //
+  // enterQuestion():
+  // 1. Flushes previous question time.
+  // 2. Starts timing new question.
+  // 3. Updates displayed timer.
+  //
+  // This is the single source of truth for
+  // question-to-question timing transitions.
+  // ======================================================
+
+  useLayoutEffect(() => {
+    if (!activeId) return;
+
+    timer.enterQuestion(activeId);
+  }, [activeId, timer]);
+
+  // ======================================================
+  // Question navigation.
+  //
+  // Only updates active question and visited state.
+  //
+  // Timing is handled by the activeId effect above,
+  // so we intentionally DO NOT call timer.enterQuestion()
+  // here to avoid double-flushing and timing bugs.
+  // ======================================================
   const handleNavigate = (id: string) => {
     setActiveId(id);
 
@@ -121,6 +162,7 @@ export default function ExamShell({
           answer: null,
           visited: true,
           markedForReview: false,
+          timeSpentSeconds: 0,
         },
       ];
     });
@@ -163,6 +205,7 @@ export default function ExamShell({
             state={state}
             testSubmission={testSubmission}
             layoutMode={layoutMode}
+            timer={timer}
           />
         </div>
 

@@ -11,13 +11,16 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { Menu, ChevronDown } from "lucide-react";
 
-import { ResultSummary, SectionSidebar } from "./section-sidebar";
+import { SectionSidebar } from "./section-sidebar";
 import { SectionItem } from "../hooks/use-get-sections";
 import { MetaStrip } from "./meta-strip";
 import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
 import { SectionSummaryAccordion } from "./section-summary-accordion";
-import { SectionReviewSummary } from "@/src/app/api/tests/results/[attemptId]/sections/[sectionId]/questions/route";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import {
+  ResultSummary,
+  SectionReviewSummary,
+} from "../types/question-details.types";
 
 type Props = {
   sections: SectionItem[];
@@ -68,12 +71,12 @@ export function MobileSectionDrawer({
             </Button>
           </SheetTrigger>
 
-          <SheetContent side="left" className="p-0 w-[90%]">
+          <SheetContent side="left" className="p-0 w-[90%] gap-0">
             <SheetHeader className="px-4 py-3 border-b">
               <SheetTitle>Test Sections</SheetTitle>
             </SheetHeader>
 
-            <div className="h-[calc(100vh-60px)] overflow-y-auto">
+            <div className="h-full overflow-y-auto">
               <SectionSidebar
                 sections={sections}
                 active={active}
@@ -106,7 +109,7 @@ export function MobileSectionDrawer({
 
       {/* ===== Accordion Panel ===== */}
       {open && (
-        <div className="px-4 pb-3 animate-in slide-in-from-top-2 fade-in duration-200">
+        <div className="px-3 pb-3 animate-in slide-in-from-top-2 fade-in duration-200">
           {sectionTitle && (
             <h2 className="text-sm font-semibold mb-1">{sectionTitle}</h2>
           )}
@@ -135,7 +138,7 @@ export function MobileSectionDrawer({
 function SectionSummaryAccordionSkeleton() {
   return (
     <div className="w-full pt-2">
-      <div className="rounded-xl border px-3">
+      <div className="rounded-xl border px-2">
         <div className="flex items-center justify-between gap-3 py-3">
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-4 w-44" />

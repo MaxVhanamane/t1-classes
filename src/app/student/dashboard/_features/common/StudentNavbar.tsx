@@ -8,6 +8,8 @@ import { ThemeToggle } from "@/src/components/ui/Theme-toggle";
 import { UserMenu } from "@/src/components/ui/user/user-menu";
 import dynamic from "next/dynamic";
 import { Bell } from "lucide-react";
+import { useEffect } from "react";
+import { cleanupTestTimeStorage } from "@/src/lib/test/cleanup-test-time-storage";
 
 const NotificationPopover = dynamic(
   () => import("./notification-popover").then((m) => m.NotificationPopover),
@@ -45,6 +47,10 @@ export function StudentNavbar({
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
   const isApp = variant === "authenticated";
 
+  useEffect(() => {
+    cleanupTestTimeStorage();
+  }, []);
+
   return (
     <header
       className={cn(
@@ -53,7 +59,7 @@ export function StudentNavbar({
         hideOnMobile && "hidden min-[820px]:block",
       )}
     >
-      <div className="flex h-14 items-center justify-between px-4 sm:px-7">
+      <div className="flex h-14 items-center justify-between px-3 sm:px-7">
         {/* Left: Logo */}
         <div className="flex gap-2 items-center">
           <Link href="/" className="flex shrink-0 items-center gap-2">

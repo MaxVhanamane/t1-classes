@@ -18,6 +18,7 @@ type PaginationProps = {
   onPageChange: (page: number) => void;
 
   className?: string;
+  itemLabel?: string;
 };
 
 export function Pagination({
@@ -27,6 +28,7 @@ export function Pagination({
   pageSize,
   onPageChange,
   className,
+  itemLabel = "Items",
 }: PaginationProps) {
   if (totalPages <= 1) {
     return null;
@@ -55,15 +57,13 @@ export function Pagination({
 
   return (
     <div className={cn("space-y-4", className)}>
-      <p className="text-muted-foreground text-center text-sm">
-        Items{" "}
+      <p className="text-muted-foreground text-center text-xs">
+        Showing{" "}
         <span className="text-foreground font-medium">
-          {start}–{end}
-        </span>
-        <span className="mx-2">•</span>
-        <span className="text-foreground font-medium">{totalCount}</span> total
+          {itemLabel} {start} to {end}
+        </span>{" "}
+        of <span className="text-foreground font-medium">{totalCount}</span>
       </p>
-
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <Button
           variant="outline"

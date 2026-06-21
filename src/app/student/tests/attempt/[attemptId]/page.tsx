@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-
 import AttemptDeniedCard from "./_features/components/attempt-denied-card";
 import ExamClient from "./_features/components/exam-client";
 import { loadAttempt } from "./_features/server/load-attempt";

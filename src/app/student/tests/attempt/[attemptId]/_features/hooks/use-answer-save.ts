@@ -4,24 +4,39 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 import { StateItem } from "../types/workspace.types";
+import { QuestionTimer } from "./use-question-time-tracker";
 
 export type SavePayload = {
     questionId: string;
     answer: unknown | null;
     markedForReview: boolean;
+    timeSpentSeconds: number;
+};
+
+type SaveAnswerResponse = {
+    ok: boolean;
+    attemptId: string;
+    questionId: string;
+    savedAt: string | null;
+    markedForReview: boolean;
+    timeSpentSeconds: number;
 };
 
 export function useAnswerSave({
     attemptId,
+    timer,
 }: {
     attemptId: string;
+    timer: QuestionTimer;
 }) {
     const queryClient = useQueryClient();
 
     const mutation = useMutation({
         mutationKey: ["answer", attemptId],
 
-        mutationFn: (payload: SavePayload) =>
+        mutationFn: (
+            payload: SavePayload,
+        ): Promise<SaveAnswerResponse> =>
             fetchWrapper(
                 `/api/tests/attempts/${attemptId}/answer`,
                 {
@@ -31,21 +46,24 @@ export function useAnswerSave({
                             "application/json",
                     },
                     body: JSON.stringify(payload),
-                }
+                },
             ),
 
         retry: 3,
+
         retryDelay: (attemptIndex) =>
             Math.min(
                 800 * 2 ** attemptIndex,
-                4000
+                4000,
             ),
 
-        // optimistic update
+        // =====================================
+        // OPTIMISTIC UPDATE
+        // =====================================
         onMutate: async (payload) => {
             const previousState =
                 queryClient.getQueryData<StateItem[]>(
-                    ["attempt-state", attemptId]
+                    ["attempt-state", attemptId],
                 ) ?? [];
 
             const nextState = [...previousState];
@@ -53,8 +71,13 @@ export function useAnswerSave({
             const index = nextState.findIndex(
                 (s) =>
                     s.questionId ===
-                    payload.questionId
+                    payload.questionId,
             );
+
+            const existing =
+                index !== -1
+                    ? nextState[index]
+                    : undefined;
 
             const updatedItem: StateItem = {
                 questionId: payload.questionId,
@@ -62,6 +85,11 @@ export function useAnswerSave({
                 visited: true,
                 markedForReview:
                     payload.markedForReview,
+
+                // Keep existing server time
+                timeSpentSeconds:
+                    existing?.timeSpentSeconds ??
+                    0,
             };
 
             if (index === -1) {
@@ -72,23 +100,58 @@ export function useAnswerSave({
 
             queryClient.setQueryData(
                 ["attempt-state", attemptId],
-                nextState
+                nextState,
             );
 
-            return { previousState };
+            return {
+                previousState,
+            };
         },
 
-        // rollback
-        onError: (_err, _vars, ctx) => {
+        // =====================================
+        // SUCCESS
+        // =====================================
+        onSuccess: (
+            data,
+            variables,
+        ) => {
+            timer.markQuestionSynced(
+                variables.questionId,
+            );
+
+            queryClient.setQueryData<StateItem[]>(
+                ["attempt-state", attemptId],
+                (prev = []) =>
+                    prev.map((item) =>
+                        item.questionId ===
+                            variables.questionId
+                            ? {
+                                ...item,
+                                timeSpentSeconds:
+                                    data.timeSpentSeconds,
+                            }
+                            : item,
+                    ),
+            );
+        },
+
+        // =====================================
+        // ROLLBACK
+        // =====================================
+        onError: (
+            _err,
+            _vars,
+            ctx,
+        ) => {
             if (ctx?.previousState) {
                 queryClient.setQueryData(
                     ["attempt-state", attemptId],
-                    ctx.previousState
+                    ctx.previousState,
                 );
             }
 
             toast.error(
-                "Unable to save your answer. Please check your connection and try again."
+                "Unable to save your answer. Please check your connection and try again.",
             );
         },
     });

@@ -8,6 +8,7 @@ import ReactQueryProvider from "../providers/react-query-provider";
 import { SerwistProvider } from "./serwist";
 import { StatusThemeScript } from "../components/status-theme-script";
 import { ThemeColorSync } from "../components/status-theme-color-sync";
+import { ForceSonnerSpinner } from "../components/ui/force-sonnar-spinner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -94,7 +95,14 @@ export default function RootLayout({
             </SerwistProvider>
           </ThemeProvider>
         </ReactQueryProvider>
-        <Toaster position="top-right" richColors visibleToasts={5} />
+        <Toaster
+          position="top-right"
+          richColors
+          visibleToasts={5}
+          icons={{
+            loading: <ForceSonnerSpinner />,
+          }}
+        />
       </body>
     </html>
   );

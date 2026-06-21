@@ -4,4 +4,5 @@ export type StateItem = {
     answer: unknown
     visited: boolean
     markedForReview: boolean
+    timeSpentSeconds: number;
 }

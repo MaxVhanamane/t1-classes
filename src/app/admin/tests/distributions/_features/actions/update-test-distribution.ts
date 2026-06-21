@@ -5,6 +5,7 @@ import { ScheduleTestInput } from "../../../schedule/_features/zod/schedule-test
 import { computeDistributionStatus } from "../helpers/compute-distribution-status";
 import { ServerActionResponse } from "@/src/types/server-action";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { updateTag } from "next/cache";
 
 export async function updateTestDistribution(
     distributionId: string,
@@ -67,7 +68,7 @@ export async function updateTestDistribution(
         if (error) {
             return { error: error.message };
         }
-
+        updateTag(`distribution:${distributionId}`)
 
     } catch (err) {
         console.error("[UPDATE_TEST_DISTRIBUTION_ERROR]", err);

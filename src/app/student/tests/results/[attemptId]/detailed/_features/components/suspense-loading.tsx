@@ -1,6 +1,6 @@
 import { Loader } from "lucide-react";
 
-function loading() {
+function SuspenseLoading() {
   return (
     <div className="flex h-(--h-viewport-minus-navbar) w-full items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-6 text-center">
@@ -14,13 +14,11 @@ function loading() {
 
         {/* Changing text */}
         <div className="h-5">
-          <p className="text-sm text-muted-foreground animate-in fade-in duration-300">
-            Preparing...
-          </p>
+          <p className="text-sm text-muted-foreground">Preparing...</p>
         </div>
       </div>
     </div>
   );
 }
 
-export default loading;
+export default SuspenseLoading;

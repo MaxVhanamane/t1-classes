@@ -23,6 +23,7 @@ export type SubmitTestResponse =
         unansweredCount: number;
         status: "submitted" | "expired";
         submittedAt: string;
+        activeTimeSeconds: number;
     }
     | {
         kind: "denied";
@@ -36,7 +37,7 @@ export type SubmitTestResponse =
  * Handler
  * -------------------------------------------*/
 export async function POST(
-    _req: Request,
+    req: Request,
     { params }: { params: Promise<{ attemptId: string }> }
 ) {
     const supabase = await createServerSupabaseClient();
@@ -47,6 +48,10 @@ export async function POST(
     }
     const user = auth.user
     const { attemptId } = await params;
+    const body = await req.json().catch(() => ({}));
+
+    const pendingTimes =
+        body?.pendingTimes ?? {};
 
     /* -------------------------------------------
      * 1. Load Attempt (ownership gate)
@@ -98,7 +103,8 @@ export async function POST(
         correct_count,
         wrong_count,
         unanswered_count,
-        partial_correct_count
+        partial_correct_count,
+        active_time_seconds
       `
             )
             .eq("attempt_id", attemptId)
@@ -137,6 +143,8 @@ export async function POST(
                     existingResult.partial_correct_count,
                 status: attempt.status,
                 submittedAt: attempt.submitted_at,
+                activeTimeSeconds:
+                    existingResult.active_time_seconds ?? 0,
             } satisfies SubmitTestResponse);
         }
     }
@@ -213,6 +221,8 @@ export async function POST(
             p_attempt_id: attemptId,
             p_grace_seconds:
                 TEST_GRACE_TIME_IN_SECONDS,
+            p_pending_times:
+                pendingTimes,
         }
     );
 
@@ -263,5 +273,7 @@ export async function POST(
             result.partial_correct_count,
         status: result.status,
         submittedAt: result.submitted_at,
+        activeTimeSeconds:
+            result.active_time_seconds ?? 0,
     } satisfies SubmitTestResponse);
 }

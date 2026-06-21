@@ -12,25 +12,8 @@ import {
 } from "@/src/components/ui/accordion";
 import { SectionItem } from "../hooks/use-get-sections";
 import { Meta } from "./section-meta";
-import { PerformanceLabelType } from "@/src/app/api/tests/results/[attemptId]/summary/route";
-
-/* ---------------------------------- */
-/* Types */
-/* ---------------------------------- */
-
-export type ResultSummary = {
-  kind: "ok";
-  obtainedMarks: number;
-  totalMarks: number;
-  percentage: number;
-  performanceLabel: PerformanceLabelType;
-  correctCount: number;
-  partialCorrectCount: number;
-  wrongCount: number;
-  unansweredCount: number;
-  rank: number | null;
-  test: { title: string };
-} | null;
+import { ResultSummary } from "../types/question-details.types";
+import { secondsToDurationString } from "@/src/lib/helper-functions/seconds-to-duration-string";
 
 type Props = {
   sections: SectionItem[];
@@ -108,7 +91,7 @@ export function SectionSidebar({
   return (
     <aside
       className={cn(
-        "w-full h-full overflow-y-auto border-r bg-muted/30",
+        "flex h-full flex-col border-r bg-muted/30 overflow-y-auto",
         className,
       )}
     >
@@ -116,7 +99,7 @@ export function SectionSidebar({
       {/* Sticky Summary */}
       {/* ===================================================== */}
 
-      <div className="p-4 border-b bg-background/80 backdrop-blur sticky top-0 z-10 space-y-4">
+      <div className="p-4 border-b bg-background/80 backdrop-blur sticky top-0 z-10 space-y-4 shrink-0">
         {/* Title */}
 
         <div>
@@ -301,26 +284,41 @@ export function SectionSidebar({
                   Total Questions : {totalQuestionCount}
                 </Badge>
               </div>
+              <div className="rounded-xl border bg-muted/5 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    Time Spent Answering
+                  </span>
 
+                  <span className="text-base font-semibold">
+                    {secondsToDurationString(summary?.activeTimeSeconds ?? 0)}
+                  </span>
+                </div>
+
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  Combined across all sections. Includes only questions where an
+                  answer was submitted.
+                </p>
+              </div>
               {/* Stats */}
 
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <Stat
                   label="Correct"
                   value={summary?.correctCount}
-                  color="text-green-600"
+                  color="text-green-500"
                 />
 
                 <Stat
                   label="Partially Correct"
                   value={summary?.partialCorrectCount}
-                  color="text-yellow-600"
+                  color="text-yellow-500"
                 />
 
                 <Stat
                   label="Incorrect"
                   value={summary?.wrongCount}
-                  color="text-red-600"
+                  color="text-rose-500"
                 />
 
                 <Stat
@@ -347,7 +345,7 @@ export function SectionSidebar({
               "w-full text-left rounded-2xl border transition-all p-4 space-y-2 cursor-pointer",
               "hover:bg-muted/60",
               active === s.id
-                ? "bg-secondary border-secondary"
+                ? "bg-secondary border-gray-400 dark:border-secondary"
                 : "bg-background",
             )}
           >
@@ -413,10 +411,14 @@ function Stat({
   color: string;
 }) {
   return (
-    <div className="flex items-center justify-between border rounded-md px-2 py-1 bg-background ">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="rounded-xl border bg-background px-4 py-3">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
 
-      <span className={cn("font-medium", color)}>{value ?? "—"}</span>
+      <div className={cn("mt-2 text-2xl font-bold tracking-tight", color)}>
+        {value ?? "—"}
+      </div>
     </div>
   );
 }

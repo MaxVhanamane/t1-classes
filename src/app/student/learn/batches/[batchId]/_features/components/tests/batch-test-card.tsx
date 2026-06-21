@@ -1,6 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
+import { addSeconds, format } from "date-fns";
 import { BarChart3, ClipboardCheck, Lock, RotateCcw } from "lucide-react";
 
 import { Button } from "@/src/components/ui/button";
@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/src/components/ui/card";
 import DottedBackground from "@/src/components/dotted-background";
 
 import { BatchTest } from "../../types/test.types";
+import { TEST_GRACE_TIME_IN_SECONDS } from "@/src/lib/constants/rpc-constants";
 
 type BatchTestCardProps = {
   test: BatchTest;
@@ -37,6 +38,7 @@ export function BatchTestCard({
   const isAttemptExpired = test.isAttemptExpired;
 
   const isResultUnlocked = test.isResultUnlocked;
+  const resultAvailableAt = addSeconds(end, TEST_GRACE_TIME_IN_SECONDS);
 
   const badgeClass =
     status === "scheduled"
@@ -89,10 +91,15 @@ export function BatchTestCard({
     !isResultUnlocked
   ) {
     actionButton = (
-      <Button size="sm" variant="outline" disabled>
-        <BarChart3 className="mr-2 h-4 w-4" />
-        Result Pending
-      </Button>
+      <div className="flex w-full  items-center justify-between gap-1">
+        <p className="text-[11px] text-muted-foreground">
+          Results available at {format(resultAvailableAt, "h:mm a")}
+        </p>
+        <Button size="sm" variant="outline" disabled>
+          <BarChart3 className="mr-2 h-4 w-4" />
+          Result Pending
+        </Button>
+      </div>
     );
   } else {
     actionButton = (

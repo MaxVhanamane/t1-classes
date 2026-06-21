@@ -2,9 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
-import type {
-    QuestionsPageResponse,
-} from "@/src/app/api/tests/results/[attemptId]/sections/[sectionId]/questions/route";
+import { QuestionsPageResponse } from "../types/question-details.types";
 
 type Params = {
     attemptId: string;
@@ -12,13 +10,15 @@ type Params = {
     page: number;
 };
 
+export const LIMIT = 25;
+
 function fetchSectionQuestions({
     attemptId,
     sectionId,
     page,
 }: Params): Promise<QuestionsPageResponse> {
     return fetchWrapper<QuestionsPageResponse>(
-        `/api/tests/results/${attemptId}/sections/${sectionId}/questions?page=${page}&limit=10`
+        `/api/tests/results/${attemptId}/sections/${sectionId}/questions?page=${page}&limit=${LIMIT}`
     );
 }
 

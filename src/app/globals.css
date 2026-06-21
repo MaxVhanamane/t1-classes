@@ -8,7 +8,6 @@
 
 @layer utilities {
 
-
   /* ── Table styles — work with both rich-content and prose variants ── */
   .tiptap-table {
     border-collapse: collapse;
@@ -281,4 +280,6 @@
     margin-right: 0 !important;
     overflow: inherit !important;
   }
+
+
 }

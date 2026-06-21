@@ -5,10 +5,11 @@ import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { useRouter } from "nextjs-toploader/app";
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
+import { QuestionTimer } from "./use-question-time-tracker";
 
 type SubmitSource = "manual" | "auto";
 
-export function useTestSubmit(attemptId: string) {
+export function useTestSubmit(attemptId: string, timer: QuestionTimer,) {
     const [locked, setLocked] = useState(false);
     const [failed, setFailed] = useState(false);
 
@@ -20,15 +21,26 @@ export function useTestSubmit(attemptId: string) {
 
     const mutation = useMutation({
         mutationFn: ({
-
         }: {
             source: SubmitSource;
-        }) => fetchWrapper(
-            `/api/tests/attempts/${attemptId}/submit`,
-            {
-                method: "POST",
-            }
-        ),
+        }) => {
+            timer.flushCurrentQuestion();
+
+            return fetchWrapper(
+                `/api/tests/attempts/${attemptId}/submit`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                    },
+                    body: JSON.stringify({
+                        pendingTimes:
+                            timer.getPendingTimes(),
+                    }),
+                },
+            );
+        },
 
         onMutate: ({ source }) => {
             hasSubmittedRef.current = true;
@@ -44,22 +56,22 @@ export function useTestSubmit(attemptId: string) {
         },
 
         onSuccess: (data) => {
+            timer.clear();
+
             queryClient.setQueryData(
                 ["result-summary", attemptId],
-                data
+                data,
             );
 
             toast.success(
-                "Test submitted successfully"
+                "Test submitted successfully",
             );
-
-            // Remove submission guard before navigation
-            setLocked(false);
-
             // Let React flush state updates first
+            setLocked(false);
+            // Remove submission guard before navigation
             setTimeout(() => {
                 router.replace(
-                    `/student/tests/results/${attemptId}`
+                    `/student/tests/results/${attemptId}`,
                 );
             }, 0);
         },
