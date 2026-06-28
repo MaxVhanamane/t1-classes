@@ -13,7 +13,7 @@ export function MyEnrollmentsSkeleton() {
               <Skeleton className="h-4 w-12 rounded-full shrink-0" />
             </div>
 
-            {/* Subtitle (optional in real UI) */}
+            {/* Subtitle */}
             <Skeleton className="h-3 w-1/2" />
 
             {/* Meta / badges */}
@@ -24,15 +24,9 @@ export function MyEnrollmentsSkeleton() {
 
             {/* Spacer to push dates down */}
             <div className="flex-1" />
-
-            {/* Bottom info row (dates / access) */}
-            {/* <div className="flex justify-between">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-3 w-24" />
-            </div> */}
           </CardContent>
 
-          {/* Footer (UNCHANGED POSITION ✅) */}
+          {/* Footer */}
           <CardFooter className="px-4">
             <Skeleton className="h-10 w-full rounded-md" />
           </CardFooter>

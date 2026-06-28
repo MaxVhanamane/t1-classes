@@ -172,6 +172,7 @@ export default function CourseQuestionPapersPanel({
                 items={data.items}
                 loadingId={viewingPaperId}
                 onView={handleView}
+                layout="course"
               />
             </div>
 

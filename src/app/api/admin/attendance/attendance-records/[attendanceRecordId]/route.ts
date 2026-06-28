@@ -14,12 +14,9 @@ export async function PATCH(
     { params }: RouteParams,
 ) {
     try {
-        const auth =
-            await requireStaffApiRoute();
 
-        if (!auth.authorized) {
-            return auth.response;
-        }
+        await requireStaffApiRoute();
+
 
         const {
             attendanceRecordId,
@@ -48,24 +45,11 @@ export async function PATCH(
         const supabase =
             await createServerSupabaseClient();
 
-        const {
-            data,
-            error,
-        } = await supabase.rpc(
+        const { data, error } = await supabase.rpc(
             "update_attendance_record",
             {
-                p_attendance_record_id:
-                    attendanceRecordId,
-
-                p_status:
-                    body.status,
-
-                p_updated_by:
-                    auth.user.userId,
-
-                p_is_admin:
-                    auth.user.role ===
-                    "admin",
+                p_attendance_record_id: attendanceRecordId,
+                p_status: body.status,
             },
         );
 

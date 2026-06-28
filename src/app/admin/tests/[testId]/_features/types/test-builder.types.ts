@@ -5,4 +5,7 @@ export type TestBuilderTest = {
     test_type: "standard" | "sectioned";
     is_active: boolean;
     is_locked: boolean;
+    createdBy?: string | null;
+    totalMarks?: number;
+    totalQuestions?: number;
 };

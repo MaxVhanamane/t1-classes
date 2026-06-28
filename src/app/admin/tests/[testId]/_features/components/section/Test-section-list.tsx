@@ -139,6 +139,18 @@ export function TestSectionsList({
 
                     <span>
                       <span className="font-medium text-foreground">
+                        Questions
+                      </span>
+                      : {section.sectionTotalQuestions}
+                    </span>
+
+                    <span>
+                      <span className="font-medium text-foreground">Marks</span>
+                      : {section.sectionTotalMarks}
+                    </span>
+
+                    <span>
+                      <span className="font-medium text-foreground">
                         Correct
                       </span>
                       : +{section.fullMarks}
@@ -158,14 +170,16 @@ export function TestSectionsList({
                         Partial marking enabled
                       </span>
                     )}
+
                     {section.subjectLabel && (
-                      <div className="text-xs text-muted-foreground">
+                      <span>
                         <span className="font-medium text-foreground">
-                          Subject:
-                        </span>{" "}
+                          Subject
+                        </span>
+                        :{" "}
                         {section.subjectLabel.charAt(0).toUpperCase() +
                           section.subjectLabel.slice(1)}
-                      </div>
+                      </span>
                     )}
                   </div>
 

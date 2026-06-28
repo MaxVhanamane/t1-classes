@@ -46,11 +46,15 @@ export function TestBuilderClient() {
     );
   }
 
-  const { test, sections } = data;
+  const { test, sections, totalMarks, totalQuestions } = data;
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
-      <TestBuilderHeader test={test} />
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6">
+      <TestBuilderHeader
+        test={test}
+        totalMarks={totalMarks}
+        totalQuestions={totalQuestions}
+      />
 
       {sections.length === 0 ? (
         <SectionsEmptyState

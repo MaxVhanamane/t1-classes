@@ -39,16 +39,18 @@ interface MentorshipStudentsComboboxProps {
   disabled?: boolean;
 
   batchId: string;
+  maxSelectionCount?: number;
+  maxSelectionMessage?: string;
 }
 
 export function MentorshipStudentsCombobox({
   students,
-
   value,
-
   onChange,
   batchId,
   disabled,
+  maxSelectionCount,
+  maxSelectionMessage,
 }: MentorshipStudentsComboboxProps) {
   const [open, setOpen] = useState(false);
 
@@ -63,12 +65,7 @@ export function MentorshipStudentsCombobox({
 
       return;
     }
-
-    if (value.length >= 2) {
-      toast.warning(
-        "Mentorship sessions are intended for one student. Maximum 2 students are allowed.",
-      );
-
+    if (maxSelectionCount && value.length >= maxSelectionCount) {
       return;
     }
 
@@ -76,7 +73,7 @@ export function MentorshipStudentsCombobox({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -105,11 +102,14 @@ export function MentorshipStudentsCombobox({
 
           <CommandEmpty>No students found.</CommandEmpty>
 
-          <CommandGroup className="max-h-72 overflow-y-auto">
+          <CommandGroup className="max-h-60 overflow-y-auto">
             {students.map((student) => {
               const selected = value.includes(student.id);
 
-              const maxReached = value.length >= 2 && !selected;
+              const maxReached =
+                !!maxSelectionCount &&
+                value.length >= maxSelectionCount &&
+                !selected;
 
               return (
                 <CommandItem
@@ -118,6 +118,13 @@ export function MentorshipStudentsCombobox({
                   onSelect={() => {
                     if (!maxReached) {
                       toggleStudent(student.id);
+                    }
+
+                    if (maxReached) {
+                      toast.warning(
+                        maxSelectionMessage ??
+                          `Maximum ${maxSelectionCount} students are allowed.`,
+                      );
                     }
                   }}
                   className={cn("cursor-pointer", maxReached && "opacity-50")}

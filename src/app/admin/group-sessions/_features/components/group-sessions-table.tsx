@@ -145,7 +145,7 @@ export function GroupSessionsTable() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-border/60 bg-card ">
       {data.data.length === 0 ? (
         <div className="p-12 text-center">
           <p className="text-sm text-muted-foreground">
@@ -274,7 +274,7 @@ export function GroupSessionsTable() {
                       <TableCell>
                         <div
                           className={cn(
-                            "inline-flex min-w-[120px] items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm",
+                            "inline-flex min-w-[120px] items-center justify-center rounded-full border px-2 py-1.5 text-xs font-semibold",
 
                             status === "waiting_for_link" &&
                               "border-border/60 bg-muted/50 text-muted-foreground",
@@ -323,7 +323,7 @@ export function GroupSessionsTable() {
                                 variant="destructive"
                                 size="sm"
                                 disabled={isDeleting}
-                                className="h-9 rounded-xl bg-destructive px-3 shadow-sm transition-all hover:bg-destructive/90 hover:shadow-md"
+                                className="h-9 rounded-xl bg-destructive px-3  transition-all hover:bg-destructive/90 "
                               >
                                 <Trash2 className="mr-2 size-4" />
                                 Delete

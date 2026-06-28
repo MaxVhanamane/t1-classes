@@ -25,7 +25,6 @@ export async function GET(
         return auth.response;
     }
 
-    const user = auth.user;
 
     const supabase =
         await createServerSupabaseClient();
@@ -61,7 +60,6 @@ export async function GET(
             {
                 p_attempt_id: attemptId,
                 p_section_id: sectionId,
-                p_user_id: user.userId,
                 p_page: page,
                 p_limit: limit,
             }

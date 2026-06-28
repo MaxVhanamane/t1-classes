@@ -43,9 +43,10 @@ async function getCachedInstructionsPayload(
   const { data, error } = await supabase.rpc("get_test_instructions_payload", {
     p_distribution_id: distributionId,
   });
-
   if (error) {
-    throw error;
+    console.error(error);
+
+    throw new Error(error.message ?? "Failed to load test payload");
   }
 
   return data as CachedInstructionsPayload | null;
@@ -167,7 +168,7 @@ export default async function InstructionsPage({
   const startDisabled = status !== "ongoing" || hasExpiredAttempt;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
+    <div className="mx-auto max-w-4xl space-y-4 px-4 py-8">
       <div>
         <h1 className="text-2xl font-semibold">Test Instructions</h1>
 
@@ -252,24 +253,27 @@ export default async function InstructionsPage({
           </CardContent>
         </Card>
       )}
-      <h2 className="text-lg font-semibold text-muted-foreground">
-        General Instructions
-      </h2>
-      <GeneralInstructions />
-
-      <h2 className="text-lg font-semibold text-muted-foreground">
-        Section Instructions
-      </h2>
       <div className="space-y-4">
-        {payload.sections.map((section, index) => (
-          <SectionInstructions
-            key={section.id}
-            section={section}
-            index={index}
-          />
-        ))}
+        <h2 className="text-lg font-semibold text-muted-foreground">
+          General Instructions
+        </h2>
+        <GeneralInstructions />
       </div>
 
+      <div className="space-y-4 pt-4">
+        <h2 className="text-lg font-semibold text-muted-foreground">
+          Section Instructions
+        </h2>
+        <div className="space-y-4">
+          {payload.sections.map((section, index) => (
+            <SectionInstructions
+              key={section.id}
+              section={section}
+              index={index}
+            />
+          ))}
+        </div>
+      </div>
       <div className="flex justify-end pt-4">
         <StartGate distributionId={distributionId} disabled={startDisabled} />
       </div>

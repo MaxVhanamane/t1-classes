@@ -99,7 +99,7 @@ export function PracticeQuestionView({
   return (
     <div
       ref={setContainerEl}
-      className="flex h-full min-h-0 flex-col overflow-hidden"
+      className="flex h-full min-h-0 flex-col overflow-hidden relative"
     >
       {/* PROGRESS */}
       <div className="px-4 pt-4">

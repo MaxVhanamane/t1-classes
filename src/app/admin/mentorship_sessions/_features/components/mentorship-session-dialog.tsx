@@ -449,6 +449,8 @@ export function MentorshipSessionDialog({
                           isSelectedStudentsLoading ||
                           (isEdit && !canEditSchedule)
                         }
+                        maxSelectionCount={2}
+                        maxSelectionMessage="Mentorship sessions are intended for one student. Maximum 2 students are allowed."
                       />
                     </FormControl>
 

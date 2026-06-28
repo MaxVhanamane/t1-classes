@@ -247,7 +247,7 @@ export function PracticeSetDialog({ practiceSetId, onClose }: Props) {
           </div>
         </DialogHeader>
 
-        <div className="relative flex-1 overflow-y-auto ">
+        <div className="relative flex-1 overflow-y-auto scrollbar-thin">
           <AnimatePresence mode="wait">
             {isLoading && <LoadingPracticeSet />}
 

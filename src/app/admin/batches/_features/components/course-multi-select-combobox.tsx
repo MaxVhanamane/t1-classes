@@ -57,7 +57,7 @@ export function CourseMultiSelectCombobox({
 
   return (
     <div className="space-y-2">
-      <Popover>
+      <Popover modal={true}>
         <PopoverTrigger asChild>
           <Button
             type="button"

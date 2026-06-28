@@ -43,33 +43,17 @@ export async function GET(
         await createServerSupabaseClient();
 
     const { data, error } =
-        await supabase
-            .from(
-                "batch_instructors",
-            )
-            .select(`
-        instructor:users (
-          id,
-          full_name,
-          qualification,
-          bio,
-          profile_image
-        )
-      `)
-            .eq(
-                "batch_id",
-                batchId,
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: true,
-                },
-            );
+        await supabase.rpc(
+            "get_public_batch_instructors",
+            {
+                p_batch_id:
+                    batchId,
+            },
+        );
 
     if (error) {
         console.error(
-            "Instructors fetch error:",
+            "Public batch instructors fetch error:",
             error,
         );
 
@@ -84,17 +68,7 @@ export async function GET(
         );
     }
 
-    const instructors =
-        data
-            ?.map(
-                (row) =>
-                    row.instructor,
-            )
-            .filter(
-                Boolean,
-            ) ?? [];
-
     return NextResponse.json(
-        instructors,
+        data satisfies CourseInstructorType[],
     );
 }

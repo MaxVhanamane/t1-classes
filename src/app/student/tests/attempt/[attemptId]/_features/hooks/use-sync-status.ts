@@ -1,20 +1,21 @@
-"use client"
+"use client";
 
-import { useMutationState } from "@tanstack/react-query"
+import { useMutationState } from "@tanstack/react-query";
 
 export type SyncStatus = {
-    isIdle: boolean
-    isSaving: boolean
-    isRetrying: boolean
-    isError: boolean
-}
+    isIdle: boolean;
+    isSaving: boolean;
+    isRetrying: boolean;
+    isError: boolean;
+    isSaved: boolean;
+};
 
 export function useSyncStatus(attemptId: string): SyncStatus {
     const mutations = useMutationState({
         filters: {
             mutationKey: ["answer", attemptId],
         },
-    })
+    });
 
     if (mutations.length === 0) {
         return {
@@ -22,10 +23,11 @@ export function useSyncStatus(attemptId: string): SyncStatus {
             isSaving: false,
             isRetrying: false,
             isError: false,
-        }
+            isSaved: false,
+        };
     }
 
-    const latest = mutations[mutations.length - 1]
+    const latest = mutations[mutations.length - 1];
 
     return {
         isIdle: false,
@@ -34,5 +36,6 @@ export function useSyncStatus(attemptId: string): SyncStatus {
             latest.status === "pending" &&
             (latest.failureCount ?? 0) > 0,
         isError: latest.status === "error",
-    }
+        isSaved: latest.status === "success",
+    };
 }

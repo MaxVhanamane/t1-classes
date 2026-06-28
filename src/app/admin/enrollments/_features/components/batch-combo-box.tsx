@@ -38,7 +38,7 @@ export function BatchCombobox({
     <div className="space-y-2">
       <label className="text-sm font-medium">Batch</label>
 
-      <Popover>
+      <Popover modal={true}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"

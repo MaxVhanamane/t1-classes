@@ -1,16 +1,15 @@
 "use client";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/src/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/src/components/ui/drawer";
 
 import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
-
 import { useState } from "react";
 
 import {
@@ -70,8 +69,8 @@ export function PracticeQuestionNavigatorSheet({
       ];
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Drawer container={container} open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
         <Button
           variant="outline"
           className="h-9 w-full gap-2 border-primary/20 bg-primary/5 text-xs font-medium text-primary hover:bg-primary/10"
@@ -79,23 +78,15 @@ export function PracticeQuestionNavigatorSheet({
           <LayoutGrid className="h-3.5 w-3.5" />
           Navigator
         </Button>
-      </SheetTrigger>
+      </DrawerTrigger>
 
-      <SheetContent
-        container={container ?? undefined}
-        side="right"
-        className="absolute top-3 bottom-3 right-0 h-auto w-[92%] max-w-95 rounded-l-2xl border-l border-t border-b border-border bg-background p-0 shadow-[0_10px_40px_rgba(0,0,0,0.18)] "
-      >
-        <div className="flex h-full min-h-0 flex-col">
-          {/* HEADER */}
-          <SheetHeader className="shrink-0 border-b px-5 py-4 text-left">
-            <SheetTitle className="text-sm font-semibold">
-              Question Navigator
-            </SheetTitle>
-          </SheetHeader>
+      <DrawerContent className="h-[90vh] max-h-[90vh]">
+        <div className="mx-auto flex h-full w-full max-w-lg min-h-0 flex-col">
+          <DrawerHeader>
+            <DrawerTitle>Question Navigator</DrawerTitle>
+          </DrawerHeader>
 
-          {/* CONTENT */}
-          <div className="flex-1 px-5 py-4 overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">
             <div className="space-y-6">
               {/* LEGEND */}
               <div className="space-y-3">
@@ -162,7 +153,6 @@ export function PracticeQuestionNavigatorSheet({
                           "transition hover:scale-[1.03]",
                           styles,
                           "text-foreground",
-
                           i === index &&
                             "after:absolute after:bottom-1 after:left-1/2 after:h-0.5 after:w-4 after:-translate-x-1/2 after:rounded-full after:bg-primary",
                         )}
@@ -176,8 +166,8 @@ export function PracticeQuestionNavigatorSheet({
             </div>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

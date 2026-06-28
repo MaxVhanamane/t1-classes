@@ -486,12 +486,12 @@ export function GroupSessionDialog({
                           isLoadingSelectedStudents
                         }
                       />
-                      {isLoadingSelectedStudents && isEdit && (
-                        <p className="text-xs text-muted-foreground">
-                          Loading selected students...
-                        </p>
-                      )}
                     </FormControl>
+                    {isLoadingSelectedStudents && isEdit && (
+                      <p className="text-xs text-muted-foreground">
+                        Loading selected students...
+                      </p>
+                    )}
 
                     <FormMessage />
                   </FormItem>

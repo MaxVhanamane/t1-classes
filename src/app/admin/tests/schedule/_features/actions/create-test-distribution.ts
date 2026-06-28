@@ -8,7 +8,7 @@ import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only"
 export async function createTestDistribution(
     input: ScheduleTestInput
 ): Promise<ServerActionResponse<string>> {
-    const staff = await requireStaffServerOnly();
+    await requireStaffServerOnly();
 
     try {
         const supabase = await createServerSupabaseClient();
@@ -25,10 +25,8 @@ export async function createTestDistribution(
                 p_starts_at: input.starts_at,
                 p_ends_at: input.ends_at,
                 p_duration_minutes: input.duration_minutes,
-                p_created_by: staff.userId,
             }
         );
-
         if (error) {
             return { error: normalizeRpcError(error.message) };
         }

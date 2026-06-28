@@ -1,3 +1,4 @@
+import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -13,6 +14,7 @@ export async function GET(
     },
 ) {
     try {
+        await requireStudentApiRoute()
         const { batchId } =
             await params;
 
@@ -54,37 +56,12 @@ export async function GET(
             await createServerSupabaseClient();
 
         const {
-            data: {
-                user,
-            },
-            error:
-            authError,
-        } =
-            await supabase.auth.getUser();
-
-        if (
-            authError ||
-            !user
-        ) {
-            return NextResponse.json(
-                {
-                    message:
-                        "Unauthorized",
-                },
-                {
-                    status: 401,
-                },
-            );
-        }
-
-        const {
             data,
             error,
         } =
             await supabase.rpc(
                 "get_my_attendance_overview",
                 {
-                    p_student_id: user.id,
                     p_batch_id: batchId,
                     p_month: month,
                     p_year: year,

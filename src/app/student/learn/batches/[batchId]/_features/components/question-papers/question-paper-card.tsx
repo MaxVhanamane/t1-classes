@@ -19,45 +19,47 @@ import {
 import { formatFileSize } from "@/src/app/admin/question-papers/_features/helper-functions/helpers";
 
 import DottedBackground from "@/src/components/dotted-background";
+import { cn } from "@/src/lib/utils";
 
 type QuestionPaperCardProps = {
   questionPaper: {
     id: string;
-
     title: string;
-
     targetExam: string | null;
-
     subject: string | null;
-
     paperCategory: "previous_year" | "practice";
-
     years: number[];
-
     classLevel: number | null;
-
     description: string | null;
-
     fileSize: number | null;
   };
 
   onView: () => void;
 
   isLoading?: boolean;
+
+  layout?: "batch" | "course";
 };
 
 export function QuestionPaperCard({
   questionPaper,
   onView,
   isLoading = false,
+  layout = "batch",
 }: QuestionPaperCardProps) {
   const hasDescription = !!questionPaper.description?.trim();
 
   return (
-    <Card className="relative dark:bg-black">
+    <Card className="relative dark:bg-black py-4">
       <DottedBackground />
 
-      <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <CardContent
+        className={
+          layout === "course"
+            ? "flex flex-col gap-4 p-4"
+            : "flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
+        }
+      >
         <div className="min-w-0 flex-1 space-y-3">
           <div className="flex items-start gap-3">
             <div className="bg-primary/10 text-primary rounded-md p-2">
@@ -149,7 +151,7 @@ export function QuestionPaperCard({
         <Button
           onClick={onView}
           disabled={isLoading}
-          className="w-full sm:w-auto"
+          className={cn("w-full mt-2", layout === "batch" && "sm:w-auto")}
         >
           {isLoading ? (
             <>

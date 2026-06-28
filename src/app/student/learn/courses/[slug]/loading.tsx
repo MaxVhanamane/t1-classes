@@ -19,7 +19,7 @@ export default function LoadingCoursePlayer() {
                   <Loader className="h-4 w-4 animate-spin text-foreground/70" />
 
                   <span className="text-xs text-foreground/70">
-                    Main loader Preparing your content...
+                    Preparing your content...
                   </span>
                 </div>
               </div>

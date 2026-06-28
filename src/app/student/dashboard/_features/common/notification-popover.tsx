@@ -11,6 +11,7 @@ import { useStudentNotifications } from "../hooks/use-student-notifications";
 import { useMarkNotificationsSeen } from "../hooks/use-mark-seen";
 import { NotificationBell } from "./notification-bell";
 import { NotificationItem } from "./notification-item";
+import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
 
 type Notification = {
   id: string;
@@ -84,8 +85,11 @@ export function NotificationPopover() {
         <ScrollArea className="max-h-100">
           <div>
             {isLoading && (
-              <div className="p-4 text-sm text-muted-foreground">
-                Loading...
+              <div className="my-6">
+                <LoadingIndicator
+                  type="normal"
+                  message="Fetching notifications..."
+                />
               </div>
             )}
 

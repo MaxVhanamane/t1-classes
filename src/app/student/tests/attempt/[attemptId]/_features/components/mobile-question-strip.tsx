@@ -186,7 +186,7 @@ export default function MobileQuestionStrip({
                 {sectionIndex > 0 && (
                   <div
                     aria-hidden
-                    className="mx-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/80"
+                    className="mx-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60"
                   />
                 )}
 

@@ -75,15 +75,6 @@ export async function PATCH(
         );
     }
 
-    console.log({
-        ok: true,
-        attemptId,
-        questionId,
-        savedAt: data?.[0]?.saved_at ?? null,
-        markedForReview: data?.[0]?.marked_for_review ?? false,
-        timeSpentSeconds:
-            data?.[0]?.time_spent_seconds,
-    })
 
     return NextResponse.json({
         ok: true,

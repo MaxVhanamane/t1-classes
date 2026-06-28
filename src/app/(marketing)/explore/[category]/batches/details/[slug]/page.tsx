@@ -34,27 +34,29 @@ async function getBatch(slug: string): Promise<ExploreBatchDetail | null> {
 export async function generateStaticParams() {
   const supabase = createStaticSupabaseClient();
 
+  const nowIso = new Date().toISOString();
+
   const { data, error } = await supabase
     .from("batches")
     .select("slug, category")
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .gte("end_date", nowIso);
 
   if (error || !data || data.length === 0) {
-    return [{ slug: "__placeholder__", category: "__placeholder__" }];
+    return [];
   }
-
   console.log(
     data.map((b) => ({
       slug: b.slug,
       category: b.category, //  REQUIRED
     })),
   );
+
   return data.map((b) => ({
     slug: b.slug,
-    category: b.category, //  REQUIRED
+    category: b.category,
   }));
 }
-
 /* -------------------------------------------------------------------------- */
 /* Page                                                                        */
 /* -------------------------------------------------------------------------- */
@@ -69,7 +71,7 @@ export default async function BatchPage({
   console.log("Cached Batch page rendered", slug, category);
   cacheLife("aggressive");
   cacheTag(`batch-detail-${slug}`);
-  if (slug === "__placeholder__") notFound();
+
   const batch = await getBatch(slug);
 
   if (!batch) notFound();

@@ -53,7 +53,7 @@ export default function LoginPage() {
 
       {/* ---------------- Right: Login Card ---------------- */}
       <div className="flex items-center justify-center px-4">
-        <div className="w-full max-w-sm rounded-2xl text-card-foreground bg-background shadow-md border border-border relative z-10 overflow-hidden">
+        <div className="w-full max-w-sm rounded-2xl text-card-foreground bg-background  border border-border relative z-10 overflow-hidden">
           {/* Top glow */}
           <div
             className="pointer-events-none absolute inset-x-0 top-0 h-24 

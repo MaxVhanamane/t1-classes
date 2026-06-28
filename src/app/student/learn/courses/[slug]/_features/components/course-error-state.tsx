@@ -113,25 +113,9 @@ export function CourseErrorState({ status, message }: Props) {
       </div>
 
       <div className="flex gap-3">
-        {status === 401 || status === 403 ? (
-          <>
-            <Button variant="outline" asChild>
-              <Link href="/courses">Browse Courses</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/student/dashboard">My Learning</Link>
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button variant="outline" asChild>
-              <Link href="/student/dashboard">My Learning</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/courses">Browse Courses</Link>
-            </Button>
-          </>
-        )}
+        <Button asChild>
+          <Link href="/student/dashboard">My Learning</Link>
+        </Button>
       </div>
     </div>
   );

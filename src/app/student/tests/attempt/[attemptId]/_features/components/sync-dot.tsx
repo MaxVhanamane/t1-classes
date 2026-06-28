@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { CheckCircle, AlertCircle, Wifi, RefreshCw } from "lucide-react";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
@@ -10,7 +11,27 @@ type Props = {
 };
 
 export default function SyncDot({ status }: Props) {
-  if (status.isIdle) return null;
+  const [showSaved, setShowSaved] = useState(false);
+
+  useEffect(() => {
+    if (status.isSaved) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowSaved(true);
+
+      const timer = setTimeout(() => {
+        setShowSaved(false);
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [status.isSaved]);
+
+  if (
+    status.isIdle ||
+    (!status.isSaving && !status.isRetrying && !status.isError && !showSaved)
+  ) {
+    return null;
+  }
 
   let label = "Saved";
   let Icon = CheckCircle;

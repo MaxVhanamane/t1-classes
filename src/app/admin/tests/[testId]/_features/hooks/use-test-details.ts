@@ -7,8 +7,9 @@ import type { TestSection } from "../types/test-section.types";
 
 type TestDetailsResponse = {
     test: TestBuilderTest;
-
     sections: TestSection[];
+    totalMarks: number
+    totalQuestions: number
 };
 
 export function useTestDetails(testId: string) {

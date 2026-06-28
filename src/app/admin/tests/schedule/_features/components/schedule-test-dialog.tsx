@@ -36,6 +36,7 @@ import { ISODatePicker } from "../../../distributions/_features/components/iso-d
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { useBatchOptions } from "@/src/hooks/use-batch-options";
 import { useQueryClient } from "@tanstack/react-query";
+import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 
 /* ---------------- Types ---------------- */
 export function dateToISO(date: Date) {
@@ -123,89 +124,109 @@ export function ScheduleTestDialog({
 
   /* ---------------- Submit ---------------- */
 
-  async function onSubmit(values: ScheduleTestInput) {
-    try {
-      const start = new Date(values.starts_at);
+  const onSubmit = form.handleSubmit(
+    async (values: ScheduleTestInput) => {
+      const toastId = toast.loading(
+        isEditMode ? "Updating schedule..." : "Scheduling test...",
+      );
 
-      const end = new Date(values.ends_at);
+      try {
+        const start = new Date(values.starts_at);
+        const end = new Date(values.ends_at);
 
-      if (!values.batch_id) {
-        toast.error("Please select a batch");
-
-        return;
-      }
-
-      if (end <= start) {
-        toast.error("End time must be after start time");
-
-        return;
-      }
-
-      if (start < new Date()) {
-        toast.error("Cannot schedule a test in the past");
-
-        return;
-      }
-
-      const windowMinutes = (end.getTime() - start.getTime()) / 60000;
-
-      if (values.duration_minutes > windowMinutes) {
-        toast.error("Duration cannot exceed the test window");
-
-        return;
-      }
-
-      if (isEditMode && distribution) {
-        const { error } = await callServerAction(
-          updateTestDistribution(distribution.id, values),
-        );
-
-        if (error) {
-          handleDistributionError(error);
-
+        if (!values.batch_id) {
+          toast.error("Please select a batch", {
+            id: toastId,
+          });
           return;
+        }
+
+        if (end <= start) {
+          toast.error("End time must be after start time", {
+            id: toastId,
+          });
+          return;
+        }
+
+        if (start < new Date()) {
+          toast.error("Cannot schedule a test in the past", {
+            id: toastId,
+          });
+          return;
+        }
+
+        const windowMinutes = (end.getTime() - start.getTime()) / 60000;
+
+        if (values.duration_minutes > windowMinutes) {
+          toast.error("Duration cannot exceed the test window", {
+            id: toastId,
+          });
+          return;
+        }
+
+        if (isEditMode && distribution) {
+          const { error } = await callServerAction(
+            updateTestDistribution(distribution.id, values),
+          );
+
+          if (error) {
+            handleDistributionError(error);
+            toast.dismiss(toastId);
+            return;
+          }
+
+          toast.loading("Refreshing...", {
+            id: toastId,
+          });
+        } else {
+          const { error } = await callServerAction(
+            createTestDistribution(values),
+          );
+
+          if (error) {
+            handleDistributionError(error);
+            toast.dismiss(toastId);
+            return;
+          }
+
+          toast.loading("Refreshing...", {
+            id: toastId,
+          });
         }
 
         await Promise.all([
           queryClient.invalidateQueries({
             queryKey: ["admin", "test-distributions"],
           }),
-
           queryClient.invalidateQueries({
             queryKey: ["admin", "tests"],
           }),
         ]);
 
-        toast.success("Distribution updated");
-      } else {
-        const { error } = await callServerAction(
-          createTestDistribution(values),
-        );
+        toast.success(isEditMode ? "Distribution updated" : "Test scheduled", {
+          id: toastId,
+        });
 
-        if (error) {
-          handleDistributionError(error);
+        onOpenChange(false);
+      } catch (error) {
+        console.error(error);
 
-          return;
-        }
-
-        await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: ["admin", "test-distributions"],
-          }),
-
-          queryClient.invalidateQueries({
-            queryKey: ["admin", "tests"],
-          }),
-        ]);
-
-        toast.success("Test scheduled");
+        toast.error("Something went wrong", {
+          id: toastId,
+        });
       }
+    },
 
-      onOpenChange(false);
-    } catch {
-      toast.error("Something went wrong");
-    }
-  }
+    (errors) => {
+      console.log("Validation errors", errors);
+
+      const message = extractFirstErrorMessage(errors);
+
+      toast.dismiss();
+
+      toast.error(message ?? "Please fix the highlighted fields");
+    },
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -220,7 +241,7 @@ export function ScheduleTestDialog({
         </DialogHeader>
 
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={onSubmit}
           className="space-y-4"
           aria-busy={isSubmitting}
         >

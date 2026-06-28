@@ -34,6 +34,7 @@ function ActionBadge({
         text-xs
         font-medium
         whitespace-nowrap
+        w-fit
         ${className}
       `}
     >
@@ -66,7 +67,7 @@ const ACTION_STYLES = {
 
 export default function GeneralInstructions() {
   return (
-    <Card>
+    <Card className="bg-background">
       <CardContent className="space-y-6">
         {/* General Rules */}
         <div>
@@ -145,61 +146,55 @@ export default function GeneralInstructions() {
         <div>
           <h3 className="mb-3 text-sm font-semibold">Question Actions</h3>
 
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
+          <div className="space-y-4 text-sm">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
               <ActionBadge className={ACTION_STYLES.saveNext}>
                 Save & Next
               </ActionBadge>
-
               <p className="text-muted-foreground">
                 Saves the current answer and moves to the next question.
               </p>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
               <ActionBadge className={ACTION_STYLES.clear}>Clear</ActionBadge>
-
               <p className="text-muted-foreground">
                 Removes the selected answer from the current question.
               </p>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
               <ActionBadge className={ACTION_STYLES.saveReview}>
                 Save & Mark for Review
               </ActionBadge>
-
               <p className="text-muted-foreground">
                 Saves your answer and marks the question for later review.
               </p>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
               <ActionBadge className={ACTION_STYLES.reviewNext}>
                 Mark for Review & Next
               </ActionBadge>
-
               <p className="text-muted-foreground">
                 Marks the question for review without saving an answer and moves
                 to the next question.
               </p>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
               <ActionBadge className={ACTION_STYLES.navigation}>
                 Back / Next
               </ActionBadge>
-
               <p className="text-muted-foreground">
                 Navigate freely between questions and sections during the test.
               </p>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
               <ActionBadge className={ACTION_STYLES.submit}>
                 Submit Test
               </ActionBadge>
-
               <p className="text-muted-foreground">
                 Final submission. Answers cannot be modified afterwards.
               </p>

@@ -58,6 +58,7 @@ export function CourseFilterCombobox({
           setOpen(nextOpen);
         }
       }}
+      modal={true}
     >
       <PopoverTrigger asChild>
         <Button

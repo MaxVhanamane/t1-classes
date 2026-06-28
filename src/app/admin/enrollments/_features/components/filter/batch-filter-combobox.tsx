@@ -55,6 +55,7 @@ export function BatchFilterCombobox({
 
   return (
     <Popover
+      modal={true}
       open={isDisabled ? false : open}
       onOpenChange={(nextOpen) => {
         if (!isDisabled) {

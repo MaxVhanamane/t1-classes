@@ -41,7 +41,7 @@ export function InstructorFilterCombobox({
   const selected = instructors.find((instructor) => instructor.id === value);
 
   return (
-    <Popover>
+    <Popover modal={true}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"

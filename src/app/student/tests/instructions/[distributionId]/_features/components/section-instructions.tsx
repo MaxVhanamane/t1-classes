@@ -21,7 +21,7 @@ export default function SectionInstructions({ section, index }: Props) {
   const rules = buildRules(section);
 
   return (
-    <Card>
+    <Card className="bg-background">
       <CardHeader>
         <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between text-base">
           {/* Title */}

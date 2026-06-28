@@ -52,9 +52,10 @@ export async function getExploreBatchDetailBySlugService(
         .eq("slug", slug)
         .eq("is_active", true)
         .gte("end_date", nowIso)
-        .single();
+        .maybeSingle();
 
     if (batchError) {
+        console.log("batchError", batchError)
         throw new Error("Failed to fetch batch");
     }
 

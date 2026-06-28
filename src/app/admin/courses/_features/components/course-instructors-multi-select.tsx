@@ -48,7 +48,7 @@ export function CourseInstructorsMultiSelect({
     <FormItem className="flex flex-col">
       <FormLabel>Instructors</FormLabel>
 
-      <Popover>
+      <Popover modal={true}>
         <PopoverTrigger asChild>
           <FormControl>
             <Button

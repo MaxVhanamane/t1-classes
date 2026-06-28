@@ -48,18 +48,12 @@ function getIcon(type: string) {
   }
 }
 function getTimeLabel(dateStr: string) {
-  const now = new Date();
-  const time = new Date(dateStr);
-
-  const diff = Math.floor((now.getTime() - time.getTime()) / 1000);
-
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
-
-  return time.toLocaleDateString("en-IN", {
+  return new Date(dateStr).toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
   });
 }
 

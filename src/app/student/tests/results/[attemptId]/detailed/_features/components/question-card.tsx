@@ -65,7 +65,7 @@ function getMarksBadgeClass(tone: string) {
   switch (tone) {
     case "correct":
       return `
-        bg-green-200 text-foreground border-green-300
+        bg-red-200 text-foreground border-green-300
         dark:bg-green-700/70 dark:border-green-600
       `;
 

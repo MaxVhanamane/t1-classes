@@ -482,7 +482,7 @@ export function QuestionPaperDialog({
                       all applicable years.
                     </p>
 
-                    <Popover>
+                    <Popover modal={true}>
                       <PopoverTrigger asChild>
                         <Button
                           type="button"

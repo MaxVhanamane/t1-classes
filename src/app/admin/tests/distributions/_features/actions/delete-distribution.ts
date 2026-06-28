@@ -8,7 +8,7 @@ export async function deleteDistribution(
     distributionId: string
 ): Promise<ServerActionResponse> {
     // redirect() throws internally; calling inside try/catch would prevent the redirect
-    const staff = await requireStaffServerOnly();
+    await requireStaffServerOnly();
     try {
 
 
@@ -19,8 +19,6 @@ export async function deleteDistribution(
             "rpc_delete_test_distribution",
             {
                 p_distribution_id: distributionId,
-                p_user_id: staff.userId,
-                p_user_role: staff.role,
             }
         );
 

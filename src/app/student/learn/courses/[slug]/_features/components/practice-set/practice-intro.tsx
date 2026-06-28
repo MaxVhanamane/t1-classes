@@ -18,8 +18,8 @@ export function PracticeIntro({ title, description, onStart }: Props) {
   return (
     <div className="flex justify-center px-2 py-6 sm:px-4 sm:py-8">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{
           duration: 0.22,
           ease: [0.16, 1, 0.3, 1],
