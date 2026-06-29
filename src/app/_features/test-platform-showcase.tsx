@@ -31,71 +31,103 @@ const FEATURES = [
 export function TestPlatformShowcase() {
   return (
     <section>
-      <div className="grid gap-14 lg:grid-cols-2 lg:items-center lg:gap-20">
-        {/* LEFT */}
-        <div>
-          <p className="text-sm font-semibold tracking-wide text-primary uppercase">
+      <div className="mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
             Advanced Test Platform
           </p>
 
-          <h2 className="mt-4 text-3xl font-black tracking-tight text-balance sm:text-4xl lg:text-5xl">
-            Designed to feel like a real exam environment.
+          <h2 className="mt-4 text-balance text-3xl font-black tracking-tight sm:text-5xl">
+            Experience a testing platform that feels like the real exam.
           </h2>
 
-          <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Attempt tests with advanced question formats, real exam-style
-            navigation, detailed marking systems, and complete result
-            breakdowns.
+          <p className="mt-6 text-lg leading-8 text-muted-foreground">
+            Practice with realistic question formats, distraction-free
+            navigation, detailed marking schemes, and comprehensive performance
+            analysis, everything designed to help you perform with confidence.
           </p>
-
-          {/* FEATURES */}
-          <div className="mt-10 grid gap-4">
-            {FEATURES.map((feature) => {
-              const Icon = feature.icon;
-
-              return (
-                <div
-                  key={feature.title}
-                  className="group rounded-2xl border border-border/60 bg-background/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-                >
-                  <div className="flex items-start gap-4">
-                    {/* icon */}
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-background shadow-sm">
-                      <Icon className="size-5" />
-                    </div>
-
-                    {/* content */}
-                    <div>
-                      <h3 className="text-base font-bold tracking-tight">
-                        {feature.title}
-                      </h3>
-
-                      <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="relative">
-          {/* glow */}
-          <div className="absolute inset-0 rounded-[2rem] bg-primary/10 blur-3xl" />
+        {/* Screenshot */}
+        <div className="relative mx-auto mt-14 max-w-6xl lg:mt-16">
+          {/* Ambient Glow */}
+          <div
+            aria-hidden
+            className="absolute inset-0 -z-10 scale-105 rounded-full bg-primary/10 blur-3xl"
+          />
 
-          {/* image */}
-          <div className="relative overflow-hidden rounded-[2rem] border border-border/60 bg-background/80 shadow-2xl backdrop-blur-xl">
-            <Image
-              src="/images/test-platform-preview.webp"
-              alt="T1 Classes Test Platform"
-              width={1400}
-              height={1000}
-              className="h-auto w-full"
-            />
+          {/* Glass Frame */}
+          <div
+            className="rounded-xl p-px"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08) 35%, rgba(255,255,255,.03) 70%, rgba(255,255,255,.14))",
+              boxShadow:
+                "0 40px 100px rgba(15,23,42,.12), 0 16px 40px rgba(15,23,42,.08)",
+            }}
+          >
+            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-2 backdrop-blur-xl sm:p-3 lg:p-4">
+              {/* Inner Border */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10"
+              />
+
+              {/* Soft Reflection */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-white/8 to-transparent"
+              />
+
+              <div className="overflow-hidden rounded-xl border border-border/50 bg-background shadow-[0_24px_70px_rgba(15,23,42,.12)]">
+                <Image
+                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-summary.webp"
+                  alt="T1 Classes Test Platform"
+                  width={1400}
+                  height={1000}
+                  priority
+                  className="block w-full"
+                />
+              </div>
+            </div>
           </div>
+
+          {/* Ground Shadow */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-12 -bottom-8 -z-10 h-20 rounded-full bg-black/10 blur-3xl sm:inset-x-24"
+          />
+        </div>
+
+        {/* Features */}
+        <div className="mx-auto mt-14 grid max-w-6xl gap-5 md:grid-cols-2 lg:mt-16">
+          {FEATURES.map((feature) => {
+            const Icon = feature.icon;
+
+            return (
+              <div
+                key={feature.title}
+                className="rounded-2xl border border-border/50 bg-background/50 p-6 backdrop-blur-sm"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-border/50 bg-background">
+                    <Icon className="size-5 text-primary" />
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold tracking-tight">
+                      {feature.title}
+                    </h3>
+
+                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

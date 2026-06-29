@@ -22,7 +22,7 @@ const ITEMS = [
 export function TrustStrip() {
   return (
     <section>
-      <div className="rounded-[2rem] border border-border/60 bg-background/50 px-4 py-4 shadow-sm backdrop-blur-xl sm:px-6">
+      <div className="rounded-2xl border border-border/60 bg-background/50 px-4 py-4 shadow-sm backdrop-blur-xl sm:px-6">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {ITEMS.map((item) => {
             const Icon = item.icon;

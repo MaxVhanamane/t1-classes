@@ -78,7 +78,7 @@ export default function RootLayout({
         <StatusThemeScript />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased select-none`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReactQueryProvider>
           <NextTopLoader showSpinner={false} />

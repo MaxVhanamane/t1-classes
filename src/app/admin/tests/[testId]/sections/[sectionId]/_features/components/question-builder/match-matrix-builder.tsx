@@ -27,6 +27,20 @@ type PreviewOption = {
 
 const OPTION_LABELS: OptionLabel[] = ["A", "B", "C", "D"];
 
+function parseMapping(text: string): Mapping {
+  const result: Mapping = {};
+
+  text.split(",").forEach((pair) => {
+    const [left, right] = pair.split("→").map((s) => s.trim());
+
+    if (left && right) {
+      result[left] = right;
+    }
+  });
+
+  return result;
+}
+
 /* ---------------------------- TipTap Utilities --------------------------- */
 
 function getNodeText(node: unknown): string {
@@ -210,6 +224,36 @@ export function MatchMatrixBuilder({ form, questionText }: Props) {
     () => extractMatrixLabels(questionText),
     [questionText],
   );
+  const options = form.watch("options");
+  const correctAnswer = form.watch("correctAnswer");
+  function buildInitialState() {
+    if (!options?.length || typeof correctAnswer !== "string") {
+      return {
+        correctMap: {} as Mapping,
+        correctPosition: "" as OptionLabel | "",
+        previewOptions: [] as PreviewOption[],
+      };
+    }
+
+    const correctOption = options.find((o) => o.label === correctAnswer);
+
+    if (!correctOption) {
+      return {
+        correctMap: {} as Mapping,
+        correctPosition: "" as OptionLabel | "",
+        previewOptions: [] as PreviewOption[],
+      };
+    }
+
+    return {
+      correctMap: parseMapping(getNodeText(correctOption.text)),
+      correctPosition: correctAnswer as OptionLabel,
+      previewOptions: options.map((o) => ({
+        label: o.label as OptionLabel,
+        text: getNodeText(o.text),
+      })),
+    };
+  }
 
   const [manualMode, setManualMode] = useState(false);
   const [manualLeft, setManualLeft] = useState("");
@@ -217,21 +261,58 @@ export function MatchMatrixBuilder({ form, questionText }: Props) {
 
   const left = manualMode ? csvToArray(manualLeft) : detected.left;
   const right = manualMode ? csvToArray(manualRight) : detected.right;
+  const [correctMap, setCorrectMap] = useState(
+    () => buildInitialState().correctMap,
+  );
 
-  const [correctMap, setCorrectMap] = useState<Mapping>({});
-  const [correctPosition, setCorrectPosition] = useState<OptionLabel | "">("");
-  const [previewOptions, setPreviewOptions] = useState<PreviewOption[]>([]);
+  const [correctPosition, setCorrectPosition] = useState(
+    () => buildInitialState().correctPosition,
+  );
+
+  const [previewOptions, setPreviewOptions] = useState(
+    () => buildInitialState().previewOptions,
+  );
 
   function setMapping(leftKey: string, rightKey: string) {
     setCorrectMap((prev) => ({
       ...prev,
       [leftKey]: rightKey,
     }));
+
+    // Generated options are now stale.
+    setPreviewOptions([]);
+
+    // User must choose the correct option position again.
+    setCorrectPosition("");
+
+    // Clear generated form values.
+    form.setValue("options", [], {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+
+    form.setValue("correctAnswer", "", {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
   }
 
   function validateSteps() {
     if (!left.length || !right.length) {
       toast.error("No labels found.");
+      return false;
+    }
+    if (left.length < 3) {
+      toast.error(
+        "At least 3 matching pairs are required to generate answer options.",
+      );
+      return false;
+    }
+
+    if (right.length < left.length) {
+      toast.error("Column 2 must contain at least as many items as Column 1.");
       return false;
     }
 
@@ -250,12 +331,12 @@ export function MatchMatrixBuilder({ form, questionText }: Props) {
     return true;
   }
 
-  function buildAndSaveOptions(position: OptionLabel) {
+  function buildAndSaveOptions(position: OptionLabel): boolean {
     const wrongs = generateWrongMappings(correctMap, right, 3);
 
     if (wrongs.length < 3) {
       toast.error("Could not generate unique wrong options.");
-      return;
+      return false;
     }
 
     const allMaps: Mapping[] = [];
@@ -291,12 +372,15 @@ export function MatchMatrixBuilder({ form, questionText }: Props) {
     });
 
     setPreviewOptions(preview);
+    return true;
   }
 
   function generateOptions() {
     if (!validateSteps()) return;
 
-    buildAndSaveOptions(correctPosition as OptionLabel);
+    const success = buildAndSaveOptions(correctPosition as OptionLabel);
+
+    if (!success) return;
 
     toast.success("Options generated successfully");
   }
@@ -371,7 +455,7 @@ export function MatchMatrixBuilder({ form, questionText }: Props) {
               <span>→</span>
 
               <select
-                className="flex-1 rounded border px-2 py-1 text-sm"
+                className="flex-1 rounded border px-2 py-1 text-sm bg-background"
                 value={correctMap[l] ?? ""}
                 onChange={(e) => setMapping(l, e.target.value)}
               >
@@ -393,7 +477,7 @@ export function MatchMatrixBuilder({ form, questionText }: Props) {
         <h4 className="text-sm font-medium">Place Correct Option At</h4>
 
         <select
-          className="w-32 rounded border px-2 py-1 text-sm"
+          className="w-32 rounded border px-2 py-1 text-sm bg-background"
           value={correctPosition}
           onChange={(e) =>
             handleCorrectPositionChange(e.target.value as OptionLabel)

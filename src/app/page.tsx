@@ -12,14 +12,14 @@ import { LandingNavbar } from "./student/dashboard/_features/common/LandingNavba
 
 export default function HomePage() {
   return (
-    <main className="overflow-hidden">
+    <main>
       <LandingNavbar />
       {/* HERO */}
       <HeroSection />
 
       {/* MAIN CONTENT */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="space-y-24 py-24 sm:space-y-32 sm:py-32">
+        <div className="space-y-24 py-24">
           <TrustStrip />
 
           <ExploreCategories />

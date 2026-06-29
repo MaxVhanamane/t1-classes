@@ -134,25 +134,11 @@ function mapCorrectAnswerToForm(
     }
 
     case "match_matrix": {
-      if (!("matches" in answer) || !options) return {};
-
-      const raw = answer.matches;
-
-      if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
-        return {};
+      if (!("option_id" in answer) || !options) {
+        return "";
       }
 
-      const result: Record<string, string> = {};
-      const matches = raw as Record<string, string>;
-
-      for (const [left, id] of Object.entries(matches)) {
-        const match = options.find((o) => o.id === id);
-        if (match) {
-          result[left] = match.label;
-        }
-      }
-
-      return result;
+      return options.find((o) => o.id === answer.option_id)?.label ?? "";
     }
 
     case "numerical_input": {
@@ -201,17 +187,10 @@ function sanitizeCorrectAnswer(
         ? value.filter((label) => options.some((o) => o.label === label))
         : [];
 
-    case "match_matrix": {
-      if (typeof value !== "object" || value === null) return {};
-      const result: Record<string, string> = {};
-      for (const [k, v] of Object.entries(value)) {
-        if (options.some((o) => o.label === v)) {
-          result[k] = v;
-        }
-      }
-      return result;
-    }
-
+    case "match_matrix":
+      return typeof value === "string" && options.some((o) => o.label === value)
+        ? value
+        : "";
     default:
       return value;
   }
@@ -386,7 +365,7 @@ export function QuestionBuilderDialog({
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
-        className="sm:max-w-4xl overflow-y-auto h-[90vh] bg-background p-2 py-8 md:py-auto md:p-6 "
+        className="sm:max-w-4xl overflow-y-auto h-[90vh] bg-background p-2 py-8 md:py-auto md:p-6 scrollbar-thin"
       >
         <DialogHeader>
           <DialogTitle>

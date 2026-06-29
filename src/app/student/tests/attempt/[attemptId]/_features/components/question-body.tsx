@@ -46,7 +46,7 @@ export default function QuestionBody({
   // =========================
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Question text (includes matrix table if match_matrix) */}
       <div className="text-sm font-medium w-fit">
         <RichTextHTMLContent content={question.questionText} />
@@ -56,15 +56,23 @@ export default function QuestionBody({
       {isMCQ && (
         <RadioGroup value={(value as string) ?? ""} onValueChange={onChange}>
           {question.options.map((opt) => (
-            <div
+            <label
               key={opt.id}
-              className="flex items-center space-x-2 rounded-md  p-2 py-0.5 hover:bg-muted/50"
+              htmlFor={opt.id}
+              className="flex items-start space-x-2 rounded-md p-2 py-0.5 hover:bg-muted/50 cursor-pointer"
             >
-              <RadioGroupItem value={opt.id} id={opt.id} />
-              <Label htmlFor={opt.id}>
-                {opt.label}. <RichTextHTMLContent content={opt.text} />
-              </Label>
-            </div>
+              <RadioGroupItem
+                value={opt.id}
+                id={opt.id}
+                className="mt-1.5 shrink-0"
+              />
+              <div className="flex gap-1 text-sm pt-1">
+                <span className="shrink-0">{opt.label}.</span>
+                <div className="-mt-0.5">
+                  <RichTextHTMLContent content={opt.text} />
+                </div>
+              </div>
+            </label>
           ))}
         </RadioGroup>
       )}
@@ -74,21 +82,25 @@ export default function QuestionBody({
         <div className="space-y-2">
           {question.options.map((opt) => {
             const checked = Array.isArray(value) && value.includes(opt.id);
-
             return (
-              <div
+              <label
                 key={opt.id}
-                className="flex items-center space-x-2 rounded-md  p-2 hover:bg-muted/50"
+                htmlFor={opt.id}
+                className="flex items-start space-x-2 rounded-md p-2 hover:bg-muted/50 cursor-pointer"
               >
                 <Checkbox
                   id={opt.id}
                   checked={checked}
                   onCheckedChange={() => toggleMulti(opt.id)}
+                  className="mt-1.5 shrink-0"
                 />
-                <Label htmlFor={opt.id}>
-                  {opt.label}. <RichTextHTMLContent content={opt.text} />
-                </Label>
-              </div>
+                <div className="flex gap-1 text-sm pt-1">
+                  <span className="shrink-0">{opt.label}.</span>
+                  <div className="-mt-0.5">
+                    <RichTextHTMLContent content={opt.text} />
+                  </div>
+                </div>
+              </label>
             );
           })}
         </div>

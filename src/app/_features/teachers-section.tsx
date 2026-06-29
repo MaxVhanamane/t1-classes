@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
-import { Award, BookOpen, GraduationCap, Users2 } from "lucide-react";
+import { useState } from "react";
+import { Award, GraduationCap, UserRound, Users2 } from "lucide-react";
 
 const TEACHERS = [
   {
@@ -9,6 +12,7 @@ const TEACHERS = [
     experience: "10+ Years Experience",
     students: "15K+ Students",
     achievement: "JEE Advanced Mentor",
+    bio: "Specializes in building strong conceptual understanding and helping students solve advanced Physics problems with confidence.",
   },
   {
     name: "Sneha Kulkarni",
@@ -17,6 +21,7 @@ const TEACHERS = [
     experience: "8+ Years Experience",
     students: "12K+ Students",
     achievement: "NEET Specialist",
+    bio: "Focuses on simplifying Chemistry through structured explanations, revision strategies, and exam-oriented practice.",
   },
   {
     name: "Aditya Patil",
@@ -25,85 +30,93 @@ const TEACHERS = [
     experience: "9+ Years Experience",
     students: "18K+ Students",
     achievement: "Problem Solving Expert",
+    bio: "Passionate about teaching Mathematics with logical thinking, shortcuts, and step-by-step problem solving.",
   },
 ];
+
+function TeacherAvatar({ src, alt }: { src?: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+
+  if (!src || failed) {
+    return (
+      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-muted ring-1 ring-border">
+        <UserRound className="size-8 text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-muted ring-1 ring-border">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        onError={() => setFailed(true)}
+        className="object-cover"
+      />
+    </div>
+  );
+}
 
 export function TeachersSection() {
   return (
     <section>
-      {/* heading */}
       <div className="mx-auto max-w-3xl text-center">
-        <p className="text-sm font-semibold tracking-wide text-primary uppercase">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
           Expert Faculty
         </p>
 
-        <h2 className="mt-4 text-3xl font-black tracking-tight text-balance sm:text-4xl lg:text-5xl">
+        <h2 className="mt-4 text-balance text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
           Learn from experienced educators and mentors.
         </h2>
 
-        <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg">
+        <p className="mt-6 text-lg leading-8 text-muted-foreground">
           Dedicated teachers focused on conceptual clarity, structured learning,
           and exam-focused preparation.
         </p>
       </div>
 
-      {/* cards */}
-      <div className="mt-14 grid gap-5 lg:grid-cols-3">
+      <div className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {TEACHERS.map((teacher) => (
-          <div
+          <article
             key={teacher.name}
-            className="group overflow-hidden rounded-[2rem] border border-border/60 bg-background/70 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+            className="rounded-2xl border border-border/60 bg-background p-6 transition-colors hover:border-primary/20"
           >
-            {/* image */}
-            <div className="relative aspect-[4/4.5] overflow-hidden">
-              <Image
-                src={teacher.image}
-                alt={teacher.name}
-                width={900}
-                height={1200}
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+            <div className="flex items-start gap-5">
+              <TeacherAvatar src={teacher.image} alt={teacher.name} />
 
-              {/* overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-xl font-bold tracking-tight">
+                  {teacher.name}
+                </h3>
 
-              {/* subject */}
-              <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-xl">
-                {teacher.subject}
+                <p className="mt-1 text-sm font-medium text-primary">
+                  {teacher.subject}
+                </p>
               </div>
             </div>
 
-            {/* content */}
-            <div className="p-6">
-              <h3 className="text-2xl font-black tracking-tight">
-                {teacher.name}
-              </h3>
+            <p className="mt-5 text-sm leading-7 text-muted-foreground">
+              {teacher.bio}
+            </p>
 
-              {/* meta */}
-              <div className="mt-6 space-y-3">
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <GraduationCap className="size-4" />
-                  <span>{teacher.experience}</span>
-                </div>
-
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Users2 className="size-4" />
-                  <span>{teacher.students}</span>
-                </div>
-
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Award className="size-4" />
-                  <span>{teacher.achievement}</span>
-                </div>
+            <div className="mt-6 space-y-3 border-t border-border/60 pt-5">
+              <div className="flex items-center gap-3 text-sm">
+                <GraduationCap className="size-4 text-primary" />
+                <span>{teacher.experience}</span>
               </div>
 
-              {/* footer */}
-              <div className="mt-8 flex items-center gap-2 rounded-2xl border border-border/60 bg-muted/30 px-4 py-3 text-sm font-medium">
-                <BookOpen className="size-4" />
-                Concept-focused teaching approach
+              <div className="flex items-center gap-3 text-sm">
+                <Users2 className="size-4 text-primary" />
+                <span>{teacher.students}</span>
+              </div>
+
+              <div className="flex items-center gap-3 text-sm">
+                <Award className="size-4 text-primary" />
+                <span>{teacher.achievement}</span>
               </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
     </section>

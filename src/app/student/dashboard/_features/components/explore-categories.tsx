@@ -88,7 +88,7 @@ export async function ExploreCategories() {
   "use cache";
   cacheLife("max");
   return (
-    <div className="space-y-5 mb-20">
+    <div id="explore-category" className="space-y-5 mb-20">
       {/* Header */}
       <div>
         <h2 className="text-base font-semibold">Explore Categories</h2>

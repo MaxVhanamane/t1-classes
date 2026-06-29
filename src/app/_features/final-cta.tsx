@@ -12,7 +12,7 @@ export function FinalCTA() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-[2.5rem] border border-border/60 bg-background/70 px-6 py-16 shadow-2xl backdrop-blur-xl sm:px-10 lg:px-16 lg:py-24">
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/70 px-6 py-16  backdrop-blur-xl sm:px-10 lg:px-16 lg:py-24">
           <div className="mx-auto max-w-4xl text-center">
             {/* badge */}
             <div className="inline-flex items-center rounded-full border border-border/60 bg-background/80 px-4 py-1.5 text-sm font-medium shadow-sm backdrop-blur-xl">
@@ -37,7 +37,7 @@ export function FinalCTA() {
             <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
               <Button
                 size="lg"
-                className="h-12 rounded-2xl px-6 text-sm font-semibold sm:px-8"
+                className="h-12 rounded-xl px-6 text-sm font-semibold sm:px-8"
               >
                 Explore Courses
                 <ArrowRight className="ml-2 size-4" />
@@ -46,7 +46,7 @@ export function FinalCTA() {
               <Button
                 variant="outline"
                 size="lg"
-                className="h-12 rounded-2xl px-6 text-sm font-semibold sm:px-8"
+                className="h-12 rounded-xl px-6 text-sm font-semibold sm:px-8"
               >
                 <PlayCircle className="mr-2 size-4" />
                 Watch Demo

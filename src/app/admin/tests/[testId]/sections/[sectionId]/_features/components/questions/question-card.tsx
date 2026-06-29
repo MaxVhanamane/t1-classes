@@ -124,7 +124,7 @@ export function QuestionCard({
   isPreview = false,
 }: Props) {
   const correct = question.correctAnswer;
-
+  console.log("questionText", question.questionText);
   return (
     <Card className="p-4 gap-0">
       {/* Header */}

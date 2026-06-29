@@ -359,7 +359,7 @@ export function RichTextEditor({
             )}
 
             {/* Block Equation */}
-            {showMath && (
+            {showMath && !isInTable && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -385,7 +385,7 @@ export function RichTextEditor({
             )}
 
             {/* Image */}
-            {showImage && (
+            {showImage && !isInTable && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button

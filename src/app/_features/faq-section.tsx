@@ -61,7 +61,7 @@ export function FAQSection() {
 
       {/* accordion */}
       <div className="mx-auto mt-14 max-w-4xl">
-        <div className="overflow-hidden rounded-[2rem] border border-border/60 bg-background/70 shadow-sm backdrop-blur-xl">
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/70 shadow-sm backdrop-blur-xl">
           <Accordion
             type="single"
             collapsible

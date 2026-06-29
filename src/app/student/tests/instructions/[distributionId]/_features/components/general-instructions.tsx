@@ -12,7 +12,9 @@ function LegendBox({
     | "answered_review";
 }) {
   return (
-    <div className={`h-5.5 w-5.5 rounded-sm border ${getGridClasses(state)}`} />
+    <div
+      className={`h-5.5 w-5.5 rounded-sm border shrink-0 ${getGridClasses(state)}`}
+    />
   );
 }
 
@@ -58,7 +60,6 @@ const ACTION_STYLES = {
     border-red-600
     bg-red-500/90
     text-white
-
     dark:bg-red-500/20
     dark:text-red-300
     dark:border-red-500/40
