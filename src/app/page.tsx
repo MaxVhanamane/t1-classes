@@ -5,7 +5,7 @@ import { HeroSection } from "./_features/hero-section";
 import { TeachersSection } from "./_features/teachers-section";
 import { TestimonialsSection } from "./_features/testimonials";
 import { TestPlatformShowcase } from "./_features/test-platform-showcase";
-import { TrustStrip } from "./_features/trust-strip";
+// import { TrustStrip } from "./_features/trust-strip";
 import { WhyT1Section } from "./_features/why-t1";
 import { ExploreCategories } from "./student/dashboard/_features/components/explore-categories";
 import { LandingNavbar } from "./student/dashboard/_features/common/LandingNavbar";
@@ -18,9 +18,9 @@ export default function HomePage() {
       <HeroSection />
 
       {/* MAIN CONTENT */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="space-y-24 py-24">
-          <TrustStrip />
+      <div className="mx-auto max-w-7xl px-2.5 sm:px-6 lg:px-8 -mt-10">
+        <div className="space-y-20 py-24">
+          {/* <TrustStrip /> */}
 
           <ExploreCategories />
 

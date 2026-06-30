@@ -108,7 +108,7 @@ export default function QuestionBody({
 
       {/* NUMERICAL INPUT */}
       {mode === "numerical_input" && (
-        <div className="max-w-xs">
+        <div className="max-w-xs space-y-1">
           <Label className="mb-1 block text-xs text-muted-foreground">
             Enter your answer
           </Label>
@@ -116,6 +116,7 @@ export default function QuestionBody({
             type="number"
             value={(value as string) ?? ""}
             onChange={(e) => onChange(e.target.value)}
+            className="ml-0.5"
           />
         </div>
       )}

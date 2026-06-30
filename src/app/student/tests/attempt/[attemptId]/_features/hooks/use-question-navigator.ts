@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { StateItem } from "../types/workspace.types";
 import { Section } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
+import { toast } from "sonner";
 
 export function useQuestionNavigator({
     sections,
@@ -45,9 +46,11 @@ export function useQuestionNavigator({
     // NAVIGATION
     // =========================================
     function goNext() {
-        if (index < flat.length - 1) {
-            onNavigate(flat[index + 1].id);
+        if (index >= flat.length - 1) {
+            toast.info("You have reached the last question.");
+            return;
         }
+        onNavigate(flat[index + 1].id);
     }
 
     function goBack() {

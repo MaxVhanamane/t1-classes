@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 
 import { Button } from "@/src/components/ui/button";
+import { MobileLandscapePreview } from "./mobile-landscape-preview";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -19,7 +19,7 @@ const fadeUp = {
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden px-2 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden px-2.5 sm:px-6 lg:px-8">
       {/* Ambient background glows */}
       <div className="absolute inset-0 -z-10" aria-hidden>
         <div className="absolute left-1/3 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-amber-500/10 blur-[120px]" />
@@ -153,7 +153,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 48 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.5, ease }}
-          className="relative mx-auto mt-12 max-w-6xl px-3 sm:mt-16 sm:px-6 lg:mt-20"
+          className="relative mx-auto mt-12 max-w-6xl px-0 sm:mt-16 sm:px-6 lg:mt-20"
         >
           {/* Ambient Glow */}
           <div
@@ -161,9 +161,9 @@ export function HeroSection() {
             className="absolute inset-0 -z-10 scale-110 bg-[radial-gradient(circle_at_top,rgba(251,191,36,.18),transparent_55%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,.10),transparent_45%)] blur-3xl"
           />
 
-          {/* Outer Frame */}
+          {/* Desktop Premium Frame */}
           <div
-            className="relative rounded-xl p-px"
+            className="hidden rounded-xl p-px sm:block"
             style={{
               background:
                 "linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08) 30%, rgba(255,255,255,.04) 65%, rgba(255,255,255,.14))",
@@ -171,22 +171,19 @@ export function HeroSection() {
                 "0 32px 80px rgba(15,23,42,.10), 0 12px 32px rgba(15,23,42,.08)",
             }}
           >
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-2 backdrop-blur-2xl sm:p-3">
-              {/* Inner Border */}
+            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-3 backdrop-blur-2xl">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10"
               />
 
-              {/* Soft Top Light */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-linear-to-b from-white/8 to-transparent"
+                className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/8 to-transparent"
               />
 
-              {/* Screenshot */}
               <div className="relative overflow-hidden rounded-xl border border-black/5 bg-background shadow-[0_20px_50px_rgba(15,23,42,.12)] dark:border-white/10">
-                <Image
+                <MobileLandscapePreview
                   src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui.webp"
                   alt="T1 Classes test interface"
                   width={1536}
@@ -194,16 +191,26 @@ export function HeroSection() {
                   priority
                   className="block h-auto w-full"
                 />
-
-                {/* Subtle Glass Highlight */}
               </div>
             </div>
           </div>
 
-          {/* Ground Shadow */}
+          {/* Mobile */}
+          <div className="sm:hidden">
+            <MobileLandscapePreview
+              src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui.webp"
+              alt="T1 Classes test interface"
+              width={1536}
+              height={960}
+              priority
+              className="block h-auto w-full rounded-md border border-border/50 shadow-2xl"
+            />
+          </div>
+
+          {/* Ground Shadow (desktop only) */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-12 -bottom-6 -z-10 h-16 rounded-full bg-black/10 blur-3xl sm:inset-x-24"
+            className="pointer-events-none absolute inset-x-24 -bottom-6 -z-10 hidden h-16 rounded-full bg-black/10 blur-3xl sm:block"
           />
         </motion.div>
       </div>

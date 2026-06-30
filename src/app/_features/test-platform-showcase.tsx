@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { BarChart3, Clock3, FileCheck2, Layers3 } from "lucide-react";
+import { MobileLandscapePreview } from "./mobile-landscape-preview";
 
 const FEATURES = [
   {
@@ -57,9 +58,9 @@ export function TestPlatformShowcase() {
             className="absolute inset-0 -z-10 scale-105 rounded-full bg-primary/10 blur-3xl"
           />
 
-          {/* Glass Frame */}
+          {/* Desktop Premium Frame */}
           <div
-            className="rounded-xl p-px"
+            className="hidden rounded-xl p-px sm:block"
             style={{
               background:
                 "linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08) 35%, rgba(255,255,255,.03) 70%, rgba(255,255,255,.14))",
@@ -67,7 +68,7 @@ export function TestPlatformShowcase() {
                 "0 40px 100px rgba(15,23,42,.12), 0 16px 40px rgba(15,23,42,.08)",
             }}
           >
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-2 backdrop-blur-xl sm:p-3 lg:p-4">
+            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-3 backdrop-blur-xl lg:p-4">
               {/* Inner Border */}
               <div
                 aria-hidden
@@ -77,11 +78,11 @@ export function TestPlatformShowcase() {
               {/* Soft Reflection */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-white/8 to-transparent"
+                className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/8 to-transparent"
               />
 
               <div className="overflow-hidden rounded-xl border border-border/50 bg-background shadow-[0_24px_70px_rgba(15,23,42,.12)]">
-                <Image
+                <MobileLandscapePreview
                   src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-summary.webp"
                   alt="T1 Classes Test Platform"
                   width={1400}
@@ -93,10 +94,22 @@ export function TestPlatformShowcase() {
             </div>
           </div>
 
+          {/* Mobile */}
+          <div className="sm:hidden">
+            <MobileLandscapePreview
+              src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-summary.webp"
+              alt="T1 Classes Test Platform"
+              width={1400}
+              height={1000}
+              priority
+              className="block w-full rounded-md border border-border/50 shadow-2xl"
+            />
+          </div>
+
           {/* Ground Shadow */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-12 -bottom-8 -z-10 h-20 rounded-full bg-black/10 blur-3xl sm:inset-x-24"
+            className="pointer-events-none absolute inset-x-24 -bottom-8 -z-10 hidden h-20 rounded-full bg-black/10 blur-3xl sm:block"
           />
         </div>
 
