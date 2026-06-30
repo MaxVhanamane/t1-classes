@@ -105,10 +105,23 @@ export type QuestionReview = {
     id: string;
     questionText: JSONContent;
     explanation: JSONContent | null;
+
     timeSpentSeconds: number;
-    options: OptionReview[];
     marksAwarded: number;
     isCorrect: boolean;
+
+    participantCount: number;
+    attemptedCount: number;
+    correctCount: number;
+
+    avgMarks: number;
+    avgTimeSeconds: number;
+
+    topperMarks: number;
+    topperTimeSeconds: number;
+
+    options: OptionReview[];
+    isTopper: boolean
     numericalMeta?: NumericalMeta | null;
 };
 

@@ -114,6 +114,14 @@ export function DetailedResultClient() {
               fullMarks={activeSection?.fullMarks}
               negativeMarks={activeSection?.negativeMarks}
               partialMarks={activeSection?.partialMarks}
+              rankingAvailableAt={
+                summaryQuery.data?.kind === "ok"
+                  ? summaryQuery.data.rankingAvailableAt
+                  : null
+              }
+              rank={
+                summaryQuery.data?.kind === "ok" ? summaryQuery.data.rank : null
+              }
             />
           )}
         </div>

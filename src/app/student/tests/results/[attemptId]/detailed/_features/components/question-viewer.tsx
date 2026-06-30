@@ -23,6 +23,8 @@ type Props = {
   fullMarks?: number;
   negativeMarks?: number;
   partialMarks?: PartialMarkingByCorrectCount | null | undefined;
+  rank: number | null;
+  rankingAvailableAt: string | null;
 };
 
 export function QuestionViewer({
@@ -34,6 +36,8 @@ export function QuestionViewer({
   fullMarks,
   negativeMarks,
   partialMarks,
+  rank,
+  rankingAvailableAt,
 }: Props) {
   if (loading) {
     return (
@@ -91,6 +95,8 @@ export function QuestionViewer({
             key={q.id}
             index={(currentPage - 1) * LIMIT + i + 1}
             question={q}
+            rank={rank}
+            rankingAvailableAt={rankingAvailableAt}
           />
         ))}
 
