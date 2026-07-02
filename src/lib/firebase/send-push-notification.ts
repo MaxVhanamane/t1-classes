@@ -68,7 +68,7 @@ async function sendMessages(
             tag: tag ?? "",
 
             icon: "/icons/icon-192x192.png",
-            badge: "/icons/icon-192x192.png",
+            badge: "/icons/icon-badge-96x96.png",
 
             vibrate: JSON.stringify([200, 100, 200]),
 
