@@ -82,7 +82,7 @@ export function NotificationPopover() {
           Notifications
         </div>
 
-        <ScrollArea className="max-h-100">
+        <ScrollArea className="h-[60dvh]">
           <div>
             {isLoading && (
               <div className="my-6">

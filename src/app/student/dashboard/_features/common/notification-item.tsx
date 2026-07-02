@@ -26,7 +26,7 @@ type Props = {
   };
 };
 
-function getIcon(type: string) {
+export function getNotificationIcon(type: string) {
   switch (type) {
     case "announcement":
       return <Megaphone className="h-4 w-4 text-blue-500" />;
@@ -68,7 +68,7 @@ export function NotificationItem({ notification }: Props) {
         className="w-full text-left flex gap-3 p-3 hover:bg-muted/50 transition"
       >
         <div className="mt-1 text-muted-foreground">
-          {getIcon(notification.type)}
+          {getNotificationIcon(notification.type)}
         </div>
 
         <div className="flex-1 space-y-1">
@@ -90,7 +90,10 @@ export function NotificationItem({ notification }: Props) {
 
       {/* FULL VIEW DIALOG */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          className="max-w-md"
+        >
           <DialogHeader>
             <DialogTitle>{notification.title ?? "Notification"}</DialogTitle>
           </DialogHeader>
