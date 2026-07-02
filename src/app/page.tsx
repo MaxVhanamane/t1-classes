@@ -13,7 +13,7 @@ import { LandingNavbar } from "./student/dashboard/_features/common/LandingNavba
 export default function HomePage() {
   return (
     <main>
-      <LandingNavbar />
+      <LandingNavbar action={{ href: "/login", label: "Login" }} />
       {/* HERO */}
       <HeroSection />
 

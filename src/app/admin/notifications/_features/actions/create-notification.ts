@@ -1,15 +1,15 @@
 "use server";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { notificationSchema } from "../zod/notification.schema";
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { sendPushNotification } from "@/src/lib/firebase/send-push-notification";
+import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+
+import { notificationSchema } from "../zod/notification.schema";
 
 export async function createNotification(data: unknown) {
     const parsed = notificationSchema.parse(data);
 
     const staff = await requireStaffServerOnly();
-
-
 
     const supabase = await createServerSupabaseClient();
 
@@ -21,14 +21,42 @@ export async function createNotification(data: unknown) {
         created_by: staff.userId,
     };
 
-    const { error } = await supabase
+    const {
+        data: notification,
+        error,
+    } = await supabase
         .from("notifications")
-        .insert(payload);
+        .insert(payload)
+        .select("id")
+        .single();
 
     if (error) {
         console.error(error);
         throw new Error("FAILED_TO_CREATE_NOTIFICATION");
     }
 
-    return { success: true };
+    await sendPushNotification({
+        title: payload.title ?? "Notification",
+        body: payload.message,
+        type: payload.type,
+
+        audience: payload.batch_id
+            ? {
+                type: "batch",
+                batchId: payload.batch_id,
+            }
+            : {
+                type: "all",
+            },
+
+        tag: notification.id,
+
+        data: {
+            notificationId: notification.id,
+        },
+    });
+
+    return {
+        success: true,
+    };
 }

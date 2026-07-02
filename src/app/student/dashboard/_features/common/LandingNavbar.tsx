@@ -3,7 +3,14 @@ import { Link } from "@/src/components/ui/link";
 import { ThemeToggle } from "@/src/components/ui/Theme-toggle";
 import { AnimatedLogo } from "./animated-logo";
 
-export function LandingNavbar() {
+type LandingNavbarProps = {
+  action: {
+    href: string;
+    label: string;
+  };
+};
+
+export function LandingNavbar({ action }: LandingNavbarProps) {
   return (
     <header className="sticky top-0 z-50 border-b bg-background/60 backdrop-blur-md">
       <div className="flex h-14 items-center justify-between px-4 sm:px-7">
@@ -22,9 +29,11 @@ export function LandingNavbar() {
         <div className="flex items-center gap-4">
           <ThemeToggle />
 
-          <Button asChild>
-            <Link href="/students/login">Login</Link>
-          </Button>
+          {action && (
+            <Button asChild>
+              <Link href={action.href}>{action.label}</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>

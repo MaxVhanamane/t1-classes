@@ -298,7 +298,7 @@ export function QuestionCard({
             {/* Top Performer */}
             <div className="rounded-lg border bg-muted/20 px-3 py-2">
               <div className="mb-2 flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
-                <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                <Trophy className="h-3.5 w-3.5" />
                 <span>Topper&apos;s Performance</span>
 
                 {question.isTopper && (
