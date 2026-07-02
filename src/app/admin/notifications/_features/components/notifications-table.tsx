@@ -26,11 +26,9 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
-  AlertDialogAction,
 } from "@/src/components/ui/alert-dialog";
 
 import { Card, CardContent } from "@/src/components/ui/card";
-import { Skeleton } from "@/src/components/ui/skeleton";
 
 import {
   Tooltip,
@@ -39,7 +37,21 @@ import {
   TooltipProvider,
 } from "@/src/components/ui/tooltip";
 
-import { BellOff } from "lucide-react";
+import {
+  AlertCircle,
+  Bell,
+  BellOff,
+  BookOpen,
+  FileText,
+  Loader2,
+  Megaphone,
+  Settings,
+  Users,
+} from "lucide-react";
+import { Badge } from "@/src/components/ui/badge";
+import { format } from "date-fns";
+import { TableSkeleton } from "@/src/components/ui/skeleton/table/table-skeleton";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 type Props = {
   notifications: NotificationRow[];
@@ -53,14 +65,7 @@ export function NotificationsTable({ notifications, loading }: Props) {
   const queryClient = useQueryClient();
 
   if (loading) {
-    return (
-      <div className="border rounded-lg p-4 space-y-3">
-        <Skeleton className="h-6 w-48" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
+    return <TableSkeleton rows={4} columns={5} showTableHeader />;
   }
 
   if (!notifications.length) {
@@ -86,13 +91,18 @@ export function NotificationsTable({ notifications, loading }: Props) {
     try {
       setIsDeleting(true);
 
-      await deleteNotification(deleteId);
+      const { error } = await callServerAction(deleteNotification(deleteId));
 
-      toast.success("Notification deleted");
+      if (error) {
+        toast.error(error);
+        return;
+      }
 
       await queryClient.invalidateQueries({
-        queryKey: ["admin-notifications"],
+        queryKey: ["admin", "notifications"],
       });
+
+      toast.success("Notification deleted");
 
       setDeleteId(null);
     } catch {
@@ -105,85 +115,167 @@ export function NotificationsTable({ notifications, loading }: Props) {
   return (
     <>
       <TooltipProvider delayDuration={200}>
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-xl border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-90">Notification</TableHead>
-                <TableHead className="w-30">Type</TableHead>
-                <TableHead className="w-40">Batch</TableHead>
-                <TableHead className="w-50">Created</TableHead>
-                <TableHead className="w-35 text-right">Actions</TableHead>
+                <TableHead>Notification</TableHead>
+
+                <TableHead>Type</TableHead>
+
+                <TableHead>Audience</TableHead>
+
+                <TableHead>Created</TableHead>
+
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
-              {notifications.map((n) => (
-                <TableRow key={n.id}>
-                  {/* Notification cell */}
-                  <TableCell className="w-90">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex flex-col cursor-pointer max-w-90">
-                          <span className="truncate font-medium">
-                            {n.title ?? "No title"}
-                          </span>
+              {notifications.map((n) => {
+                const typeConfig = {
+                  announcement: {
+                    icon: <Megaphone className="size-4 text-blue-500" />,
+                    label: "Announcement",
+                  },
 
-                          <span className="text-xs text-muted-foreground truncate">
-                            {n.message}
-                          </span>
-                        </div>
-                      </TooltipTrigger>
+                  reminder: {
+                    icon: <Bell className="size-4 text-amber-500" />,
+                    label: "Reminder",
+                  },
 
-                      <TooltipContent align="start" className="max-w-md">
-                        <div className="space-y-1">
-                          <div className="font-medium">
-                            {n.title ?? "No title"}
+                  test: {
+                    icon: <FileText className="size-4 text-violet-500" />,
+                    label: "Test",
+                  },
+
+                  system: {
+                    icon: <Settings className="size-4 text-slate-500" />,
+                    label: "System",
+                  },
+
+                  batch: {
+                    icon: <Users className="size-4 text-green-500" />,
+                    label: "Batch",
+                  },
+
+                  course: {
+                    icon: <BookOpen className="size-4 text-emerald-500" />,
+                    label: "Course",
+                  },
+                }[n.type] ?? {
+                  icon: <AlertCircle className="size-4 text-red-500" />,
+                  label: n.type,
+                };
+
+                return (
+                  <TableRow
+                    key={n.id}
+                    className="transition-colors hover:bg-muted/40"
+                  >
+                    {/* Notification */}
+                    <TableCell className="py-4">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="max-w-[320px] cursor-pointer">
+                            <p className="truncate font-medium">
+                              {n.title ?? "Untitled"}
+                            </p>
+
+                            <p className="mt-1 truncate text-xs text-muted-foreground">
+                              {n.message}
+                            </p>
                           </div>
+                        </TooltipTrigger>
 
-                          <div className="text-sm text-muted-foreground">
-                            {n.message}
+                        <TooltipContent
+                          align="start"
+                          side="top"
+                          className="max-w-md rounded-xl border bg-popover p-4 shadow-xl"
+                        >
+                          <div className="space-y-2">
+                            <p className="font-semibold text-popover-foreground">
+                              {n.title ?? "Untitled notification"}
+                            </p>
+
+                            <p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                              {n.message}
+                            </p>
                           </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TableCell>
+
+                    {/* Type */}
+                    <TableCell className="py-4">
+                      <div className="flex items-center gap-2">
+                        {typeConfig.icon}
+
+                        <span className="text-sm font-medium">
+                          {typeConfig.label}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* Audience */}
+                    <TableCell className="py-4">
+                      {n.batch_id ? (
+                        <Badge variant="secondary" className="font-medium">
+                          {n.batches?.title}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          className="border-blue-500/20 bg-blue-500/10 text-blue-700 hover:bg-blue-500/10 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300"
+                          variant="outline"
+                        >
+                          All batches
+                        </Badge>
+                      )}
+                    </TableCell>
+
+                    {/* Created */}
+                    <TableCell className="py-4">
+                      <div>
+                        <div className="text-sm font-medium">
+                          {format(new Date(n.created_at), "dd MMM yyyy")}
                         </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
 
-                  {/* Type */}
-                  <TableCell className="capitalize">{n.type}</TableCell>
+                        <div className="text-xs text-muted-foreground">
+                          {format(new Date(n.created_at), "hh:mm a")}
+                        </div>
+                      </div>
+                    </TableCell>
 
-                  {/* Batch */}
-                  <TableCell>{n.batch_id ? n.batches?.title : "All"}</TableCell>
+                    {/* Actions */}
+                    <TableCell className="py-4">
+                      <div className="flex justify-start gap-1.5">
+                        <NotificationDialog notification={n} />
 
-                  {/* Created */}
-                  <TableCell>
-                    {new Date(n.created_at).toLocaleString()}
-                  </TableCell>
-
-                  {/* Actions */}
-                  <TableCell className="text-right space-x-2">
-                    <NotificationDialog notification={n}></NotificationDialog>
-
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setDeleteId(n.id)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="h-8 px-3 text-xs"
+                          onClick={() => setDeleteId(n.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
       </TooltipProvider>
-
       {/* Delete confirmation dialog */}
-
       <AlertDialog
         open={deleteId !== null}
-        onOpenChange={() => setDeleteId(null)}
+        onOpenChange={() => {
+          if (!isDeleting) {
+            setDeleteId(null);
+          }
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -196,11 +288,16 @@ export function NotificationsTable({ notifications, loading }: Props) {
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
 
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isDeleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -46,6 +46,8 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useBatchOptions } from "@/src/hooks/use-batch-options";
+import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
+import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 type NotificationRow = {
   id: string;
@@ -68,15 +70,10 @@ export function NotificationDialog({ notification }: Props) {
 
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),
-
     defaultValues: {
       title: notification?.title ?? null,
       message: notification?.message ?? "",
       type: notification?.type ?? "announcement",
-
-      // "" = no selection yet
-      // "all" = all students
-      // uuid = specific batch
       batch_id: notification?.batch_id ?? "",
     },
   });
@@ -105,51 +102,102 @@ export function NotificationDialog({ notification }: Props) {
     }
   }, [open, notification, form]);
 
-  async function onSubmit(values: NotificationFormValues) {
-    try {
-      const payload = {
-        ...values,
-
-        // convert UI state → DB state
-        batch_id: values.batch_id === "all" ? null : values.batch_id || null,
-      };
-
-      if (notification) {
-        await updateNotification(notification.id, payload);
-      } else {
-        await createNotification(payload);
-      }
-
-      await queryClient.invalidateQueries({
-        queryKey: ["admin-notifications"],
-      });
-
-      toast.success(
-        notification ? "Notification updated" : "Notification created",
+  const onSubmit = form.handleSubmit(
+    /* ------------------------------------------ */
+    /* VALID SUBMIT                              */
+    /* ------------------------------------------ */
+    async (values: NotificationFormValues) => {
+      const toastId = toast.loading(
+        notification ? "Updating notification..." : "Creating notification...",
       );
 
-      setOpen(false);
+      try {
+        const payload = {
+          ...values,
 
-      form.reset();
-    } catch {
-      toast.error("Failed to save notification");
-    }
-  }
+          // convert UI state → DB state
+          batch_id: values.batch_id === "all" ? null : values.batch_id || null,
+        };
+
+        /* ---------- Create / Update ---------- */
+        if (notification) {
+          const { error } = await callServerAction(
+            updateNotification(notification.id, payload),
+          );
+
+          if (error) {
+            toast.error(error, {
+              id: toastId,
+            });
+
+            return;
+          }
+        } else {
+          const { error } = await callServerAction(createNotification(payload));
+
+          if (error) {
+            toast.error(error, {
+              id: toastId,
+            });
+
+            return;
+          }
+        }
+
+        /* ---------- Refresh React Query ---------- */
+        await queryClient.invalidateQueries({
+          queryKey: ["admin", "notifications"],
+        });
+
+        /* ---------- Success ---------- */
+        toast.success(
+          notification ? "Notification updated" : "Notification created",
+          {
+            id: toastId,
+          },
+        );
+
+        setOpen(false);
+
+        form.reset();
+      } catch {
+        toast.error("Failed to save notification", {
+          id: toastId,
+        });
+      }
+    },
+
+    /* ------------------------------------------ */
+    /* INVALID SUBMIT (ZOD ERRORS)               */
+    /* ------------------------------------------ */
+    (errors) => {
+      const message = extractFirstErrorMessage(errors);
+
+      toast.dismiss();
+
+      toast.error(message ?? "Please fix the form errors");
+    },
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>{notification ? "Edit" : "Create Notification"}</Button>
+        <Button size="sm" className="h-8 px-3 text-xs">
+          {notification ? "Edit" : "Create Notification"}
+        </Button>
       </DialogTrigger>
 
-      <DialogContent className="space-y-6">
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        className="space-y-6"
+      >
         <DialogHeader>
           <DialogTitle>
             {notification ? "Edit Notification" : "Create Notification"}
           </DialogTitle>
         </DialogHeader>
 
-        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+        <form className="space-y-5" onSubmit={onSubmit}>
           {/* Title */}
 
           <div className="space-y-2">
