@@ -13,7 +13,6 @@ import { CATEGORY_LABELS } from "@/src/app/admin/batches/_features/zod-schema/sc
 import { cn } from "@/src/lib/utils";
 import DottedBackground from "@/src/components/dotted-background";
 import { Link } from "@/src/components/ui/link";
-import { cacheLife } from "next/cache";
 
 const LIGHT_GRADIENTS = {
   cyan: "from-cyan-500/15 to-cyan-500/5",
@@ -85,8 +84,6 @@ const CATEGORY_CONFIG = {
 } as const;
 
 export async function ExploreCategories() {
-  "use cache";
-  cacheLife("max");
   return (
     <div id="explore-category" className="space-y-5 mb-20">
       {/* Header */}

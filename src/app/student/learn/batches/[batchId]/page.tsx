@@ -4,6 +4,7 @@ import { BatchInfoPopover } from "./_features/components/batch-info-popover";
 import { getBatchDetails } from "@/src/lib/services/batches/get-batch-details";
 import { BatchDetailsResponse } from "@/src/types/batches.types";
 import BatchTabsClient from "./_features/components/batch-tabs-client";
+import { getBatchLifecycle } from "@/src/lib/helper-functions/get-batch-lifecycle";
 
 type Props = {
   params: Promise<{ batchId: string }>;
@@ -23,6 +24,7 @@ export default async function BatchPage({ params, searchParams }: Props) {
   }
 
   const { batch, courses } = data;
+  const lifecycle = getBatchLifecycle(batch);
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,7 +42,7 @@ export default async function BatchPage({ params, searchParams }: Props) {
             />
           </div>
 
-          <BatchMetaBadges batch={{ ...batch }} />
+          <BatchMetaBadges batch={{ ...batch }} lifecycle={lifecycle} />
         </header>
 
         <BatchTabsClient

@@ -6,6 +6,7 @@ import type { BatchEnrollment } from "../../../../../../../lib/services/enrollme
 import { formatDateShort } from "@/src/lib/date";
 import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";
 import { GrafanaBackground } from "@/src/components/ui/grafana-background";
+import { getBatchLifecycle } from "@/src/lib/helper-functions/get-batch-lifecycle";
 
 interface Props {
   enrollment: BatchEnrollment;
@@ -13,6 +14,7 @@ interface Props {
 
 export function BatchEnrollmentCard({ enrollment }: Props) {
   const { batch, accessEndsAt } = enrollment;
+  const lifecycle = getBatchLifecycle(batch);
 
   return (
     <Card className="relative overflow-hidden flex h-72 flex-col py-5 rounded-xl transition hover:shadow-lg bg-background ">
@@ -57,7 +59,10 @@ export function BatchEnrollmentCard({ enrollment }: Props) {
         )}
 
         {/* Mode + Status */}
-        <BatchMetaBadges batch={{ ...batch, is_active: true }} />
+        <BatchMetaBadges
+          batch={{ ...batch, is_active: true }}
+          lifecycle={lifecycle}
+        />
 
         <div className="flex justify-between">
           {batch.start_date && (

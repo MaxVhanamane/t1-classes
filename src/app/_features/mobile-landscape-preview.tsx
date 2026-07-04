@@ -8,62 +8,100 @@ import { Dialog, DialogContent, DialogTitle } from "@/src/components/ui/dialog";
 
 interface MobileLandscapePreviewProps {
   src: string;
+  mobileSrc?: string; // optional 4:3 image for mobile — only this gets downloaded on small screens
   alt: string;
   width: number;
   height: number;
+  mobileWidth?: number;
+  mobileHeight?: number;
   priority?: boolean;
   className?: string;
 }
 
-export function MobileLandscapePreview({
+function ResponsiveImage({
   src,
+  mobileSrc,
   alt,
   width,
   height,
+  mobileWidth,
+  mobileHeight,
+  priority,
+  className,
+}: MobileLandscapePreviewProps) {
+  if (!mobileSrc) {
+    return (
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        priority={priority}
+        className={className}
+      />
+    );
+  }
+
+  // <picture> ensures only one image is downloaded per breakpoint
+  return (
+    <picture>
+      {/* Desktop — 16:9 */}
+      <source media="(min-width: 640px)" srcSet={src} />
+      {/* Mobile — 4:3, this is also the <img> fallback */}
+      <img
+        src={mobileSrc}
+        alt={alt}
+        width={mobileWidth ?? width}
+        height={mobileHeight ?? height}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        className={className}
+        style={{ maxWidth: "100%" }}
+      />
+    </picture>
+  );
+}
+
+export function MobileLandscapePreview({
+  src,
+  mobileSrc,
+  alt,
+  width,
+  height,
+  mobileWidth,
+  mobileHeight,
   priority,
   className,
 }: MobileLandscapePreviewProps) {
   const [open, setOpen] = useState(false);
   const [portrait, setPortrait] = useState(true);
-
-  // Tracks whether THIS component added a history entry.
   const pushedHistory = useRef(false);
 
   useEffect(() => {
     const update = () => {
       setPortrait(window.innerHeight > window.innerWidth);
     };
-
     update();
-
     window.addEventListener("resize", update);
     window.addEventListener("orientationchange", update);
-
     return () => {
       window.removeEventListener("resize", update);
       window.removeEventListener("orientationchange", update);
     };
   }, []);
 
-  // Handle Android/browser back button.
   useEffect(() => {
     if (!open) return;
-
     const onPopState = () => {
       pushedHistory.current = false;
       setOpen(false);
     };
-
     window.addEventListener("popstate", onPopState);
-
-    return () => {
-      window.removeEventListener("popstate", onPopState);
-    };
+    return () => window.removeEventListener("popstate", onPopState);
   }, [open]);
 
   const openPreview = () => {
     if (window.innerWidth >= 640) return;
-
     window.history.pushState({ imagePreview: true }, "");
     pushedHistory.current = true;
     setOpen(true);
@@ -71,12 +109,16 @@ export function MobileLandscapePreview({
 
   const closePreview = () => {
     setOpen(false);
-
     if (pushedHistory.current) {
       pushedHistory.current = false;
       window.history.back();
     }
   };
+
+  // The src shown in the fullscreen dialog on mobile is always the mobileSrc if available
+  const dialogSrc = mobileSrc ?? src;
+  const dialogWidth = mobileWidth ?? width;
+  const dialogHeight = mobileHeight ?? height;
 
   return (
     <>
@@ -85,15 +127,17 @@ export function MobileLandscapePreview({
         onClick={openPreview}
         className="group relative block w-full"
       >
-        <Image
+        <ResponsiveImage
           src={src}
+          mobileSrc={mobileSrc}
           alt={alt}
           width={width}
           height={height}
+          mobileWidth={mobileWidth}
+          mobileHeight={mobileHeight}
           priority={priority}
           className={className}
         />
-
         <div className="absolute bottom-3 right-3 flex items-center gap-2 rounded-full bg-black/70 p-2 text-xs font-medium text-white backdrop-blur sm:hidden">
           <Expand className="size-3.5" />
         </div>
@@ -102,11 +146,8 @@ export function MobileLandscapePreview({
       <Dialog
         open={open}
         onOpenChange={(next) => {
-          if (next) {
-            setOpen(true);
-          } else {
-            closePreview();
-          }
+          if (next) setOpen(true);
+          else closePreview();
         }}
       >
         <DialogContent className="h-dvh w-screen max-w-none border-0 bg-black p-0 sm:hidden">
@@ -131,10 +172,10 @@ export function MobileLandscapePreview({
                 }}
               >
                 <Image
-                  src={src}
+                  src={dialogSrc}
                   alt={alt}
-                  width={width}
-                  height={height}
+                  width={dialogWidth}
+                  height={dialogHeight}
                   priority={priority}
                   draggable={false}
                   className="h-full w-full select-none object-contain"
@@ -144,10 +185,10 @@ export function MobileLandscapePreview({
           ) : (
             <div className="flex h-full w-full items-center justify-center">
               <Image
-                src={src}
+                src={dialogSrc}
                 alt={alt}
-                width={width}
-                height={height}
+                width={dialogWidth}
+                height={dialogHeight}
                 priority={priority}
                 draggable={false}
                 className="max-h-full w-full select-none object-contain"

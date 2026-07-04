@@ -112,11 +112,11 @@ export function QuestionPaperCard({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">
+            {/* <Badge variant="secondary">
               {questionPaper.paperCategory === "previous_year"
                 ? "Previous Year"
                 : "Practice"}
-            </Badge>
+            </Badge> */}
 
             {questionPaper.targetExam && (
               <Badge variant="outline">

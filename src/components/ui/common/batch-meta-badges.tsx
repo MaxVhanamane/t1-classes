@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Badge } from "@/src/components/ui/badge";
 import { cn } from "@/src/lib/utils";
 import {
@@ -11,10 +11,7 @@ import {
 } from "@/src/components/ui/tooltip";
 
 import { BatchMode } from "@/src/app/admin/batches/_features/types/types";
-import {
-  BatchLifecycle,
-  getBatchLifecycle,
-} from "@/src/lib/helper-functions/get-batch-lifecycle";
+import { BatchLifecycle } from "@/src/lib/helper-functions/get-batch-lifecycle";
 
 /* ------------------------------------------------ */
 /* Types */
@@ -28,18 +25,17 @@ interface BatchMetaBadgesProps {
     is_active: boolean;
   };
   size?: "sm" | "md";
+  lifecycle: BatchLifecycle | null;
 }
 
 /* ------------------------------------------------ */
 /* Component */
 /* ------------------------------------------------ */
-export function BatchMetaBadges({ batch, size = "sm" }: BatchMetaBadgesProps) {
-  const [lifecycle, setLifecycle] = useState<BatchLifecycle | null>(null);
-
-  useEffect(() => {
-    setLifecycle(getBatchLifecycle(batch));
-  }, [batch]);
-
+export function BatchMetaBadges({
+  batch,
+  size = "sm",
+  lifecycle,
+}: BatchMetaBadgesProps) {
   const sizeClasses =
     size === "md" ? "text-sm px-2.5 py-0.5" : "text-xs px-2 py-0.5";
 

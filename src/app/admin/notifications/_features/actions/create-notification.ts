@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 
 import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
 import { sendPushNotification } from "@/src/lib/firebase/send-push-notification";
@@ -31,7 +32,7 @@ export async function createNotification(
 
         const supabase = await createServerSupabaseClient();
 
-        /* ---------- create ---------- */
+        /* ---------- create notification ---------- */
 
         const payload = {
             title: values.title || null,
@@ -48,39 +49,64 @@ export async function createNotification(
             .single();
 
         if (error || !notification) {
-            console.error("[CREATE_NOTIFICATION_ERROR]", error);
+            console.error(
+                "[CREATE_NOTIFICATION_ERROR]",
+                error,
+            );
 
             return {
                 error: "Failed to create notification.",
             };
         }
 
-        /* ---------- push ---------- */
+        /* ---------- send push after response ---------- */
 
-        await sendPushNotification({
-            title: payload.title ?? "Notification",
-            body: payload.message,
-            type: payload.type,
+        after(async () => {
+            try {
+                const result = await sendPushNotification({
+                    title: payload.title ?? "Notification",
+                    body: payload.message,
+                    type: payload.type,
 
-            audience: payload.batch_id
-                ? {
-                    type: "batch",
-                    batchId: payload.batch_id,
-                }
-                : {
-                    type: "all",
-                },
+                    audience: payload.batch_id
+                        ? {
+                            type: "batch",
+                            batchId: payload.batch_id,
+                        }
+                        : {
+                            type: "all",
+                        },
 
-            tag: notification.id,
+                    tag: notification.id,
 
-            data: {
-                notificationId: notification.id,
-            },
+                    data: {
+                        notificationId: notification.id,
+                    },
+                });
+
+                console.log(
+                    "[CREATE_NOTIFICATION_PUSH]",
+                    result,
+                );
+            } catch (error) {
+                // Push notifications are complementary.
+                // The notification already exists, so never fail
+                // because push delivery failed.
+                console.error(
+                    "[CREATE_NOTIFICATION_PUSH_ERROR]",
+                    error,
+                );
+            }
         });
 
-
+        return {
+            data: undefined,
+        };
     } catch (error) {
-        console.error("[CREATE_NOTIFICATION_FATAL]", error);
+        console.error(
+            "[CREATE_NOTIFICATION_FATAL]",
+            error,
+        );
 
         return {
             error: "Something went wrong. Please try again.",

@@ -9,6 +9,7 @@ import { TestPlatformShowcase } from "./_features/test-platform-showcase";
 import { WhyT1Section } from "./_features/why-t1";
 import { ExploreCategories } from "./student/dashboard/_features/components/explore-categories";
 import { LandingNavbar } from "./student/dashboard/_features/common/LandingNavbar";
+import { LiveClassesSection } from "./_features/live-class-section";
 
 export default function HomePage() {
   return (
@@ -27,10 +28,11 @@ export default function HomePage() {
           <WhyT1Section />
 
           <TestPlatformShowcase />
+          <LiveClassesSection />
 
           <TestimonialsSection />
 
-          <TeachersSection />
+          {/* <TeachersSection /> */}
 
           <FAQSection />
         </div>

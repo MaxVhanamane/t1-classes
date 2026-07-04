@@ -1,38 +1,37 @@
-import Image from "next/image";
 import { BarChart3, Clock3, FileCheck2, Layers3 } from "lucide-react";
 import { MobileLandscapePreview } from "./mobile-landscape-preview";
+import DottedBackground from "@/src/components/dotted-background";
 
 const FEATURES = [
   {
     icon: Layers3,
-    title: "Real Exam-style Questions",
+    title: "Exam-Accurate Test Engine",
     description:
-      "Practice with different question patterns designed to match real competitive exams.",
+      "Supports every major competitive exam question type with authentic negative and partial marking.",
   },
   {
     icon: Clock3,
-    title: "Focused Test Experience",
+    title: "Practice Without Limits",
     description:
-      "Attempt tests in a distraction-free environment with smooth question navigation and review tools.",
+      "Attempt tests whenever you want with fast navigation, review tools, and a distraction-free interface.",
   },
   {
     icon: BarChart3,
-    title: "Detailed Result Breakdown",
+    title: "Insights Beyond Scores",
     description:
-      "Understand correct answers, mistakes, negative marking, partial marking, and overall performance clearly.",
+      "Analyze rank, percentile, section performance, question-wise accuracy, time spent, and detailed explanations.",
   },
   {
     icon: FileCheck2,
-    title: "Section-wise Analysis",
+    title: "Benchmark Your Performance",
     description:
-      "Review performance across sections and identify where you performed well or lost marks.",
+      "See how you compare with toppers and overall test averages, including time spent and marks earned on every question.",
   },
 ];
-
 export function TestPlatformShowcase() {
   return (
     <section>
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
@@ -51,42 +50,31 @@ export function TestPlatformShowcase() {
         </div>
 
         {/* Screenshot */}
-        <div className="relative mx-auto mt-14 max-w-6xl lg:mt-16">
-          {/* Ambient Glow */}
-          <div
-            aria-hidden
-            className="absolute inset-0 -z-10 scale-105 rounded-full bg-primary/10 blur-3xl"
-          />
-
+        <div className="relative mx-auto mt-14 max-w-5xl lg:mt-16">
           {/* Desktop Premium Frame */}
           <div
             className="hidden rounded-xl p-px sm:block"
             style={{
               background:
                 "linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08) 35%, rgba(255,255,255,.03) 70%, rgba(255,255,255,.14))",
-              boxShadow:
-                "0 40px 100px rgba(15,23,42,.12), 0 16px 40px rgba(15,23,42,.08)",
             }}
           >
             <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-3 backdrop-blur-xl lg:p-4">
-              {/* Inner Border */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10"
-              />
-
               {/* Soft Reflection */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/8 to-transparent"
+                className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-white/8 to-transparent"
               />
 
               <div className="overflow-hidden rounded-xl border border-border/50 bg-background shadow-[0_24px_70px_rgba(15,23,42,.12)]">
                 <MobileLandscapePreview
-                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-summary.webp"
-                  alt="T1 Classes Test Platform"
+                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary.webp"
+                  mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary-4.3.webp"
+                  alt="T1 Classes live class — teacher explaining with live student chat"
                   width={1400}
-                  height={1000}
+                  height={788}
+                  mobileWidth={1200}
+                  mobileHeight={900}
                   priority
                   className="block w-full"
                 />
@@ -97,10 +85,13 @@ export function TestPlatformShowcase() {
           {/* Mobile */}
           <div className="sm:hidden">
             <MobileLandscapePreview
-              src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-summary.webp"
-              alt="T1 Classes Test Platform"
+              src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary.webp"
+              mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary-4.3.webp"
+              alt="T1 Classes live class — teacher explaining with live student chat"
               width={1400}
-              height={1000}
+              height={788}
+              mobileWidth={1200}
+              mobileHeight={900}
               priority
               className="block w-full rounded-md border border-border/50 shadow-2xl"
             />
@@ -121,10 +112,11 @@ export function TestPlatformShowcase() {
             return (
               <div
                 key={feature.title}
-                className="rounded-2xl border border-border/50 bg-background/50 p-6 backdrop-blur-sm"
+                className="rounded-2xl border border-border/50 bg-muted-soft p-6 backdrop-blur-sm relative"
               >
+                <DottedBackground />
                 <div className="flex items-start gap-4">
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-border/50 bg-background">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-background/70 dark:bg-white/10 backdrop-blur-md border border-white/10">
                     <Icon className="size-5 text-primary" />
                   </div>
 

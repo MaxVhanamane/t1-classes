@@ -71,9 +71,6 @@ export function StatCard({
                 "flex size-11 shrink-0 items-center justify-center rounded-sm",
                 "border border-border/60",
                 "bg-background/95",
-                "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_18px_rgba(0,0,0,0.05)]",
-                "dark:shadow-[0_1px_2px_rgba(0,0,0,0.18),0_10px_24px_rgba(0,0,0,0.22)]",
-
                 tone,
               )}
             >

@@ -1,25 +1,33 @@
-"use client";
+// React Server Components (Next.js etc)
+import * as motion from "motion/react-client";
 
-import { ArrowRight } from "lucide-react";
-import { motion } from "motion/react";
-
-import { Button } from "@/src/components/ui/button";
 import { MobileLandscapePreview } from "./mobile-landscape-preview";
+import { ExploreCoursesButton } from "./explore-courses-button";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-const fadeUp = {
+const containerVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
   hidden: { opacity: 0, y: 24 },
-  show: (i: number) => ({
+  show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, delay: i * 0.1, ease },
-  }),
+    transition: { duration: 0.7, ease },
+  },
 };
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden px-2.5 sm:px-6 lg:px-8">
+    <section className="relative px-2.5 sm:px-6 lg:px-8">
       {/* Ambient background glows */}
       <div className="absolute inset-0 -z-10" aria-hidden>
         <div className="absolute left-1/3 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-amber-500/10 blur-[120px]" />
@@ -36,13 +44,15 @@ export function HeroSection() {
 
       <div className="mx-auto max-w-7xl">
         {/* ── TOP: Text + CTAs ── */}
-        <div className="mx-auto max-w-3xl pt-12 text-center ">
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={containerVariants}
+          className="mx-auto max-w-3xl pt-8 md:pt-12 text-center"
+        >
           {/* Eyebrow */}
           <motion.div
-            custom={0}
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
+            variants={itemVariants}
             className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/8 px-4 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400"
           >
             <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -51,10 +61,7 @@ export function HeroSection() {
 
           {/* Headline */}
           <motion.h1
-            custom={1}
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
+            variants={itemVariants}
             className="mt-6 text-5xl font-black tracking-tight sm:text-6xl md:text-7xl leading-[1.05]"
           >
             Built for students
@@ -65,10 +72,7 @@ export function HeroSection() {
 
           {/* Description */}
           <motion.p
-            custom={2}
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
+            variants={itemVariants}
             className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg"
           >
             Watch a concept, practice it immediately, test under real exam
@@ -78,42 +82,14 @@ export function HeroSection() {
 
           {/* CTAs */}
           <motion.div
-            custom={3}
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
+            variants={itemVariants}
             className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
           >
-            <Button
-              onClick={() => {
-                const element = document.getElementById("explore-category");
-
-                if (element) {
-                  const offset = 40; // pixels
-                  const top =
-                    element.getBoundingClientRect().top +
-                    window.pageYOffset -
-                    offset;
-
-                  window.scrollTo({
-                    top,
-                    behavior: "smooth",
-                  });
-                }
-              }}
-              size="lg"
-              className="h-12 w-fit rounded-xl px-8 text-sm font-bold bg-amber-500 hover:bg-amber-400 text-amber-950 border-0 shadow-lg shadow-amber-500/25 transition-all sm:w-auto"
-            >
-              Explore Courses & Batches
-              <ArrowRight className="ml-2 size-4" />
-            </Button>
+            <ExploreCoursesButton />
           </motion.div>
 
           <motion.p
-            custom={3.5}
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
+            variants={itemVariants}
             className="mt-4 text-xs text-muted-foreground"
           >
             One platform for learning, practice, testing, and mentorship.
@@ -121,10 +97,7 @@ export function HeroSection() {
 
           {/* Stats row */}
           <motion.div
-            custom={4}
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
+            variants={itemVariants}
             className="mt-10 flex items-center justify-center gap-3 pt-4 sm:gap-12"
           >
             <div className="text-center">
@@ -146,7 +119,7 @@ export function HeroSection() {
               </p>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* ── BOTTOM: Screenshot ── */}
         <motion.div
@@ -174,22 +147,20 @@ export function HeroSection() {
             <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-3 backdrop-blur-2xl">
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10"
-              />
-
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/8 to-transparent"
+                className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-linear-to-b from-white/8 to-transparent"
               />
 
               <div className="relative overflow-hidden rounded-xl border border-black/5 bg-background shadow-[0_20px_50px_rgba(15,23,42,.12)] dark:border-white/10">
                 <MobileLandscapePreview
                   src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui.webp"
-                  alt="T1 Classes test interface"
-                  width={1536}
-                  height={960}
+                  mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui-4.3.webp"
+                  alt="T1 Classes live class — teacher explaining with live student chat"
+                  width={1400}
+                  height={788}
+                  mobileWidth={1200}
+                  mobileHeight={900}
                   priority
-                  className="block h-auto w-full"
+                  className="block w-full"
                 />
               </div>
             </div>
@@ -199,9 +170,12 @@ export function HeroSection() {
           <div className="sm:hidden">
             <MobileLandscapePreview
               src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui.webp"
-              alt="T1 Classes test interface"
-              width={1536}
-              height={960}
+              mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui-4.3.webp"
+              alt="T1 Classes live class — teacher explaining with live student chat"
+              width={1400}
+              height={788}
+              mobileWidth={1200}
+              mobileHeight={900}
               priority
               className="block h-auto w-full rounded-md border border-border/50 shadow-2xl"
             />
@@ -215,7 +189,6 @@ export function HeroSection() {
         </motion.div>
       </div>
 
-      {/* Bottom section padding */}
       {/* Bottom Fade */}
       <div
         aria-hidden

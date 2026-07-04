@@ -39,10 +39,10 @@ export function QuestionPapersSkeleton({
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <div className="bg-muted h-6 w-28 animate-pulse rounded-full" />
-                <div className="bg-muted h-6 w-24 animate-pulse rounded-full" />
+                {/* <div className="bg-muted h-6 w-28 animate-pulse rounded-full" /> */}
                 <div className="bg-muted h-6 w-20 animate-pulse rounded-full" />
                 <div className="bg-muted h-6 w-16 animate-pulse rounded-full" />
+                <div className="bg-muted h-6 w-12 animate-pulse rounded-full" />
               </div>
             </div>
 

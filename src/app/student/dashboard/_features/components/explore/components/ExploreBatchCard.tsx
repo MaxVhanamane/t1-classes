@@ -5,9 +5,9 @@ import { Button } from "@/src/components/ui/button";
 import { ExploreBatch } from "@/src/app/(marketing)/explore/[category]/courses/page/[page]/_features/types/types";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { formatPriceWithComma } from "@/src/lib/helper-functions/format-price-with-comma";
-import { BatchMetaBadges } from "@/src/components/ui/common/batch-meta-badges";
 import { BatchQuickInfoPopover } from "./batch-quick-info-popover";
 import { BatchStartLabel } from "./batch-start-label";
+import { ClientBatchMetaBadges } from "@/src/components/ui/common/client-batch-meta-badges";
 
 export function ExploreBatchCard({ batch }: { batch: ExploreBatch }) {
   const discount =
@@ -40,7 +40,7 @@ export function ExploreBatchCard({ batch }: { batch: ExploreBatch }) {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-black/35 to-transparent" />
 
           <div className="absolute bottom-2 right-2 flex flex-wrap items-center gap-2 rounded-xl bg-black/80 px-3 py-1.5 text-white ring-1 ring-white/10 shadow-xl">
-            <BatchMetaBadges batch={{ ...batch, is_active: true }} />
+            <ClientBatchMetaBadges batch={{ ...batch, is_active: true }} />
           </div>
         </div>
       </div>
