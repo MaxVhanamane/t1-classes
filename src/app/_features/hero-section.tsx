@@ -167,20 +167,33 @@ export function HeroSection() {
           </div>
 
           {/* Mobile */}
-          <div className="sm:hidden">
-            <MobileLandscapePreview
-              src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui.webp"
-              mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui-4.3.webp"
-              alt="T1 Classes live class — teacher explaining with live student chat"
-              width={1400}
-              height={788}
-              mobileWidth={1200}
-              mobileHeight={900}
-              priority
-              className="block h-auto w-full rounded-md border border-border/50 shadow-2xl"
-            />
-          </div>
 
+          <div className="sm:hidden">
+            <div
+              className="relative rounded-md p-px"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(113,113,122,.32), rgba(161,161,170,.14) 35%, rgba(161,161,170,.06) 70%, rgba(113,113,122,.24))",
+              }}
+            >
+              {/* soft glass highlight */}
+              <div className="pointer-events-none absolute inset-0 rounded-md bg-linear-to-b from-white/60 via-transparent to-transparent dark:from-white/10" />
+
+              <div className="overflow-hidden rounded-md border border-zinc-300/60 dark:border-white/10 bg-background">
+                <MobileLandscapePreview
+                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui.webp"
+                  mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui-4.3.webp"
+                  alt="T1 Classes live class — teacher explaining with live student chat"
+                  width={1400}
+                  height={788}
+                  mobileWidth={1200}
+                  mobileHeight={900}
+                  priority
+                  className="block w-full"
+                />
+              </div>
+            </div>
+          </div>
           {/* Ground Shadow (desktop only) */}
           <div
             aria-hidden

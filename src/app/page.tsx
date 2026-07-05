@@ -2,7 +2,6 @@ import { FAQSection } from "./_features/faq-section";
 import { FinalCTA } from "./_features/final-cta";
 import { Footer } from "./_features/footer";
 import { HeroSection } from "./_features/hero-section";
-import { TeachersSection } from "./_features/teachers-section";
 import { TestimonialsSection } from "./_features/testimonials";
 import { TestPlatformShowcase } from "./_features/test-platform-showcase";
 // import { TrustStrip } from "./_features/trust-strip";
@@ -10,6 +9,8 @@ import { WhyT1Section } from "./_features/why-t1";
 import { ExploreCategories } from "./student/dashboard/_features/components/explore-categories";
 import { LandingNavbar } from "./student/dashboard/_features/common/LandingNavbar";
 import { LiveClassesSection } from "./_features/live-class-section";
+import { MentorshipSection } from "./_features/mentorship-section";
+import { GroupSessionSection } from "./_features/group-section";
 
 export default function HomePage() {
   return (
@@ -29,6 +30,8 @@ export default function HomePage() {
 
           <TestPlatformShowcase />
           <LiveClassesSection />
+          <MentorshipSection />
+          <GroupSessionSection />
 
           <TestimonialsSection />
 
