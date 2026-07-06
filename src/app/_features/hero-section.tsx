@@ -131,7 +131,7 @@ export function HeroSection() {
           {/* Ambient Glow */}
           <div
             aria-hidden
-            className="absolute inset-0 -z-10 scale-110 bg-[radial-gradient(circle_at_top,rgba(251,191,36,.18),transparent_55%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,.10),transparent_45%)] blur-3xl"
+            className="absolute inset-0 -z-10  bg-[radial-gradient(circle_at_top,rgba(251,191,36,.18),transparent_55%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,.10),transparent_45%)] blur-3xl"
           />
 
           {/* Desktop Premium Frame */}
