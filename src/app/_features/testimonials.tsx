@@ -55,30 +55,35 @@ export function TestimonialsSection() {
         {TESTIMONIALS.map((testimonial) => (
           <Card
             key={testimonial.name}
-            className="group relative overflow-hidden rounded-xl py-2 shadow-sm transition-shadow"
+            // 1. Removed 'py-2' bug and added 'bg-inverse' to match the pure black/white theme
+            className="group relative overflow-hidden rounded-xl bg-inverse shadow-sm transition-shadow hover:shadow-md py-4"
           >
-            <DottedBackground className="opacity-50" />
-
-            {/* Subtle top glow */}
+            {/* 2. Sharp top edge highlight */}
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-foreground/15 to-transparent" />
-            <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
 
-            <CardContent className="relative flex h-full flex-col p-8">
+            {/* 3. Ambient top glow: Visible in light mode, hidden in dark mode */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-primary/5 to-transparent dark:hidden" />
+
+            {/* 4. Dotted background matching the feature cards */}
+            <DottedBackground className="opacity-50 dark:opacity-60" />
+
+            {/* 5. Mobile-optimized padding (p-6 on mobile, p-8 on desktop) */}
+            <CardContent className="relative flex h-full flex-col p-6 sm:p-8">
               {/* Decorative Quote Icon */}
               <Quote
-                className="absolute right-6 top-6 size-10 -rotate-12 text-primary/10"
+                className="absolute right-6 top-6 size-10 -rotate-12 text-primary/10 transition-colors duration-300 group-hover:text-primary/20"
                 strokeWidth={1}
               />
 
-              {/* Review Content (Added mt-2 to balance the missing stars) */}
+              {/* Review Content */}
               <p className="relative z-10 mt-2 flex-1 text-sm leading-7 text-muted-foreground">
                 &quot;{testimonial.content}&quot;
               </p>
 
               {/* User Info */}
               <div className="mt-8 flex items-center gap-4">
-                {/* Premium Initials Avatar */}
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary/80 border border-border shadow-sm">
+                {/* Premium Initials Avatar (Updated to match the feature card's crisp border) */}
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary border border-border shadow-sm">
                   <span className="text-sm font-bold tracking-wider text-secondary-foreground">
                     {testimonial.initials}
                   </span>
@@ -89,7 +94,6 @@ export function TestimonialsSection() {
                     <p className="font-semibold tracking-tight text-foreground text-sm">
                       {testimonial.name}
                     </p>
-                    {/* Verified Badge replaces the stars */}
                     <BadgeCheck
                       className="size-4 text-emerald-500"
                       strokeWidth={2}

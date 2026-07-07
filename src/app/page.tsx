@@ -4,7 +4,6 @@ import { Footer } from "./_features/footer";
 import { HeroSection } from "./_features/hero-section";
 import { TestimonialsSection } from "./_features/testimonials";
 import { TestPlatformShowcase } from "./_features/test-platform-showcase";
-// import { TrustStrip } from "./_features/trust-strip";
 import { WhyT1Section } from "./_features/why-t1";
 import { LandingNavbar } from "./student/dashboard/_features/common/LandingNavbar";
 import { LiveClassesSection } from "./_features/live-class-section";

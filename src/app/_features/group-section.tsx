@@ -1,11 +1,10 @@
 "use client";
 
-import DottedBackground from "@/src/components/dotted-background";
+import { FeatureCard } from "./feature-card";
 import { MobileLandscapePreview } from "./mobile-landscape-preview";
 import { Trophy, Shield, Mic } from "lucide-react";
-import { Card, CardContent } from "@/src/components/ui/card";
 
-const points = [
+const FEATURES = [
   {
     icon: Trophy,
     title: "The Topper's Mindset",
@@ -111,36 +110,14 @@ export function GroupSessionSection() {
 
         {/* ── 3 points ── */}
         <div className="grid gap-3 sm:grid-cols-3">
-          {points.map((point) => {
-            const Icon = point.icon;
+          {FEATURES.map((feature) => {
             return (
-              <Card
-                key={point.title}
-                className="group relative overflow-hidden rounded-xl py-2 shadow-sm transition-shadow bg-muted-soft"
-              >
-                <DottedBackground className="opacity-50" />
-
-                {/* Subtle top glow */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-foreground/15 to-transparent" />
-                <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
-
-                <CardContent className="relative flex h-full flex-col p-6 gap-4">
-                  {/* Icon Box */}
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-background/70 dark:bg-white/10 backdrop-blur-md border border-white/10 shadow-sm">
-                    <Icon className="size-5" strokeWidth={1.5} />
-                  </div>
-
-                  {/* Text Content */}
-                  <div>
-                    <p className="font-semibold text-foreground text-sm">
-                      {point.title}
-                    </p>
-                    <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
-                      {point.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <FeatureCard
+                key={feature.title}
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+              />
             );
           })}
         </div>

@@ -1,7 +1,6 @@
 import { BarChart3, Clock3, FileCheck2, Layers3 } from "lucide-react";
-import DottedBackground from "@/src/components/dotted-background";
 import { PremiumImageSlider } from "./premium-image-slider";
-import { Card, CardContent } from "@/src/components/ui/card";
+import { FeatureCard } from "./feature-card";
 
 const testImages = [
   {
@@ -126,36 +125,13 @@ export function TestPlatformShowcase() {
         {/* Features */}
         <div className="mx-auto mt-14 grid max-w-6xl gap-5 md:grid-cols-3 lg:mt-16">
           {FEATURES.map((feature) => {
-            const Icon = feature.icon;
-
             return (
-              <Card
+              <FeatureCard
                 key={feature.title}
-                className="group relative overflow-hidden rounded-xl py-2 shadow-sm transition-shadow bg-muted-soft backdrop-blur-sm"
-              >
-                <DottedBackground className="opacity-50" />
-
-                {/* Subtle top glows */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-foreground/15 to-transparent" />
-                <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
-
-                <CardContent className="relative flex h-full items-start gap-4 p-6">
-                  {/* Icon Box */}
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-background/70 dark:bg-white/10 backdrop-blur-md border border-white/10 shadow-sm">
-                    <Icon className="size-5 text-primary" strokeWidth={1.5} />
-                  </div>
-
-                  {/* Text Content */}
-                  <div>
-                    <h3 className="text-lg font-semibold tracking-tight">
-                      {feature.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                      {feature.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+              />
             );
           })}
         </div>

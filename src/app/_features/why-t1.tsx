@@ -1,10 +1,3 @@
-import DottedBackground from "@/src/components/dotted-background";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/src/components/ui/card";
 import {
   BarChart3,
   BookOpen,
@@ -13,6 +6,7 @@ import {
   MonitorPlay,
   Trophy,
 } from "lucide-react";
+import { FeatureCard } from "./feature-card";
 
 const FEATURES = [
   {
@@ -78,41 +72,13 @@ export function WhyT1Section() {
       {/* cards */}
       <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((feature) => {
-          const Icon = feature.icon;
           return (
-            <Card
+            <FeatureCard
               key={feature.title}
-              className="group relative overflow-hidden rounded-xl shadow-sm transition-shadow hover:shadow-md py-2"
-            >
-              {/* Subtle top glows */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-foreground/15 to-transparent" />
-              <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
-
-              <DottedBackground className="opacity-50" />
-
-              {/* Main inner content */}
-              <CardContent className="relative flex flex-col gap-5 p-6 h-full">
-                {/* icon */}
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary border border-border">
-                  <Icon
-                    className="size-5 text-secondary-foreground"
-                    strokeWidth={1.5}
-                  />
-                </div>
-
-                {/* content text */}
-                <div className="flex flex-col gap-2">
-                  {/* Overriding the default text-2xl from shadcn CardTitle to fit your design */}
-                  <CardTitle className="text-sm font-bold tracking-tight text-foreground">
-                    {feature.title}
-                  </CardTitle>
-                  {/* CardDescription automatically handles the text-muted-foreground and sizing */}
-                  <CardDescription className="text-sm leading-6">
-                    {feature.description}
-                  </CardDescription>
-                </div>
-              </CardContent>
-            </Card>
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+            />
           );
         })}
       </div>
