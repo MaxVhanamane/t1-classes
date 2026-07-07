@@ -7,9 +7,9 @@ export function ExploreCoursesButton() {
   return (
     <Button
       onClick={() => {
-        const element = document.getElementById("explore-category");
+        const element = document.getElementById("explore-section");
         if (element) {
-          const offset = 40;
+          const offset = 64;
           const top =
             element.getBoundingClientRect().top + window.pageYOffset - offset;
           window.scrollTo({ top, behavior: "smooth" });

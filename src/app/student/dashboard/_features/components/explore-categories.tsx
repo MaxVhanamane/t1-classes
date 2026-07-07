@@ -83,11 +83,15 @@ const CATEGORY_CONFIG = {
   },
 } as const;
 
-export async function ExploreCategories() {
+export async function ExploreCategories({
+  isMarketing,
+}: {
+  isMarketing?: boolean;
+}) {
   return (
     <div id="explore-category" className="space-y-5 mb-20">
       {/* Header */}
-      <div>
+      <div className={isMarketing ? "hidden" : ""}>
         <h2 className="text-base font-semibold">Explore Categories</h2>
         <p className="text-sm text-muted-foreground">
           Choose your goal and start learning

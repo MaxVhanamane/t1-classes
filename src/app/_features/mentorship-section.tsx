@@ -3,6 +3,7 @@
 import DottedBackground from "@/src/components/dotted-background";
 import { MobileLandscapePreview } from "./mobile-landscape-preview";
 import { Calendar, TrendingUp, User } from "lucide-react";
+import { Card, CardContent } from "@/src/components/ui/card";
 
 const points = [
   {
@@ -51,19 +52,13 @@ export function MentorshipSection() {
         {/* ── Image ── */}
         <div className="relative mx-auto max-w-5xl">
           {/* Desktop frame */}
-          <div
-            className="hidden rounded-xl p-px sm:block"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08) 35%, rgba(255,255,255,.03) 70%, rgba(255,255,255,.14))",
-            }}
-          >
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-3 backdrop-blur-xl lg:p-4">
+          <div className="hidden rounded-3xl p-px sm:block">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-muted p-3 backdrop-blur-xl">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-white/8 to-transparent"
               />
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-background shadow-[0_24px_70px_rgba(15,23,42,.12)]">
+              <div className="overflow-hidden rounded-xl border border-border/50 bg-background">
                 <MobileLandscapePreview
                   src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/mentorship-session.webp"
                   mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/mentorship-session-4.3.webp"
@@ -119,23 +114,33 @@ export function MentorshipSection() {
           {points.map((point) => {
             const Icon = point.icon;
             return (
-              <div
+              <Card
                 key={point.title}
-                className="rounded-2xl border border-border/50 bg-muted-soft p-6 flex flex-col gap-4 relative"
+                className="group relative overflow-hidden rounded-xl py-2 shadow-sm transition-shadow bg-muted-soft"
               >
-                <DottedBackground />
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-background/70 dark:bg-white/10 backdrop-blur-md border border-white/10">
-                  <Icon className="size-5" strokeWidth={1.5} />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground text-sm">
-                    {point.title}
-                  </p>
-                  <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
-                    {point.description}
-                  </p>
-                </div>
-              </div>
+                <DottedBackground className="opacity-50" />
+
+                {/* Subtle top glows matching testimonials */}
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-foreground/15 to-transparent" />
+                <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
+
+                <CardContent className="relative flex h-full flex-col p-6 gap-4">
+                  {/* Icon Box */}
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-background/70 dark:bg-white/10 backdrop-blur-md border border-white/10 shadow-sm">
+                    <Icon className="size-5" strokeWidth={1.5} />
+                  </div>
+
+                  {/* Text Content */}
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">
+                      {point.title}
+                    </p>
+                    <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
+                      {point.description}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>

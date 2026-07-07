@@ -1,3 +1,10 @@
+import DottedBackground from "@/src/components/dotted-background";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/src/components/ui/card";
 import {
   BarChart3,
   BookOpen,
@@ -51,17 +58,20 @@ export function WhyT1Section() {
     <section>
       {/* heading */}
       <div className="mx-auto max-w-3xl text-center">
-        <p className="text-sm font-semibold tracking-wide text-primary uppercase">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
           Why T1 Classes
         </p>
 
-        <h2 className="mt-4 text-3xl font-black tracking-tight text-balance sm:text-4xl lg:text-5xl">
-          A structured learning experience designed for consistent improvement.
+        <h2 className="mt-4 text-3xl font-black tracking-tight text-foreground text-balance sm:text-4xl lg:text-5xl leading-[1.15]">
+          A proven learning system,{" "}
+          <span className="bg-linear-to-r from-amber-500 to-orange-400 bg-clip-text text-transparent">
+            built to secure your rank.
+          </span>
         </h2>
 
         <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg">
-          Learn through structured lessons, topic-wise practice tests, live
-          classes, and detailed performance tracking all in one place.
+          Structured lessons, topic-wise practice, live classes, weekly tests,
+          and detailed test analysis all in one place.
         </p>
       </div>
 
@@ -69,33 +79,40 @@ export function WhyT1Section() {
       <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((feature) => {
           const Icon = feature.icon;
-
           return (
-            <div
+            <Card
               key={feature.title}
-              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-background/70 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+              className="group relative overflow-hidden rounded-xl shadow-sm transition-shadow hover:shadow-md py-2"
             >
-              {/* glow */}
-              <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary/10 to-transparent blur-2xl" />
-              </div>
+              {/* Subtle top glows */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-foreground/15 to-transparent" />
+              <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
 
-              {/* icon */}
-              <div className="relative flex size-12 items-center justify-center rounded-2xl border border-border/60 bg-background shadow-sm">
-                <Icon className="size-5" />
-              </div>
+              <DottedBackground className="opacity-50" />
 
-              {/* content */}
-              <div className="relative mt-6">
-                <h3 className="text-lg font-bold tracking-tight">
-                  {feature.title}
-                </h3>
+              {/* Main inner content */}
+              <CardContent className="relative flex flex-col gap-5 p-6 h-full">
+                {/* icon */}
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary border border-border">
+                  <Icon
+                    className="size-5 text-secondary-foreground"
+                    strokeWidth={1.5}
+                  />
+                </div>
 
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                  {feature.description}
-                </p>
-              </div>
-            </div>
+                {/* content text */}
+                <div className="flex flex-col gap-2">
+                  {/* Overriding the default text-2xl from shadcn CardTitle to fit your design */}
+                  <CardTitle className="text-sm font-bold tracking-tight text-foreground">
+                    {feature.title}
+                  </CardTitle>
+                  {/* CardDescription automatically handles the text-muted-foreground and sizing */}
+                  <CardDescription className="text-sm leading-6">
+                    {feature.description}
+                  </CardDescription>
+                </div>
+              </CardContent>
+            </Card>
           );
         })}
       </div>

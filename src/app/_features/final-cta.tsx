@@ -1,62 +1,61 @@
-import { ArrowRight, PlayCircle } from "lucide-react";
+"use client";
 
+import { PlayCircle } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
+import DottedBackground from "@/src/components/dotted-background";
+import { ExploreCoursesButton } from "./explore-courses-button";
 
 export function FinalCTA() {
   return (
     <section className="relative overflow-hidden">
-      {/* background */}
-      <div className="absolute inset-0 -z-10">
-        {/* glow */}
-        <div className="absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" />
-      </div>
+      <div className="mx-auto max-w-5xl px-0 sm:px-6 lg:px-8 ">
+        <div className="group relative overflow-hidden rounded-xl border border-border bg-background/50 px-2 py-12 shadow-sm backdrop-blur-xl sm:px-10 lg:px-16 lg:py-16 text-center">
+          {/* Subtle background dots for texture */}
+          <DottedBackground />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/70 px-6 py-16  backdrop-blur-xl sm:px-10 lg:px-16 lg:py-24">
-          <div className="mx-auto max-w-4xl text-center">
+          {/* Premium top border glow */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-foreground/20 to-transparent" />
+
+          {/* Soft inner radial glow behind the content */}
+          <div className="pointer-events-none absolute left-1/2 top-0 h-120 w-120 -translate-x-1/2 rounded-full bg-primary/10 blur-[120px]" />
+
+          <div className="relative z-10 mx-auto max-w-3xl">
             {/* badge */}
             <div className="inline-flex items-center rounded-full border border-border/60 bg-background/80 px-4 py-1.5 text-sm font-medium shadow-sm backdrop-blur-xl">
-              Start your preparation today
+              Your target rank awaits
             </div>
 
             {/* heading */}
-            <h2 className="mt-6 text-4xl font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
-              Learn smarter.
-              <span className="block bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-                Practice better. Score higher.
+            <h2 className="mt-6 text-4xl font-black tracking-tight text-foreground sm:text-5xl lg:text-6xl leading-[1.15]">
+              Ready to crack your exam?
+              <span className="block mt-2 bg-linear-to-r from-amber-500 to-orange-400 bg-clip-text text-transparent">
+                Start your preparation today.
               </span>
             </h2>
 
             {/* description */}
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-              Join thousands of students preparing with structured courses,
-              advanced testing, live mentorship, and focused learning tools.
+            <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg text-balance">
+              Upgrade your preparation with our rigorous learning methodology,
+              advanced test analytics, and targeted live mentorship.
             </p>
 
             {/* buttons */}
-            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button
-                size="lg"
-                className="h-12 rounded-xl px-6 text-sm font-semibold sm:px-8"
-              >
-                Explore Courses
-                <ArrowRight className="ml-2 size-4" />
-              </Button>
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <ExploreCoursesButton />
 
               <Button
                 variant="outline"
                 size="lg"
-                className="h-12 rounded-xl px-6 text-sm font-semibold sm:px-8"
+                className="h-12 w-fit rounded-xl px-8 text-sm font-semibold sm:w-auto bg-background/50 backdrop-blur-md"
               >
                 <PlayCircle className="mr-2 size-4" />
-                Watch Demo
+                Watch Platform Demo
               </Button>
             </div>
 
             {/* trust text */}
-            <p className="mt-8 text-sm text-muted-foreground">
-              Trusted by thousands of students across competitive exam
-              preparation.
+            <p className="mt-10 text-sm font-medium text-muted-foreground">
+              Join thousands of students learning on T1 Classes.
             </p>
           </div>
         </div>

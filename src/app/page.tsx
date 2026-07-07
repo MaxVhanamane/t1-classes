@@ -6,11 +6,11 @@ import { TestimonialsSection } from "./_features/testimonials";
 import { TestPlatformShowcase } from "./_features/test-platform-showcase";
 // import { TrustStrip } from "./_features/trust-strip";
 import { WhyT1Section } from "./_features/why-t1";
-import { ExploreCategories } from "./student/dashboard/_features/components/explore-categories";
 import { LandingNavbar } from "./student/dashboard/_features/common/LandingNavbar";
 import { LiveClassesSection } from "./_features/live-class-section";
 import { MentorshipSection } from "./_features/mentorship-section";
 import { GroupSessionSection } from "./_features/group-section";
+import { ExploreSection } from "./_features/explore-section";
 
 export default function HomePage() {
   return (
@@ -24,7 +24,7 @@ export default function HomePage() {
         <div className="space-y-20 py-24">
           {/* <TrustStrip /> */}
 
-          <ExploreCategories />
+          <ExploreSection />
 
           <WhyT1Section />
 
@@ -38,12 +38,9 @@ export default function HomePage() {
           {/* <TeachersSection /> */}
 
           <FAQSection />
-        </div>
-      </div>
 
-      {/* CTA */}
-      <div className="pt-8 pb-24 sm:pt-12 sm:pb-32">
-        <FinalCTA />
+          <FinalCTA />
+        </div>
       </div>
 
       {/* FOOTER */}

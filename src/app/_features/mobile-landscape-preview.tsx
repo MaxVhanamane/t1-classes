@@ -45,8 +45,13 @@ function ResponsiveImage({
   // <picture> ensures only one image is downloaded per breakpoint
   return (
     <picture>
-      {/* Desktop — 16:9 */}
-      <source media="(min-width: 640px)" srcSet={src} />
+      {/* Desktop — 16:9 (Added width and height here!) */}
+      <source
+        media="(min-width: 640px)"
+        srcSet={src}
+        width={width}
+        height={height}
+      />
       {/* Mobile — 4:3, this is also the <img> fallback */}
       <img
         src={mobileSrc}
@@ -56,7 +61,10 @@ function ResponsiveImage({
         loading={priority ? "eager" : "lazy"}
         decoding="async"
         className={className}
-        style={{ maxWidth: "100%" }}
+        style={{
+          maxWidth: "100%",
+          height: "auto",
+        }} /* height: auto ensures it scales proportionally */
       />
     </picture>
   );

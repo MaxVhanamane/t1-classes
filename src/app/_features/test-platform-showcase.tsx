@@ -1,31 +1,59 @@
 import { BarChart3, Clock3, FileCheck2, Layers3 } from "lucide-react";
-import { MobileLandscapePreview } from "./mobile-landscape-preview";
 import DottedBackground from "@/src/components/dotted-background";
+import { PremiumImageSlider } from "./premium-image-slider";
+import { Card, CardContent } from "@/src/components/ui/card";
+
+const testImages = [
+  {
+    src: "https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-ui.webp",
+    mobileSrc:
+      "https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-ui-4.3.webp",
+    alt: "T1 Classes test interface",
+    width: 1400,
+    height: 788,
+    mobileWidth: 1200,
+    mobileHeight: 900,
+    priority: true, // Let the second image lazy load
+    className: "block w-full",
+  },
+  {
+    src: "https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary.webp",
+    mobileSrc:
+      "https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary-4.3.webp",
+    alt: "T1 Classes test detailed analysis",
+    width: 1400,
+    height: 788,
+    mobileWidth: 1200,
+    mobileHeight: 900,
+    priority: false, // Eager load the first image so the Largest Contentful Paint (LCP) is fast
+    className: "block w-full",
+  },
+];
 
 const FEATURES = [
   {
-    icon: Layers3,
-    title: "Exam-Accurate Test Engine",
-    description:
-      "Supports every major competitive exam question type with authentic negative and partial marking.",
-  },
-  {
     icon: Clock3,
-    title: "Practice Without Limits",
+    title: "Structured Live Tests",
     description:
-      "Attempt tests whenever you want with fast navigation, review tools, and a distraction-free interface.",
+      "Take scheduled tests in a rigorous, exam-like interface complete with a question navigator and mark-for-review tools.",
   },
   {
     icon: BarChart3,
-    title: "Insights Beyond Scores",
+    title: "Micro-Level Analytics",
     description:
-      "Analyze rank, percentile, section performance, question-wise accuracy, time spent, and detailed explanations.",
+      "Unlock detailed post-test data including rank, percentile, section-wise performance, and complete step-by-step solutions.",
+  },
+  {
+    icon: Layers3,
+    title: "Exam-Accurate Formats",
+    description:
+      "Tackle single, multi-correct, numerical, and match-matrix questions with authentic partial and negative marking rules.",
   },
   {
     icon: FileCheck2,
-    title: "Benchmark Your Performance",
+    title: "Time & Accuracy Tracking",
     description:
-      "See how you compare with toppers and overall test averages, including time spent and marks earned on every question.",
+      "Analyze the exact seconds spent per question and see how your speed and accuracy stack up against the topper and the class average.",
   },
 ];
 export function TestPlatformShowcase() {
@@ -35,48 +63,32 @@ export function TestPlatformShowcase() {
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-            Advanced Test Platform
+            Advanced Test Engine
           </p>
 
-          <h2 className="mt-4 text-balance text-3xl font-black tracking-tight sm:text-5xl">
-            Experience a testing platform that feels like the real exam.
+          <h2 className="mt-4 text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl leading-[1.15]">
+            Experience a true exam environment.
+            <span className="block mt-2 bg-linear-to-r from-amber-500 to-orange-400 bg-clip-text text-transparent">
+              Analyze every mark and every second.
+            </span>
           </h2>
 
-          <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            Practice with realistic question formats, distraction-free
-            navigation, detailed marking schemes, and comprehensive performance
-            analysis, everything designed to help you perform with confidence.
+          <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg text-balance">
+            Practice with all advanced question formats on a rigorous platform.
+            Get instant access to deep analytics covering partial marking,
+            negative scores, and the exact time you spent per question compared
+            to your peers.
           </p>
         </div>
-
         {/* Screenshot */}
         <div className="relative mx-auto mt-14 max-w-5xl lg:mt-16">
           {/* Desktop Premium Frame */}
-          <div
-            className="hidden rounded-xl p-px sm:block"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08) 35%, rgba(255,255,255,.03) 70%, rgba(255,255,255,.14))",
-            }}
-          >
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-3 backdrop-blur-xl lg:p-4">
-              {/* Soft Reflection */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-white/8 to-transparent"
-              />
-
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-background shadow-[0_24px_70px_rgba(15,23,42,.12)]">
-                <MobileLandscapePreview
-                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary.webp"
-                  mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary-4.3.webp"
-                  alt="T1 Classes live class — teacher explaining with live student chat"
-                  width={1400}
-                  height={788}
-                  mobileWidth={1200}
-                  mobileHeight={900}
-                  priority
-                  className="block w-full"
+          <div className="hidden rounded-3xl p-px sm:block">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-b bg-muted p-3 backdrop-blur-xl">
+              <div className="overflow-hidden rounded-xl border border-border/50 bg-muted-soft ">
+                <PremiumImageSlider
+                  images={testImages}
+                  interval={5000} // Slides every 5 seconds
                 />
               </div>
             </div>
@@ -96,16 +108,9 @@ export function TestPlatformShowcase() {
               <div className="pointer-events-none absolute inset-0 rounded-md bg-linear-to-b from-white/60 via-transparent to-transparent dark:from-white/10" />
 
               <div className="overflow-hidden rounded-md border border-zinc-300/60 dark:border-white/10 bg-background">
-                <MobileLandscapePreview
-                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary.webp"
-                  mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/t1-test-summary-4.3.webp"
-                  alt="T1 Classes live class — teacher explaining with live student chat"
-                  width={1400}
-                  height={788}
-                  mobileWidth={1200}
-                  mobileHeight={900}
-                  priority
-                  className="block w-full"
+                <PremiumImageSlider
+                  images={testImages}
+                  interval={5000} // Slides every 5 seconds
                 />
               </div>
             </div>
@@ -119,32 +124,38 @@ export function TestPlatformShowcase() {
         </div>
 
         {/* Features */}
-        <div className="mx-auto mt-14 grid max-w-6xl gap-5 md:grid-cols-2 lg:mt-16">
+        <div className="mx-auto mt-14 grid max-w-6xl gap-5 md:grid-cols-3 lg:mt-16">
           {FEATURES.map((feature) => {
             const Icon = feature.icon;
 
             return (
-              <div
+              <Card
                 key={feature.title}
-                className="rounded-2xl border border-border/50 bg-muted-soft p-6 backdrop-blur-sm relative"
+                className="group relative overflow-hidden rounded-xl py-2 shadow-sm transition-shadow bg-muted-soft backdrop-blur-sm"
               >
-                <DottedBackground />
-                <div className="flex items-start gap-4">
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-background/70 dark:bg-white/10 backdrop-blur-md border border-white/10">
-                    <Icon className="size-5 text-primary" />
+                <DottedBackground className="opacity-50" />
+
+                {/* Subtle top glows */}
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-foreground/15 to-transparent" />
+                <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
+
+                <CardContent className="relative flex h-full items-start gap-4 p-6">
+                  {/* Icon Box */}
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-background/70 dark:bg-white/10 backdrop-blur-md border border-white/10 shadow-sm">
+                    <Icon className="size-5 text-primary" strokeWidth={1.5} />
                   </div>
 
+                  {/* Text Content */}
                   <div>
                     <h3 className="text-lg font-semibold tracking-tight">
                       {feature.title}
                     </h3>
-
                     <p className="mt-2 text-sm leading-7 text-muted-foreground">
                       {feature.description}
                     </p>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>

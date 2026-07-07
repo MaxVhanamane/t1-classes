@@ -9,59 +9,65 @@ import {
 
 const FAQS = [
   {
-    question: "Can I study on mobile?",
+    question: "Can I study on my mobile phone?",
     answer:
-      "Yes. T1 Classes is fully optimized for mobile devices so you can attend classes, practice tests, and study anywhere.",
+      "Yes. The platform is fully optimized for mobile. You can watch video lectures, join live sessions, and even take advanced tests with complex question formats right from your phone.",
   },
   {
-    question: "Are live classes recorded?",
+    question: "How do the live classes work?",
     answer:
-      "Yes. All live sessions are recorded so students can revise concepts anytime at their own pace.",
+      "Instead of generic daily lectures, teachers schedule live classes specifically for deep-dives into complex topics and instant doubt resolution. Every live session is also recorded and saved to your dashboard.",
   },
   {
-    question: "Do courses include practice tests?",
+    question: "Are the tests actually like the real exam?",
     answer:
-      "Yes. Courses include topic-wise practice sets and batches include full-length mock tests with detailed analytics.",
+      "Exactly like it. Our test engine supports advanced formats including single-choice, multi-correct, numerical input, and match matrix, complete with authentic partial and negative marking rules.",
   },
   {
-    question: "Is the test platform similar to real exams?",
+    question: "What kind of test analytics do I get?",
     answer:
-      "Yes. The test interface is designed to simulate competitive exams like JEE Advanced with advanced question types and exam-style navigation.",
+      "You get highly detailed data after every test. Beyond just your score, you can track partial marks, negative marking, and the exact seconds you spent on each question compared to the class average.",
   },
   {
-    question: "Can I access study material after classes?",
+    question: "Do courses include practice material?",
     answer:
-      "Yes. Students get access to notes, PDFs, recordings, and practice content directly inside the platform.",
+      "Absolutely. Our courses follow a strict Video → Practice loop. You will get topic-wise practice sets immediately after lessons, plus full-length mock tests if you join a complete batch.",
   },
   {
-    question: "Do you provide performance analytics?",
+    question: "What if I get stuck and need mentorship?",
     answer:
-      "Yes. Students can track accuracy, speed, weak topics, and overall progress through detailed analytics.",
+      "You can ask doubts instantly in the chat during any scheduled live class. We also host group mentorship sessions to discuss exam strategy, fix common mistakes, and help you handle exam pressure.",
   },
 ];
 
 export function FAQSection() {
   return (
     <section>
-      {/* heading */}
+      {/* ── Header ── */}
       <div className="mx-auto max-w-3xl text-center">
-        <p className="text-sm font-semibold tracking-wide text-primary uppercase">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
           Frequently Asked Questions
         </p>
 
-        <h2 className="mt-4 text-3xl font-black tracking-tight text-balance sm:text-4xl lg:text-5xl">
-          Everything students usually ask before joining.
+        <h2 className="mt-4 text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl leading-[1.15]">
+          Everything you need to know.
+          <span className="block mt-2 bg-linear-to-r from-amber-500 to-orange-400 bg-clip-text text-transparent">
+            Clear your doubts before joining.
+          </span>
         </h2>
 
-        <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg">
-          Clear answers about classes, tests, recordings, access, and learning
-          experience.
+        <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg text-balance">
+          Find answers about our testing platform, live classes, analytics, and
+          overall learning experience.
         </p>
       </div>
 
-      {/* accordion */}
-      <div className="mx-auto mt-14 max-w-4xl">
-        <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/70 shadow-sm backdrop-blur-xl">
+      {/* ── Accordion ── */}
+      <div className="mx-auto mt-16 max-w-3xl">
+        <div className="relative overflow-hidden rounded-xl border border-border/60 bg-background/50 shadow-sm backdrop-blur-xl">
+          {/* Subtle top glow for the container */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-foreground/15 to-transparent" />
+
           <Accordion
             type="single"
             collapsible
@@ -73,7 +79,7 @@ export function FAQSection() {
                 value={`item-${index}`}
                 className="border-none"
               >
-                <AccordionTrigger className="px-6 py-5 text-left text-base font-semibold hover:no-underline sm:px-8 sm:text-lg">
+                <AccordionTrigger className="px-6 py-6 text-left text-base font-semibold transition-colors hover:text-primary hover:no-underline sm:px-8 sm:text-lg">
                   {faq.question}
                 </AccordionTrigger>
 

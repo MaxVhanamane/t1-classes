@@ -17,11 +17,17 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: {
+    opacity: 0,
+    filter: "blur(12px)",
+  },
   show: {
     opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease },
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.8,
+      ease,
+    },
   },
 };
 
@@ -42,7 +48,7 @@ export function HeroSection() {
         />
       </div>
 
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-6xl">
         {/* ── TOP: Text + CTAs ── */}
         <motion.div
           initial="hidden"
@@ -126,7 +132,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 48 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.5, ease }}
-          className="relative mx-auto mt-12 max-w-6xl px-0 sm:mt-16 sm:px-6 lg:mt-20"
+          className="relative mx-auto mt-12 max-w-5xl px-0 sm:mt-16 sm:px-6 lg:mt-20"
         >
           {/* Ambient Glow */}
           <div
@@ -135,16 +141,8 @@ export function HeroSection() {
           />
 
           {/* Desktop Premium Frame */}
-          <div
-            className="hidden rounded-xl p-px sm:block"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08) 30%, rgba(255,255,255,.04) 65%, rgba(255,255,255,.14))",
-              boxShadow:
-                "0 32px 80px rgba(15,23,42,.10), 0 12px 32px rgba(15,23,42,.08)",
-            }}
-          >
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background/75 p-3 backdrop-blur-2xl">
+          <div className="hidden rounded-3xl sm:block">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-muted-soft p-3 backdrop-blur-2xl">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-linear-to-b from-white/8 to-transparent"
@@ -152,9 +150,9 @@ export function HeroSection() {
 
               <div className="relative overflow-hidden rounded-xl border border-black/5 bg-background shadow-[0_20px_50px_rgba(15,23,42,.12)] dark:border-white/10">
                 <MobileLandscapePreview
-                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui.webp"
-                  mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui-4.3.webp"
-                  alt="T1 Classes live class — teacher explaining with live student chat"
+                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/course-structure.webp"
+                  mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/course-structure-4.3.webp"
+                  alt="T1 Classes Course structure"
                   width={1400}
                   height={788}
                   mobileWidth={1200}
@@ -181,9 +179,9 @@ export function HeroSection() {
 
               <div className="overflow-hidden rounded-md border border-zinc-300/60 dark:border-white/10 bg-background">
                 <MobileLandscapePreview
-                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui.webp"
-                  mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/test-ui-4.3.webp"
-                  alt="T1 Classes live class — teacher explaining with live student chat"
+                  src="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/course-structure.webp"
+                  mobileSrc="https://pub-8fdd3bcad3174a3ea4bc50d0c50d283e.r2.dev/assets/course-structure-4.3.webp"
+                  alt="T1 Classes Course structure"
                   width={1400}
                   height={788}
                   mobileWidth={1200}
