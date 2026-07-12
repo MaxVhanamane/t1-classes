@@ -48,7 +48,7 @@ export default function UsersToolbar({
   onReset,
 }: Props) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border bg-background p-4 md:flex-row md:items-center">
+    <div className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center">
       {/* Search */}
 
       <div className="flex flex-1 gap-2">

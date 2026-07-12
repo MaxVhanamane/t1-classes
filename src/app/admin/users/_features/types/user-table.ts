@@ -13,6 +13,7 @@ export type UserTableItem = {
     | "admin";
 
     status:
+    | "invited"
     | "active"
     | "inactive"
     | "blocked";

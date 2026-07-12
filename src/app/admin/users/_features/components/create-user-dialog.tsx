@@ -66,7 +66,12 @@ export default function CreateUserDialog() {
       return;
     }
 
-    toast.success("User created successfully");
+    toast.success("Account created & invite sent!", {
+      description:
+        "Ask the student to check their email and click the setup link to create their password.",
+      duration: 8000, // Stays visible for 8 seconds
+    });
+
     reset();
     setOpen(false);
   };

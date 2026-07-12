@@ -24,6 +24,7 @@ import { useCourseOptions } from "@/src/hooks/use-course-options";
 import { EnrollmentFiltersBar } from "./filter/enrollment-filter-bar";
 import { EnrollmentEmptyState } from "./enrollment-empty-state";
 import { useEnrollmentBatchOptions } from "../hooks/use-enrollment-batch-options";
+import { cn } from "@/src/lib/utils";
 
 export function EnrollmentsClient() {
   const [open, setOpen] = useState(false);
@@ -34,7 +35,8 @@ export function EnrollmentsClient() {
 
   const [searchInput, setSearchInput] = useState("");
 
-  const { data, isLoading, error, refetch } = useEnrollments(filters);
+  const { data, isLoading, error, refetch, isFetching } =
+    useEnrollments(filters);
 
   const { data: batches = [], isLoading: isBatchesLoading } =
     useEnrollmentBatchOptions();
@@ -68,9 +70,9 @@ export function EnrollmentsClient() {
       <EnrollmentHeader
         onCreate={() => {
           setEditing(null);
-
           setOpen(true);
         }}
+        isFetching={isFetching}
       />
 
       <EnrollmentFiltersBar
@@ -107,7 +109,7 @@ export function EnrollmentsClient() {
       ) : (
         <>
           {/* Desktop */}
-          <div className="hidden md:block">
+          <div className={cn("hidden md:block", isFetching && "opacity-60")}>
             <EnrollmentTable
               enrollments={data.items}
               onEdit={(enrollment) => {

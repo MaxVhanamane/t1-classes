@@ -14,6 +14,7 @@ export const userStatuses = [
     "active",
     "inactive",
     "blocked",
+    "invited",
 ] as const;
 
 export const userRoleEnum =
@@ -39,13 +40,6 @@ const nameSchema = z
     );
 
 const emailSchema = z
-    .string()
-    .trim()
-    .toLowerCase()
-    .min(
-        1,
-        "Email is required",
-    )
     .email(
         "Invalid email address",
     );

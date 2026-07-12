@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { CheckCircle } from "lucide-react";
 import { GridBackground } from "@/src/components/grid-background";
 import { AnimatedLogo } from "../student/dashboard/_features/common/animated-logo";
@@ -19,17 +18,17 @@ export default function LoginPage() {
             </h1>
 
             <p className="text-muted-foreground text-base leading-relaxed">
-              Learn concepts the right way. Study with videos, practice sets,
-              and real exam questions that show where theory is actually
-              applied.
+              Jump back into your preparation. Revise concepts, clear your
+              doubts in live sessions, and take practice tests that actually
+              feel like the real exam.
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-4">
               {[
-                "Concept to application",
-                "Previous year questions",
-                "Exam-focused learning",
-                "Structured practice",
+                "Real exam interface",
+                "Deep test analytics",
+                "Live doubt clearing",
+                "Topic-wise practice",
               ].map((item) => (
                 <div
                   key={item}
@@ -41,17 +40,24 @@ export default function LoginPage() {
               ))}
             </div>
 
-            <div className="pt-8">
-              <Image
-                src={
-                  process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL +
-                  "/assets/school.svg"
-                }
-                alt="Learning illustration"
-                width={350}
-                height={350}
-                priority
-              />
+            <div className="pt-8 hidden md:block">
+              <picture>
+                {/* 1. Only load this SVG on screens 768px (md) or wider */}
+                <source
+                  media="(min-width: 768px)"
+                  srcSet={`${process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL}/assets/school.svg`}
+                />
+
+                {/* 2. Fallback for mobile: A tiny transparent pixel that doesn't trigger a network request */}
+                <img
+                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                  alt="Learning illustration"
+                  width={350}
+                  height={350}
+                  // Keep it hidden visually just in case
+                  className="hidden md:block"
+                />
+              </picture>
             </div>
           </div>
         </div>

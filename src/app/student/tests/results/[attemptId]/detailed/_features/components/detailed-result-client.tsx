@@ -68,6 +68,12 @@ export function DetailedResultClient() {
 
   const activeSection = sections.find((s) => s.id === active);
 
+  // Calculate the total number of questions in all preceding sections
+  const activeSectionIndex = sections.findIndex((s) => s.id === active);
+  const previousQuestionCount = sections
+    .slice(0, Math.max(0, activeSectionIndex))
+    .reduce((total, section) => total + (section.questionCount ?? 0), 0);
+
   const questionData =
     questionsQuery.data?.kind === "ok" ? questionsQuery.data : null;
 
@@ -122,6 +128,7 @@ export function DetailedResultClient() {
               rank={
                 summaryQuery.data?.kind === "ok" ? summaryQuery.data.rank : null
               }
+              previousQuestionCount={previousQuestionCount}
             />
           )}
         </div>

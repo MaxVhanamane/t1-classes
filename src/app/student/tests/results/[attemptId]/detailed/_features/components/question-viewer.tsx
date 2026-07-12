@@ -25,6 +25,7 @@ type Props = {
   partialMarks?: PartialMarkingByCorrectCount | null | undefined;
   rank: number | null;
   rankingAvailableAt: string | null;
+  previousQuestionCount: number; // <-- Added Prop
 };
 
 export function QuestionViewer({
@@ -38,6 +39,7 @@ export function QuestionViewer({
   partialMarks,
   rank,
   rankingAvailableAt,
+  previousQuestionCount, // <-- Added Prop
 }: Props) {
   if (loading) {
     return (
@@ -93,7 +95,8 @@ export function QuestionViewer({
         {questions.map((q, i) => (
           <QuestionCard
             key={q.id}
-            index={(currentPage - 1) * LIMIT + i + 1}
+            // Add previous sections' total to the current pagination index
+            index={previousQuestionCount + (currentPage - 1) * LIMIT + i + 1}
             question={q}
             rank={rank}
             rankingAvailableAt={rankingAvailableAt}

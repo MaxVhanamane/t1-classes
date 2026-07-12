@@ -102,6 +102,7 @@ export default function RootLayout({
           icons={{
             loading: <ForceSonnerSpinner />,
           }}
+          closeButton
         />
       </body>
     </html>

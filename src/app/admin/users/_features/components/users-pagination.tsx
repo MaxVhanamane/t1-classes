@@ -30,7 +30,7 @@ export default function UsersPagination({
   );
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-4 items-center justify-center">
       {/* ---------- Info ---------- */}
 
       <div className="text-sm text-muted-foreground">

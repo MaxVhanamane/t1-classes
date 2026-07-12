@@ -4,7 +4,7 @@ import { CardSkeleton } from "@/src/components/ui/skeleton/table/table-cards-ske
 
 export default function Loading() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6">
       <AdminHeaderSkeleton />
       <TableSkeleton columns={6} />
       <CardSkeleton />
