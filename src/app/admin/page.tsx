@@ -1,55 +1,29 @@
-import { Suspense } from "react";
-import {
-  StudentsStat,
-  TeachersStat,
-  EnrollmentsStat,
-  CoursesStat,
-  BatchesStat,
-  AdminStat,
-  FinancialOverviewStat,
-} from "./_features/components/stats";
-import { StatCardSkeleton } from "./_features/components/stat-card-skeleton";
+import { DashboardOverview } from "./_features/components/dashboard-overview";
+import { RevenueTrendChart } from "./_features/components/revenue-trend-chart";
+import { EnrollmentDonutChart } from "./_features/components/enrollment-donut-chart";
+import { BatchHealthTable } from "./_features/components/batch-health-table"; // <-- Import
 
-export default function AdminDashboardPage() {
+export default function DashboardPage() {
   return (
-    <div className="space-y-8 p-4 md:p-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Overview of your institute in real time
-        </p>
+    <div className="flex-1 space-y-6 p-2 sm:p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-        <Suspense fallback={<StatCardSkeleton />}>
-          <StudentsStat />
-        </Suspense>
+      <DashboardOverview />
 
-        <Suspense fallback={<StatCardSkeleton />}>
-          <AdminStat />
-        </Suspense>
+      <div className="w-full">
+        <RevenueTrendChart />
+      </div>
 
-        <Suspense fallback={<StatCardSkeleton />}>
-          <TeachersStat />
-        </Suspense>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <EnrollmentDonutChart type="courses" />
+        <EnrollmentDonutChart type="batches" />
+      </div>
 
-        <Suspense fallback={<StatCardSkeleton />}>
-          <EnrollmentsStat />
-        </Suspense>
-
-        <Suspense fallback={<StatCardSkeleton />}>
-          <CoursesStat />
-        </Suspense>
-
-        <Suspense fallback={<StatCardSkeleton />}>
-          <BatchesStat />
-        </Suspense>
-
-        <Suspense fallback={<StatCardSkeleton />}>
-          <FinancialOverviewStat />
-        </Suspense>
+      {/* Row 4: Batch Health Table */}
+      <div className="w-full">
+        <BatchHealthTable />
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import { cn } from "@/src/lib/utils";
 type Props = {
   unit: CourseUnitContent;
   onIframeLoad: () => void;
+  pauseSignal?: boolean;
 };
 
 function getYouTubeEmbedUrl(url?: string | null): string {
@@ -25,7 +26,7 @@ function getYouTubeEmbedUrl(url?: string | null): string {
   }
 
   return videoId
-    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&controls=1&fs=1&iv_load_policy=3&modestbranding=1`
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&controls=1&fs=1&iv_load_policy=3&modestbranding=1&enablejsapi=1`
     : "";
 }
 
@@ -34,18 +35,33 @@ function getEmbedUrl(unit: Props["unit"]): string {
     return getYouTubeEmbedUrl(unit.contentUrl);
   }
   if (unit.videoProvider === "vimeo") {
-    return `https://player.vimeo.com/video/${extractVimeoId(unit.contentUrl)}`;
+    return `https://player.vimeo.com/video/${extractVimeoId(unit.contentUrl)}?api=1`;
   }
   return "";
 }
 
-export function VideoPlayer({ unit, onIframeLoad }: Props) {
+export function VideoPlayer({ unit, onIframeLoad, pauseSignal }: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const hasDescription = Boolean(unit.description);
 
   const [overlayRightOffset, setOverlayRightOffset] = useState(158);
+
+  useEffect(() => {
+    if (pauseSignal && iframeRef.current?.contentWindow) {
+      if (unit.videoProvider === "youtube") {
+        iframeRef.current.contentWindow.postMessage(
+          '{"event":"command","func":"pauseVideo","args":""}',
+          "*",
+        );
+      } else if (unit.videoProvider === "vimeo") {
+        iframeRef.current.contentWindow.postMessage('{"method":"pause"}', "*");
+      }
+    }
+  }, [pauseSignal, unit.videoProvider]);
+
   useEffect(() => {
     const isMobileDevice = () => {
       return (
@@ -66,14 +82,12 @@ export function VideoPlayer({ unit, onIframeLoad }: Props) {
       const isFullscreen = Boolean(document.fullscreenElement);
       const isLandscape = window.innerWidth > window.innerHeight;
 
-      let offset = 158; // desktop safe default
+      let offset = 158;
 
       if (isMobile) {
         if (isFullscreen || isLandscape) {
-          // fullscreen mobile → controls are bigger
           offset = 220;
         } else {
-          // normal mobile
           offset = 170;
         }
       }
@@ -104,6 +118,7 @@ export function VideoPlayer({ unit, onIframeLoad }: Props) {
         className="relative aspect-video w-full bg-muted lg:rounded-xl overflow-hidden"
       >
         <iframe
+          ref={iframeRef}
           onLoad={onIframeLoad}
           sandbox="allow-scripts allow-same-origin"
           src={getEmbedUrl(unit)}

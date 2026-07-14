@@ -345,6 +345,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
               <div className="relative">
                 <VideoPlayer
                   unit={playerState.unit}
+                  pauseSignal={!!activePracticeSetId}
                   onIframeLoad={() =>
                     setPlayerState((prev) =>
                       prev.status === "ready"
