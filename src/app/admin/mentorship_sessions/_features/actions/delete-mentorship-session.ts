@@ -68,25 +68,25 @@ export async function deleteMentorshipSession(
 
         /* ---------- Delete Rules ---------- */
 
-        const now =
-            new Date();
+        // const now =
+        //     new Date();
 
-        const isLive =
-            now >=
-            new Date(
-                session.starts_at,
-            ) &&
-            now <=
-            new Date(
-                session.ends_at,
-            );
+        // const isLive =
+        //     now >=
+        //     new Date(
+        //         session.starts_at,
+        //     ) &&
+        //     now <=
+        //     new Date(
+        //         session.ends_at,
+        //     );
 
-        if (isLive) {
-            return {
-                error:
-                    "Live sessions cannot be deleted",
-            };
-        }
+        // if (isLive) {
+        //     return {
+        //         error:
+        //             "Live sessions cannot be deleted",
+        //     };
+        // }
 
         /* ---------- Delete ---------- */
 

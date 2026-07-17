@@ -11,7 +11,14 @@ export default async function MentorshipSetupPage({
 }: MentorshipSetupPageProps) {
   const { sessionId } = await params;
 
-  return (
-    <MentorshipPrecallSetup joinHref={`/admin/mentorship/live/${sessionId}`} />
-  );
+  // Read the provider from the environment
+  const videoProvider = process.env.NEXT_PUBLIC_VIDEO_PROVIDER || "agora";
+
+  // Determine the correct route
+  const joinHref =
+    videoProvider === "agora"
+      ? `/admin/mentorship/live-agora/${sessionId}`
+      : `/admin/mentorship/live/${sessionId}`;
+
+  return <MentorshipPrecallSetup joinHref={joinHref} />;
 }

@@ -1,3 +1,4 @@
+import "server-only";
 import { generateVideoSdkToken } from "./generate-videosdk-token";
 
 interface CreateMeetingResponse {

@@ -1,10 +1,6 @@
-import { MentorshipPageHeader } from "./_features/components/mentorship-page-header";
-
-import { MentorshipSessionsTable } from "./_features/components/mentorship-sessions-table";
-
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-
 import { getAuth } from "@/src/lib/auth/get-auth";
+import { MentorshipClient } from "./_features/components/mentorship-client";
 
 export default async function MentorshipSessionsPage() {
   const auth = await getAuth();
@@ -23,12 +19,10 @@ export default async function MentorshipSessionsPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <MentorshipPageHeader
+      <MentorshipClient
         isAdmin={isAdmin}
         mentorshipSessionsEnabled={mentorshipSessionsEnabled}
       />
-
-      <MentorshipSessionsTable />
     </div>
   );
 }

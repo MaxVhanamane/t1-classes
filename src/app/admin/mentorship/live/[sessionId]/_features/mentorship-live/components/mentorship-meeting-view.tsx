@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
-import { createCameraVideoTrack, usePubSub } from "@videosdk.live/react-sdk";
+import { usePubSub } from "@videosdk.live/react-sdk";
 import { useMeeting } from "@videosdk.live/react-sdk";
 import { Loader2 } from "lucide-react";
 
@@ -19,6 +19,7 @@ import { useParticipantQuality } from "../../../hoooks/use-participant-quality";
 import { cn } from "@/src/lib/utils";
 import { MeetingHeader } from "./meeting-header";
 import { MeetingControls } from "./meeting-controls";
+import { MeetingPreferences } from "./mentorship-live-room";
 
 type MeetingExitReason =
   | "manual_leave"
@@ -36,6 +37,7 @@ interface MentorshipMeetingViewProps {
 
   sessionId: string;
   sessionTitle: string;
+  preferences: MeetingPreferences;
 }
 
 export function MentorshipMeetingView({
@@ -45,12 +47,12 @@ export function MentorshipMeetingView({
   endsAt,
   isSessionOwner,
   sessionTitle,
+  preferences,
 }: MentorshipMeetingViewProps) {
   const router = useRouter();
 
   const [hasJoined, setHasJoined] = useState(false);
   const [isEndingMeeting, setIsEndingMeeting] = useState(false);
-  const hasInitializedRef = useRef(false);
 
   const joinedRef = useRef(false);
 
@@ -70,6 +72,10 @@ export function MentorshipMeetingView({
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
 
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedMicId, setSelectedMicId] = useState(() => preferences.micId);
+  const [selectedWebcamId, setSelectedWebcamId] = useState(
+    () => preferences.webcamId,
+  );
   const {
     join,
 
@@ -119,27 +125,40 @@ export function MentorshipMeetingView({
     },
   });
 
-  const handleToggleWebcam = async () => {
-    if (localWebcamOn) {
-      toggleWebcam(); // turning off, no track needed
-      return;
-    }
+  // const handleToggleWebcam = async () => {
+  //   if (localWebcamOn) {
+  //     toggleWebcam(); // turning off, no track needed
+  //     return;
+  //   }
 
-    // turning on — always create a fresh track, never reuse
+  //   // turning on — always create a fresh track, never reuse
+  //   try {
+  //     const freshTrack = await createCameraVideoTrack({
+  //       encoderConfig: "h540p_w720p",
+  //       optimizationMode: "motion",
+  //       multiStream: false,
+  //       bitrateMode: "high_quality",
+  //     });
+
+  //     toggleWebcam(freshTrack);
+  //   } catch (error) {
+  //     console.error("[TOGGLE_WEBCAM_ERROR]", error);
+  //     toast.error("Failed to start camera");
+  //   }
+  // };
+
+  const handleToggleWebcam = () => {
     try {
-      const freshTrack = await createCameraVideoTrack({
-        encoderConfig: "h540p_w720p",
-        optimizationMode: "motion",
-        multiStream: false,
-        bitrateMode: "high_quality",
-      });
-
-      toggleWebcam(freshTrack);
+      toggleWebcam();
     } catch (error) {
       console.error("[TOGGLE_WEBCAM_ERROR]", error);
-      toast.error("Failed to start camera");
+      toast.error("Failed to toggle camera");
     }
   };
+
+  const handleToggleMic = useCallback(() => {
+    toggleMic();
+  }, [toggleMic]);
 
   const { publish: publishRaiseHand } = usePubSub("RAISE_HAND", {
     onMessageReceived(message) {
@@ -205,27 +224,23 @@ export function MentorshipMeetingView({
   );
 
   const performMeetingEnd = useCallback(async () => {
-    console.log("performMeetingEnd called");
-    if (isEndingMeetingRef.current) return false;
+    if (isEndingMeetingRef.current) {
+      return false;
+    }
 
     isEndingMeetingRef.current = true;
     setIsEndingMeeting(true);
 
+    const slowRequestTimer = setTimeout(() => {
+      toast.info(
+        "Ending the meeting is taking longer than usual. Please keep this page open.",
+      );
+    }, 10000);
+
     try {
-      console.log("endMentorshipSession called");
-      const response = await Promise.race([
-        callServerAction(endMentorshipSession({ sessionId })),
-        new Promise<{ data: null; error: string }>((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                data: null,
-                error: "Request timed out, please try again",
-              }),
-            10000, // 10 seconds then reset
-          ),
-        ),
-      ]);
+      const response = await callServerAction(
+        endMentorshipSession({ sessionId }),
+      );
 
       if (response.error) {
         toast.error(response.error);
@@ -234,18 +249,24 @@ export function MentorshipMeetingView({
 
       setMeetingExitReason("meeting_ended");
 
-      await publishMeetingEnded(JSON.stringify({ type: "MEETING_ENDED" }), {
-        persist: false,
-      });
+      await publishMeetingEnded(
+        JSON.stringify({
+          type: "MEETING_ENDED",
+        }),
+        {
+          persist: false,
+        },
+      );
 
       end();
+
       return true;
-    } catch (error) {
-      console.error("[END_MEETING_ERROR]", error);
-      toast.error("Something went wrong. Please try again.");
+    } catch {
+      toast.error("Something went wrong while ending the meeting.");
+
       return false;
     } finally {
-      // Always runs — resets button state no matter what
+      clearTimeout(slowRequestTimer);
       isEndingMeetingRef.current = false;
       setIsEndingMeeting(false);
     }
@@ -298,25 +319,14 @@ export function MentorshipMeetingView({
   }, [leave, end, isSessionOwner, sessionId, publishMeetingEnded]);
 
   useEffect(() => {
-    if (hasInitializedRef.current) {
-      return;
-    }
-
-    hasInitializedRef.current = true;
-
     const timeout = setTimeout(() => {
-      if (joinedRef.current) {
-        return;
-      }
+      if (joinedRef.current) return;
 
       joinedRef.current = true;
-
       join();
     }, 500);
 
-    return () => {
-      clearTimeout(timeout);
-    };
+    return () => clearTimeout(timeout);
   }, [join]);
 
   //   const handleBeforeUnload = useCallback(() => {
@@ -332,33 +342,6 @@ export function MentorshipMeetingView({
   //       window.removeEventListener("beforeunload", handleBeforeUnload);
   //     };
   //   }, [handleBeforeUnload]);
-
-  useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem("mentorship-meeting-preferences");
-
-      if (!stored || !hasJoined) {
-        return;
-      }
-
-      const preferences = JSON.parse(stored);
-
-      /*
-      Apply selected microphone
-    */
-      if (preferences.micId) {
-        changeMic(preferences.micId);
-      }
-      /*
-      Apply selected webcam
-    */
-      if (preferences.webcamId) {
-        changeWebcam(preferences.webcamId);
-      }
-    } catch (error) {
-      console.error("[APPLY_DEVICE_PREFERENCES_ERROR]", error);
-    }
-  }, [hasJoined, changeMic, changeWebcam]);
 
   useEffect(() => {
     if (!hasJoined) {
@@ -491,17 +474,42 @@ export function MentorshipMeetingView({
 
   const handleChangeMic = useCallback(
     (deviceId: string) => {
+      const previousMicId = selectedMicId;
+
+      /*
+      Only revert if the SDK
+      itself throws while
+      changing the microphone.
+    */
       try {
         changeMic(deviceId);
+      } catch {
+        setSelectedMicId(previousMicId);
 
-        const device = audioDevices.find(
-          (device) => device.deviceId === deviceId,
-        );
+        toast.error("Failed to change microphone");
 
-        toast.success(
-          `Microphone changed to ${device?.label ?? "Unknown Microphone"}`,
-        );
+        return;
+      }
 
+      // SDK accepted the change.
+      setSelectedMicId(deviceId);
+
+      const device = audioDevices.find(
+        (device) => device.deviceId === deviceId,
+      );
+
+      toast.success(
+        `Microphone changed to ${device?.label ?? "Unknown Microphone"}`,
+      );
+
+      /*
+      Persist preference.
+      Failure here should NOT
+      revert the UI because
+      the microphone has already
+      changed successfully.
+    */
+      try {
         const current = JSON.parse(
           sessionStorage.getItem("mentorship-meeting-preferences") ?? "{}",
         );
@@ -514,26 +522,47 @@ export function MentorshipMeetingView({
             micId: deviceId,
           }),
         );
-      } catch (error) {
-        toast.error("Failed to change microphone");
-
-        console.error("[CHANGE_MIC_ERROR]", error);
-      }
+      } catch {}
     },
-    [changeMic, audioDevices, localMicOn],
+    [changeMic, audioDevices, localMicOn, selectedMicId],
   );
 
   const handleChangeWebcam = useCallback(
     (deviceId: string) => {
+      const previousWebcamId = selectedWebcamId;
+
+      /*
+      Only revert if the SDK
+      itself throws while
+      changing the camera.
+    */
       try {
         changeWebcam(deviceId);
+      } catch {
+        setSelectedWebcamId(previousWebcamId);
 
-        const device = videoDevices.find(
-          (device) => device.deviceId === deviceId,
-        );
+        toast.error("Failed to change camera");
 
-        toast.success(`Camera changed to ${device?.label ?? "Unknown Camera"}`);
+        return;
+      }
 
+      // SDK accepted the change.
+      setSelectedWebcamId(deviceId);
+
+      const device = videoDevices.find(
+        (device) => device.deviceId === deviceId,
+      );
+
+      toast.success(`Camera changed to ${device?.label ?? "Unknown Camera"}`);
+
+      /*
+      Persist preference.
+      Failure here should NOT
+      revert the UI because
+      the camera has already
+      changed successfully.
+    */
+      try {
         const current = JSON.parse(
           sessionStorage.getItem("mentorship-meeting-preferences") ?? "{}",
         );
@@ -546,13 +575,11 @@ export function MentorshipMeetingView({
             webcamId: deviceId,
           }),
         );
-      } catch (error) {
-        toast.error("Failed to change camera");
-
-        console.error("[CHANGE_CAMERA_ERROR]", error);
+      } catch {
+        // Ignore persistence failures.
       }
     },
-    [changeWebcam, videoDevices, localWebcamOn],
+    [changeWebcam, videoDevices, localWebcamOn, selectedWebcamId],
   );
 
   const handleToggleScreenShare = useCallback(() => {
@@ -655,17 +682,15 @@ export function MentorshipMeetingView({
             {/* Grid */}
             <div
               className={cn(
-                "grid w-full gap-3 auto-rows-max max-w-450",
+                "grid w-full gap-3 auto-rows-max max-w-450 grid-cols-1", // grid-cols-1 makes it always 1 column on mobile
                 participantIds.length === 1 && "max-w-xl",
-                participantIds.length === 2 && "grid-cols-1 md:grid-cols-2",
-                participantIds.length <= 4 &&
-                  participantIds.length > 2 &&
-                  "grid-cols-2",
-                participantIds.length <= 9 &&
-                  participantIds.length > 4 &&
-                  "grid-cols-2 md:grid-cols-3",
-                participantIds.length > 9 &&
-                  "grid-cols-2 md:grid-cols-3 xl:grid-cols-4",
+                participantIds.length > 1 &&
+                  participantIds.length <= 4 &&
+                  "md:grid-cols-2",
+                participantIds.length > 4 &&
+                  participantIds.length <= 9 &&
+                  "md:grid-cols-3",
+                participantIds.length > 9 && "md:grid-cols-3 xl:grid-cols-4",
               )}
             >
               {participantIds.map((participantId) => (
@@ -705,13 +730,15 @@ export function MentorshipMeetingView({
         hasRaisedHand={hasRaisedHand}
         audioDevices={audioDevices}
         videoDevices={videoDevices}
-        onToggleMic={toggleMic}
+        onToggleMic={handleToggleMic}
         onToggleWebcam={handleToggleWebcam}
         onToggleScreenShare={handleToggleScreenShare}
         onChangeMic={handleChangeMic}
         onChangeWebcam={handleChangeWebcam}
         onRaiseHand={handleRaiseHand}
         onLeaveMeeting={handleLeaveMeeting}
+        selectedMicId={selectedMicId}
+        selectedWebcamId={selectedWebcamId}
       />
     </div>
   );

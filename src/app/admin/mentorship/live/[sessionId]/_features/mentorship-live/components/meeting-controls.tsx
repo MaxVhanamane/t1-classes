@@ -10,6 +10,7 @@ import {
   ChevronDown,
   MessageSquare,
   PhoneOff,
+  Check,
 } from "lucide-react";
 
 import { Button } from "@/src/components/ui/button";
@@ -43,7 +44,8 @@ import { MentorshipMeetingChat } from "./mentorship-meeting-chat";
 interface MeetingControlsProps {
   isModerator: boolean;
   isSessionOwner: boolean;
-
+  selectedMicId: string;
+  selectedWebcamId: string;
   localMicOn: boolean;
   localWebcamOn: boolean;
   localScreenShareOn: boolean;
@@ -83,7 +85,8 @@ export function MeetingControls({
 
   onChangeMic,
   onChangeWebcam,
-
+  selectedMicId,
+  selectedWebcamId,
   onRaiseHand,
   onLeaveMeeting,
 }: MeetingControlsProps) {
@@ -123,7 +126,15 @@ export function MeetingControls({
                     key={device.deviceId}
                     onClick={() => onChangeMic(device.deviceId)}
                   >
-                    {device.label || "Unknown Microphone"}
+                    <div className="flex w-full items-center justify-between gap-4">
+                      <span className="truncate">
+                        {device.label || "Unknown Microphone"}
+                      </span>
+
+                      {device.deviceId === selectedMicId && (
+                        <Check className="h-4 w-4 text-green-500 shrink-0" />
+                      )}
+                    </div>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -163,6 +174,9 @@ export function MeetingControls({
                     onClick={() => onChangeWebcam(device.deviceId)}
                   >
                     {device.label || "Unknown Camera"}
+                    {device.deviceId === selectedWebcamId && (
+                      <Check className="h-4 w-4 text-green-500 shrink-0" />
+                    )}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>

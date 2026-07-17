@@ -7,7 +7,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   cacheLife: {
     aggressive: {
       stale: 60 * 60 * 2,            // 2 hours (session-level)

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import {
   createCameraVideoTrack,
+  createMicrophoneAudioTrack,
   MeetingProvider,
 } from "@videosdk.live/react-sdk";
 
@@ -26,7 +27,7 @@ interface MentorshipLiveRoomProps {
   sessionTitle: string;
 }
 
-interface MeetingPreferences {
+export interface MeetingPreferences {
   micEnabled: boolean;
 
   webcamEnabled: boolean;
@@ -86,7 +87,10 @@ export function MentorshipLiveRoom({
   const [customCameraVideoTrack, setCustomCameraVideoTrack] = useState<Awaited<
     ReturnType<typeof createCameraVideoTrack>
   > | null>(null);
-
+  const [customMicrophoneAudioTrack, setCustomMicrophoneAudioTrack] =
+    useState<Awaited<ReturnType<typeof createMicrophoneAudioTrack>> | null>(
+      null,
+    );
   /*
     Create HD custom camera track
 
@@ -94,32 +98,65 @@ export function MentorshipLiveRoom({
     VideoSDK adaptive quality.
   */
   useEffect(() => {
-    const createTrack = async () => {
+    let cancelled = false;
+
+    const createTracks = async () => {
       try {
-        const track = await createCameraVideoTrack({
-          encoderConfig: "h540p_w720p",
+        const [cameraTrack, microphoneTrack] = await Promise.all([
+          createCameraVideoTrack({
+            cameraId: preferences.webcamId || undefined,
+            encoderConfig: "h540p_w720p",
+            optimizationMode: "motion",
+            multiStream: false,
+            bitrateMode: "high_quality",
+          }),
 
-          optimizationMode: "motion",
+          createMicrophoneAudioTrack({
+            microphoneId: preferences.micId || undefined,
+            encoderConfig: "speech_standard",
+            noiseConfig: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
+          }),
+        ]);
 
-          multiStream: false,
-          bitrateMode: "high_quality",
-        });
+        if (cancelled) {
+          return;
+        }
 
-        setCustomCameraVideoTrack(track);
+        setCustomCameraVideoTrack(cameraTrack);
+        setCustomMicrophoneAudioTrack(microphoneTrack);
       } catch (error) {
-        console.error("[CREATE_CAMERA_TRACK_ERROR]", error);
+        console.error("[CREATE_MEDIA_TRACKS_ERROR]", error);
       }
     };
 
-    void createTrack();
-  }, []);
+    void createTracks();
 
+    return () => {
+      cancelled = true;
+    };
+  }, [preferences.webcamId, preferences.micId]);
+
+  useEffect(() => {
+    return () => {
+      customCameraVideoTrack?.getTracks().forEach((track) => {
+        track.stop();
+      });
+
+      customMicrophoneAudioTrack?.getTracks().forEach((track) => {
+        track.stop();
+      });
+    };
+  }, [customCameraVideoTrack, customMicrophoneAudioTrack]);
   /*
     Wait until custom track
     is initialized before
     mounting meeting provider.
   */
-  if (!customCameraVideoTrack) {
+  if (!customCameraVideoTrack || !customMicrophoneAudioTrack) {
     return null;
   }
 
@@ -127,17 +164,13 @@ export function MentorshipLiveRoom({
     <MeetingProvider
       config={{
         meetingId,
-
-        micEnabled: preferences.micEnabled,
-
-        webcamEnabled: preferences.webcamEnabled,
-
         name: participantName,
-
-        debugMode: false,
-
+        micEnabled: preferences.micEnabled,
+        webcamEnabled: preferences.webcamEnabled,
         customCameraVideoTrack,
+        customMicrophoneAudioTrack,
         multiStream: false,
+        debugMode: false,
       }}
       token={token}
     >
@@ -148,6 +181,7 @@ export function MentorshipLiveRoom({
         endsAt={endsAt}
         isSessionOwner={isSessionOwner}
         sessionTitle={sessionTitle}
+        preferences={preferences}
       />
     </MeetingProvider>
   );

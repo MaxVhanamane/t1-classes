@@ -230,7 +230,7 @@ export function MentorshipSessionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
-        className="max-h-[90vh] overflow-y-auto sm:max-w-lg"
+        className="max-h-[90vh] overflow-y-auto sm:max-w-lg bg-card scrollbar-thin"
       >
         <DialogTitle>
           {isEdit ? "Edit Mentorship Session" : "Create Mentorship Session"}

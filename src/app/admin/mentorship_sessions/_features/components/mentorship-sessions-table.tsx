@@ -117,7 +117,7 @@ export function MentorshipSessionsTable() {
 
   if (isError || !data) {
     return (
-      <div className="rounded-2xl border border-border/60 bg-card p-8">
+      <div className="rounded-2xl border border-dashed border-border/60 bg-card p-8">
         <p className="text-sm text-destructive">
           Failed to load mentorship sessions.
         </p>
@@ -126,7 +126,7 @@ export function MentorshipSessionsTable() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
+    <div className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
       {data.data.length === 0 ? (
         <div className="p-12 text-center">
           <p className="text-sm text-muted-foreground">
