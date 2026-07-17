@@ -84,20 +84,32 @@ export function AgoraParticipantTile({
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
-
   /* Toggle Fullscreen Logic */
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
+
+    // Define the interface for the extended browser API
+    interface ScreenOrientationExtended extends ScreenOrientation {
+      lock(orientation: string): Promise<void>;
+      unlock(): void;
+    }
+
     try {
       if (!document.fullscreenElement) {
         await containerRef.current.requestFullscreen();
-        if (window.screen?.orientation?.lock) {
-          window.screen.orientation.lock("landscape").catch(() => {});
+
+        const orientation = window.screen
+          ?.orientation as ScreenOrientationExtended;
+        if (orientation?.lock) {
+          orientation.lock("landscape").catch(() => {});
         }
       } else {
         await document.exitFullscreen();
-        if (window.screen?.orientation?.unlock) {
-          window.screen.orientation.unlock();
+
+        const orientation = window.screen
+          ?.orientation as ScreenOrientationExtended;
+        if (orientation?.unlock) {
+          orientation.unlock();
         }
       }
     } catch {

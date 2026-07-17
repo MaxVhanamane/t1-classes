@@ -128,30 +128,36 @@ export function MentorshipParticipantTile({
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
-
   /* Toggle Fullscreen Logic */
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
+
+    // Interface for non-standard browser orientation methods
+    interface ExtendedScreenOrientation extends ScreenOrientation {
+      lock(orientation: string): Promise<void>;
+      unlock(): void;
+    }
 
     try {
       if (!document.fullscreenElement) {
         await containerRef.current.requestFullscreen();
 
-        // Force landscape on mobile if supported
-        if (window.screen?.orientation?.lock) {
-          // Silently catch all orientation errors (no console spam)
-          window.screen.orientation.lock("landscape").catch(() => {});
+        const orientation = window.screen
+          ?.orientation as ExtendedScreenOrientation;
+        if (orientation?.lock) {
+          orientation.lock("landscape").catch(() => {});
         }
       } else {
         await document.exitFullscreen();
 
-        if (window.screen?.orientation?.unlock) {
-          window.screen.orientation.unlock();
+        const orientation = window.screen
+          ?.orientation as ExtendedScreenOrientation;
+        if (orientation?.unlock) {
+          orientation.unlock();
         }
       }
     } catch {
       // Silently catch fullscreen errors
-      // (e.g., unsupported browsers or missing permissions)
     }
   };
   return (
