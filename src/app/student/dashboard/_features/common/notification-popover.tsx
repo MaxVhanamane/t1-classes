@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react"; // Imported X icon
 import {
   Popover,
   PopoverContent,
@@ -12,6 +13,7 @@ import { useMarkNotificationsSeen } from "../hooks/use-mark-seen";
 import { NotificationBell } from "./notification-bell";
 import { NotificationItem } from "./notification-item";
 import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
+import { Button } from "@/src/components/ui/button";
 
 type Notification = {
   id: string;
@@ -78,8 +80,17 @@ export function NotificationPopover() {
       </PopoverTrigger>
 
       <PopoverContent className="w-85 sm:w-90 p-0 bg-card mr-4">
-        <div className="border-b px-4 py-3 font-medium text-foreground">
-          Notifications
+        {/* THE FIX: Added flex layout to the header to include the close button */}
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <span className="font-medium text-foreground">Notifications</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setOpen(false)}
+            className="h-7 w-7 rounded-full text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
 
         <ScrollArea className="h-[60dvh]">
