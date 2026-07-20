@@ -7,12 +7,12 @@ import { useRTCClient } from "agora-rtc-react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 
-// The hard limit for Agora Stream Message is 1024 bytes (including the JSON envelope)
 const MAX_MESSAGE_LENGTH = 500;
 
-type MessageStatus = "sending" | "sent" | "failed";
+export type MessageStatus = "sending" | "sent" | "failed";
 
-interface ChatMessage {
+// LIFTED STATE: Exported the interface so the parent view can use it for the lifted state
+export interface ChatMessage {
   id: string;
   senderId: string;
   senderName: string;
@@ -27,6 +27,9 @@ interface AgoraMeetingChatProps {
   localUid: string;
   participantName: string;
   client: RTCClientType;
+  // LIFTED STATE: Accept the lifted state and setter from the parent
+  liveMessages: ChatMessage[];
+  setLiveMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
 }
 
 interface AgoraMessagingClient {
@@ -37,9 +40,10 @@ export function AgoraMeetingChat({
   localUid,
   participantName,
   client,
+  liveMessages,
+  setLiveMessages,
 }: AgoraMeetingChatProps) {
   const [message, setMessage] = useState("");
-  const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -51,33 +55,8 @@ export function AgoraMeetingChat({
     });
   }, [liveMessages.length]);
 
-  useEffect(() => {
-    const handleStreamMessage = (uid: number | string, payload: Uint8Array) => {
-      try {
-        const data = JSON.parse(new TextDecoder().decode(payload));
-        if (data.type === "CHAT_MESSAGE") {
-          setLiveMessages((prev) => [
-            ...prev,
-            {
-              id: data.id,
-              senderId: uid.toString(),
-              senderName: data.senderName,
-              message: data.message,
-              timestamp: data.timestamp,
-              status: "sent",
-            },
-          ]);
-        }
-      } catch (error) {
-        console.error("[CHAT_RECEIVE_ERROR]", error);
-      }
-    };
-
-    client.on("stream-message", handleStreamMessage);
-    return () => {
-      client.off("stream-message", handleStreamMessage);
-    };
-  }, [client]);
+  // LIFTED STATE: The client.on("stream-message") listener was removed from here
+  // and merged into the parent's existing handleStreamMessage function so it catches messages even when closed.
 
   const sendMessage = useCallback(
     async (chatMessage: ChatMessage) => {
@@ -98,8 +77,7 @@ export function AgoraMeetingChat({
             msg.id === chatMessage.id ? { ...msg, status: "sent" } : msg,
           ),
         );
-      } catch (error) {
-        console.error("[SEND_MESSAGE_ERROR]", error);
+      } catch {
         setLiveMessages((prev) =>
           prev.map((msg) =>
             msg.id === chatMessage.id ? { ...msg, status: "failed" } : msg,
@@ -107,7 +85,7 @@ export function AgoraMeetingChat({
         );
       }
     },
-    [client],
+    [client, setLiveMessages],
   );
 
   const handleSendMessage = useCallback(async () => {
@@ -126,7 +104,7 @@ export function AgoraMeetingChat({
     setLiveMessages((prev) => [...prev, chatMessage]);
     setMessage("");
     void sendMessage(chatMessage);
-  }, [message, localUid, participantName, sendMessage]);
+  }, [message, localUid, participantName, sendMessage, setLiveMessages]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -188,7 +166,7 @@ export function AgoraMeetingChat({
         )}
       </div>
 
-      <div className="sticky bottom-0 border-t bg-muted-soft/95 p-3 backdrop-blur">
+      <div className="sticky bottom-0 border-t  p-3 backdrop-blur">
         <div className="relative flex items-center gap-2">
           <Input
             value={message}

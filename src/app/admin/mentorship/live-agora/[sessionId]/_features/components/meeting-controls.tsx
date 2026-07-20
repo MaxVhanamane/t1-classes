@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Mic,
   MicOff,
@@ -33,15 +34,14 @@ import {
   AlertDialogTrigger,
 } from "@/src/components/ui/alert-dialog";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/src/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/src/components/ui/drawer";
 
-// Import your actual chat component
-import { AgoraMeetingChat } from "./agora-meeting-chat";
+import { AgoraMeetingChat, type ChatMessage } from "./agora-meeting-chat";
 
 type RTCClientType = ReturnType<typeof useRTCClient>;
 
@@ -56,12 +56,11 @@ interface MeetingControlsProps {
   videoDevices: MediaDeviceInfo[];
   selectedMicId: string;
   selectedWebcamId: string;
-
-  // New props needed for the mobile chat
   localUid: string;
   participantName: string;
   client: RTCClientType;
-
+  liveMessages: ChatMessage[];
+  setLiveMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   onToggleMic: () => void;
   onToggleWebcam: () => void;
   onToggleScreenShare: () => void;
@@ -85,6 +84,8 @@ export function MeetingControls({
   localUid,
   participantName,
   client,
+  liveMessages,
+  setLiveMessages,
   onToggleMic,
   onToggleWebcam,
   onToggleScreenShare,
@@ -93,8 +94,26 @@ export function MeetingControls({
   onRaiseHand,
   onLeaveMeeting,
 }: MeetingControlsProps) {
+  // --- HIGH PERFORMANCE UNREAD LOGIC ---
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [lastReadIndex, setLastReadIndex] = useState(liveMessages.length);
+
+  // Dynamically calculate unread messages during render (No useEffect required)
+  const unreadCount = isChatOpen
+    ? 0
+    : liveMessages
+        .slice(lastReadIndex)
+        .filter((msg) => msg.senderId !== localUid).length;
+
+  const handleChatOpenChange = (open: boolean) => {
+    setIsChatOpen(open);
+    // When opening or closing, mark all current messages as read
+    setLastReadIndex(liveMessages.length);
+  };
+  // -------------------------------------
+
   return (
-    <div className="sticky bottom-0 z-30 border-t bg-muted-soft/95 backdrop-blur supports-[padding:max(0px)]:pb-safe">
+    <div className="sticky bottom-0 z-30 border-t backdrop-blur supports-[padding:max(0px)]:pb-safe">
       <div className="overflow-x-auto scrollbar-hide">
         <div className="flex min-w-max items-center justify-center gap-2 px-3 py-3 sm:gap-4 sm:px-4">
           {/* Mic */}
@@ -207,41 +226,43 @@ export function MeetingControls({
             <Hand className="size-4 sm:size-5" />
           </Button>
 
-          {/* Mobile Chat Sheet */}
-          <Sheet>
-            <SheetTrigger asChild>
+          {/* Mobile Chat Drawer */}
+          <Drawer open={isChatOpen} onOpenChange={handleChatOpenChange}>
+            <DrawerTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
-                className="size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14 xl:hidden"
+                className="relative size-11 shrink-0 rounded-full shadow-sm transition active:scale-95 sm:size-14 xl:hidden"
               >
                 <MessageSquare className="size-4 sm:size-5" />
+
+                {/* Unread Badge */}
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] animate-in zoom-in items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground shadow-sm sm:-right-1.5 sm:-top-1.5 sm:h-6 sm:min-w-[24px] sm:text-xs">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </Button>
-            </SheetTrigger>
+            </DrawerTrigger>
 
-            <SheetContent
-              onOpenAutoFocus={(e) => e.preventDefault()}
-              side="bottom"
-              className="flex h-[90dvh] w-full flex-col rounded-t-2xl border-x-0 border-b-0 border-t p-0 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] sm:max-w-md sm:mx-auto pb-2"
-            >
-              <div className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30" />
-
-              <SheetHeader className="border-b px-6 pb-3 pt-4">
-                <SheetTitle className="text-center text-lg font-semibold tracking-tight">
+            <DrawerContent className="flex w-full flex-col border-x-0 border-b-0 border-t p-0 pb-2 sm:mx-auto sm:max-w-md data-[vaul-drawer-direction=bottom]:h-[90dvh] data-[vaul-drawer-direction=bottom]:max-h-[95vh] data-[vaul-drawer-direction=bottom]:rounded-t-2xl">
+              <DrawerHeader className="border-b px-6 pb-3 pt-2">
+                <DrawerTitle className="text-center text-lg font-semibold tracking-tight">
                   Meeting Chat
-                </SheetTitle>
-              </SheetHeader>
+                </DrawerTitle>
+              </DrawerHeader>
 
-              {/* Actual Chat Component Rendered Here */}
               <div className="min-h-0 flex-1 bg-background/50">
                 <AgoraMeetingChat
                   localUid={localUid}
                   participantName={participantName}
                   client={client}
+                  liveMessages={liveMessages}
+                  setLiveMessages={setLiveMessages}
                 />
               </div>
-            </SheetContent>
-          </Sheet>
+            </DrawerContent>
+          </Drawer>
 
           {/* Leave/End Meeting */}
           <AlertDialog>

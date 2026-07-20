@@ -52,6 +52,7 @@ import { Badge } from "@/src/components/ui/badge";
 import { format } from "date-fns";
 import { TableSkeleton } from "@/src/components/ui/skeleton/table/table-skeleton";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { DeleteButton } from "@/src/components/ui/common/delete-button";
 
 type Props = {
   notifications: NotificationRow[];
@@ -251,14 +252,9 @@ export function NotificationsTable({ notifications, loading }: Props) {
                       <div className="flex justify-start gap-1.5">
                         <NotificationDialog notification={n} />
 
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="h-8 px-3 text-xs"
-                          onClick={() => setDeleteId(n.id)}
-                        >
+                        <DeleteButton onClick={() => setDeleteId(n.id)}>
                           Delete
-                        </Button>
+                        </DeleteButton>
                       </div>
                     </TableCell>
                   </TableRow>

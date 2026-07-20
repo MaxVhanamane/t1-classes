@@ -9,7 +9,7 @@ const AgoraProviderWrapper = dynamic(
   { ssr: false },
 );
 
-interface LiveRoomClientProps {
+export interface LiveSessionProps {
   meetingId: string;
   token: string;
   endsAt: string;
@@ -19,8 +19,9 @@ interface LiveRoomClientProps {
   isModerator: boolean;
   isSessionOwner: boolean;
   sessionTitle: string;
+  sessionDescription: string | null;
 }
 
-export function LiveRoomClient(props: LiveRoomClientProps) {
+export function LiveRoomClient(props: LiveSessionProps) {
   return <AgoraProviderWrapper {...props} />;
 }

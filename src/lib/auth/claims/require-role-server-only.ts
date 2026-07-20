@@ -2,9 +2,9 @@ import "server-only";
 
 import { getAuthIfHasRole } from "./get-auth-if-has-role";
 import { resolveUnauthorizedRedirect } from "./resolve-unauthorized-redirect";
-import type { AuthContext, UserRole } from "./get-auth";
 import { redirect } from "next/navigation";
 import { ROLE_GROUPS } from "./role-groups";
+import { AuthContext, UserRole } from "../types/auth.types";
 
 /**
  * Ensures the user is authenticated and has one of the allowed roles.

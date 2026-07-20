@@ -67,7 +67,7 @@ export function BatchFilterCombobox({
         <Button
           variant="outline"
           role="combobox"
-          className="w-full justify-between font-normal"
+          className="w-fit justify-between font-normal"
           disabled={isDisabled}
         >
           <span className="min-w-0 flex-1 truncate text-left">
@@ -80,7 +80,7 @@ export function BatchFilterCombobox({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="p-0" align="start">
+      <PopoverContent className="p-0 bg-card" align="start">
         <Command>
           <CommandInput placeholder="Search batches..." />
 

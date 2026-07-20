@@ -4,7 +4,7 @@ import "server-only";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 import { generateAgoraToken } from "./generate-agora-token";
 
 // Strictly typed session matching your table definition
@@ -12,14 +12,10 @@ export interface Session {
     id: string;
     title: string;
     description: string | null;
-    batch_id: string;
-    audience_type: "batch" | "selected_students";
     meeting_id: string | null;
     starts_at: string;
     ends_at: string;
     created_by: string;
-    created_at: string;
-    duration_minutes: number;
 }
 
 export type LiveSessionAccessResult =
@@ -56,9 +52,11 @@ export const getAgoraLiveSessionAccess = cache(
 
         const { data: session } = await supabase
             .from("mentorship_sessions")
-            .select("*") // Selecting all columns to match Session interface
+            .select("id, title, description, meeting_id, starts_at, ends_at, created_by")
             .eq("id", sessionId)
-            .single();
+            .single().overrideTypes<Session>();
+
+        if (!session) notFound();
 
         if (!session) notFound();
 
@@ -87,7 +85,7 @@ export const getAgoraLiveSessionAccess = cache(
             participantName: profile?.full_name ?? "Participant",
             isModerator,
             isSessionOwner,
-            session: session as Session,
+            session: session,
         };
     }
 );

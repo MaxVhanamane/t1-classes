@@ -7,7 +7,7 @@ import {
     RenameTopicFormInput,
 } from "../../zod-schema/rename-topic.schema";
 import { ServerActionResponse } from "@/src/types/server-action";
-import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 export async function renameTopic(
     courseId: string,

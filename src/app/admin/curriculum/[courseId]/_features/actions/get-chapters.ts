@@ -2,12 +2,12 @@ import "server-only"
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { ChapterRow } from "../types/course-structure.types";
-import { getAuth } from "@/src/lib/auth/get-auth";
+import { getAuthClaims } from "@/src/lib/auth/claims/get-auth-claims";
 
 
 export async function getChapters(courseId: string): Promise<ChapterRow[]> {
     const supabase = await createServerSupabaseClient();
-    const user = await getAuth();
+    const user = await getAuthClaims();
 
     if (!user) {
         throw new Error("Unauthorized");

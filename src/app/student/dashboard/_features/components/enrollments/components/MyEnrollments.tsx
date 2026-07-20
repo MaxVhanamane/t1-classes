@@ -3,7 +3,7 @@ import { CourseEnrollmentCard } from "./CourseEnrollmentCard";
 import { BatchEnrollmentCard } from "./BatchEnrollmentCard";
 import { SectionError } from "@/src/components/system/SectionError";
 import { redirect } from "next/navigation";
-import { getAuth } from "@/src/lib/auth/get-auth";
+import { getAuthClaims } from "@/src/lib/auth/claims/get-auth-claims";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getMyEnrollmentsService } from "@/src/lib/services/enrollments/get-my-enrollments";
 
@@ -12,7 +12,7 @@ export async function MyEnrollments() {
   let fetchError = false;
 
   try {
-    const auth = await getAuth();
+    const auth = await getAuthClaims();
 
     if (!auth?.userId) {
       redirect("/login");

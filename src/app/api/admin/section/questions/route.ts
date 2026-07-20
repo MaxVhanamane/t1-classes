@@ -1,6 +1,6 @@
 import { connection, NextRequest, NextResponse } from "next/server";
 
-import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireStaffApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
 import { getQuestionsForSection } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/services/get-questions-for-section";
 

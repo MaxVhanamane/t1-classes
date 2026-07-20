@@ -5,7 +5,7 @@ import { addMinutes } from "date-fns";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
-import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 import { ServerActionResponse } from "@/src/types/server-action";
 
@@ -156,34 +156,28 @@ export async function updateMentorshipSession(
 
         /* ---------- Update Session ---------- */
 
-        const {
-            error:
-            updateSessionError,
-        } = await supabase
-            .from(
-                "mentorship_sessions",
-            )
+        let updateQuery = supabase
+            .from("mentorship_sessions")
             .update({
-                title:
-                    values.title,
-
-                description:
-                    values.description ||
-                    null,
-
-                starts_at:
-                    values.starts_at.toISOString(),
-
-                ends_at:
-                    endsAt.toISOString(),
-
-                duration_minutes:
-                    values.duration_minutes,
-
-                audience_type:
-                    values.audience_type,
+                title: values.title,
+                description: values.description || null,
+                starts_at: values.starts_at.toISOString(),
+                ends_at: endsAt.toISOString(),
+                duration_minutes: values.duration_minutes,
+                audience_type: values.audience_type,
             })
             .eq("id", sessionId);
+
+        if (staff.role === "teacher") {
+            updateQuery = updateQuery.eq(
+                "created_by",
+                staff.userId,
+            );
+        }
+
+        const {
+            error: updateSessionError,
+        } = await updateQuery;
 
         if (
             updateSessionError

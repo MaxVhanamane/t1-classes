@@ -1,4 +1,4 @@
-import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireStudentApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 

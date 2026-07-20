@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireAdminApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireAdminApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 import { getEnrollmentFeesData } from "@/src/app/admin/enrollments/[enrollmentId]/fees/_features/actions/get-enrollment-fees-data";
 
 

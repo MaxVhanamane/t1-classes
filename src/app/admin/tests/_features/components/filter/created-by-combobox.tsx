@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 
 import { Button } from "@/src/components/ui/button";
-
 import {
   Command,
   CommandEmpty,
@@ -14,7 +13,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/src/components/ui/command";
-
 import {
   Popover,
   PopoverContent,
@@ -26,20 +24,20 @@ import { cn } from "@/src/lib/utils";
 import type { InstructorOption } from "@/src/app/admin/courses/_features/types/course.types";
 
 type Props = {
-  value: string | "me" | null;
+  value: string | "all" | "me";
 
-  staff: InstructorOption[];
+  instructors: InstructorOption[];
 
   currentUserId: string;
 
-  onChange: (value: string | "me" | null) => void;
+  onChange: (value: string | "all" | "me") => void;
 
   isLoading: boolean;
 };
 
-export function TestCreatedByCombobox({
+export function CreatedByCombobox({
   value,
-  staff,
+  instructors,
   currentUserId,
   onChange,
   isLoading,
@@ -48,24 +46,24 @@ export function TestCreatedByCombobox({
 
   const selected =
     value === "me"
-      ? staff.find((user) => user.id === currentUserId)
-      : staff.find((user) => user.id === value);
+      ? instructors.find((user) => user.id === currentUserId)
+      : instructors.find((user) => user.id === value);
 
   return (
-    <Popover modal={true} open={open} onOpenChange={setOpen}>
+    <Popover modal open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
-          className="w-full justify-between font-normal"
+          className="justify-between font-normal w-fit"
           disabled={isLoading}
         >
           {isLoading
             ? "Loading staff..."
-            : value === "me"
-              ? `Me${selected ? ` (${selected.full_name})` : ""}`
-              : value === null
-                ? "All Staff"
+            : value === "all"
+              ? "All Staff"
+              : value === "me"
+                ? `Me${selected ? ` (${selected.full_name})` : ""}`
                 : (selected?.full_name ?? "Select creator")}
 
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
@@ -86,7 +84,6 @@ export function TestCreatedByCombobox({
                 value="__me__"
                 onSelect={() => {
                   onChange("me");
-
                   setOpen(false);
                 }}
               >
@@ -102,28 +99,26 @@ export function TestCreatedByCombobox({
               <CommandItem
                 value="__all__"
                 onSelect={() => {
-                  onChange(null);
-
+                  onChange("all");
                   setOpen(false);
                 }}
               >
                 <Check
                   className={cn(
                     "mr-2 size-4",
-                    value === null ? "opacity-100" : "opacity-0",
+                    value === "all" ? "opacity-100" : "opacity-0",
                   )}
                 />
                 All Staff
               </CommandItem>
 
               {!isLoading &&
-                staff.map((user) => (
+                instructors.map((user) => (
                   <CommandItem
                     key={user.id}
                     value={user.full_name}
                     onSelect={() => {
                       onChange(user.id);
-
                       setOpen(false);
                     }}
                   >

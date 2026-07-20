@@ -1,7 +1,7 @@
 import { DashboardOverview } from "./_features/components/dashboard-overview";
 import { RevenueTrendChart } from "./_features/components/revenue-trend-chart";
 import { EnrollmentDonutChart } from "./_features/components/enrollment-donut-chart";
-import { BatchHealthTable } from "./_features/components/batch-health-table"; // <-- Import
+import { BatchHealthTable } from "./_features/components/batch-health-table";
 
 export default function DashboardPage() {
   return (

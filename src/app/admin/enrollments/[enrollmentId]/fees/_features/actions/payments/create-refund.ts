@@ -8,7 +8,7 @@ import {
     refundSubmitSchema,
 } from "../../zod/refund.schema";
 
-import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireAdminServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 import { ServerActionResponse } from "@/src/types/server-action";
 
 export async function createRefund(

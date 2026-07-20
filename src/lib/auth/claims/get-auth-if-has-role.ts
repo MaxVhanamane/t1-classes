@@ -1,14 +1,7 @@
 import "server-only";
-import { getAuth, UserRole } from "./get-auth";
+import { getAuthClaims } from "./get-auth-claims";
+import { AuthContext, UserRole } from "../types/auth.types";
 
-/**
- * Represents the authenticated user context.
- */
-export interface AuthContext {
-    userId: string;
-    email?: string;
-    role?: UserRole;
-}
 
 /**
  * Discriminated union representing the authentication state.
@@ -27,7 +20,7 @@ export type AuthState =
 export async function getAuthIfHasRole(
     allowedRoles: readonly UserRole[]
 ): Promise<AuthState> {
-    const user = await getAuth();
+    const user = await getAuthClaims();
 
     // User is not logged in
     if (!user) {

@@ -23,7 +23,7 @@ import {
 } from "../../constants/test-filters.constants";
 
 import type { TestType } from "../../types/test.types";
-import { TestCreatedByCombobox } from "./test-created-by-combobox";
+import { CreatedByCombobox } from "./created-by-combobox";
 
 type Props = {
   filters: TestFilters;
@@ -159,9 +159,9 @@ export function TestFiltersBar({
 
         {/* Created By */}
         {isAdmin && (
-          <TestCreatedByCombobox
+          <CreatedByCombobox
             value={filters.createdBy}
-            staff={instructors}
+            instructors={instructors}
             currentUserId={currentUserId}
             isLoading={isInstructorsLoading}
             onChange={(createdBy) =>

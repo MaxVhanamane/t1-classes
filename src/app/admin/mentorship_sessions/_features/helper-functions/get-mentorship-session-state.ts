@@ -6,6 +6,11 @@ interface GetMentorshipSessionStateParams {
     meeting_id: string | null;
 }
 
+export const MENTORSHIP_READY_WINDOW_MINUTES = 5;
+
+export const MENTORSHIP_READY_WINDOW_MS =
+    MENTORSHIP_READY_WINDOW_MINUTES * 60 * 1000;
+
 export type MentorshipSessionState =
     | "scheduled"
     | "ready"
@@ -24,7 +29,7 @@ export function getMentorshipSessionState({
     const endsAt = new Date(ends_at);
 
     const startWindow = new Date(
-        startsAt.getTime() - 5 * 60 * 1000,
+        startsAt.getTime() - MENTORSHIP_READY_WINDOW_MS,
     );
 
     if (now > endsAt) {

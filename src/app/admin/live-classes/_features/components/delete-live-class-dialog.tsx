@@ -14,14 +14,15 @@ import {
   AlertDialogTitle,
 } from "@/src/components/ui/alert-dialog";
 
-import { LiveClassRow } from "../types/live-class.types";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { deleteLiveClass } from "../actions/delete-live-class";
+import { LiveClass } from "../types/live-class.types";
+import { liveClassQueryKeys } from "../../constants/query-keys";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  liveClass: LiveClassRow | null;
+  liveClass: LiveClass | null;
 }
 
 export function DeleteLiveClassDialog({
@@ -59,9 +60,8 @@ export function DeleteLiveClassDialog({
       }
 
       await queryClient.invalidateQueries({
-        queryKey: ["live-classes"],
+        queryKey: liveClassQueryKeys.lists(),
       });
-
       toast.success("Live class deleted", {
         id: toastId,
       });

@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useMeeting, usePubSub } from "@videosdk.live/react-sdk";
 
-import { AlertCircle, RotateCcw, Send } from "lucide-react";
+// Added Loader2 for the loading state
+import { AlertCircle, RotateCcw, Send, Loader2 } from "lucide-react";
 
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -13,15 +14,10 @@ type MessageStatus = "sending" | "sent" | "failed";
 
 interface ChatMessage {
   id: string;
-
   senderId: string;
-
   senderName: string;
-
   message: string;
-
   timestamp: number;
-
   status?: MessageStatus;
 }
 
@@ -31,8 +27,9 @@ export function MentorshipMeetingChat() {
   const [message, setMessage] = useState("");
 
   const [persistedMessages, setPersistedMessages] = useState<ChatMessage[]>([]);
-
   const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
+
+  const [isFetchingHistory, setIsFetchingHistory] = useState(true);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,7 +41,6 @@ export function MentorshipMeetingChat() {
             try {
               return {
                 ...(JSON.parse(msg.message) as ChatMessage),
-
                 status: "sent" as const,
               };
             } catch {
@@ -56,6 +52,9 @@ export function MentorshipMeetingChat() {
         setPersistedMessages(parsed);
       } catch (error) {
         console.error("[OLD_MESSAGES_ERROR]", error);
+      } finally {
+        // Turn off loader as soon as history arrives
+        setIsFetchingHistory(false);
       }
     },
 
@@ -90,6 +89,16 @@ export function MentorshipMeetingChat() {
       }
     },
   });
+
+  // Fallback: If there are 0 old messages, the pubsub callback might not fire at all.
+  // This ensures the loader goes away after 1 second max.
+  useEffect(() => {
+    const fallbackTimer = setTimeout(() => {
+      setIsFetchingHistory(false);
+    }, 1000);
+
+    return () => clearTimeout(fallbackTimer);
+  }, []);
 
   const messages = useMemo(() => {
     const merged = [...persistedMessages, ...liveMessages];
@@ -155,22 +164,15 @@ export function MentorshipMeetingChat() {
 
     const chatMessage: ChatMessage = {
       id: crypto.randomUUID(),
-
       senderId: localParticipant?.id ?? "unknown",
-
       senderName: localParticipant?.displayName ?? "Participant",
-
       message: trimmed,
-
       timestamp: Date.now(),
-
       status: "sending",
     };
 
     setLiveMessages((prev) => [...prev, chatMessage]);
-
     setMessage("");
-
     void sendMessage(chatMessage);
   }, [message, localParticipant, sendMessage]);
 
@@ -207,7 +209,12 @@ export function MentorshipMeetingChat() {
         ref={scrollRef}
         className="flex-1 space-y-3 overflow-y-auto px-3 py-4 sm:px-4"
       >
-        {messages.length === 0 ? (
+        {/* NEW: 3-Tier Rendering (Loading -> Empty -> Messages) */}
+        {isFetchingHistory ? (
+          <div className="flex h-full items-center justify-center">
+            <Loader2 className="size-6 animate-spin text-muted-foreground/50" />
+          </div>
+        ) : messages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <div className="rounded-2xl border border-dashed px-5 py-4 text-center text-sm text-muted-foreground">
               No messages yet
@@ -273,7 +280,7 @@ export function MentorshipMeetingChat() {
         )}
       </div>
 
-      <div className="sticky bottom-0 border-t bg-muted-soft p-3 backdrop-blur">
+      <div className="sticky bottom-0 border-t  p-3 backdrop-blur">
         <div className="flex items-center gap-2">
           <Input
             value={message}
@@ -281,7 +288,6 @@ export function MentorshipMeetingChat() {
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-
                 void handleSendMessage();
               }
             }}

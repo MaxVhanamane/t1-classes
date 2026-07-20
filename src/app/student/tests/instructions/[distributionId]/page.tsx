@@ -7,7 +7,7 @@ import { AlertTriangle, Lock } from "lucide-react";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { createStaticSupabaseClient } from "@/src/lib/supabase/supabase-static";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { requireStudentServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStudentServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 import GeneralInstructions from "./_features/components/general-instructions";
 import SectionInstructions from "./_features/components/section-instructions";

@@ -16,6 +16,12 @@ export interface MentorshipSession {
 
     batch_id: string;
 
+    batch_title: string | null;
+
+    created_by: string;
+
+    creator_name: string | null;
+
     meeting_id: string | null;
 
     audience_type:
@@ -43,24 +49,13 @@ export interface MentorshipSessionStudent {
     created_at: string;
 }
 
-export interface PaginatedMentorshipSessionsResponse {
-    data: MentorshipSession[];
-
-    page: number;
-
-    totalPages: number;
-
-    totalCount: number;
-}
 
 export interface MentorshipBatchOption {
     id: string;
-
     title: string;
 }
 
 export interface MentorshipStudentOption {
     id: string;
-
     full_name: string;
 }

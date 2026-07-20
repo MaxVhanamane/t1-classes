@@ -1,18 +1,27 @@
-import { PaginatedMentorshipSessionsResponse } from "../types/mentorship.types";
+import type { MentorshipSessionFilters } from "../types/mentorship-filters";
 
 export async function getMentorshipSessions({
     page,
-    limit,
     search,
+    batchId,
+    status,
+    audienceType,
+    createdBy,
 }: {
     page: number;
-    limit: number;
     search: string;
-}): Promise<PaginatedMentorshipSessionsResponse> {
+    batchId: string;
+    status: MentorshipSessionFilters["status"];
+    audienceType: MentorshipSessionFilters["audienceType"];
+    createdBy: string;
+}) {
     const params = new URLSearchParams({
         page: String(page),
-        limit: String(limit),
         search,
+        batchId,
+        status,
+        audienceType,
+        createdBy,
     });
 
     const response = await fetch(
@@ -28,14 +37,12 @@ export async function getMentorshipSessions({
     return response.json();
 }
 
-
 export async function getMentorshipSessionStudents(
     sessionId: string,
 ): Promise<string[]> {
-    const response =
-        await fetch(
-            `/api/admin/mentorship-sessions/${sessionId}/students`,
-        );
+    const response = await fetch(
+        `/api/admin/mentorship-sessions/${sessionId}/students`,
+    );
 
     if (!response.ok) {
         throw new Error(

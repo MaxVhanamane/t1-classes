@@ -1,31 +1,27 @@
+import { LIVE_CLASS_STATUSES } from "../../constants/live-classes";
+
 export type LiveClassStatus =
-    | "upcoming"
-    | "live"
-    | "completed";
+    (typeof LIVE_CLASS_STATUSES)[number];
 
-export interface LiveClassBatch {
-    id: string;
-    title: string;
-}
-
-export interface LiveClassRow {
+export interface LiveClass {
     id: string;
     title: string;
     description: string | null;
     youtube_live_id: string;
     starts_at: string;
     ends_at: string;
-
+    created_at: string;
+    created_by: string;
+    creator_name: string;
     batch_ids: string[];
-    batches: LiveClassBatch[];
-
-    created_by_name: string | null;
-    batches_count: number;
+    batch_titles: string[];
+    status: Exclude<LiveClassStatus, "all">;
 }
 
 export interface LiveClassesResponse {
-    rows: LiveClassRow[];
-    total: number;
+    data: LiveClass[];
     page: number;
-    limit: number;
+    pageSize: number;
+    totalPages: number;
+    totalCount: number;
 }

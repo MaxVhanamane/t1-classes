@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { requireStudentServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStudentServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 import { ServerActionResponse } from "@/src/types/server-action";
 
 import { pushRegistrationSchema } from "../zod/push-registration.schema";

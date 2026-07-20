@@ -31,6 +31,7 @@ import { BatchMultiSelect } from "./batch-multi-select";
 import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { useBatchOptions } from "@/src/hooks/use-batch-options";
+import { liveClassQueryKeys } from "../../constants/query-keys";
 
 interface EditValue {
   id: string;
@@ -194,7 +195,7 @@ export function LiveClassDialog({ open, onOpenChange, liveClass }: Props) {
         }
 
         await queryClient.invalidateQueries({
-          queryKey: ["live-classes"],
+          queryKey: liveClassQueryKeys.lists(),
         });
 
         toast.success(

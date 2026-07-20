@@ -48,6 +48,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useBatchOptions } from "@/src/hooks/use-batch-options";
 import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
+import { EditButton } from "@/src/components/ui/common/edit-button";
 
 type NotificationRow = {
   id: string;
@@ -182,14 +183,13 @@ export function NotificationDialog({ notification }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-8 px-3 text-xs">
-          {notification ? "Edit" : "Create Notification"}
-        </Button>
+        <EditButton>{notification ? "Edit" : "Create Notification"}</EditButton>
       </DialogTrigger>
 
       <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
-        className="space-y-6"
+        className="space-y-6 bg-card"
       >
         <DialogHeader>
           <DialogTitle>

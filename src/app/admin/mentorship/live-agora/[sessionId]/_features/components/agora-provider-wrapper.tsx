@@ -3,22 +3,11 @@
 import AgoraRTC, { AgoraRTCProvider } from "agora-rtc-react";
 import { MentorshipLiveRoom } from "./mentorship-live-room";
 import { useEffect } from "react";
+import { LiveSessionProps } from "./live-room-client";
 
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-interface AgoraProviderWrapperProps {
-  meetingId: string;
-  token: string;
-  endsAt: string;
-  sessionId: string;
-  numericUid: number;
-  participantName: string;
-  isModerator: boolean;
-  isSessionOwner: boolean;
-  sessionTitle: string;
-}
-
-export function AgoraProviderWrapper(props: AgoraProviderWrapperProps) {
+export function AgoraProviderWrapper(props: LiveSessionProps) {
   useEffect(() => {
     return () => {
       void client.leave().catch(() => {});

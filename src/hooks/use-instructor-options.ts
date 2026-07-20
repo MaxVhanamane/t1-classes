@@ -4,6 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { InstructorSelectItem } from "@/src/app/admin/batches/_features/types/types";
 
+type UseInstructorOptionsOptions = {
+    enabled?: boolean;
+};
+
 async function fetchInstructorOptions(): Promise<
     InstructorSelectItem[]
 > {
@@ -11,8 +15,7 @@ async function fetchInstructorOptions(): Promise<
         "/api/admin/options/instructors",
     );
 
-    const data =
-        await response.json();
+    const data = await response.json();
 
     if (!response.ok) {
         throw new Error(
@@ -24,7 +27,9 @@ async function fetchInstructorOptions(): Promise<
     return data;
 }
 
-export function useInstructorOptions() {
+export function useInstructorOptions({
+    enabled = true,
+}: UseInstructorOptionsOptions = {}) {
     return useQuery({
         queryKey: [
             "instructor-options",
@@ -32,6 +37,8 @@ export function useInstructorOptions() {
 
         queryFn:
             fetchInstructorOptions,
+
+        enabled,
 
         staleTime:
             1000 * 60 * 30,

@@ -9,18 +9,16 @@ const MentorshipLiveRoom = dynamic(
   },
 );
 
-interface LiveRoomClientProps {
+export interface VideoSdkLiveSessionProps {
   meetingId: string;
-
   token: string;
   endsAt: string;
   sessionId: string;
-
   participantName: string;
-
   isModerator: boolean;
   isSessionOwner: boolean;
   sessionTitle: string;
+  sessionDescription: string | null;
 }
 
 export function LiveRoomClient({
@@ -32,7 +30,8 @@ export function LiveRoomClient({
   endsAt,
   isSessionOwner,
   sessionTitle,
-}: LiveRoomClientProps) {
+  sessionDescription,
+}: VideoSdkLiveSessionProps) {
   return (
     <MentorshipLiveRoom
       meetingId={meetingId}
@@ -43,6 +42,7 @@ export function LiveRoomClient({
       endsAt={endsAt}
       isSessionOwner={isSessionOwner}
       sessionTitle={sessionTitle}
+      sessionDescription={sessionDescription}
     />
   );
 }

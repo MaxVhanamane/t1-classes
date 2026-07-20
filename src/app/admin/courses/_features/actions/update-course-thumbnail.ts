@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { deleteR2Object } from "@/src/lib/r2/deleteObject";
 import { updateTag } from "next/cache";
 import { ServerActionResponse } from "@/src/types/server-action";
-import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 /* -------------------------------------------------- */
 /* Update Thumbnail (KEY ONLY)                        */

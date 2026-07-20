@@ -2,7 +2,7 @@
 
 import { createServiceRoleSupabaseClient } from "@/src/lib/supabase/supabase-service-role";
 import { revalidatePath } from "next/cache";
-import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireAdminServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 import { ServerActionResponse } from "@/src/types/server-action";
 
 type CreateUserWithPasswordInput = {

@@ -1,7 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import type { AuthState } from "./get-auth-if-has-role";
-import type { UserRole } from "./get-auth";
+import { UserRole } from "../types/auth.types";
 
 export function resolveUnauthorizedRedirect(
     authState: AuthState

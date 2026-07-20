@@ -68,7 +68,7 @@ export function MeetingCountdown({ endsAt, onExpire }: MeetingCountdownProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-full border px-3 py-1.5 shadow-sm ring-1 backdrop-blur-md transition-all duration-300",
+        "flex items-center gap-1.5 rounded-full border px-2.5 py-1 ring-1 backdrop-blur-md transition-all duration-300",
         isCritical
           ? "border-red-500/20 bg-red-500/10 ring-red-500/10"
           : "border-white/10 bg-zinc-900/50 ring-white/5",
@@ -76,20 +76,21 @@ export function MeetingCountdown({ endsAt, onExpire }: MeetingCountdownProps) {
     >
       <div
         className={cn(
-          "size-2 rounded-full",
+          "size-1.5 rounded-full",
           isCritical
-            ? "animate-pulse bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.8)]"
-            : "bg-emerald-400 shadow-[0_0_10px_rgba(74,222,128,0.8)]",
+            ? "animate-pulse bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]"
+            : "bg-emerald-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]",
         )}
       />
 
+      {/* Fixed width here ensures the badge doesn't jump as the timer ticks */}
       <span
         className={cn(
-          "min-w-24 text-center text-xs font-medium tabular-nums tracking-[0.08em]",
+          "w-17.5 text-[10px] font-medium tabular-nums tracking-wide whitespace-nowrap",
           isCritical ? "text-red-200" : "text-zinc-200",
         )}
       >
-        Ends in {formattedTime}
+        Ends in <span className="opacity-80">{formattedTime}</span>
       </span>
     </div>
   );

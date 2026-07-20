@@ -6,37 +6,17 @@ import { getMentorshipSessions } from "../api/mentorship-api";
 
 import { mentorshipQueryKeys } from "../constants/query-keys";
 
-interface UseMentorshipSessionsProps {
-    page: number;
+import type { MentorshipSessionFilters } from "../types/mentorship-filters";
 
-    limit: number;
-
-    search: string;
-}
-
-export function useMentorshipSessions({
-    page,
-    limit,
-    search,
-}: UseMentorshipSessionsProps) {
+export function useMentorshipSessions(
+    filters: MentorshipSessionFilters,
+) {
     return useQuery({
-        queryKey:
-            mentorshipQueryKeys.list(
-                page,
-                limit,
-                search,
-            ),
+        queryKey: mentorshipQueryKeys.list(filters),
 
-        queryFn: () =>
-            getMentorshipSessions({
-                page,
-                limit,
-                search,
-            }),
+        queryFn: () => getMentorshipSessions(filters),
 
-        placeholderData: (
-            previousData,
-        ) => previousData,
+        placeholderData: (previousData) => previousData,
 
         staleTime: 1000 * 30,
     });

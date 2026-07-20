@@ -2,7 +2,7 @@
 
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 import { ServerActionResponse } from "@/src/types/server-action";
 
 import { notificationSchema } from "../zod/notification.schema";

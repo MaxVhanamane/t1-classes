@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
-import { requireStudentServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStudentServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 import { generateParticipantToken } from "@/src/app/admin/mentorship_sessions/_features/lib/videosdk/generate-participant-token";
 
@@ -34,6 +34,7 @@ type StudentLiveSessionAccessResult =
             id: string;
 
             title: string;
+            description: string;
 
             meeting_id: string | null;
 
@@ -76,6 +77,7 @@ export const getStudentLiveSessionAccess = cache(
             .select(`
         id,
         title,
+        description,
         meeting_id,
         starts_at,
         ends_at,

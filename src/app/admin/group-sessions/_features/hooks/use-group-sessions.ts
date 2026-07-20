@@ -3,40 +3,18 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getGroupSessions } from "../api/group-sessions-api";
-
 import { groupSessionsQueryKeys } from "../constants/query-keys";
+import { GroupSessionFilters } from "../types/group-session-filters";
 
-interface UseGroupSessionsProps {
-    page: number;
-
-    limit: number;
-
-    search: string;
-}
-
-export function useGroupSessions({
-    page,
-    limit,
-    search,
-}: UseGroupSessionsProps) {
+export function useGroupSessions(
+    filters: GroupSessionFilters,
+) {
     return useQuery({
-        queryKey:
-            groupSessionsQueryKeys.list(
-                page,
-                limit,
-                search,
-            ),
+        queryKey: groupSessionsQueryKeys.list(filters),
 
-        queryFn: () =>
-            getGroupSessions({
-                page,
-                limit,
-                search,
-            }),
+        queryFn: () => getGroupSessions(filters),
 
-        placeholderData: (
-            previousData,
-        ) => previousData,
+        placeholderData: (previousData) => previousData,
 
         staleTime: 1000 * 30,
     });

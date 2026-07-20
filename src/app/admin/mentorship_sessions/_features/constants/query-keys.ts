@@ -1,31 +1,26 @@
+import type { MentorshipSessionFilters } from "../types/mentorship-filters";
+
 export const mentorshipQueryKeys = {
-    all: ["mentorship-sessions"] as const,
+    all: ["admin-mentorship-sessions"] as const,
 
     lists: () =>
-        [
-            ...mentorshipQueryKeys.all,
-            "list",
-        ] as const,
+        [...mentorshipQueryKeys.all, "list"] as const,
 
-    list: (
-        page: number,
-        limit: number,
-        search: string,
-    ) =>
+    list: (filters: MentorshipSessionFilters) =>
         [
             ...mentorshipQueryKeys.lists(),
-            page,
-            limit,
-            search,
+            filters.page,
+            filters.search,
+            filters.batchId,
+            filters.status,
+            filters.audienceType,
+            filters.createdBy,
         ] as const,
 
-    students: (
-        sessionId: string,
-    ) =>
+    students: (sessionId: string) =>
         [
             ...mentorshipQueryKeys.all,
             "students",
             sessionId,
         ] as const,
-
 };

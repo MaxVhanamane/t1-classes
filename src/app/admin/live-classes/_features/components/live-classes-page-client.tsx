@@ -1,74 +1,152 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
 
-import { Button } from "@/src/components/ui/button";
+import { cn } from "@/src/lib/utils";
+
+import { Pagination } from "@/src/components/ui/pagination/pagination";
+import { TableSkeleton } from "@/src/components/ui/skeleton/table/table-skeleton";
+
+import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+
+import { useEnrollmentBatchOptions } from "@/src/app/admin/enrollments/_features/hooks/use-enrollment-batch-options";
+
+import { useInstructorOptions } from "@/src/hooks/use-instructor-options";
+
+import { useAuthClaims } from "@/src/lib/auth/claims/hooks/use-auth-claims";
+
+import { DEFAULT_LIVE_CLASS_FILTERS } from "../../constants/live-class-filters";
 
 import { useLiveClasses } from "../hooks/use-live-classes";
-import { LiveClassesTable } from "./live-classes-table";
-import { LiveClassRow } from "../types/live-class.types";
-import { LiveClassDialog } from "./live-class-dialog.tsx";
+
+import type { LiveClass } from "../types/live-class.types";
+
 import { DeleteLiveClassDialog } from "./delete-live-class-dialog";
 
+import { LiveClassFiltersBar } from "./live-class-filter-bar";
+import { LiveClassesPageHeader } from "./live-classes-page-header";
+import { LiveClassesTable } from "./live-classes-table";
+import { LiveClassDialog } from "./live-class-dialog.tsx";
+import { liveClassQueryKeys } from "../../constants/query-keys";
+
 export function LiveClassesPageClient() {
-  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState(DEFAULT_LIVE_CLASS_FILTERS);
+
+  const [searchInput, setSearchInput] = useState("");
 
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  const [selectedLiveClass, setSelectedLiveClass] =
-    useState<LiveClassRow | null>(null);
+  const [selectedLiveClass, setSelectedLiveClass] = useState<LiveClass | null>(
+    null,
+  );
 
-  const limit = 10;
+  const { data: auth, isLoading: isAuthLoading } = useAuthClaims();
 
-  const { data, isLoading } = useLiveClasses(page, limit);
+  const currentUserId = auth?.userId ?? "";
+
+  const isAdmin = auth?.role === "admin";
+
+  const { data, isLoading, isFetching, error, refetch } =
+    useLiveClasses(filters);
+
+  const { data: batches = [], isLoading: isBatchesLoading } =
+    useEnrollmentBatchOptions();
+
+  const { data: instructors = [], isLoading: isInstructorsLoading } =
+    useInstructorOptions({
+      enabled: isAdmin,
+    });
+
+  const hasActiveFilters =
+    filters.search !== DEFAULT_LIVE_CLASS_FILTERS.search ||
+    filters.batchId !== DEFAULT_LIVE_CLASS_FILTERS.batchId ||
+    filters.status !== DEFAULT_LIVE_CLASS_FILTERS.status ||
+    filters.createdBy !== DEFAULT_LIVE_CLASS_FILTERS.createdBy;
 
   function handleCreate() {
     setSelectedLiveClass(null);
     setOpenDialog(true);
   }
 
-  function handleEdit(row: LiveClassRow) {
-    setSelectedLiveClass(row);
+  function handleEdit(liveClass: LiveClass) {
+    setSelectedLiveClass(liveClass);
     setOpenDialog(true);
   }
 
-  function handleDelete(row: LiveClassRow) {
-    setSelectedLiveClass(row);
+  function handleDelete(liveClass: LiveClass) {
+    setSelectedLiveClass(liveClass);
     setOpenDeleteDialog(true);
+  }
+
+  if (error instanceof Error) {
+    return (
+      <BatchTestsErrorState
+        message={error.message}
+        onRetry={() => {
+          void refetch();
+        }}
+      />
+    );
   }
 
   return (
     <>
-      <div className="space-y-6 p-4 md:p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Live Classes
-            </h1>
+      <div className="mb-10 space-y-6 p-4 md:p-6">
+        <LiveClassesPageHeader
+          onCreate={handleCreate}
+          queryKey={liveClassQueryKeys.lists()}
+          isFetching={isFetching}
+        />
 
+        <LiveClassFiltersBar
+          filters={filters}
+          searchInput={searchInput}
+          onSearchInputChange={setSearchInput}
+          onFiltersChange={setFilters}
+          batches={batches}
+          isBatchesLoading={isBatchesLoading}
+          instructors={instructors}
+          isInstructorsLoading={isInstructorsLoading}
+          isAdmin={isAdmin}
+          currentUserId={currentUserId}
+          isAuthLoading={isAuthLoading}
+        />
+
+        {isLoading ? (
+          <TableSkeleton rows={4} columns={7} showTableHeader />
+        ) : !data || data.data.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-10 text-center">
             <p className="text-sm text-muted-foreground">
-              Manage scheduled YouTube live classes.
+              {hasActiveFilters
+                ? "No live classes match the selected filters."
+                : "No live classes found."}
             </p>
           </div>
+        ) : (
+          <>
+            <div className={cn(isFetching && "opacity-60")}>
+              <LiveClassesTable
+                classes={data.data}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </div>
 
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Live Class
-          </Button>
-        </div>
-
-        <LiveClassesTable
-          rows={data?.rows ?? []}
-          total={data?.total ?? 0}
-          page={page}
-          limit={limit}
-          loading={isLoading}
-          onPageChange={setPage}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+            <Pagination
+              page={data.page}
+              totalPages={data.totalPages}
+              totalCount={data.totalCount}
+              pageSize={data.pageSize}
+              onPageChange={(page) =>
+                setFilters((previous) => ({
+                  ...previous,
+                  page,
+                }))
+              }
+            />
+          </>
+        )}
       </div>
 
       <LiveClassDialog

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { generateParticipantToken } from "../lib/videosdk/generate-participant-token";
-import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 interface GetLiveSessionAccessParams {
     sessionId: string;
@@ -29,14 +29,11 @@ type LiveSessionAccessResult =
         session: {
             id: string;
             title: string;
-
+            description: string | null;
             meeting_id: string | null;
-
             starts_at: string;
             ends_at: string;
-
             audience_type: "batch" | "selected_students";
-
             batch_id: string;
             created_by: string;
         };
@@ -73,6 +70,7 @@ export const getLiveSessionAccess = cache(
             .select(`
         id,
         title,
+        description,
         meeting_id,
         starts_at,
         ends_at,

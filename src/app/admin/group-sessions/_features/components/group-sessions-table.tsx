@@ -1,13 +1,8 @@
 "use client";
 
 import { useState } from "react";
-
-import { useQueryClient } from "@tanstack/react-query";
-
 import { toast } from "sonner";
-
 import { Pencil, Trash2, Clock3, Users } from "lucide-react";
-
 import {
   Table,
   TableBody,
@@ -16,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/table";
-
 import { Button } from "@/src/components/ui/button";
 
 import {
@@ -37,23 +31,26 @@ import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 import { GroupSessionDialog } from "./group-session-dialog";
 
-import { GroupSessionsTableSkeleton } from "./group-sessions-table-skeleton";
-
-import { useGroupSessions } from "../hooks/use-group-sessions";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/components/ui/popover";
+import { Info } from "lucide-react";
 
 import { deleteGroupSession } from "../actions/delete-group-session";
 
 import { groupSessionsQueryKeys } from "../constants/query-keys";
 
 import { GroupSession } from "../types/group-session.types";
+import { useQueryClient } from "@tanstack/react-query";
 
-const LIMIT = 10;
+type GroupSessionsTableProps = {
+  sessions: GroupSession[];
+};
 
-export function GroupSessionsTable() {
-  const [page, setPage] = useState(1);
-
-  const [search] = useState("");
-
+export function GroupSessionsTable({ sessions }: GroupSessionsTableProps) {
+  const queryClient = useQueryClient();
   const [selectedSession, setSelectedSession] = useState<
     GroupSession | undefined
   >();
@@ -61,14 +58,6 @@ export function GroupSessionsTable() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
-
-  const queryClient = useQueryClient();
-
-  const { data, isLoading, isError } = useGroupSessions({
-    page,
-    limit: LIMIT,
-    search,
-  });
 
   function startAction(key: string) {
     setPendingActions((prev) => {
@@ -130,315 +119,375 @@ export function GroupSessionsTable() {
     return "live";
   }
 
-  if (isLoading) {
-    return <GroupSessionsTableSkeleton />;
-  }
-
-  if (isError || !data) {
-    return (
-      <div className="rounded-2xl border border-border/60 bg-card p-8">
-        <p className="text-sm text-destructive">
-          Failed to load group sessions.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/60 bg-card ">
-      {data.data.length === 0 ? (
-        <div className="p-12 text-center">
-          <p className="text-sm text-muted-foreground">
-            No group sessions found.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/40 hover:bg-muted/40">
-                  <TableHead className="min-w-[260px]">Session</TableHead>
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-card ">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-secondary hover:bg-secondary">
+              <TableHead className="sticky left-0 z-20 w-16 bg-secondary text-center font-medium">
+                No.
+              </TableHead>
 
-                  <TableHead>Audience</TableHead>
+              <TableHead className="min-w-50">Title</TableHead>
 
-                  <TableHead>Duration</TableHead>
+              <TableHead className="min-w-50">Description</TableHead>
 
-                  <TableHead className="min-w-[180px]">Start Time</TableHead>
+              <TableHead className="min-w-50">Batch</TableHead>
+              <TableHead className="min-w-50">Created By</TableHead>
+              <TableHead>Audience</TableHead>
 
-                  <TableHead>Meeting</TableHead>
+              <TableHead>Duration</TableHead>
 
-                  <TableHead>Status</TableHead>
+              <TableHead className="min-w-[180px]">Start Time</TableHead>
 
-                  <TableHead className="w-[160px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
+              <TableHead>Meeting</TableHead>
 
-              <TableBody>
-                {data.data.map((session) => {
-                  const status = getSessionState(session);
+              <TableHead>Status</TableHead>
 
-                  const deleteActionKey = `delete-${session.id}`;
+              <TableHead className="w-[160px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
 
-                  const isDeleting = isPending(deleteActionKey);
+          <TableBody>
+            {sessions.map((session, index) => {
+              const status = getSessionState(session);
 
-                  return (
-                    <TableRow
-                      key={session.id}
-                      className="transition-colors hover:bg-muted/30"
-                    >
-                      {/* ---------- Session ---------- */}
+              const deleteActionKey = `delete-${session.id}`;
 
-                      <TableCell className="max-w-[260px]">
-                        <div className="space-y-1">
-                          <p
-                            title={session.title}
-                            className="truncate font-medium text-foreground"
-                          >
-                            {truncateText(session.title)}
-                          </p>
+              const isDeleting = isPending(deleteActionKey);
 
-                          {session.description && (
-                            <p className="line-clamp-1 text-xs text-muted-foreground">
-                              {truncateText(session.description, 55)}
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
+              return (
+                <TableRow
+                  key={session.id}
+                  className="group transition-colors hover:bg-muted/30"
+                >
+                  <TableCell className="sticky left-0 z-20 w-14 min-w-14 bg-card text-center font-semibold transition-colors group-hover:bg-muted/0">
+                    {index + 1}
+                  </TableCell>
+                  {/* ---------- Session ---------- */}
 
-                      {/* ---------- Audience ---------- */}
+                  {/* ---------- Title ---------- */}
 
-                      <TableCell className="capitalize">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium">
-                          <Users className="size-3" />
+                  <TableCell className="max-w-50">
+                    <div className="flex items-center gap-2">
+                      <p
+                        title={session.title}
+                        className="truncate font-medium text-foreground"
+                      >
+                        {truncateText(session.title)}
+                      </p>
 
-                          {session.audience_type === "selected_students"
-                            ? "Selected"
-                            : "Batch"}
-                        </span>
-                      </TableCell>
-
-                      {/* ---------- Duration ---------- */}
-
-                      <TableCell>
-                        {session.expected_duration_minutes ? (
-                          <span className="inline-flex items-center gap-1 text-sm font-medium">
-                            <Clock3 className="size-4 text-muted-foreground" />
-                            {session.expected_duration_minutes}m
-                          </span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            —
-                          </span>
-                        )}
-                      </TableCell>
-
-                      {/* ---------- Start Time ---------- */}
-
-                      <TableCell>
-                        <div className="space-y-1 text-sm">
-                          <p>
-                            {new Date(session.starts_at).toLocaleDateString()}
-                          </p>
-
-                          <p className="text-muted-foreground">
-                            {new Date(session.starts_at).toLocaleTimeString(
-                              [],
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              },
-                            )}
-                          </p>
-                        </div>
-                      </TableCell>
-
-                      {/* ---------- Meeting ---------- */}
-
-                      <TableCell>
-                        <span
-                          className={cn(
-                            "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
-
-                            session.meeting_id
-                              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                              : "bg-muted text-muted-foreground",
-                          )}
-                        >
-                          {session.meeting_id ? "Link Added" : "No Link"}
-                        </span>
-                      </TableCell>
-
-                      {/* ---------- Status ---------- */}
-
-                      <TableCell>
-                        <div
-                          className={cn(
-                            "inline-flex min-w-[120px] items-center justify-center rounded-full border px-2 py-1.5 text-xs font-semibold",
-
-                            status === "waiting_for_link" &&
-                              "border-border/60 bg-muted/50 text-muted-foreground",
-
-                            status === "scheduled" &&
-                              "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-300",
-
-                            status === "live" &&
-                              "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300",
-
-                            status === "ended" &&
-                              "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300",
-                          )}
-                        >
-                          {status === "waiting_for_link" && "Waiting"}
-
-                          {status === "scheduled" && "Scheduled"}
-
-                          {status === "live" && "Live"}
-
-                          {status === "ended" && "Ended"}
-                        </div>
-                      </TableCell>
-
-                      {/* ---------- Actions ---------- */}
-
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedSession(session);
-
-                              setIsEditDialogOpen(true);
-                            }}
-                            className="h-9 rounded-xl border-border/60 bg-background px-3 transition-all hover:bg-muted"
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-6 shrink-0 text-muted-foreground hover:text-foreground"
                           >
-                            <Pencil className="mr-2 size-4" />
-                            Edit
+                            <Info className="size-3.5" />
                           </Button>
+                        </PopoverTrigger>
 
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
+                        <PopoverContent className="max-w-sm wrap-break-word bg-card">
+                          {session.title}
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </TableCell>
+
+                  {/* ---------- Description ---------- */}
+
+                  <TableCell className="max-w-50">
+                    <div className="flex items-center gap-2">
+                      {session.description ? (
+                        <>
+                          <p
+                            title={session.description}
+                            className="truncate text-sm text-muted-foreground"
+                          >
+                            {session.description}
+                          </p>
+
+                          <Popover>
+                            <PopoverTrigger asChild>
                               <Button
-                                variant="destructive"
-                                size="sm"
-                                disabled={isDeleting}
-                                className="h-9 rounded-xl bg-destructive px-3  transition-all hover:bg-destructive/90 "
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-6 shrink-0 text-muted-foreground hover:text-foreground"
                               >
-                                <Trash2 className="mr-2 size-4" />
-                                Delete
+                                <Info className="size-3.5" />
                               </Button>
-                            </AlertDialogTrigger>
+                            </PopoverTrigger>
 
-                            <AlertDialogContent className="border-border/60 bg-background">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Delete group session?
-                                </AlertDialogTitle>
+                            <PopoverContent className="max-w-sm wrap-break-word bg-card">
+                              {session.description}
+                            </PopoverContent>
+                          </Popover>
+                        </>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full border border-dashed border-muted-foreground/30 bg-muted/50 px-2 py-0.5 text-xs font-medium italic text-muted-foreground">
+                          No description
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
 
-                                <AlertDialogDescription>
-                                  This action cannot be undone. The group
-                                  session and all selected students will be
-                                  removed permanently.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
+                  {/* ---------- Batch ---------- */}
 
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <TableCell className="max-w-50">
+                    <div className="flex items-center gap-2">
+                      <span
+                        title={session.batch_title ?? "-"}
+                        className="truncate rounded-md border border-sky-200/60 bg-sky-50/80 px-2 py-1 text-xs font-medium text-sky-700 dark:border-sky-800/60 dark:bg-sky-950/30 dark:text-sky-300"
+                      >
+                        {session.batch_title ?? "-"}
+                      </span>
 
-                                <AlertDialogAction
-                                  disabled={isDeleting}
-                                  onClick={async (event) => {
-                                    event.preventDefault();
+                      {session.batch_title && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-6 shrink-0 text-muted-foreground hover:text-foreground"
+                            >
+                              <Info className="size-3.5" />
+                            </Button>
+                          </PopoverTrigger>
 
-                                    if (isDeleting) {
-                                      return;
-                                    }
+                          <PopoverContent className="max-w-sm wrap-break-word">
+                            {session.batch_title}
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
+                  </TableCell>
 
-                                    startAction(deleteActionKey);
+                  {/* ---------- Created By ---------- */}
 
-                                    const toastId = toast.loading(
-                                      "Deleting group session...",
-                                    );
+                  <TableCell className="max-w-40">
+                    <div className="flex items-center gap-2">
+                      <span
+                        title={session.creator_name ?? "-"}
+                        className="truncate rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+                      >
+                        {session.creator_name ?? "-"}
+                      </span>
 
-                                    try {
-                                      const { error } = await callServerAction(
-                                        deleteGroupSession(session.id),
-                                      );
+                      {session.creator_name && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-6 shrink-0 text-muted-foreground hover:text-foreground"
+                            >
+                              <Info className="size-3.5" />
+                            </Button>
+                          </PopoverTrigger>
 
-                                      if (error) {
-                                        toast.error(error, {
-                                          id: toastId,
-                                        });
+                          <PopoverContent className="max-w-sm wrap-break-word bg-card">
+                            {session.creator_name}
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
+                  </TableCell>
+                  {/* ---------- Audience ---------- */}
 
-                                        return;
-                                      }
+                  <TableCell className="capitalize">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium">
+                      <Users className="size-3" />
 
-                                      toast.success("Group session deleted", {
-                                        id: toastId,
-                                      });
+                      {session.audience_type === "selected_students"
+                        ? "Selected"
+                        : "Batch"}
+                    </span>
+                  </TableCell>
 
-                                      await queryClient.invalidateQueries({
-                                        queryKey:
-                                          groupSessionsQueryKeys.lists(),
-                                      });
-                                    } catch {
-                                      toast.error("Something went wrong", {
-                                        id: toastId,
-                                      });
-                                    } finally {
-                                      finishAction(deleteActionKey);
-                                    }
-                                  }}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Delete Session
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                  {/* ---------- Duration ---------- */}
 
-          {/* ---------- Pagination ---------- */}
+                  <TableCell>
+                    {session.expected_duration_minutes ? (
+                      <span className="inline-flex items-center gap-1 text-sm font-medium">
+                        <Clock3 className="size-4 text-muted-foreground" />
+                        {session.expected_duration_minutes}m
+                      </span>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
 
-          <div className="flex flex-col gap-4 border-t bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-              className="rounded-xl"
-            >
-              Previous
-            </Button>
+                  {/* ---------- Start Time ---------- */}
 
-            <p className="text-sm text-muted-foreground">
-              Page <span className="font-medium text-foreground">{page}</span>{" "}
-              of{" "}
-              <span className="font-medium text-foreground">
-                {data.totalPages}
-              </span>
-            </p>
+                  <TableCell className="whitespace-nowrap text-sm">
+                    {new Date(session.starts_at).toLocaleDateString()}
+                    <span className="mx-1 text-muted-foreground">·</span>
+                    <span className="text-muted-foreground">
+                      {new Date(session.starts_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </TableCell>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => prev + 1)}
-              disabled={page >= data.totalPages}
-              className="rounded-xl"
-            >
-              Next
-            </Button>
-          </div>
-        </>
-      )}
+                  {/* ---------- Meeting ---------- */}
+
+                  <TableCell>
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
+
+                        session.meeting_id
+                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {session.meeting_id ? "Link Added" : "No Link"}
+                    </span>
+                  </TableCell>
+
+                  {/* ---------- Status ---------- */}
+                  {/* ---------- Status ---------- */}
+
+                  <TableCell>
+                    <div
+                      className={cn(
+                        "inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium tracking-wide transition-all capitalize select-none",
+
+                        status === "waiting_for_link" &&
+                          "border-slate-200 bg-slate-50/50 text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-400",
+
+                        status === "scheduled" &&
+                          "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-300",
+
+                        status === "live" &&
+                          "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300 font-semibold",
+
+                        status === "ended" &&
+                          "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300",
+                      )}
+                    >
+                      {status === "waiting_for_link" && "Waiting for Link"}
+
+                      {status === "scheduled" && "Scheduled"}
+
+                      {status === "live" && "Live"}
+
+                      {status === "ended" && "Ended"}
+                    </div>
+                  </TableCell>
+
+                  {/* ---------- Actions ---------- */}
+
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedSession(session);
+
+                          setIsEditDialogOpen(true);
+                        }}
+                        className="h-9 rounded-xl border-border/60 bg-background px-3 transition-all hover:bg-muted"
+                      >
+                        <Pencil className="mr-2 size-4" />
+                        Edit
+                      </Button>
+
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={isDeleting}
+                            className="h-9 rounded-xl bg-destructive px-3  transition-all hover:bg-destructive/90 "
+                          >
+                            <Trash2 className="mr-2 size-4" />
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+
+                        <AlertDialogContent className="border-border/60 bg-background">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Delete group session?
+                            </AlertDialogTitle>
+
+                            <AlertDialogDescription>
+                              This action cannot be undone. The group session
+                              and all selected students will be removed
+                              permanently.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                            <AlertDialogAction
+                              disabled={isDeleting}
+                              onClick={async (event) => {
+                                event.preventDefault();
+
+                                if (isDeleting) {
+                                  return;
+                                }
+
+                                startAction(deleteActionKey);
+
+                                const toastId = toast.loading(
+                                  "Deleting group session...",
+                                );
+
+                                try {
+                                  const { error } = await callServerAction(
+                                    deleteGroupSession(session.id),
+                                  );
+
+                                  if (error) {
+                                    toast.error(error, {
+                                      id: toastId,
+                                    });
+
+                                    return;
+                                  }
+
+                                  toast.success("Group session deleted", {
+                                    id: toastId,
+                                  });
+
+                                  await queryClient.invalidateQueries({
+                                    queryKey: groupSessionsQueryKeys.lists(),
+                                  });
+                                } catch {
+                                  toast.error("Something went wrong", {
+                                    id: toastId,
+                                  });
+                                } finally {
+                                  finishAction(deleteActionKey);
+                                }
+                              }}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete Session
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
 
       <GroupSessionDialog
         open={isEditDialogOpen}

@@ -461,7 +461,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
       {/* ============================================= */}
 
       <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
-        <DrawerContent className="h-[95vh] data-[vaul-drawer-direction=bottom]:max-h-[95vh]">
+        <DrawerContent className="h-[95dvh] data-[vaul-drawer-direction=bottom]:max-h-[95dvh]">
           <DrawerHeader className="border-b">
             <DrawerTitle>Course Content</DrawerTitle>
           </DrawerHeader>

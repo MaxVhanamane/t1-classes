@@ -2,7 +2,7 @@ import { connection, NextResponse } from "next/server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
-import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireStudentApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
 type MentorshipSessionStatus =
     | "scheduled"

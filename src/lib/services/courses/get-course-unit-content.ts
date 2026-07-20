@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuth } from "@/src/lib/auth/get-auth";
+import { getAuthClaims } from "@/src/lib/auth/claims/get-auth-claims";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -58,7 +58,7 @@ export async function getCourseUnitContent(
         userResult,
         unitResult,
     ] = await Promise.all([
-        getAuth(),
+        getAuthClaims(),
 
         supabase
             .from(

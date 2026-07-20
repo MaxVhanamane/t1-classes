@@ -2,7 +2,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 
 export function GroupSessionsTableSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-card">
       <div className="overflow-x-auto">
         <div className="min-w-275">
           {/* Header */}

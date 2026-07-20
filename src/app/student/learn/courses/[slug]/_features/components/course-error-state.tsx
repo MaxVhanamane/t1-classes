@@ -5,7 +5,7 @@ import { Button } from "@/src/components/ui/button";
 import { BookX, LockKeyhole, ServerCrash, CircleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAuthClient } from "@/src/lib/auth/get-auth-client";
+import { getAuthClaimsClient } from "@/src/lib/auth/claims/get-auth-claims-client";
 
 type Props = {
   status: number;
@@ -58,7 +58,7 @@ export function CourseErrorState({ status, message }: Props) {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const user = await getAuthClient();
+        const user = await getAuthClaimsClient();
 
         if (!user && (status === 401 || status === 403)) {
           setIsLoggedOut(true);

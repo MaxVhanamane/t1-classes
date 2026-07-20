@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
-import { requireStudentServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStudentServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 interface GetStudentGroupSessionAccessParams {
     sessionId: string;

@@ -120,6 +120,7 @@ export default async function LiveMentorshipPage({
   return (
     <LiveRoomClient
       meetingId={access.meetingId}
+      sessionDescription={access.session.description}
       token={access.token}
       participantName={access.participantName}
       isModerator={access.isModerator}

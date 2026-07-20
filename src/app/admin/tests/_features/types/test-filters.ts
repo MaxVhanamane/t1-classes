@@ -3,7 +3,7 @@ import type { TestType } from "./test.types";
 export type TestFilters = {
     search: string;
 
-    createdBy: string | "me" | null;
+    createdBy: string | "me";
 
     testType: TestType | null;
 

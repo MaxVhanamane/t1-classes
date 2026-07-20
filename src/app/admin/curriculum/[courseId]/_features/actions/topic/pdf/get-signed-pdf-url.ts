@@ -2,7 +2,7 @@
 
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { getAuth } from "@/src/lib/auth/get-auth";
+import { getAuthClaims } from "@/src/lib/auth/claims/get-auth-claims";
 
 /* ================================================== */
 /* ENV                                                */
@@ -34,7 +34,7 @@ export async function getPdfSignedUrl(
     filePath: string
 ): Promise<string> {
 
-    const user = await getAuth();
+    const user = await getAuthClaims();
 
     if (!user) {
         throw new Error("Unauthorized");

@@ -31,6 +31,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/src/components/ui/dropdown-menu";
 
 import { Card } from "@/src/components/ui/card";
@@ -44,12 +45,22 @@ interface MentorshipParticipantTileProps {
   isModerator: boolean;
   totalParticipants: number;
   localParticipantQuality?: ParticipantQualityState;
+
+  // Mute control props mirroring the Agora setup
+  onForceMute?: (uid: string) => void;
+  onLiftMuteLock?: (uid: string) => void;
+  onForceVideoMute?: (uid: string) => void;
+  onLiftVideoLock?: (uid: string) => void;
 }
 
 export function MentorshipParticipantTile({
   participantId,
   isModerator,
   localParticipantQuality,
+  onForceMute,
+  onLiftMuteLock,
+  onForceVideoMute,
+  onLiftVideoLock,
 }: MentorshipParticipantTileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const micRef = useRef<HTMLAudioElement>(null);
@@ -68,9 +79,7 @@ export function MentorshipParticipantTile({
     micOn,
     screenShareOn,
     isLocal,
-    disableMic,
-    disableWebcam,
-    remove,
+    remove, // Keep remove for kicking the user
   } = useParticipant(participantId);
 
   const videoStream = useMemo(() => {
@@ -128,6 +137,7 @@ export function MentorshipParticipantTile({
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
+
   /* Toggle Fullscreen Logic */
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
@@ -160,6 +170,7 @@ export function MentorshipParticipantTile({
       // Silently catch fullscreen errors
     }
   };
+
   return (
     <Card
       ref={containerRef}
@@ -249,7 +260,7 @@ export function MentorshipParticipantTile({
         </div>
       )}
 
-      {/* Moderator Actions */}
+      {/* Moderator Actions - Match Agora styling exactly */}
       {isModerator && !isLocal && (
         <div className="absolute right-3 top-3 z-20">
           <DropdownMenu>
@@ -263,17 +274,38 @@ export function MentorshipParticipantTile({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => disableMic()}>
-                <MicOff className="mr-2 size-4" /> Mute Participant
+              <DropdownMenuItem onClick={() => onForceMute?.(participantId)}>
+                <MicOff className="mr-2 size-4 text-destructive" />
+                Force Mute Mic
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => disableWebcam()}>
-                <VideoOff className="mr-2 size-4" /> Disable Camera
+              <DropdownMenuItem onClick={() => onLiftMuteLock?.(participantId)}>
+                <Mic className="mr-2 size-4 text-green-500" />
+                Allow Mic Unmute
               </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={() => onForceVideoMute?.(participantId)}
+              >
+                <VideoOff className="mr-2 size-4 text-destructive" />
+                Force Disable Video
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onLiftVideoLock?.(participantId)}
+              >
+                <Video className="mr-2 size-4 text-green-500" />
+                Allow Video Enable
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
               <DropdownMenuItem
                 onClick={() => remove()}
                 className="text-destructive focus:text-destructive"
               >
-                <UserX className="mr-2 size-4" /> Remove Participant
+                <UserX className="mr-2 size-4" />
+                Remove Participant
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

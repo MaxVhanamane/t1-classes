@@ -4,7 +4,7 @@ import { updateTag } from "next/cache";
 import { batchSchema, Category } from "../zod-schema/schema";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { ServerActionResponse } from "@/src/types/server-action";
-import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireAdminServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 export async function updateBatch(
     batchId: string,

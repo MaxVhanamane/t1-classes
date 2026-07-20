@@ -27,12 +27,12 @@ export function EndMeetingDialog({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          variant="ghost"
+          variant="destructive"
           size="sm"
-          className="h-8 rounded-full text-xs font-medium text-destructive hover:bg-destructive/10 hover:text-destructive"
+          className="h-8 rounded-full px-3 text-[11px] font-medium shadow-lg shadow-red-500/10"
         >
           <PhoneOff className="mr-1.5 size-3.5" />
-          End
+          {isEndingMeeting ? "Ending..." : "End Session"}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="rounded-3xl">

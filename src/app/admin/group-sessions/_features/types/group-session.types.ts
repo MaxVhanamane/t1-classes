@@ -2,6 +2,12 @@ export type GroupSessionAudienceType =
     | "batch"
     | "selected_students";
 
+export type GroupSessionStatus =
+    | "waiting"
+    | "scheduled"
+    | "live"
+    | "ended";
+
 export interface GroupSession {
     id: string;
 
@@ -11,9 +17,9 @@ export interface GroupSession {
 
     batch_id: string;
 
-    audience_type:
-    | "batch"
-    | "selected_students";
+    batch_title: string;
+
+    audience_type: GroupSessionAudienceType;
 
     starts_at: string;
 
@@ -27,7 +33,14 @@ export interface GroupSession {
 
     created_by: string;
 
+    creator_name: string;
+
     created_at: string;
+
+    status: GroupSessionStatus;
+
+    total_count: number;
+
 }
 
 export interface GroupSessionStudent {
@@ -42,12 +55,10 @@ export interface GroupSessionStudent {
 
 export interface PaginatedGroupSessionsResponse {
     data: GroupSession[];
-
     page: number;
-
     totalPages: number;
-
     totalCount: number;
+    pageSize: number;
 }
 
 export interface GroupSessionBatchOption {

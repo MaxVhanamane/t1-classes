@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { deleteR2Object } from "@/src/lib/r2/deleteObject";
-import { getAuth } from "@/src/lib/auth/get-auth";
+import { getAuthClaims } from "@/src/lib/auth/claims/get-auth-claims";
 
 const R2_PUBLIC_BUCKET_NAME = process.env.R2_PUBLIC_BUCKET_NAME!;
 
@@ -16,7 +16,7 @@ type Body = {
 export async function PUT(req: NextRequest) {
     try {
         const supabase = await createServerSupabaseClient();
-        const user = await getAuth();
+        const user = await getAuthClaims();
 
         if (!user) {
             return NextResponse.json(
@@ -77,7 +77,7 @@ export async function PUT(req: NextRequest) {
 export async function DELETE() {
     try {
         const supabase = await createServerSupabaseClient();
-        const user = await getAuth();
+        const user = await getAuthClaims();
 
         if (!user) {
             return NextResponse.json(

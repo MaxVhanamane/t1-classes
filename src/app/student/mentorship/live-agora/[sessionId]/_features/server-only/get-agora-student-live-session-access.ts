@@ -5,21 +5,19 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { requireStudentServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStudentServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 import { generateAgoraToken } from "@/src/app/admin/mentorship/live-agora/[sessionId]/_features/server-only/generate-agora-token";
 
 export interface Session {
     id: string;
     title: string;
-    description: string | null;
     batch_id: string;
     audience_type: "batch" | "selected_students";
+    description: string | null;
     meeting_id: string | null;
     starts_at: string;
-    ends_at: string | null;
+    ends_at: string;
     created_by: string;
-    created_at: string;
-    duration_minutes: number;
 }
 
 export type StudentLiveSessionAccessResult =
@@ -62,9 +60,9 @@ export const getAgoraStudentLiveSessionAccess = cache(
         /* ---------- Session ---------- */
         const { data: session } = await supabase
             .from("mentorship_sessions")
-            .select("*")
+            .select("id, title,audience_type,batch_id, description, meeting_id, starts_at, ends_at, created_by")
             .eq("id", sessionId)
-            .single();
+            .single().overrideTypes<Session>();
 
         if (!session) {
             notFound();
@@ -109,8 +107,8 @@ export const getAgoraStudentLiveSessionAccess = cache(
             }
         }
 
-        /* ---------- RTC Token Generation ---------- */
-        const numericUid = hashUuidToUint32(user.userId);
+        // 3. Generate Agora-specific token
+        const numericUid = generateSessionUid();
 
         // Pass false for isModerator
         const token = generateAgoraToken(session.meeting_id, numericUid, false);
@@ -123,16 +121,13 @@ export const getAgoraStudentLiveSessionAccess = cache(
             participantName: profile?.full_name ?? "Student",
             isModerator: false,
             isSessionOwner: false,
-            session: session as Session,
+            session: session,
         };
     },
 );
 
-function hashUuidToUint32(uuid: string): number {
-    let hash = 0;
-    for (let i = 0; i < uuid.length; i++) {
-        hash = ((hash << 5) - hash) + uuid.charCodeAt(i);
-        hash |= 0;
-    }
-    return Math.abs(hash);
+function generateSessionUid(): number {
+    // 31-bit random int — Agora UIDs must fit in a 32-bit unsigned int,
+    // keeping it under 0x7fffffff avoids any signed/unsigned edge cases
+    return Math.floor(Math.random() * 0x7fffffff);
 }

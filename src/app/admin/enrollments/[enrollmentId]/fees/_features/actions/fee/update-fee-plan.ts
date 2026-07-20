@@ -2,7 +2,7 @@
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
-import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireAdminServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 import {
     FeePlanSubmitInput,

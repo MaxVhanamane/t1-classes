@@ -9,7 +9,7 @@ import {
 
 import {
     requireStudentApiRoute,
-} from "@/src/lib/auth/require-role-api-route";
+} from "@/src/lib/auth/claims/require-role-api-route";
 
 type PaperCategory =
     | "previous_year"

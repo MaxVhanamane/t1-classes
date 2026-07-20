@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireStaffApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
 type RouteParams = {
     params: Promise<{

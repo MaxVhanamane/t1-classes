@@ -1,27 +1,25 @@
+import { GroupSessionFilters } from "../types/group-session-filters";
+
 export const groupSessionsQueryKeys = {
-    all: ["group-sessions"] as const,
+    all: ["admin-group-sessions"] as const,
 
     lists: () =>
-        [
-            ...groupSessionsQueryKeys.all,
-            "list",
-        ] as const,
+        [...groupSessionsQueryKeys.all, "list"] as const,
 
-    list: (
-        page: number,
-        limit: number,
-        search: string,
-    ) =>
+    list: (filters: GroupSessionFilters) =>
         [
             ...groupSessionsQueryKeys.lists(),
-            page,
-            limit,
-            search,
+            {
+                page: filters.page,
+                search: filters.search,
+                batchId: filters.batchId,
+                status: filters.status,
+                audienceType: filters.audienceType,
+                createdBy: filters.createdBy,
+            },
         ] as const,
 
-    students: (
-        sessionId: string,
-    ) =>
+    students: (sessionId: string) =>
         [
             ...groupSessionsQueryKeys.all,
             "students",

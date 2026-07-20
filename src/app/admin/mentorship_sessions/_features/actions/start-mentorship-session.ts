@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 import { createVideoSdkMeeting } from "../lib/videosdk/create-meeting";
 
 export async function startMentorshipSession(sessionId: string) {

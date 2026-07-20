@@ -21,10 +21,12 @@ import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { endMentorshipSession } from "../actions/end-mentorship-session";
 
 import { AgoraParticipantTile } from "./agora-participant-tile";
-import { AgoraMeetingChat } from "./agora-meeting-chat";
+// LIFTED STATE: Import the ChatMessage type here
+import { AgoraMeetingChat, ChatMessage } from "./agora-meeting-chat";
 import { cn } from "@/src/lib/utils";
 import { MeetingHeader } from "./meeting-header";
 import { MeetingControls } from "./meeting-controls";
+import { LiveSessionProps } from "./live-room-client";
 
 interface AgoraMessagingClient {
   sendStreamMessage(msg: Uint8Array): Promise<void>;
@@ -38,14 +40,8 @@ interface ParticipantData {
   user: RemoteUserType | null;
 }
 
-interface MentorshipMeetingViewProps {
-  isModerator: boolean;
-  isSessionOwner: boolean;
-  endsAt: string;
+interface MentorshipMeetingViewProps extends LiveSessionProps {
   leaveRedirectHref: string;
-  sessionId: string;
-  sessionTitle: string;
-  participantName: string;
 }
 
 export function MentorshipMeetingView({
@@ -55,6 +51,7 @@ export function MentorshipMeetingView({
   endsAt,
   isSessionOwner,
   sessionTitle,
+  sessionDescription,
   participantName,
 }: MentorshipMeetingViewProps) {
   const router = useRouter();
@@ -62,6 +59,9 @@ export function MentorshipMeetingView({
   const connectionState = useConnectionState();
   const currentUid = useCurrentUID();
   const remoteUsers = useRemoteUsers();
+
+  // LIFTED STATE: Chat messages now live at the top-level parent view
+  const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
 
   // FIX 1: Extract audioTracks and videoTracks properly
   const { audioTracks, error: audioSubError } =
@@ -149,9 +149,6 @@ export function MentorshipMeetingView({
   const initialWebcamIdRef = useRef(selectedWebcamId);
 
   // Tracks whether the mic hardware should be engaged AT ALL this session.
-  // Starts by respecting the setup-page choice (micEnabled's initial value).
-  // Once flipped true (first unmute), it stays true for the rest of the call —
-  // mute/unmute after that point uses setMuted(), never destroys the track.
   const [micTrackNeeded, setMicTrackNeeded] = useState<boolean>(
     () => micEnabled,
   );
@@ -191,7 +188,7 @@ export function MentorshipMeetingView({
 
   const micConfig = useMemo(
     () => ({ microphoneId: initialMicIdRef.current || undefined }),
-    [], // stable forever — hook only uses this for initial track creation
+    [],
   );
   const camConfig = useMemo(
     () => ({ cameraId: initialWebcamIdRef.current || undefined }),
@@ -202,7 +199,7 @@ export function MentorshipMeetingView({
     localMicrophoneTrack,
     error: isMicrophoneTrackError,
     isLoading: isMicrophoneTrackLoading,
-  } = useLocalMicrophoneTrack(micTrackNeeded, micConfig); // gates hardware creation, NOT mute state
+  } = useLocalMicrophoneTrack(micTrackNeeded, micConfig);
   const {
     localCameraTrack,
     error: isCameraTrackError,
@@ -229,6 +226,7 @@ export function MentorshipMeetingView({
       localScreenTrack.close();
     }
   }, [localMicrophoneTrack, localCameraTrack, localScreenTrack]);
+
   const releaseHardwareRef = useRef(releaseHardware);
   useEffect(() => {
     releaseHardwareRef.current = releaseHardware;
@@ -240,8 +238,6 @@ export function MentorshipMeetingView({
     };
   }, []);
 
-  // ADD: handles hard tab close / refresh / browser kill,
-  // where React's own unmount cleanup may never get a chance to run
   useEffect(() => {
     const handlePageHide = () => {
       releaseHardwareRef.current();
@@ -252,16 +248,10 @@ export function MentorshipMeetingView({
     };
   }, []);
 
-  // Actual mic mute/unmute — per Agora docs, setMuted() is faster than
-  // setEnabled(), does not stop capturing audio, and correctly fires
-  // user-unpublished/user-published on the remote client. This is the
-  // single source of truth: every place in this file that changes
-  // micEnabled (button click, host force-mute, mic error) stays correct
-  // automatically, without duplicating the setMuted() call at each site.
   useEffect(() => {
     if (!localMicrophoneTrack) return;
     const shouldBeMuted = !micEnabled;
-    if (localMicrophoneTrack.muted === shouldBeMuted) return; // already in sync, skip redundant call/event
+    if (localMicrophoneTrack.muted === shouldBeMuted) return;
     localMicrophoneTrack.setMuted(shouldBeMuted).catch((err) => {
       console.error("[MIC_SET_MUTED_ERROR]", err);
     });
@@ -280,7 +270,7 @@ export function MentorshipMeetingView({
   useEffect(() => {
     if (isMicrophoneTrackError) {
       setMicEnabled(false);
-      setMicTrackNeeded(false); // release — lets a future unmute attempt retry cleanly after the user fixes permissions
+      setMicTrackNeeded(false);
       toast.error("Failed to access microphone. Please check permissions.");
     }
   }, [isMicrophoneTrackError]);
@@ -289,13 +279,6 @@ export function MentorshipMeetingView({
     if (isCameraTrackError) {
       setWebcamEnabled(false);
       setCamTrackNeeded(false);
-      toast.error("Failed to access camera. Please check permissions.");
-    }
-  }, [isCameraTrackError]);
-
-  useEffect(() => {
-    if (isCameraTrackError) {
-      setWebcamEnabled(false);
       toast.error("Failed to access camera. Please check permissions.");
     }
   }, [isCameraTrackError]);
@@ -322,7 +305,6 @@ export function MentorshipMeetingView({
     }
   }, [isScreenTrackError]);
 
-  // Handle native browser "Stop sharing" button
   useEffect(() => {
     if (!localScreenTrack) return;
     const handleTrackEnded = () => {
@@ -335,6 +317,7 @@ export function MentorshipMeetingView({
     };
   }, [localScreenTrack]);
   /* ----------------------------------- */
+
   const tracksToPublish = useMemo(() => {
     const tracks = [];
     if (localMicrophoneTrack) tracks.push(localMicrophoneTrack);
@@ -483,6 +466,19 @@ export function MentorshipMeetingView({
               screenShareOn: data.screenShareOn || false,
             },
           }));
+        } else if (data.type === "CHAT_MESSAGE") {
+          // LIFTED STATE: Intercept chat packets globally to preserve them in the parent's memory
+          setLiveMessages((prev) => [
+            ...prev,
+            {
+              id: data.id,
+              senderId: senderUid,
+              senderName: data.senderName,
+              message: data.message,
+              timestamp: data.timestamp,
+              status: "sent",
+            },
+          ]);
         } else if (
           data.type === "FORCE_MUTE" &&
           data.targetUid === currentUid?.toString()
@@ -578,10 +574,24 @@ export function MentorshipMeetingView({
     releaseHardware,
   ]);
 
+  // 1. Define the cooldown duration (5 seconds)
+  const lastHandActionTime = useRef(0);
+  const HAND_COOLDOWN_MS = 5000;
+
   const handleRaiseHand = useCallback(async () => {
     if (!currentUid) return;
+
+    // 2. Prevent spam with a 5-second time check
+    const now = Date.now();
+    if (now - lastHandActionTime.current < HAND_COOLDOWN_MS) {
+      toast.warning("Please wait a few seconds before toggling your hand.");
+      return;
+    }
+    lastHandActionTime.current = now;
+
     const uidStr = currentUid.toString();
     const isRaised = !!raisedHands[uidStr];
+
     const payload = {
       type: isRaised ? "HAND_LOWERED" : "HAND_RAISED",
       uid: uidStr,
@@ -590,7 +600,9 @@ export function MentorshipMeetingView({
     };
 
     try {
-      await broadcastPayloadSafely(payload);
+      // 3. Use void for fire-and-forget
+      void broadcastPayloadSafely(payload);
+
       setRaisedHands((prev) => {
         const next = { ...prev };
         if (isRaised) delete next[uidStr];
@@ -621,16 +633,16 @@ export function MentorshipMeetingView({
     connectionState === "CONNECTED" && remoteUsers.length === 0;
 
   return (
-    <div className="flex h-(--h-viewport-minus-navbar) flex-col overflow-hidden bg-muted-soft">
+    <div className="flex h-(--h-viewport-minus-navbar) flex-col overflow-hidden">
       {/* Header */}
       <MeetingHeader
         sessionTitle={sessionTitle}
+        sessionDescription={sessionDescription}
         participantCount={participantList.length}
         isWaitingForOthers={isWaitingForOthers}
         isSessionOwner={isSessionOwner}
         isEndingMeeting={isEndingMeeting}
         endsAt={endsAt}
-        connectionQuality={"good"}
         onCountdownExpire={
           isSessionOwner ? () => void performMeetingEnd() : undefined
         }
@@ -640,10 +652,10 @@ export function MentorshipMeetingView({
       {/* Main */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Video Area */}
-        <div className="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-muted-soft p-3 sm:p-4 xl:p-5">
+        <div className="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 xl:p-5">
           {/* Joining Overlay */}
           {isConnecting && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted-soft backdrop-blur-sm">
+            <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
               <div className="mx-6 w-full max-w-sm rounded-3xl border bg-card/95 p-8 text-center shadow-xl">
                 <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-muted">
                   <Loader2 className="size-8 animate-spin text-muted-foreground" />
@@ -746,7 +758,7 @@ export function MentorshipMeetingView({
         </div>
 
         {/* Desktop Chat */}
-        <div className="hidden min-h-0 w-90 flex-col border-l bg-muted-soft xl:flex">
+        <div className="hidden min-h-0 w-90 flex-col border-l xl:flex">
           <div className="border-b px-4 py-3">
             <h2 className="font-semibold tracking-tight">Chat</h2>
           </div>
@@ -754,6 +766,9 @@ export function MentorshipMeetingView({
             participantName={participantName}
             localUid={currentUid?.toString() || ""}
             client={client}
+            // LIFTED STATE: Provide state down to component
+            liveMessages={liveMessages}
+            setLiveMessages={setLiveMessages}
           />
         </div>
       </div>
@@ -773,6 +788,9 @@ export function MentorshipMeetingView({
         videoDevices={videoDevices}
         selectedMicId={selectedMicId}
         selectedWebcamId={selectedWebcamId}
+        // LIFTED STATE: Provide state down to controls for passing to the mobile sheet
+        liveMessages={liveMessages}
+        setLiveMessages={setLiveMessages}
         onToggleMic={() => {
           if (hostMuteLock) {
             toast.error("You cannot unmute. The host has muted you.");
@@ -791,15 +809,26 @@ export function MentorshipMeetingView({
         }}
         onToggleScreenShare={() => setScreenShareOn(!screenShareOn)}
         onChangeMic={async (id: string) => {
+          if (hostMuteLock) {
+            toast.error(
+              "You cannot change the microphone while forcefully muted.",
+            );
+            return;
+          }
+
           try {
             if (localMicrophoneTrack) {
               await localMicrophoneTrack.setDevice(id);
             } else {
-              // No track exists yet (mic never turned on this session) — store the
-              // choice so it's used as the device once the mic is actually created.
               initialMicIdRef.current = id;
             }
             setSelectedMicId(id);
+
+            const device = audioDevices.find((d) => d.deviceId === id);
+            toast.success(
+              `Microphone changed to ${device?.label ?? "Unknown Microphone"}`,
+            );
+
             const current = JSON.parse(
               sessionStorage.getItem("mentorship-meeting-preferences") ?? "{}",
             );
@@ -813,6 +842,13 @@ export function MentorshipMeetingView({
           }
         }}
         onChangeWebcam={async (id: string) => {
+          if (hostVideoLock) {
+            toast.error(
+              "You cannot change the camera while forcefully disabled.",
+            );
+            return;
+          }
+
           try {
             if (localCameraTrack) {
               await localCameraTrack.setDevice(id);
@@ -820,6 +856,12 @@ export function MentorshipMeetingView({
               initialWebcamIdRef.current = id;
             }
             setSelectedWebcamId(id);
+
+            const device = videoDevices.find((d) => d.deviceId === id);
+            toast.success(
+              `Camera changed to ${device?.label ?? "Unknown Camera"}`,
+            );
+
             const current = JSON.parse(
               sessionStorage.getItem("mentorship-meeting-preferences") ?? "{}",
             );

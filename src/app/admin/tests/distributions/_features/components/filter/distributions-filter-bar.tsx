@@ -5,14 +5,13 @@ import { RotateCcw, Search } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 
-import { TestCreatedByCombobox } from "@/src/app/admin/tests/_features/components/filter/test-created-by-combobox";
-
 import type { InstructorOption } from "@/src/app/admin/courses/_features/types/course.types";
 
 import { DistributionTabs } from "../distribution-tabs";
 import { DEFAULT_DISTRIBUTION_FILTERS } from "../../constants/distribution-filters.constants";
 import { DistributionStatus } from "../../types/distribution.types";
 import { DistributionFilters } from "../../types/distribution-filters";
+import { CreatedByCombobox } from "../../../../_features/components/filter/created-by-combobox";
 
 type Props = {
   filters: DistributionFilters;
@@ -100,9 +99,9 @@ export function DistributionFiltersBar({
 
       <div className="grid gap-3 md:grid-cols-2">
         {isAdmin && (
-          <TestCreatedByCombobox
+          <CreatedByCombobox
             value={filters.createdBy}
-            staff={instructors}
+            instructors={instructors}
             currentUserId={currentUserId}
             isLoading={isInstructorsLoading}
             onChange={(createdBy) =>

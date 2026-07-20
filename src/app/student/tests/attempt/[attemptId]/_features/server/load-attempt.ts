@@ -9,7 +9,7 @@ import {
     isAttemptExpired,
 } from "@/src/lib/helper-functions/attempt-expiry";
 import { createStaticSupabaseClient } from "@/src/lib/supabase/supabase-static";
-import { requireStudentServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStudentServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 /* =========================================================
    CACHED TEST PAYLOAD

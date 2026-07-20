@@ -107,13 +107,14 @@ export default async function LiveMentorshipPage({
     <LiveRoomClient
       meetingId={access.meetingId}
       token={access.token}
-      numericUid={access.numericUid} // Pass the UID required by Agora
+      numericUid={access.numericUid}
       participantName={access.participantName}
       isModerator={access.isModerator}
       isSessionOwner={access.isSessionOwner}
       sessionId={sessionId}
       endsAt={access.session.ends_at ?? ""}
       sessionTitle={access.session.title}
+      sessionDescription={access.session.description}
     />
   );
 }

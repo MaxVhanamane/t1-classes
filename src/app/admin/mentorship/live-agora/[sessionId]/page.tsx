@@ -22,7 +22,7 @@ function SessionStateCard({
   description: string;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-6">
+    <div className="flex h-(--h-viewport-minus-navbar) items-center justify-center p-4 sm:p-6">
       <Card className="w-full max-w-md rounded-3xl border bg-card p-8 shadow-sm">
         <div className="flex flex-col items-center text-center">
           <div className="mb-5 flex size-14 items-center justify-center rounded-2xl bg-muted">
@@ -96,6 +96,7 @@ export default async function LiveMentorshipPage({
       sessionId={sessionId}
       endsAt={access.session.ends_at}
       sessionTitle={access.session.title}
+      sessionDescription={access.session.description}
       numericUid={access.numericUid}
     />
   );

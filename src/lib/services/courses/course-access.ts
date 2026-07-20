@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { getAuth } from "../../auth/get-auth";
+import { getAuthClaims } from "../../auth/claims/get-auth-claims";
 
 export type CourseAccess = {
     hasAccess: boolean;
@@ -12,7 +12,7 @@ export async function getCourseAccess(
     courseId: string,
 ): Promise<CourseAccess> {
     const supabase = await createServerSupabaseClient();
-    const user = await getAuth();
+    const user = await getAuthClaims();
 
     if (!user) {
         return {

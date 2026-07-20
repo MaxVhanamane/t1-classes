@@ -1,9 +1,9 @@
 import "server-only"
-import { createServerSupabaseClient } from "../supabase/supabase-server"
-import { getAuth } from "./get-auth"
+import { createServerSupabaseClient } from "../../supabase/supabase-server"
+import { getAuthClaims } from "./get-auth-claims"
 
 export async function getUserProfile() {
-    const auth = await getAuth()
+    const auth = await getAuthClaims()
     if (!auth) throw new Error("Unauthorized")
 
     const supabase = await createServerSupabaseClient()

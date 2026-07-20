@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { SaveAnswerBody, SaveAnswerSchema } from "./zod.answer.schema";
-import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireStudentApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
 export async function PATCH(
     req: Request,

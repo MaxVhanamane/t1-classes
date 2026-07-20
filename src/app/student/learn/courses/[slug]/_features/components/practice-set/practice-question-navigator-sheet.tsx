@@ -80,7 +80,7 @@ export function PracticeQuestionNavigatorSheet({
         </Button>
       </DrawerTrigger>
 
-      <DrawerContent className="h-[90vh] max-h-[90vh]">
+      <DrawerContent className="h-[90dvh] max-h-[90dvh]">
         <div className="mx-auto flex h-full w-full max-w-lg min-h-0 flex-col">
           <DrawerHeader>
             <DrawerTitle>Question Navigator</DrawerTitle>

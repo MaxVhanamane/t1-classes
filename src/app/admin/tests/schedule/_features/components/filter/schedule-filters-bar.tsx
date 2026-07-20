@@ -16,8 +16,8 @@ import {
 import type { InstructorOption } from "@/src/app/admin/courses/_features/types/course.types";
 import { ScheduleFilters } from "../../types/schedule-filters";
 import { TestType } from "../../../../_features/types/test.types";
-import { TestCreatedByCombobox } from "../../../../_features/components/filter/test-created-by-combobox";
 import { DEFAULT_SCHEDULE_FILTERS } from "../../constants/schedule-filters.constants";
+import { CreatedByCombobox } from "../../../../_features/components/filter/created-by-combobox";
 
 type Props = {
   filters: ScheduleFilters;
@@ -129,9 +129,9 @@ export function ScheduleFiltersBar({
 
         {/* Created By */}
         {isAdmin && (
-          <TestCreatedByCombobox
+          <CreatedByCombobox
             value={filters.createdBy}
-            staff={instructors}
+            instructors={instructors}
             currentUserId={currentUserId}
             isLoading={isInstructorsLoading}
             onChange={(createdBy) =>

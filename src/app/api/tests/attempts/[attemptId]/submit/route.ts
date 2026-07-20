@@ -5,7 +5,7 @@ import {
     getAttemptExpiryWithGraceMs,
     isAttemptExpired,
 } from "@/src/lib/helper-functions/attempt-expiry";
-import { requireStudentApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireStudentApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
 /* ---------------------------------------------
  * Response Type

@@ -8,7 +8,7 @@ import {
     flexibleChecksumsMiddlewareOptions,
 } from "@aws-sdk/middleware-flexible-checksums";
 import { AssetType, SIZE_LIMITS, VALID_ASSET_TYPES } from "@/src/lib/constants/upload.constants";
-import { requireAnyUserApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireAnyUserApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
 /* ================================================== */
 /* ENV                                                */

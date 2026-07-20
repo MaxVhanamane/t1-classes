@@ -117,7 +117,6 @@ export function MentorshipSessionDialog({
   const { data: selectedStudentIds, isLoading: isSelectedStudentsLoading } =
     useMentorshipSessionStudents({
       sessionId: session?.id,
-
       enabled: open && isEdit && audienceType === "selected_students",
     });
 

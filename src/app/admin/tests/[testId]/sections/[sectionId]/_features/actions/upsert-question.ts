@@ -3,7 +3,7 @@
 import { createQuestionSchema } from "../zod/question.schema";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { ServerActionResponse } from "@/src/types/server-action";
-import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 export async function upsertQuestion(
     testId: string,

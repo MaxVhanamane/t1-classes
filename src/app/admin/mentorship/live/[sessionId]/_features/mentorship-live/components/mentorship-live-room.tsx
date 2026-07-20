@@ -9,23 +9,7 @@ import {
 } from "@videosdk.live/react-sdk";
 
 import { MentorshipMeetingView } from "./mentorship-meeting-view";
-
-interface MentorshipLiveRoomProps {
-  meetingId: string;
-
-  token: string;
-
-  sessionId: string;
-
-  endsAt: string;
-
-  participantName: string;
-
-  isModerator: boolean;
-
-  isSessionOwner: boolean;
-  sessionTitle: string;
-}
+import { VideoSdkLiveSessionProps } from "./live-room-client";
 
 export interface MeetingPreferences {
   micEnabled: boolean;
@@ -60,7 +44,8 @@ export function MentorshipLiveRoom({
   endsAt,
   isSessionOwner,
   sessionTitle,
-}: MentorshipLiveRoomProps) {
+  sessionDescription,
+}: VideoSdkLiveSessionProps) {
   const preferences = useMemo<MeetingPreferences>(() => {
     if (typeof window === "undefined") {
       return DEFAULT_PREFERENCES;
@@ -182,6 +167,7 @@ export function MentorshipLiveRoom({
         isSessionOwner={isSessionOwner}
         sessionTitle={sessionTitle}
         preferences={preferences}
+        sessionDescription={sessionDescription}
       />
     </MeetingProvider>
   );

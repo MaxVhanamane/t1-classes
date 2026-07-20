@@ -10,7 +10,7 @@ import {
 
 import {
     requireAdminApiRoute,
-} from "@/src/lib/auth/require-role-api-route";
+} from "@/src/lib/auth/claims/require-role-api-route";
 
 import type {
     EnrollmentListResponse,

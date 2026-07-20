@@ -5,7 +5,7 @@ import { batchSchema } from "../zod-schema/schema";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { generateBatchSlug } from "@/src/lib/helper-functions/generate-slug";
 import { ServerActionResponse } from "@/src/types/server-action";
-import { requireAdminServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireAdminServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 
 export async function createBatch(
     input: unknown

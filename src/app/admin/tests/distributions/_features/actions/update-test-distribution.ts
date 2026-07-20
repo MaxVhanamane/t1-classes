@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { ScheduleTestInput } from "../../../schedule/_features/zod/schedule-test.schema";
 import { computeDistributionStatus } from "../helpers/compute-distribution-status";
 import { ServerActionResponse } from "@/src/types/server-action";
-import { requireStaffServerOnly } from "@/src/lib/auth/require-role-server-only";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 import { updateTag } from "next/cache";
 
 export async function updateTestDistribution(

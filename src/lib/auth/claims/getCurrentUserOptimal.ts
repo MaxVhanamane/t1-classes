@@ -1,11 +1,11 @@
 "use server"
-import { getAuth } from "./get-auth";
-import { createServerSupabaseClient } from "../supabase/supabase-server";
+import { getAuthClaims } from "./get-auth-claims";
+import { createServerSupabaseClient } from "../../supabase/supabase-server";
 
 export async function getUserForMenu() {
     const supabase = await createServerSupabaseClient();
 
-    const authUser = await getAuth()
+    const authUser = await getAuthClaims()
 
     if (!authUser) return null;
 

@@ -256,13 +256,13 @@ export function MentorshipPrecallSetup({
   ]);
 
   return (
-    <div className="min-h-screen bg-muted-soft p-3 sm:p-4 lg:p-6">
+    <div className="min-h-screen p-3 sm:p-4 lg:p-6">
       <div className="mx-auto max-w-7xl">
-        <Card className="overflow-hidden rounded-[2rem] border bg-background p-0 shadow-sm">
+        <Card className="overflow-hidden rounded-xl border bg-background p-0 shadow-sm">
           <div className="grid min-h-[85dvh] lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
             {/* Preview */}
             <div className="relative flex min-w-0 items-center justify-center bg-background p-3 sm:p-4 lg:p-6">
-              <div className="relative aspect-video w-full overflow-hidden rounded-[1.75rem] border border-white/10 bg-zinc-950 shadow-2xl">
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-white/10 bg-zinc-950 shadow-2xl">
                 {loading ? (
                   <div className="flex h-full items-center justify-center">
                     <Loader2 className="size-10 animate-spin text-white/70" />
@@ -320,7 +320,7 @@ export function MentorshipPrecallSetup({
                 {/* Toggles */}
                 <div className="space-y-4">
                   {/* Mic */}
-                  <div className="flex flex-col gap-4 rounded-2xl border bg-muted-soft p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-4 rounded-xl border bg-muted-soft p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-background shadow-sm">
                         {micEnabled ? (
@@ -346,7 +346,7 @@ export function MentorshipPrecallSetup({
                   </div>
 
                   {/* Camera */}
-                  <div className="flex flex-col gap-4 rounded-2xl border bg-muted-soft p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-4 rounded-xl border bg-muted-soft p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-background shadow-sm">
                         {webcamEnabled ? (
@@ -379,7 +379,7 @@ export function MentorshipPrecallSetup({
                     <Label>Microphone</Label>
 
                     <Select value={selectedMic} onValueChange={setSelectedMic}>
-                      <SelectTrigger className="h-12 w-full min-w-0 rounded-2xl">
+                      <SelectTrigger className="h-12 w-full min-w-0 rounded-xl">
                         <SelectValue placeholder="Select microphone" />
                       </SelectTrigger>
 
@@ -407,7 +407,7 @@ export function MentorshipPrecallSetup({
                       value={selectedCamera}
                       onValueChange={setSelectedCamera}
                     >
-                      <SelectTrigger className="h-12 w-full min-w-0 rounded-2xl">
+                      <SelectTrigger className="h-12 w-full min-w-0 rounded-xl">
                         <SelectValue placeholder="Select camera" />
                       </SelectTrigger>
 
@@ -435,7 +435,7 @@ export function MentorshipPrecallSetup({
                       value={selectedSpeaker}
                       onValueChange={setSelectedSpeaker}
                     >
-                      <SelectTrigger className="h-12 w-full min-w-0 rounded-2xl">
+                      <SelectTrigger className="h-12 w-full min-w-0 rounded-xl">
                         <SelectValue placeholder="Select speaker" />
                       </SelectTrigger>
 
@@ -458,7 +458,7 @@ export function MentorshipPrecallSetup({
 
                 {/* Permission Warning */}
                 {(cameraPermissionDenied || micPermissionDenied) && (
-                  <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
+                  <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4">
                     <p className="text-sm font-medium text-destructive">
                       Permissions Required
                     </p>
@@ -476,7 +476,7 @@ export function MentorshipPrecallSetup({
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <Button
                     variant="outline"
-                    className="h-12 w-full flex-1 rounded-2xl"
+                    className="h-12 w-full flex-1 rounded-xl"
                     onClick={() => {
                       void initializeDevices();
                     }}
@@ -491,7 +491,7 @@ export function MentorshipPrecallSetup({
                   </Button>
 
                   <Button
-                    className="h-12 w-full flex-1 rounded-2xl"
+                    className="h-12 w-full flex-1 rounded-xl"
                     onClick={handleJoin}
                   >
                     <Check className="mr-2 size-4" />

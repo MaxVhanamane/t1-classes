@@ -31,13 +31,13 @@ export function EndMeetingDialog({
           className="h-8 rounded-full px-3 text-[11px] font-medium shadow-lg shadow-red-500/10"
           disabled={isEndingMeeting}
         >
-          {isEndingMeeting ? "Ending..." : "End Meeting"}
+          {isEndingMeeting ? "Ending..." : "End Session"}
         </Button>
       </AlertDialogTrigger>
 
       <AlertDialogContent className="rounded-3xl border-white/10 bg-zinc-950">
         <AlertDialogHeader>
-          <AlertDialogTitle>End Meeting?</AlertDialogTitle>
+          <AlertDialogTitle>End Session?</AlertDialogTitle>
 
           <AlertDialogDescription>
             This will disconnect all participants and permanently end the
@@ -54,7 +54,7 @@ export function EndMeetingDialog({
             className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={onConfirm}
           >
-            End Meeting
+            End Session
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

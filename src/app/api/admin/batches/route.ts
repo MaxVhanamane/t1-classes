@@ -6,7 +6,7 @@ import {
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 
-import { requireAdminApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireAdminApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
 import type {
     BatchListItem,

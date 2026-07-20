@@ -26,6 +26,11 @@ import {
 } from "@/src/components/ui/tooltip";
 import { useBatchHealth } from "../hooks/use-batch-health";
 import { Users, IndianRupee, Activity } from "lucide-react";
+import {
+  BlueBadge,
+  GreenBadge,
+  YellowBadge,
+} from "@/src/components/ui/common/colored-badges";
 
 export function BatchHealthTable() {
   const { data, isLoading, isError } = useBatchHealth();
@@ -70,36 +75,14 @@ export function BatchHealthTable() {
   // Uses a solid dot and a subtle border/text color for a high-end look in both modes.
   const getHealthBadge = (students: number) => {
     if (students >= 50) {
-      return (
-        <Badge
-          variant="outline"
-          className="gap-1.5 border-emerald-200 bg-emerald-50/50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-400 font-medium"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_1px_rgba(16,185,129,0.4)]" />
-          High Demand
-        </Badge>
-      );
+      return <GreenBadge showDot>High Demand</GreenBadge>;
     }
+
     if (students >= 20) {
-      return (
-        <Badge
-          variant="outline"
-          className="gap-1.5 border-blue-200 bg-blue-50/50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-900/20 dark:text-blue-400 font-medium"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_4px_1px_rgba(59,130,246,0.4)]" />
-          Healthy
-        </Badge>
-      );
+      return <BlueBadge showDot>Healthy</BlueBadge>;
     }
-    return (
-      <Badge
-        variant="outline"
-        className="gap-1.5 border-amber-200 bg-amber-50/50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-400 font-medium"
-      >
-        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_4px_1px_rgba(245,158,11,0.4)]" />
-        Growing
-      </Badge>
-    );
+
+    return <YellowBadge showDot>Growing</YellowBadge>;
   };
 
   return (

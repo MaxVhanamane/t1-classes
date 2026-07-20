@@ -3,7 +3,7 @@ import {
     NextResponse,
 } from "next/server";
 
-import { requireStaffApiRoute } from "@/src/lib/auth/require-role-api-route";
+import { requireStaffApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
 import type {
     DistributionQueryParams,
