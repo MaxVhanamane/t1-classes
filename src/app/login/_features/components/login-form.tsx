@@ -22,6 +22,7 @@ import {
 import { StatusCard } from "@/src/components/ui/common/StatusCard";
 import { LoginInput, loginSchema } from "../zod/login.schema";
 import { Link } from "@/src/components/ui/link";
+import { PUSH_STORAGE_KEY } from "@/src/hooks/student/notifications/use-register-push";
 
 export default function LoginForm() {
   const supabase = createBrowserSupabaseClient();
@@ -75,7 +76,8 @@ export default function LoginForm() {
 
         const { data: authData } = await supabase.auth.getClaims();
         const role = authData?.claims?.app_role;
-
+        // --- CLEAR PUSH CACHE ON SUCCESSFUL LOGIN ---
+        localStorage.removeItem(PUSH_STORAGE_KEY);
         setRedirecting(true);
 
         switch (role) {

@@ -1,5 +1,4 @@
 import { onRegistered, register, type Messaging } from "firebase/messaging";
-
 import { getFirebaseMessaging } from "./client";
 
 // One listener for the lifetime of the page.
@@ -42,8 +41,7 @@ async function doRegister(): Promise<string | null> {
         return null;
     }
 
-    let permission: NotificationPermission =
-        Notification.permission;
+    let permission: NotificationPermission = Notification.permission;
 
     if (permission === "default") {
         permission = await Notification.requestPermission();
@@ -59,43 +57,40 @@ async function doRegister(): Promise<string | null> {
         return null;
     }
 
-    // Attach the callback before calling register().
-    ensureListener(messaging);
+    // 1. UNINSTALL/REINSTALL FIX: Ensure the new Service Worker is actually controlling the page.
+    if (!navigator.serviceWorker.controller) {
+        await new Promise<void>((resolve) => {
+            navigator.serviceWorker.addEventListener("controllerchange", () => resolve(), { once: true });
+            // Fallback timeout so it never hangs indefinitely
+            setTimeout(resolve, 2000);
+        });
+    }
 
     // Reuse the existing Serwist service worker.
-    const serviceWorkerRegistration =
-        await navigator.serviceWorker.ready;
+    const serviceWorkerRegistration = await navigator.serviceWorker.ready;
 
+    // 2. DEADLOCK FIX: Create the promise and assign the resolver FIRST.
     const fidPromise = new Promise<string | null>((resolve) => {
         registrationResolver = resolve;
     });
 
+    // 3. Attach the callback ONLY AFTER the resolver exists.
+    ensureListener(messaging);
+
     try {
         await register(messaging, {
-            vapidKey:
-                process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY!,
+            vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY!,
             serviceWorkerRegistration,
         });
     } catch (error) {
         registrationResolver = null;
-
-        console.error(
-            "[PUSH] Failed to register push notifications.",
-            error
-        );
-
+        console.error("[PUSH] Failed to register push notifications.", error);
         return null;
     }
 
     return fidPromise;
 }
 
-/**
- * Registers this browser with Firebase Cloud Messaging.
- *
- * Safe to call multiple times. Concurrent callers share the same
- * registration request, preventing duplicate register() calls.
- */
 export async function registerPushNotifications(): Promise<string | null> {
     if (inFlight) {
         return inFlight;

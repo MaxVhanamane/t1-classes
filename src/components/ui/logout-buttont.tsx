@@ -6,6 +6,7 @@ import { Button } from "@/src/components/ui/button";
 import { ROUTES } from "@/src/lib/constants/route-constants";
 import { useState } from "react";
 import { createBrowserSupabaseClient } from "@/src/lib/supabase/supabase-client";
+import { PUSH_STORAGE_KEY } from "@/src/hooks/student/notifications/use-register-push";
 
 export function LogoutButton() {
   const supabase = createBrowserSupabaseClient();
@@ -19,6 +20,7 @@ export function LogoutButton() {
 
     // IMPORTANT:
     // push instead of redirect to avoid server mismatch
+    localStorage.removeItem(PUSH_STORAGE_KEY);
     router.push(ROUTES.login);
     router.refresh();
   };

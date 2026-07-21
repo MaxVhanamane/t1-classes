@@ -6,7 +6,7 @@ import { registerPushNotifications } from "@/src/lib/firebase/register-push";
 import { savePushRegistration } from "@/src/app/admin/notifications/_features/actions/save-push-registration";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 
-const STORAGE_KEY = "push_registration_fid";
+export const PUSH_STORAGE_KEY = "push_registration_fid";
 
 export function useRegisterPush() {
     // Prevent React Strict Mode from starting the registration flow twice.
@@ -34,7 +34,7 @@ export function useRegisterPush() {
                     return;
                 }
 
-                const cachedFid = localStorage.getItem(STORAGE_KEY);
+                const cachedFid = localStorage.getItem(PUSH_STORAGE_KEY);
 
                 // Nothing changed.
                 if (cachedFid === fid) {
@@ -57,7 +57,7 @@ export function useRegisterPush() {
                     return;
                 }
 
-                localStorage.setItem(STORAGE_KEY, fid);
+                localStorage.setItem(PUSH_STORAGE_KEY, fid);
             } catch (error) {
                 console.error(
                     "[PUSH_REGISTRATION_ERROR]",
