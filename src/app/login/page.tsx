@@ -1,8 +1,8 @@
 import { CheckCircle } from "lucide-react";
-import { GridBackground } from "@/src/components/grid-background";
 import { AnimatedLogo } from "../student/dashboard/_features/common/animated-logo";
 import LoginForm from "./_features/components/login-form";
 import { LandingNavbar } from "../student/dashboard/_features/common/LandingNavbar";
+import { PremiumLines } from "@/src/components/animated-lines";
 
 export default function LoginPage() {
   return (
@@ -78,7 +78,9 @@ export default function LoginPage() {
       ring-gray-400/10 dark:ring-gray-300/15"
             />
 
-            <GridBackground className="rounded-2xl opacity-40" />
+            {/* <GridBackground className="rounded-2xl opacity-40" /> */}
+
+            <PremiumLines className="opacity-80" />
 
             <div className="flex flex-col items-center pt-10 pb-2 space-y-2 z-10 relative">
               <div className="w-15 h-15">

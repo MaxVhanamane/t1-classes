@@ -30,7 +30,7 @@ export function LandingNavbar({ action }: LandingNavbarProps) {
           <ThemeToggle />
 
           {action && (
-            <Button asChild>
+            <Button size="sm" asChild>
               <Link href={action.href}>{action.label}</Link>
             </Button>
           )}

@@ -108,10 +108,10 @@ export function MentorshipSessionsTable({ sessions }: Props) {
                 <TableHead className="sticky left-0 z-20 w-16 bg-secondary text-center font-medium">
                   No.
                 </TableHead>
-                <TableHead className="min-w-[260px]">Session Title</TableHead>
-                <TableHead className="min-w-[260px]">Description</TableHead>
-                <TableHead className="min-w-[260px]">Batch</TableHead>
-                <TableHead className="min-w-[260px]">Created By</TableHead>
+                <TableHead className="min-w-50">Session Title</TableHead>
+                <TableHead className="min-w-50">Description</TableHead>
+                <TableHead className="min-w-50">Batch</TableHead>
+                <TableHead className="min-w-50">Created By</TableHead>
 
                 {/* <TableHead>Audience</TableHead> */}
 

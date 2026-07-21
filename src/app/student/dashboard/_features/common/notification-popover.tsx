@@ -14,6 +14,7 @@ import { NotificationBell } from "./notification-bell";
 import { NotificationItem } from "./notification-item";
 import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
 import { Button } from "@/src/components/ui/button";
+import DottedBackground from "@/src/components/dotted-background";
 
 type Notification = {
   id: string;
@@ -79,7 +80,8 @@ export function NotificationPopover() {
         </div>
       </PopoverTrigger>
 
-      <PopoverContent className="w-85 sm:w-90 p-0 bg-card mr-4">
+      <PopoverContent className="w-85 sm:w-90 p-0 bg-inverse mr-4">
+        <DottedBackground />
         {/* THE FIX: Added flex layout to the header to include the close button */}
         <div className="flex items-center justify-between border-b px-4 py-3">
           <span className="font-medium text-foreground">Notifications</span>

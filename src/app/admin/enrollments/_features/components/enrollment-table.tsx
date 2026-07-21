@@ -140,9 +140,9 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
   return (
     <div className="rounded-md border ">
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-secondary hover:bg-secondary">
           <TableRow>
-            <TableHead className="sticky left-0 z-20 bg-muted-soft">
+            <TableHead className="sticky left-0 z-20 bg-secondary">
               Student
             </TableHead>
 
@@ -181,9 +181,12 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
             const isBatch = enrollment.target_type === "batch";
 
             return (
-              <TableRow key={enrollment.id}>
+              <TableRow
+                key={enrollment.id}
+                className="group transition-colors  bg-card hover:bg-muted/30"
+              >
                 {/* STUDENT */}
-                <TableCell className="sticky left-0 z-10 bg-muted-soft font-medium">
+                <TableCell className="sticky left-0 z-20  bg-card  font-semibold transition-colors group-hover:bg-muted/0">
                   <div className="space-y-0.5">
                     <TruncatedWithTooltip text={user.full_name} />
 

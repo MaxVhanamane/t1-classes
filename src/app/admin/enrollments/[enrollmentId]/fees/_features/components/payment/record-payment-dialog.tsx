@@ -69,7 +69,7 @@ export function RecordPaymentDialog({ enrollmentId, pendingAmount }: Props) {
   const amountValue = Number(form.watch("amount") || 0);
   const isOverpaying = amountValue > pendingAmount;
 
-  const { isDirty, isValid } = form.formState;
+  const { isValid } = form.formState;
 
   async function onSubmit(data: RecordPaymentFormInput) {
     setLoading(true);
@@ -119,7 +119,10 @@ export function RecordPaymentDialog({ enrollmentId, pendingAmount }: Props) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent
+          onFocusOutside={(e) => e.preventDefault()}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>Record Payment</DialogTitle>
             <DialogDescription>
@@ -203,7 +206,7 @@ export function RecordPaymentDialog({ enrollmentId, pendingAmount }: Props) {
               <Button
                 className="cursor-pointer"
                 type="submit"
-                disabled={loading || !isDirty || !isValid}
+                disabled={loading || !isValid}
               >
                 {loading ? "Saving..." : "Record Payment"}
               </Button>

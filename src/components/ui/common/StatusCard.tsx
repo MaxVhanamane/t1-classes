@@ -53,7 +53,7 @@ export function StatusCard({
         {/* Border glow */}
         <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-green-500/10 dark:ring-green-500/15" />
 
-        <DottedBackground />
+        <DottedBackground className="opacity-60" />
 
         {/* Icon */}
         <div className="space-y-4">
