@@ -68,7 +68,8 @@ export function MentorshipPageHeader({
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+        {/* Main controls container */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 w-full lg:w-auto">
           {isAdmin && (
             <div className="flex w-full sm:w-auto items-center justify-between gap-4 rounded-lg border px-4 py-2">
               <div className="space-y-0.5">
@@ -86,15 +87,18 @@ export function MentorshipPageHeader({
             </div>
           )}
 
-          <RefreshButton queryKey={queryKey} isFetching={isFetching} />
+          {/* Action buttons wrapper: Forces Refresh and Create onto the same line */}
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <RefreshButton queryKey={queryKey} isFetching={isFetching} />
 
-          <Button
-            onClick={() => setOpen(true)}
-            className="ml-auto shrink-0 sm:ml-0"
-          >
-            <Plus className="mr-2 size-4" />
-            Create Session
-          </Button>
+            <Button
+              onClick={() => setOpen(true)}
+              className="shrink-0 flex-1 sm:flex-none"
+            >
+              <Plus className="mr-2 size-4" />
+              Create Session
+            </Button>
+          </div>
         </div>
       </div>
 

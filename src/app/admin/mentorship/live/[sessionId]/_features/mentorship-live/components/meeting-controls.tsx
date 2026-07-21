@@ -237,7 +237,11 @@ export function MeetingControls({
           </Button>
 
           {/* Mobile Chat Drawer */}
-          <Drawer open={isChatOpen} onOpenChange={handleChatOpenChange}>
+          <Drawer
+            open={isChatOpen}
+            onOpenChange={handleChatOpenChange}
+            repositionInputs={false}
+          >
             <DrawerTrigger asChild>
               <Button
                 variant="outline"

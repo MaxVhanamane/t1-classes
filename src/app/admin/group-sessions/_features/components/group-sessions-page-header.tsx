@@ -34,12 +34,12 @@ export function GroupSessionsPageHeader({
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           <RefreshButton queryKey={queryKey} isFetching={isFetching} />
 
           <Button
             onClick={() => setOpen(true)}
-            className="w-full shrink-0 sm:w-auto"
+            className="flex-1 shrink-0 sm:w-auto sm:flex-none"
           >
             <Plus className="mr-2 size-4" />
             Create Session
