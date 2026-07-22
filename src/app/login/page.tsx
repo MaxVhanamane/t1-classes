@@ -63,7 +63,7 @@ export default function LoginPage() {
 
         {/* ---------------- Right: Login Card ---------------- */}
         <div className="flex items-center justify-center min-h-0 px-4 py-4">
-          <div className="w-full max-w-sm rounded-2xl text-card-foreground bg-background border border-border relative z-10 overflow-hidden ring-white/10 dark:ring-white/10">
+          <div className="w-full max-w-sm rounded-2xl text-card-foreground bg-background border border-border relative z-10 overflow-hidden ring-white/10 dark:ring-white/10 py-2">
             <DottedBackground className="opacity-40" />
             {/* 1. DARK MODE TOP GLOW */}
             <div className="pointer-events-none absolute inset-x-0 top-0 h-24 blur-2xl hidden dark:block bg-linear-to-b from-cyan-300/50 via-cyan-300/5 to-transparent" />
