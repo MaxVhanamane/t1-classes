@@ -65,6 +65,7 @@ export async function savePushRegistration(
                     user_id: student.userId,
                     fid: values.fid,
                     user_agent: values.userAgent,
+                    platform: values.platform
                 },
                 {
                     onConflict: "user_id",

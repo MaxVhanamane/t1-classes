@@ -19,7 +19,38 @@ export function useRegisterPush() {
 
         hasStarted.current = true;
 
-        async function syncPushRegistration() {
+        /**
+         * Reusable sync handler. 
+         * Used for BOTH the initial page load AND mid-session token rotations.
+         */
+        async function handleFidSync(fid: string) {
+            const cachedFid = localStorage.getItem(PUSH_STORAGE_KEY);
+
+            // PREVENT UNNECESSARY DB WRITES:
+            // If the local cache matches the FID, the server already knows about this device.
+            if (cachedFid === fid) {
+                return;
+            }
+
+            // The FID is new or the cache was cleared (e.g., on login). 
+            // We must sync it with the database to maintain the "1 User = 1 Device" rule.
+            const result = await callServerAction(
+                savePushRegistration({
+                    fid,
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform
+                })
+            );
+
+            if (result.error) {
+                return;
+            }
+
+            // Successfully synced with server. Update the cache to prevent future writes.
+            localStorage.setItem(PUSH_STORAGE_KEY, fid);
+        }
+
+        async function initPushRegistration() {
             try {
                 if (
                     typeof Notification === "undefined" ||
@@ -28,44 +59,22 @@ export function useRegisterPush() {
                     return;
                 }
 
-                const fid = await registerPushNotifications();
+                // Initialize Firebase. 
+                // We pass `handleFidSync` so Firebase can call it if the token rotates later.
+                const initialFid = await registerPushNotifications(handleFidSync);
 
-                if (!fid) {
+                if (!initialFid) {
                     return;
                 }
 
-                const cachedFid = localStorage.getItem(PUSH_STORAGE_KEY);
+                // Process the initial FID fetched on page load
+                await handleFidSync(initialFid);
 
-                // Nothing changed.
-                if (cachedFid === fid) {
-                    return;
-                }
+            } catch {
 
-                const result = await callServerAction(
-                    savePushRegistration({
-                        fid,
-                        userAgent: navigator.userAgent,
-                    })
-                );
-
-                if (result.error) {
-                    console.error(
-                        "[PUSH] Failed to save registration:",
-                        result.error
-                    );
-
-                    return;
-                }
-
-                localStorage.setItem(PUSH_STORAGE_KEY, fid);
-            } catch (error) {
-                console.error(
-                    "[PUSH_REGISTRATION_ERROR]",
-                    error
-                );
             }
         }
 
-        void syncPushRegistration();
+        void initPushRegistration();
     }, []);
 }
