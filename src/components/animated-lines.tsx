@@ -123,17 +123,19 @@ export function PremiumLines({ className }: { className?: string }) {
           />
         ))}
 
+        {/* Glow circle: cyan-500 in light mode, var(--foreground) in dark mode */}
         <motion.circle
           style={{ cx, cy, opacity }}
           r="1.4"
-          fill="var(--foreground)"
+          className="fill-cyan-400 dark:fill-foreground"
           filter="url(#spark-glow)"
           opacity="0.4"
         />
+        {/* Core spark circle: cyan-400 in light mode, var(--foreground) in dark mode */}
         <motion.circle
           style={{ cx, cy, opacity }}
           r="0.45"
-          fill="var(--foreground)"
+          className="fill-cyan-400 dark:fill-foreground"
         />
       </svg>
     </div>

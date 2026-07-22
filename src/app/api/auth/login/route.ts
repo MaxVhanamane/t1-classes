@@ -3,7 +3,6 @@ import { jwtDecode } from "jwt-decode";
 // 1. Import BOTH clients
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { createServiceRoleSupabaseClient } from "@/src/lib/supabase/supabase-service-role";
-import { headers } from "next/headers";
 
 type SupabaseJwt = {
     session_id: string;
@@ -21,16 +20,15 @@ export async function POST(req: Request) {
             email,
             password,
         });
-        console.log("eeeeee", error)
-        const reqHeaders = await headers();
+        // const reqHeaders = await headers();
 
         // 1. THE SECURITY FIX:
         // 'x-real-ip' is forcefully set by Vercel's edge network. A hacker cannot spoof this.
         // We fallback to 'x-forwarded-for' ONLY for local development (localhost).
-        const trueUserIp = reqHeaders.get("x-real-ip") || reqHeaders.get("x-forwarded-for")?.split(',')[0] || "127.0.0.1";
-        console.log("x-real-ip", reqHeaders.get("x-real-ip"));
-        console.log("x-forwarded-for", reqHeaders.get("x-forwarded-for"));
-        console.log("trueUserIp", trueUserIp);
+        // const trueUserIp = reqHeaders.get("x-real-ip") || reqHeaders.get("x-forwarded-for")?.split(',')[0] || "127.0.0.1";
+        // console.log("x-real-ip", reqHeaders.get("x-real-ip"));
+        // console.log("x-forwarded-for", reqHeaders.get("x-forwarded-for"));
+        // console.log("trueUserIp", trueUserIp);
         if (error) {
             const status = error.status || 401;
 

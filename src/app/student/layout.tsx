@@ -30,7 +30,6 @@ interface StudentLayoutProps {
 export default async function StudentAppShellLayout({
   children,
 }: StudentLayoutProps) {
-  console.log("student navbar mounted");
   return (
     <div className="select-none">
       <PushRegistration />

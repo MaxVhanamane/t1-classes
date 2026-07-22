@@ -3,17 +3,17 @@
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { requireStudentServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
 import { ServerActionResponse } from "@/src/types/server-action";
-
 import { pushRegistrationSchema } from "../zod/push-registration.schema";
+import { createServiceRoleSupabaseClient } from "@/src/lib/supabase/supabase-service-role";
 
 export async function savePushRegistration(
     input: unknown
 ): Promise<ServerActionResponse<void>> {
-    // redirect() throws internally; keep outside try/catch
+    // redirect() throws internally; keep outside try/catch block
     const student = await requireStudentServerOnly();
 
     try {
-        /* ---------- validate ---------- */
+        /* ---------- 1. Validate Input ---------- */
 
         const parsed = pushRegistrationSchema.safeParse(input);
 
@@ -27,18 +27,26 @@ export async function savePushRegistration(
 
         const values = parsed.data;
 
-        const supabase = await createServerSupabaseClient();
+        /* ---------- 2. Admin Cleanup (Bypass RLS) ---------- */
 
         /**
-         * A browser (FID) can only belong to one user at a time.
-         *
-         * If the same browser is later used to sign in as a different student,
-         * the unique(fid) constraint would conflict with our upsert(user_id).
-         *
-         * Remove any existing registration for this FID that belongs to another
-         * user before upserting the current user's active registration.
+         * WHY SERVICE ROLE / ADMIN CLIENT IS USED HERE:
+         * 
+         * A browser's Firebase Installation ID (FID) must only belong to one active user.
+         * If User 1 logs out and User 2 logs into the exact same browser/device:
+         * 
+         * 1. The browser sends User 1's existing FID under User 2's session.
+         * 2. If we attempt to delete User 1's registration using the standard client,
+         *    Supabase's Row Level Security (RLS) blocks it because User 2 does not own User 1's row.
+         * 3. The delete silently affects 0 rows, leading to a duplicate key constraint error (23505)
+         *    when the upsert below tries to write the same FID.
+         * 
+         * Using the Admin/Service-Role client bypasses RLS restrictions solely to strip this
+         * physical device FID from any previous account before assigning it to the current student.
          */
-        const { error: deleteError } = await supabase
+        const supabaseAdmin = await createServiceRoleSupabaseClient();
+
+        const { error: deleteError } = await supabaseAdmin
             .from("push_registrations")
             .delete()
             .eq("fid", values.fid)
@@ -56,7 +64,15 @@ export async function savePushRegistration(
             };
         }
 
-        /* ---------- upsert active registration ---------- */
+        /* ---------- 3. Upsert Active User Registration ---------- */
+
+        /**
+         * Now that the FID is guaranteed to be unlinked from other accounts,
+         * use the standard user-scoped client to register or update the current student's record.
+         * 'onConflict: user_id' ensures that if this student logged in on a new device, 
+         * their previous device registration is overwritten to enforce '1 User = 1 Active Device'.
+         */
+        const supabase = await createServerSupabaseClient();
 
         const { error } = await supabase
             .from("push_registrations")
@@ -65,7 +81,7 @@ export async function savePushRegistration(
                     user_id: student.userId,
                     fid: values.fid,
                     user_agent: values.userAgent,
-                    platform: values.platform
+                    platform: values.platform,
                 },
                 {
                     onConflict: "user_id",
