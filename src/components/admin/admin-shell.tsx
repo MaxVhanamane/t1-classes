@@ -1,35 +1,27 @@
 "use client";
 
-import { useState } from "react";
 import AdminSidebar from "./sidebar";
 import AdminHeader from "./header";
+import { SidebarInset } from "@/src/components/ui/sidebar";
 
 export default function AdminShell({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
-    <div className="flex h-screen bg-muted-soft">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    <div className="flex min-h-screen w-full bg-muted-soft">
+      {/* 
+        Shadcn's Sidebar component automatically detects mobile via context.
+        It renders as a standard sidebar on desktop, and a sliding Sheet + overlay on mobile.
+      */}
+      <AdminSidebar />
 
-      {/* Sidebar */}
-      <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <SidebarInset className="flex flex-1 flex-col min-w-0">
+        <AdminHeader />
 
-      {/* Main */}
-      <div className="flex flex-1 flex-col overflow-auto">
-        <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
-
-        <main className="flex-1 overflow-y-auto">{children}</main>
-      </div>
+        <main className="flex-1 overflow-y-auto bg-muted-soft">{children}</main>
+      </SidebarInset>
     </div>
   );
 }

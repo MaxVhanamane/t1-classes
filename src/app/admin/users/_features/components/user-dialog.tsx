@@ -42,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import { extractFirstErrorMessage } from "../../../batches/_features/components/batch-dialog";
+import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 
 type Props = {
   mode: "create" | "edit";

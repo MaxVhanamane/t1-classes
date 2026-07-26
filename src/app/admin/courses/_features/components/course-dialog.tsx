@@ -46,7 +46,6 @@ import { validateImage } from "@/src/lib/helper-functions/validate-image";
 import { ImageCropper } from "@/src/components/ui/media/ImageCropper";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
 import { MARKETING_LIMITS } from "@/src/lib/constants/marketing-limits";
-import { extractFirstErrorMessage } from "../../../batches/_features/components/batch-dialog";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import {
   CATEGORIES,
@@ -69,6 +68,7 @@ import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { CourseRow, InstructorOption } from "../types/course.types";
 import { CourseInstructorsMultiSelect } from "./course-instructors-multi-select";
 import { useQueryClient } from "@tanstack/react-query";
+import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 
 /* -------------------------------------------------- */
 

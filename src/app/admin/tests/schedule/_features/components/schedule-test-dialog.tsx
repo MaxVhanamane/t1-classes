@@ -34,7 +34,7 @@ import {
 import { updateTestDistribution } from "../../../distributions/_features/actions/update-test-distribution";
 import { ISODatePicker } from "../../../distributions/_features/components/iso-date-picker";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
-import { useBatchOptions } from "@/src/hooks/use-batch-options";
+import { useActiveBatchOptions } from "@/src/hooks/use-active-batch-options";
 import { useQueryClient } from "@tanstack/react-query";
 import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 
@@ -71,7 +71,7 @@ export function ScheduleTestDialog({
     data: batches = [],
     isLoading: isBatchesLoading,
     error: batchesError,
-  } = useBatchOptions();
+  } = useActiveBatchOptions();
 
   useEffect(() => {
     if (batchesError instanceof Error) {

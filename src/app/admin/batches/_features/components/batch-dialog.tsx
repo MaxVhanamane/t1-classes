@@ -5,7 +5,6 @@ import {
   useForm,
   useWatch,
   FormProvider,
-  FieldErrors,
   useFieldArray,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -73,6 +72,7 @@ import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { formatFileSize } from "@/src/lib/helper-functions/format-file-size";
 import { CourseMultiSelectCombobox } from "./course-multi-select-combobox";
 import { InstructorMultiSelectCombobox } from "./instructor-multi-select-combobox";
+import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 
 const CLASS_LEVELS = [6, 7, 8, 9, 10, 11, 12] as const;
 
@@ -121,25 +121,6 @@ function mapBatchToForm(batch: BatchListItem): BatchFormValues {
     board: batch.board ?? null,
     address: batch.address ?? "",
   };
-}
-
-export function extractFirstErrorMessage(errors: FieldErrors): string | null {
-  for (const key in errors) {
-    const value = errors[key];
-
-    if (!value) continue;
-
-    if ("message" in value && typeof value.message === "string") {
-      return value.message;
-    }
-
-    if (typeof value === "object") {
-      const nested = extractFirstErrorMessage(value as FieldErrors);
-      if (nested) return nested;
-    }
-  }
-
-  return null;
 }
 
 function toDateInput(v?: string | null) {

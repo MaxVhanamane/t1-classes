@@ -24,7 +24,7 @@ const TESTIMONIALS = [
     role: "Foundation Program",
     initials: "RK",
     content:
-      "The group mentorship sessions completely cured my exam anxiety. Plus, tracking my negative and partial marks in the post-test analytics taught me exactly when to skip a hard question.",
+      "The group sessions completely cured my exam anxiety. Plus, tracking my negative and partial marks in the post-test analytics taught me exactly when to skip a hard question.",
   },
 ];
 

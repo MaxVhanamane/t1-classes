@@ -30,7 +30,7 @@ import { updateLiveClass } from "../actions/update-live-class";
 import { BatchMultiSelect } from "./batch-multi-select";
 import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
-import { useBatchOptions } from "@/src/hooks/use-batch-options";
+import { useActiveBatchOptions } from "@/src/hooks/use-active-batch-options";
 import { liveClassQueryKeys } from "../../constants/query-keys";
 
 interface EditValue {
@@ -116,7 +116,8 @@ export function LiveClassDialog({ open, onOpenChange, liveClass }: Props) {
 
   const queryClient = useQueryClient();
 
-  const { data: batches = [], isLoading: loadingBatches } = useBatchOptions();
+  const { data: batches = [], isLoading: loadingBatches } =
+    useActiveBatchOptions();
 
   const form = useForm<CreateLiveClassInput>({
     resolver: zodResolver(createLiveClassSchema),

@@ -9,7 +9,7 @@ import { useNotifications } from "../hooks/use-notifications";
 import { DEFAULT_NOTIFICATION_FILTERS } from "../constants/notification-filters.constants";
 
 import type { NotificationFilters } from "../types/notification-filters";
-import { useBatchOptions } from "@/src/hooks/use-batch-options";
+import { useActiveBatchOptions } from "@/src/hooks/use-active-batch-options";
 import { NotificationFiltersBar } from "./filter/notification-filters-bar";
 import { Pagination } from "@/src/components/ui/pagination/pagination";
 
@@ -22,7 +22,8 @@ export function NotificationsPageClient() {
 
   const { data, isLoading } = useNotifications(filters);
 
-  const { data: batches = [], isLoading: isBatchesLoading } = useBatchOptions();
+  const { data: batches = [], isLoading: isBatchesLoading } =
+    useActiveBatchOptions();
 
   return (
     <div className="space-y-6 p-4 md:p-6 mb-10">

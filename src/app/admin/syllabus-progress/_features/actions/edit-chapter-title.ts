@@ -1,0 +1,47 @@
+"use server";
+
+import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
+import { requireStaffServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
+import { ServerActionResponse } from "@/src/types/server-action";
+
+import { editChapterTitleSchema, EditChapterTitleInput } from "../zod/syllabus-progress.schema";
+
+export async function editChapterTitle(
+    input: unknown
+): Promise<ServerActionResponse<boolean>> {
+    const staff = await requireStaffServerOnly();
+
+    // Enforce Admin-only access for structural changes
+    if (staff.role !== "admin") {
+        return { error: "Only admins can edit chapter titles" };
+    }
+
+    try {
+        const parsed = editChapterTitleSchema.safeParse(input);
+
+        if (!parsed.success) {
+            return {
+                error: parsed.error.issues[0]?.message ?? "Invalid title data",
+            };
+        }
+
+        const values = input as EditChapterTitleInput;
+        const supabase = await createServerSupabaseClient();
+
+        const { error: updateError } = await supabase
+            .from("batch_progress_chapters")
+            .update({ title: values.title })
+            .eq("id", values.chapter_id);
+
+        if (updateError) {
+            console.error("[EDIT_CHAPTER_TITLE_ERROR]", updateError);
+            return { error: "Failed to update chapter title" };
+        }
+
+        return { data: true };
+
+    } catch (error) {
+        console.error("[EDIT_CHAPTER_TITLE_FATAL]", error);
+        return { error: "Something went wrong. Please try again." };
+    }
+}

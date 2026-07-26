@@ -132,7 +132,10 @@ export default function LoginForm() {
   return (
     <Form {...form}>
       <form
-        onSubmit={onSubmit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          void onSubmit(e);
+        }}
         className="space-y-6 px-8 pb-8 pt-4 relative z-10"
       >
         <div className="space-y-2 text-center">

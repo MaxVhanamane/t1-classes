@@ -77,8 +77,8 @@ import {
 
 import { Badge } from "@/src/components/ui/badge";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
-import { extractFirstErrorMessage } from "../../../batches/_features/components/batch-dialog";
 import { Textarea } from "@/src/components/ui/textarea";
+import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 
 const defaultValues: QuestionPaperFormValues = {
   title: "",

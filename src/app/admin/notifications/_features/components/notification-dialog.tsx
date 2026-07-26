@@ -45,7 +45,7 @@ import {
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useBatchOptions } from "@/src/hooks/use-batch-options";
+import { useActiveBatchOptions } from "@/src/hooks/use-active-batch-options";
 import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 import { EditButton } from "@/src/components/ui/common/edit-button";
@@ -67,7 +67,7 @@ export function NotificationDialog({ notification }: Props) {
 
   const queryClient = useQueryClient();
 
-  const { data: batches = [] } = useBatchOptions();
+  const { data: batches = [] } = useActiveBatchOptions();
 
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),

@@ -1,4 +1,5 @@
 import AdminShell from "@/src/components/admin/admin-shell";
+import { SidebarProvider } from "@/src/components/ui/sidebar";
 import { Suspense } from "react";
 
 export default async function AdminLayout({
@@ -8,7 +9,9 @@ export default async function AdminLayout({
 }) {
   return (
     <Suspense fallback={null}>
-      <AdminShell>{children}</AdminShell>
+      <SidebarProvider>
+        <AdminShell>{children}</AdminShell>
+      </SidebarProvider>
     </Suspense>
   );
 }
