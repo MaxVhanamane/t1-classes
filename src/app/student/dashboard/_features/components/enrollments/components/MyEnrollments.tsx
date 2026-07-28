@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getAuthClaims } from "@/src/lib/auth/claims/get-auth-claims";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { getMyEnrollmentsService } from "@/src/lib/services/enrollments/get-my-enrollments";
+import { BatchPerformanceHub } from "../../performance/batch-performance-hub";
 
 export async function MyEnrollments() {
   let enrollments: MyEnrollment[] | null = null;
@@ -19,7 +20,6 @@ export async function MyEnrollments() {
     }
 
     const supabase = await createServerSupabaseClient();
-
     enrollments = await getMyEnrollmentsService(supabase, auth.userId);
   } catch {
     fetchError = true;
@@ -47,25 +47,34 @@ export async function MyEnrollments() {
     );
   }
 
+  // Separate the enrollments so we can pass just the batches to the performance hub
+  const batchEnrollments = enrollments.filter(
+    (enrollment) => enrollment.targetType === "batch",
+  );
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full">
-      {enrollments.map((enrollment) => {
-        if (enrollment.targetType === "course") {
+    <div className="space-y-12">
+      {/* SECTION 1: Standard Enrollments (Continue Learning) */}
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {enrollments.map((enrollment) => {
+          if (enrollment.targetType === "course") {
+            return (
+              <CourseEnrollmentCard
+                key={enrollment.enrollmentId}
+                enrollment={enrollment}
+              />
+            );
+          }
           return (
-            <CourseEnrollmentCard
+            <BatchEnrollmentCard
               key={enrollment.enrollmentId}
               enrollment={enrollment}
             />
           );
-        }
+        })}
+      </div>
 
-        return (
-          <BatchEnrollmentCard
-            key={enrollment.enrollmentId}
-            enrollment={enrollment}
-          />
-        );
-      })}
+      <BatchPerformanceHub batchEnrollments={batchEnrollments} />
     </div>
   );
 }

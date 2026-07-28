@@ -17,7 +17,7 @@ export function BatchEnrollmentCard({ enrollment }: Props) {
   const lifecycle = getBatchLifecycle(batch);
 
   return (
-    <Card className="relative overflow-hidden flex h-72 flex-col py-5 rounded-xl transition hover:shadow-lg bg-background ">
+    <Card className="relative overflow-hidden flex h-72 flex-col py-5 rounded-xl transition bg-background ">
       <GrafanaBackground opacity={0.5} />
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-24 

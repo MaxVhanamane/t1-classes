@@ -7,9 +7,9 @@ import { FeatureCard } from "./feature-card";
 const FEATURES = [
   {
     icon: Video,
-    title: "Targeted Live Sessions",
+    title: "Engaging Live Sessions",
     description:
-      "No unnecessary daily lectures. Teachers schedule live classes specifically for deep-dives, hard concepts, and intensive problem-solving.",
+      "Our teachers hold interactive live classes to guide you through tough concepts, ensure deep understanding, and tackle intensive problem-solving together.",
   },
   {
     icon: MessageCircle,
@@ -32,20 +32,20 @@ export function LiveClassesSection() {
         {/* ── Header ── */}
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-            Targeted Live Classes
+            Interactive Live Classes
           </p>
 
           <h2 className="mt-5 text-4xl font-black tracking-tight sm:text-5xl leading-[1.08]">
-            Interactive live learning.
+            Real-time live classes.
             <span className="block mt-2 bg-linear-to-r from-amber-500 to-orange-400 bg-clip-text text-transparent">
-              Scheduled exactly when you need it.
+              Join the classroom from anywhere.
             </span>
           </h2>
 
           <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg text-balance">
-            We value your time. Instead of generic daily lectures, teachers
-            schedule live classes specifically for complex topics and
-            interactive doubt-clearing. Just open the app and join.
+            Connect directly with your teachers. We hold live sessions for deep
+            dives into complex topics, interactive doubt-clearing, and extra
+            guidance whenever necessary. Just open the app and join.
           </p>
         </div>
 

@@ -108,7 +108,7 @@ export async function ExploreCategories({
           const isDisabled = !config.active;
           const color = config.color;
 
-          const className = `group relative overflow-hidden rounded-2xl border  dark:border-white/10 bg-card p-4 text-left
+          const className = `group relative overflow-hidden rounded-2xl border shadow-sm dark:border-white/10 bg-card p-4 text-left
             ${
               isDisabled
                 ? "opacity-50 cursor-not-allowed"
@@ -117,7 +117,7 @@ export async function ExploreCategories({
 
           const content = (
             <>
-              <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10 dark:ring-white/10" />
+              <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10 dark:ring-white/10 " />
               <DottedBackground />
 
               {/* DARK MODE TOP GLOW */}
