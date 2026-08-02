@@ -8,9 +8,15 @@ interface Props {
   test: TestBuilderTest;
   totalMarks: number;
   totalQuestions: number;
+  totalSections: number;
 }
 
-export function TestBuilderHeader({ test, totalMarks, totalQuestions }: Props) {
+export function TestBuilderHeader({
+  test,
+  totalMarks,
+  totalQuestions,
+  totalSections,
+}: Props) {
   return (
     <>
       <BackButtonClient />
@@ -34,12 +40,12 @@ export function TestBuilderHeader({ test, totalMarks, totalQuestions }: Props) {
                     <span className="text-muted-foreground">Created By:</span>{" "}
                     <span
                       className="
-            font-medium text-foreground
-            sm:inline-block
-            sm:max-w-[320px]
-            sm:truncate
-            align-bottom
-          "
+                        font-medium text-foreground
+                        sm:inline-block
+                        sm:max-w-[320px]
+                        sm:truncate
+                        align-bottom
+                      "
                       title={test.createdBy}
                     >
                       {test.createdBy}
@@ -52,19 +58,34 @@ export function TestBuilderHeader({ test, totalMarks, totalQuestions }: Props) {
                 </>
               )}
 
+              {test.test_type === "sectioned" && (
+                <>
+                  <div className="shrink-0">
+                    <span className="text-muted-foreground">Sections:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      {totalSections}
+                    </span>
+                  </div>
+
+                  <span className="hidden text-muted-foreground sm:inline">
+                    •
+                  </span>
+                </>
+              )}
+
               <div className="shrink-0">
-                <span className="text-muted-foreground">Total Marks:</span>{" "}
+                <span className="text-muted-foreground">Total Questions:</span>{" "}
                 <span className="font-medium text-foreground">
-                  {totalMarks}
+                  {totalQuestions}
                 </span>
               </div>
 
               <span className="hidden text-muted-foreground sm:inline">•</span>
 
               <div className="shrink-0">
-                <span className="text-muted-foreground">Questions:</span>{" "}
+                <span className="text-muted-foreground">Total Marks:</span>{" "}
                 <span className="font-medium text-foreground">
-                  {totalQuestions}
+                  {totalMarks}
                 </span>
               </div>
             </div>

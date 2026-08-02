@@ -11,6 +11,7 @@ interface Props {
   onAddQuestion: () => void;
   dismissRecentQuestion: () => void;
   onEditQuestion: (q: TestQuestion) => void;
+  startIndex: number;
 }
 
 export function QuestionsList({
@@ -19,6 +20,7 @@ export function QuestionsList({
   onAddQuestion,
   onEditQuestion,
   dismissRecentQuestion,
+  startIndex,
 }: Props) {
   return (
     <div className="space-y-4">
@@ -37,7 +39,7 @@ export function QuestionsList({
           <QuestionCard
             key={q.id}
             question={q}
-            index={index}
+            index={startIndex + index}
             section={section}
             onEdit={onEditQuestion}
             dismissRecentQuestion={dismissRecentQuestion}

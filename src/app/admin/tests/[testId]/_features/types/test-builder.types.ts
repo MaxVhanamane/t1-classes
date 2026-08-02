@@ -1,3 +1,5 @@
+import type { TestSection } from "./test-section.types";
+
 export type TestBuilderTest = {
     id: string;
     title: string;
@@ -6,6 +8,15 @@ export type TestBuilderTest = {
     is_active: boolean;
     is_locked: boolean;
     createdBy?: string | null;
-    totalMarks?: number;
-    totalQuestions?: number;
+};
+
+// This maps exactly to the JSON output of the secure RPC
+export type TestBuilderDetailsResponse = {
+    test: TestBuilderTest;
+
+    totalSections: number;
+    totalMarks: number;
+    totalQuestions: number;
+
+    sections: TestSection[];
 };

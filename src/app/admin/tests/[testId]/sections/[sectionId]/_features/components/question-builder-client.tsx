@@ -1,34 +1,25 @@
 "use client";
 
 import { useState } from "react";
-
 import { useParams } from "next/navigation";
-
 import { toast } from "sonner";
-
 import { Card } from "@/src/components/ui/card";
 
 import { QuestionBuilderHeader } from "./question-builder-header";
-
 import { SectionRulesCard } from "./section-rules-card";
-
 import { QuestionsList } from "./questions/questions-list";
-
 import { QuestionsEmptyState } from "./questions/questions-empty-state";
-
 import { QuestionBuilderDialog } from "./question-builder/question-builder-dialog";
-
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
-
-import { useSectionDetails } from "../hooks/use-section-details";
-
-import { useQuestions } from "../hooks/use-questions";
-
-import type { TestQuestion } from "../types/question.types";
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 import { RecentlyAddedQuestion } from "./questions/recently-added-question";
 import { Pagination } from "@/src/components/ui/pagination/pagination";
-import { cn } from "@/src/lib/utils";
 import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
+
+import { useSectionDetails } from "../hooks/use-section-details";
+import { useQuestions } from "../hooks/use-questions";
+import { cn } from "@/src/lib/utils";
+
+import type { TestQuestion } from "../types/question.types";
 
 export function QuestionBuilderClient() {
   const params = useParams<{
@@ -37,15 +28,11 @@ export function QuestionBuilderClient() {
   }>();
 
   const testId = params.testId;
-
   const sectionId = params.sectionId;
 
   const [page, setPage] = useState(1);
-
   const [open, setOpen] = useState(false);
-
   const [editing, setEditing] = useState<TestQuestion | null>(null);
-
   const [recentQuestion, setRecentQuestion] = useState<TestQuestion | null>(
     null,
   );
@@ -64,11 +51,9 @@ export function QuestionBuilderClient() {
   } = useQuestions(sectionId, page);
 
   const questions = questionsData?.items ?? [];
-
-  const totalQuestions = questionsData?.total ?? 0;
-
+  // For pagination internals
+  const paginatedTotal = questionsData?.total ?? 0;
   const totalPages = questionsData?.totalPages ?? 0;
-
   const pageSize = questionsData?.pageSize ?? 10;
 
   function dismissRecentQuestion() {
@@ -76,32 +61,24 @@ export function QuestionBuilderClient() {
   }
 
   function handleAdd() {
-    if (!section) {
-      return;
-    }
+    if (!section) return;
 
     if (section.is_locked) {
       toast.info(
         "This test is locked because it has already been scheduled or attempted.",
       );
-
       return;
     }
     dismissRecentQuestion();
-
     setEditing(null);
-
     setOpen(true);
   }
 
   function handleEdit(question: TestQuestion) {
-    if (!section) {
-      return;
-    }
+    if (!section) return;
 
     if (section.is_locked) {
       toast.info("Locked tests cannot be modified.");
-
       return;
     }
 
@@ -112,7 +89,7 @@ export function QuestionBuilderClient() {
 
   if (sectionError instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={sectionError.message}
         onRetry={() => {
           void refetchSection();
@@ -126,13 +103,11 @@ export function QuestionBuilderClient() {
       <div className="mx-auto w-full max-w-5xl space-y-6 py-4 px-1 sm:px-2 md:px-4">
         <div className="space-y-3">
           <div className="h-9 w-72 animate-pulse rounded-md bg-muted" />
-
           <div className="h-4 w-40 animate-pulse rounded-md bg-muted" />
         </div>
 
         <Card className="space-y-4 p-6">
           <div className="h-5 w-48 animate-pulse rounded bg-muted" />
-
           <div className="grid gap-3 md:grid-cols-2">
             {[...Array(6)].map((_, index) => (
               <div
@@ -147,14 +122,10 @@ export function QuestionBuilderClient() {
           {[...Array(3)].map((_, index) => (
             <Card key={index} className="space-y-3 rounded-lg border p-4">
               <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
-
               <div className="grid gap-2 pt-2">
                 <div className="h-8 animate-pulse rounded bg-muted" />
-
                 <div className="h-8 animate-pulse rounded bg-muted" />
-
                 <div className="h-8 animate-pulse rounded bg-muted" />
-
                 <div className="h-8 animate-pulse rounded bg-muted" />
               </div>
             </Card>
@@ -169,7 +140,8 @@ export function QuestionBuilderClient() {
       <QuestionBuilderHeader
         testId={testId}
         section={section}
-        questionCount={totalQuestions}
+        // Grab the total count instantly from our new DB column!
+        questionCount={section.sectionTotalQuestions}
         onAddQuestion={handleAdd}
         isLoading={isQuestionsLoading}
       />
@@ -180,7 +152,7 @@ export function QuestionBuilderClient() {
         <RecentlyAddedQuestion
           question={recentQuestion}
           section={section}
-          totalQuestions={totalQuestions}
+          totalQuestions={section.sectionTotalQuestions}
           questionsPerPage={pageSize}
           onDismiss={dismissRecentQuestion}
           currentPage={page}
@@ -192,14 +164,10 @@ export function QuestionBuilderClient() {
           {[...Array(3)].map((_, index) => (
             <Card key={index} className="space-y-3 rounded-lg border p-4">
               <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
-
               <div className="grid gap-2 pt-2">
                 <div className="h-8 animate-pulse rounded bg-muted" />
-
                 <div className="h-8 animate-pulse rounded bg-muted" />
-
                 <div className="h-8 animate-pulse rounded bg-muted" />
-
                 <div className="h-8 animate-pulse rounded bg-muted" />
               </div>
             </Card>
@@ -213,7 +181,7 @@ export function QuestionBuilderClient() {
               isFetching && "opacity-50",
             )}
           >
-            {totalQuestions === 0 ? (
+            {section.sectionTotalQuestions === 0 ? (
               <QuestionsEmptyState
                 answerMode={section.answerMode}
                 onAddQuestion={handleAdd}
@@ -226,7 +194,9 @@ export function QuestionBuilderClient() {
                   onAddQuestion={handleAdd}
                   onEditQuestion={handleEdit}
                   dismissRecentQuestion={dismissRecentQuestion}
+                  startIndex={(page - 1) * pageSize}
                 />
+
                 <div className="min-h-8 ">
                   {isFetching && (
                     <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -239,7 +209,7 @@ export function QuestionBuilderClient() {
                 <Pagination
                   page={page}
                   totalPages={totalPages}
-                  totalCount={totalQuestions}
+                  totalCount={paginatedTotal}
                   pageSize={pageSize}
                   onPageChange={setPage}
                 />

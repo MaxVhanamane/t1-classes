@@ -89,7 +89,7 @@ export function TestsHeader() {
           <CardContent>
             <Button asChild variant="outline">
               <Link href="/admin/tests/distributions">
-                View Scheduled Tests
+                View Scheduled Tests & Results
               </Link>
             </Button>
           </CardContent>

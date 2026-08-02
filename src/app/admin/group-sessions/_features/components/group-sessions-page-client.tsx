@@ -7,7 +7,7 @@ import { cn } from "@/src/lib/utils";
 import { Pagination } from "@/src/components/ui/pagination/pagination";
 import { TableSkeleton } from "@/src/components/ui/skeleton/table/table-skeleton";
 
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 
 import { useEnrollmentBatchOptions } from "@/src/app/admin/enrollments/_features/hooks/use-enrollment-batch-options";
 
@@ -53,7 +53,7 @@ export function GroupSessionsPageClient() {
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();

@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
-
-import { ArrowLeft, CalendarPlus } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarPlus,
+  Layers,
+  HelpCircle,
+  Trophy,
+} from "lucide-react";
 
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
@@ -11,38 +16,27 @@ import { Link } from "@/src/components/ui/link";
 import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
 import { Pagination } from "@/src/components/ui/pagination/pagination";
 import { Separator } from "@/src/components/ui/separator";
-import { CardSkeleton } from "@/src/components/ui/skeleton/table/table-cards-skeleton";
-import { TableSkeleton } from "@/src/components/ui/skeleton/table/table-skeleton";
 
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
-
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 import { useInstructorOptions } from "@/src/hooks/use-instructor-options";
-
 import { cn } from "@/src/lib/utils";
-
 import { useTests } from "@/src/app/admin/tests/_features/hooks/use-tests";
 
 import { DEFAULT_SCHEDULE_FILTERS } from "../constants/schedule-filters.constants";
-
 import { ScheduleFiltersBar } from "./filter/schedule-filters-bar";
 import { ScheduleTestDialog } from "./schedule-test-dialog";
+import { TestsListSkeleton } from "@/src/app/admin/tests/_features/components/tests-list-skeleton";
 
 export function ScheduleTestsClient() {
   const [filters, setFilters] = useState(DEFAULT_SCHEDULE_FILTERS);
-
   const [searchInput, setSearchInput] = useState("");
-
   const [selectedTest, setSelectedTest] = useState<string | null>(null);
 
   const { data, isLoading, isFetching, error, refetch } = useTests({
     search: filters.search,
-
     createdBy: filters.createdBy,
-
     testType: filters.testType,
-
     locked: "all",
-
     page: filters.page,
   });
 
@@ -56,7 +50,7 @@ export function ScheduleTestsClient() {
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();
@@ -77,7 +71,9 @@ export function ScheduleTestsClient() {
         </Link>
 
         <Button asChild variant="outline">
-          <Link href="/admin/tests/distributions">View Scheduled Tests</Link>
+          <Link href="/admin/tests/distributions">
+            View Scheduled Tests & Results
+          </Link>
         </Button>
       </div>
 
@@ -86,7 +82,6 @@ export function ScheduleTestsClient() {
           <h1 className="text-2xl font-semibold tracking-tight">
             Schedule Tests
           </h1>
-
           <p className="text-sm text-muted-foreground">
             Assign tests to batches, courses, or marketing audiences.
           </p>
@@ -107,28 +102,21 @@ export function ScheduleTestsClient() {
       />
 
       {isLoading ? (
-        <>
-          <TableSkeleton rows={4} columns={3} showTableHeader={false} />
-
-          <CardSkeleton extraFields={1} />
-        </>
+        <TestsListSkeleton count={4} />
       ) : !data || data.items.length === 0 ? (
         <div className="rounded-lg border border-dashed p-10 text-center">
           <h3 className="font-medium">No tests found</h3>
-
           <p className="mt-2 text-sm text-muted-foreground">
             {hasActiveFilters
               ? "Try adjusting your filters or search criteria."
               : "No tests are available for scheduling."}
           </p>
-
           {hasActiveFilters && (
             <Button
               variant="outline"
               className="mt-4"
               onClick={() => {
                 setSearchInput("");
-
                 setFilters(DEFAULT_SCHEDULE_FILTERS);
               }}
             >
@@ -146,31 +134,75 @@ export function ScheduleTestsClient() {
           {data.items.map((test) => (
             <Card key={test.id} className="p-4 transition hover:bg-muted/40">
               <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-                <div className="min-w-0 space-y-1">
-                  <div className="truncate font-medium">{test.title}</div>
+                <div className="min-w-0 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="truncate font-semibold">{test.title}</span>
+                    <Badge variant="outline" className="capitalize text-xs">
+                      {test.test_type}
+                    </Badge>
+                  </div>
 
-                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <Badge variant="outline">{test.test_type}</Badge>
+                  {test.description && (
+                    <p className="line-clamp-2 text-sm text-muted-foreground">
+                      {test.description}
+                    </p>
+                  )}
+
+                  {/* NEW: Stats Row */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-0.5 text-sm font-medium text-slate-600 dark:text-slate-300">
+                    {test.test_type === "sectioned" && (
+                      <div className="flex items-center gap-1.5">
+                        <Layers className="size-4 text-sky-500" />
+                        <span>
+                          {test.total_sections}{" "}
+                          {test.total_sections === 1 ? "Section" : "Sections"}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1.5">
+                      <HelpCircle className="size-4 text-emerald-500" />
+                      <span>
+                        {test.total_questions}{" "}
+                        {test.total_questions === 1 ? "Question" : "Questions"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <Trophy className="size-4 text-amber-500" />
+                      <span>{test.total_marks} Marks</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
+                    <span>
+                      Created{" "}
+                      {new Date(test.created_at).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
 
                     {test.created_by && (
-                      <Badge variant="secondary">
-                        {test.created_by.full_name}
-                      </Badge>
+                      <span>By {test.created_by.full_name}</span>
                     )}
                   </div>
                 </div>
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex items-center gap-2"
-                  onClick={() => {
-                    setSelectedTest(test.id);
-                  }}
-                >
-                  <CalendarPlus className="size-4" />
-                  Schedule
-                </Button>
+                <div className="flex h-full items-center">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={() => {
+                      setSelectedTest(test.id);
+                    }}
+                  >
+                    <CalendarPlus className="size-4" />
+                    Schedule
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
@@ -192,7 +224,6 @@ export function ScheduleTestsClient() {
             onPageChange={(page) =>
               setFilters((prev) => ({
                 ...prev,
-
                 page,
               }))
             }

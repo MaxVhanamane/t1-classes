@@ -5,16 +5,16 @@ import { Card, CardContent } from "@/src/components/ui/card";
 
 type Props = {
   message?: string;
-
   onRetry?: () => void;
+  centered?: boolean; // Defaults to true
 };
 
-export function BatchTestsErrorState({ message, onRetry }: Props) {
-  return (
-    <Card className="md:w-2xl">
+export function ErrorStateCard({ message, onRetry, centered = true }: Props) {
+  const content = (
+    <Card className="w-full max-w-lg">
       <CardContent className="space-y-3 py-10 text-center">
         <p className="text-sm text-muted-foreground">
-          {message ?? "Failed to load tests."}
+          {message ?? "Failed to load data."}
         </p>
 
         {onRetry && (
@@ -25,4 +25,14 @@ export function BatchTestsErrorState({ message, onRetry }: Props) {
       </CardContent>
     </Card>
   );
+
+  if (centered) {
+    return (
+      <div className="flex h-(--h-viewport-minus-navbar) w-full items-center justify-center p-6">
+        {content}
+      </div>
+    );
+  }
+
+  return content;
 }

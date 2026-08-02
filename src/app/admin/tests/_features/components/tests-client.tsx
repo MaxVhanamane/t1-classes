@@ -4,10 +4,7 @@ import { useState } from "react";
 
 import { Pagination } from "@/src/components/ui/pagination/pagination";
 import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
-import { CardSkeleton } from "@/src/components/ui/skeleton/table/table-cards-skeleton";
-import { TableSkeleton } from "@/src/components/ui/skeleton/table/table-skeleton";
-
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 
 import { useInstructorOptions } from "@/src/hooks/use-instructor-options";
 
@@ -21,6 +18,7 @@ import { TestsHeader } from "./tests-header";
 import { TestFiltersBar } from "./filter/test-filter-bar";
 import { TestsList } from "./test-list";
 import { TestsEmptyState } from "./test-empty-state";
+import { TestsListSkeleton } from "./tests-list-skeleton";
 
 export function TestsClient() {
   const [filters, setFilters] = useState(DEFAULT_TEST_FILTERS);
@@ -40,7 +38,7 @@ export function TestsClient() {
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();
@@ -66,9 +64,7 @@ export function TestsClient() {
 
       {isLoading ? (
         <>
-          <TableSkeleton rows={4} columns={5} showTableHeader />
-
-          <CardSkeleton extraFields={2} />
+          <TestsListSkeleton count={4} />
         </>
       ) : !data || data.items.length === 0 ? (
         <TestsEmptyState

@@ -2,35 +2,50 @@
 
 import { Card } from "@/src/components/ui/card";
 import { Skeleton } from "@/src/components/ui/skeleton";
+
 export function DistributionRowCardSkeleton() {
   return (
     <Card className="p-4 shadow-none">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Left Content */}
-        <div className="min-w-0 flex-1 space-y-3">
-          {/* Test title */}
-          <Skeleton className="h-5 w-64 max-w-full" />
+        <div className="min-w-0 flex-1 space-y-2">
+          {/* Test title & Badge */}
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-3/4 max-w-[260px]" />
+            <Skeleton className="h-5 w-20 shrink-0 rounded-full" />
+          </div>
 
-          {/* Batch name */}
-          <Skeleton className="h-4 w-40" />
+          {/* Stats Row (Sections, Questions, Marks) */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-0.5">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-20" />
+          </div>
 
-          {/* Dates */}
-          <div className="flex flex-wrap gap-3">
-            <Skeleton className="h-4 w-44" />
+          {/* Metadata Block */}
+          <div className="mt-1 flex flex-col gap-1.5">
+            {/* Batch name */}
+            <Skeleton className="h-4 w-56" />
 
-            <Skeleton className="h-4 w-44" />
+            {/* Subjects */}
+            <Skeleton className="h-4 w-48" />
+
+            {/* Dates */}
+            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-4 w-40" />
+            </div>
           </div>
         </div>
 
         {/* Right Actions */}
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
           {/* Status badge */}
-          <Skeleton className="h-6 w-24 rounded-full" />
+          <Skeleton className="h-5 w-20 rounded-full" />
 
-          {/* Action buttons */}
-          <Skeleton className="h-9 w-20 rounded-md" />
-
-          <Skeleton className="h-9 w-20 rounded-md" />
+          {/* Action buttons (size="sm" = h-8) */}
+          <Skeleton className="h-8 w-16 rounded-md" />
+          <Skeleton className="h-8 w-16 rounded-md" />
         </div>
       </div>
     </Card>

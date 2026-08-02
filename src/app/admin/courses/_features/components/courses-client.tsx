@@ -10,7 +10,7 @@ import { CourseDialog } from "./course-dialog";
 import { CoursesTable } from "./courses-table";
 import { CoursesHeader } from "./courses-header";
 
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 
 import { DEFAULT_COURSE_FILTERS } from "../constants/course-filters.constants";
 
@@ -47,7 +47,7 @@ export function CoursesClient() {
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();

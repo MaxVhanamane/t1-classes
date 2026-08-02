@@ -97,7 +97,7 @@ export function DistributionFiltersBar({
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="flex flex-col md:flex-row md:justify-end items-end md:items-center gap-3">
         {isAdmin && (
           <CreatedByCombobox
             value={filters.createdBy}
@@ -107,16 +107,14 @@ export function DistributionFiltersBar({
             onChange={(createdBy) =>
               onFiltersChange({
                 ...filters,
-
                 createdBy,
-
                 page: 1,
               })
             }
           />
         )}
 
-        <Button variant="outline" onClick={handleReset}>
+        <Button variant="outline" onClick={handleReset} className="w-fit">
           <RotateCcw className="mr-2 size-4" />
           Reset Filters
         </Button>

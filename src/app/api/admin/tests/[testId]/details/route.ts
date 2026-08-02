@@ -3,21 +3,11 @@ import { connection, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { requireStaffApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
-import type { TestBuilderTest } from "@/src/app/admin/tests/[testId]/_features/types/test-builder.types";
-import type { TestSection } from "@/src/app/admin/tests/[testId]/_features/types/test-section.types";
+import type { TestBuilderDetailsResponse } from "@/src/app/admin/tests/[testId]/_features/types/test-builder.types";
 
-type TestBuilderDetailsResponse = {
-    test: TestBuilderTest & {
-        createdBy: string | null;
-    };
-
-    totalMarks: number;
-    totalQuestions: number;
-
-    sections: (TestSection & {
-        sectionTotalQuestions: number;
-        sectionTotalMarks: number;
-    })[];
+// Define the custom error payload shape returned by the Postgres RPC
+type RpcErrorResponse = {
+    error: string;
 };
 
 export async function GET(
@@ -40,33 +30,41 @@ export async function GET(
         }
 
         const { testId } = await params;
-
         const supabase = await createServerSupabaseClient();
 
+        // ONLY pass p_test_id. The RPC handles auth internally now.
         const { data, error } = await supabase.rpc(
             "get_test_builder_details",
             {
                 p_test_id: testId,
-                p_user_id: auth.user.userId,
-                p_is_admin: auth.user.role === "admin",
             },
         );
 
-        const result =
-            data as TestBuilderDetailsResponse | null;
+        // Check for Postgres execution errors
+        if (error) {
+            throw new Error(error.message);
+        }
 
-        if (error || !result) {
+        // Safely cast to a union type of the success response, error response, or null
+        const result = data as TestBuilderDetailsResponse | RpcErrorResponse | null;
+
+        // Use the 'in' operator to narrow the type safely without 'any'
+        if (!result || "error" in result) {
+            const errorMessage = result ? result.error : "Test not found";
+
             return NextResponse.json(
                 {
-                    message: "Test not found",
+                    message: errorMessage,
                 },
                 {
-                    status: 404,
+                    status: errorMessage.includes("Access denied") ? 403 : 404,
                 },
             );
         }
 
+        // Because of the check above, TypeScript now strictly knows 'result' is TestBuilderDetailsResponse
         return NextResponse.json(result);
+
     } catch (error) {
         console.error(
             "[ADMIN_TEST_DETAILS_ERROR]",

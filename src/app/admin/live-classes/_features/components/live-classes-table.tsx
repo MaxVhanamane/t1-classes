@@ -81,9 +81,9 @@ export function LiveClassesTable({ classes, onEdit, onDelete }: Props) {
           {classes.map((row, index) => (
             <TableRow
               key={row.id}
-              className="group transition-colors hover:bg-muted/30"
+              className="group transition-colors hover:bg-muted-subtle"
             >
-              <TableCell className="sticky left-0 z-20 w-14 min-w-14 bg-card text-center font-semibold transition-colors group-hover:bg-muted/0">
+              <TableCell className="sticky left-0 z-20 w-14 min-w-14 bg-card text-center font-semibold transition-colors group-hover:bg-muted-subtle">
                 {index + 1}
               </TableCell>
               <TableCell className="max-w-50">

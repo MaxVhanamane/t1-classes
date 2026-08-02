@@ -59,6 +59,8 @@
     "firebase-admin": "^14.1.0",
     "happy-dom": "^20.8.9",
     "jsonwebtoken": "^9.0.3",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "jwt-decode": "^4.0.0",
     "katex": "^0.16.33",
     "lucide-react": "^0.561.0",

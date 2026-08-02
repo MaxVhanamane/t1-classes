@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { Link } from "@/src/components/ui/link";
 import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
 
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 
 import { useEnrollmentFees } from "../hooks/use-enrollment-fees";
 
@@ -25,7 +25,7 @@ export function FeesClient() {
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();

@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 // Disable SSR for the heavy charts and react-query fetching
 const PerformanceDashboardClient = dynamic(
   () =>
-    import("./_features/components/PerformanceDashboardClient").then(
+    import("./_features/components/performance-dashboard-client").then(
       (mod) => mod.PerformanceDashboardClient,
     ),
   {
@@ -25,7 +25,7 @@ const PerformanceDashboardClient = dynamic(
 
 export default function BatchPerformancePage() {
   return (
-    <div className="min-h-screen bg-background text-foreground [overflow-anchor:none]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto w-full max-w-7xl">
         <PerformanceDashboardClient />
       </div>

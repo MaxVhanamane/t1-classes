@@ -1,6 +1,5 @@
 export type PartialMarks = Record<number, number>;
 
-
 export type TestSection = {
     id: string;
     testId: string;
@@ -15,10 +14,10 @@ export type TestSection = {
 
     fullMarks: number;
     negativeMarks: number;
-    partialMarks: Record<number, number> | null;
+    partialMarks: PartialMarks | null;
     sortOrder: number;
     subjectLabel: string;
 
-    sectionTotalQuestions?: number;
-    sectionTotalMarks?: number;
+    sectionTotalQuestions: number; // Removed ? because the RPC always guarantees these
+    sectionTotalMarks: number;     // Removed ? because the RPC always guarantees these
 };

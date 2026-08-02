@@ -1,31 +1,25 @@
 import { connection, NextResponse } from "next/server";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-
 import { requireStaffApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
 
 import type { TestSection } from "@/src/app/admin/tests/[testId]/sections/[sectionId]/_features/types/section.types";
 
 type SectionWithTest = {
     id: string;
-
     test_id: string;
-
     title: string;
-
     description: string | null;
-
     answer_mode: string;
-
     full_marks: number;
-
     negative_marks: number;
-
     partial_marks: Record<number, number> | null;
-
     sort_order: number;
-
     subject_label: string;
+
+    // NEW COLUMNS
+    section_total_questions: number;
+    section_total_marks: number;
 
     tests: {
         is_locked: boolean;
@@ -35,7 +29,6 @@ type SectionWithTest = {
 type Props = {
     params: Promise<{
         testId: string;
-
         sectionId: string;
     }>;
 };
@@ -75,6 +68,8 @@ export async function GET(
         partial_marks,
         sort_order,
         subject_label,
+        section_total_questions,
+        section_total_marks,
         tests (
           created_by,
           is_locked
@@ -119,28 +114,20 @@ export async function GET(
         /* ---------- Transform ---------- */
         const section: TestSection = {
             id: data.id,
-
             testId: data.test_id,
-
             title: data.title,
-
             description: data.description,
-
             answerMode: data.answer_mode,
-
             fullMarks: Number(data.full_marks),
-
             negativeMarks: Number(data.negative_marks),
-
             partialMarks:
                 (data.partial_marks as Record<number, number> | null) ??
                 null,
-
             sortOrder: data.sort_order,
-
             subjectLabel: data.subject_label,
-
             is_locked: data.tests?.is_locked ?? false,
+            sectionTotalQuestions: data.section_total_questions,
+            sectionTotalMarks: data.section_total_marks,
         };
 
         return NextResponse.json(section);

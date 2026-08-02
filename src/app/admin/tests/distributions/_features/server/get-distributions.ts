@@ -12,7 +12,6 @@ import { computeDistributionStatus } from "../helpers/compute-distribution-statu
 
 type StaffUser = {
     userId: string;
-
     role: string;
 };
 
@@ -32,11 +31,8 @@ export async function getDistributions(
     } = params;
 
     const safePage = Math.max(1, page);
-
     const from = (safePage - 1) * PAGE_SIZE;
-
     const to = from + PAGE_SIZE - 1;
-
     const now = new Date().toISOString();
 
     let query = supabase
@@ -53,7 +49,14 @@ export async function getDistributions(
         created_by,
 
         tests:tests!inner (
-          title
+          title,
+          test_type,
+          total_sections,
+          total_questions,
+          total_marks,
+          test_sections (
+            subject_label
+          )
         ),
 
         batches (
@@ -66,7 +69,6 @@ export async function getDistributions(
         );
 
     /* ---------- Permissions ---------- */
-
     if (staff.role !== "admin") {
         query = query.eq(
             "created_by",
@@ -85,7 +87,6 @@ export async function getDistributions(
     }
 
     /* ---------- Search ---------- */
-
     if (search.trim()) {
         query = query.ilike(
             "tests.title",
@@ -94,7 +95,6 @@ export async function getDistributions(
     }
 
     /* ---------- Status ---------- */
-
     switch (status) {
         case "scheduled":
             query = query.gt(
@@ -118,7 +118,7 @@ export async function getDistributions(
     }
 
     /* ---------- Execute ---------- */
-
+    // Note: We extended the overrideTypes slightly to accommodate test_sections
     const {
         data,
         error,
@@ -129,7 +129,11 @@ export async function getDistributions(
         })
         .range(from, to)
         .overrideTypes<
-            DistributionRow[],
+            Array<DistributionRow & {
+                tests: {
+                    test_sections?: Array<{ subject_label: string }>
+                }
+            }>,
             {
                 merge: false;
             }
@@ -144,52 +148,49 @@ export async function getDistributions(
     const rows = data ?? [];
 
     return {
-        items: rows.map((row) => ({
-            id: row.id,
+        items: rows.map((row) => {
+            // Extract unique subjects from the test_sections join
+            const rawSections = row.tests?.test_sections ?? [];
+            const uniqueSubjects = Array.from(
+                new Set(rawSections.map((sec) => sec.subject_label).filter(Boolean))
+            );
 
-            test_id: row.test_id,
+            return {
+                id: row.id,
+                test_id: row.test_id,
+                batch_id: row.batch_id,
 
-            batch_id: row.batch_id,
+                test_title: row.tests?.title ?? "Untitled Test",
 
-            test_title:
-                row.tests?.title ??
-                "Untitled Test",
+                test_type: row.tests?.test_type ?? "standard",
+                total_sections: row.tests?.total_sections ?? 0,
+                total_questions: row.tests?.total_questions ?? 0,
+                total_marks: row.tests?.total_marks ?? 0,
 
-            batch_name:
-                row.batches?.title ??
-                null,
+                // NEW: Added subject_labels array to frontend mapping
+                subject_labels: uniqueSubjects,
 
-            starts_at: row.starts_at,
+                batch_name: row.batches?.title ?? null,
+                starts_at: row.starts_at,
+                ends_at: row.ends_at,
 
-            ends_at: row.ends_at,
-
-            status:
-                computeDistributionStatus(
+                status: computeDistributionStatus(
                     row.starts_at,
                     row.ends_at,
                 ),
 
-            duration_minutes:
-                row.duration_minutes,
-
-            created_at:
-                row.created_at,
-        })),
+                duration_minutes: row.duration_minutes,
+                created_at: row.created_at,
+            };
+        }),
 
         page: safePage,
-
         total: count ?? 0,
-
         totalPages: Math.ceil(
             (count ?? 0) / PAGE_SIZE,
         ),
-
         pageSize: PAGE_SIZE,
-
-        currentUserId:
-            staff.userId,
-
-        isAdmin:
-            staff.role === "admin",
+        currentUserId: staff.userId,
+        isAdmin: staff.role === "admin",
     };
 }

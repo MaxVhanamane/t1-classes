@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Layers, HelpCircle, Trophy } from "lucide-react";
 
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
@@ -18,6 +19,7 @@ import {
 } from "@/src/components/ui/alert-dialog";
 
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { DistributionItem } from "../types/distribution.types";
 import { computeDistributionStatus } from "../helpers/compute-distribution-status";
@@ -27,7 +29,6 @@ import { ScheduleTestDialog } from "../../../schedule/_features/components/sched
 import { DangerConfirmInput } from "@/src/components/ui/danger-confirm-input";
 import { Link } from "@/src/components/ui/link";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   item: DistributionItem;
@@ -73,9 +74,7 @@ export function DistributionRowCard({ item }: Props) {
 
     if (error) {
       toast.error(error);
-
       setDeleting(false);
-
       return;
     }
 
@@ -83,39 +82,93 @@ export function DistributionRowCard({ item }: Props) {
       queryClient.invalidateQueries({
         queryKey: ["admin", "test-distributions"],
       }),
-
       queryClient.invalidateQueries({
         queryKey: ["admin", "tests"],
       }),
     ]);
 
     toast.success("Distribution deleted");
-
     setDeleteOpen(false);
-
     setCanDelete(false);
-
     setDeleting(false);
   }
 
   return (
     <Card className="p-4 transition hover:bg-muted/40 shadow-none">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* Left Content */}
-        <div className="space-y-2 min-w-0">
-          <div className="font-medium truncate text-base">
-            {item.test_title}
+        {/* Left Content - min-w-0 and flex-1 are crucial here for truncation to work in flex! */}
+        <div className="space-y-2 min-w-0 flex-1">
+          {/* Title & Badge */}
+          <div className="flex items-center gap-2">
+            <span
+              className="truncate text-base font-semibold"
+              title={item.test_title}
+            >
+              {item.test_title}
+            </span>
+            <Badge variant="outline" className="shrink-0 capitalize text-xs">
+              {item.test_type}
+            </Badge>
           </div>
 
-          <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-            {scopeLabel && (
-              <span className="truncate max-w-56 sm:max-w-none">
-                {scopeLabel}
-              </span>
+          {/* Stats Row */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-0.5 text-sm font-medium text-slate-600 dark:text-slate-300">
+            {item.test_type === "sectioned" && (
+              <div className="flex shrink-0 items-center gap-1.5">
+                <Layers className="size-4 text-sky-500" />
+                <span>
+                  {item.total_sections}{" "}
+                  {item.total_sections === 1 ? "Section" : "Sections"}
+                </span>
+              </div>
             )}
 
-            <div className="flex gap-3 whitespace-nowrap">
+            <div className="flex shrink-0 items-center gap-1.5">
+              <HelpCircle className="size-4 text-emerald-500" />
               <span>
+                {item.total_questions}{" "}
+                {item.total_questions === 1 ? "Question" : "Questions"}
+              </span>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-1.5">
+              <Trophy className="size-4 text-amber-500" />
+              <span>{item.total_marks} Marks</span>
+            </div>
+          </div>
+
+          {/* Metadata Block (Subjects, Assigned To, Dates) */}
+          <div className="mt-1 flex flex-col gap-1.5 text-xs text-muted-foreground">
+            {/* Batch Name */}
+            {scopeLabel && (
+              <div
+                className="truncate font-medium text-foreground"
+                title={`Assigned to: ${scopeLabel}`}
+              >
+                <span className="font-normal text-muted-foreground">
+                  Assigned to:{" "}
+                </span>
+                {scopeLabel}
+              </div>
+            )}
+
+            {item.subject_labels && item.subject_labels.length > 0 && (
+              <div
+                className="truncate font-medium text-foreground capitalize"
+                title={item.subject_labels.join(", ")}
+              >
+                <span className="font-normal text-muted-foreground">
+                  {item.subject_labels.length === 1
+                    ? "Subject: "
+                    : "Subjects: "}
+                </span>
+                {item.subject_labels.join(", ")}
+              </div>
+            )}
+
+            {/* Dates */}
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              <span className="whitespace-nowrap">
                 Starts:{" "}
                 {new Date(item.starts_at).toLocaleString("en-GB", {
                   day: "2-digit",
@@ -126,8 +179,8 @@ export function DistributionRowCard({ item }: Props) {
                   hour12: true,
                 })}
               </span>
-
-              <span>
+              <span className="hidden sm:inline whitespace-nowrap">•</span>
+              <span className="whitespace-nowrap">
                 Ends:{" "}
                 {new Date(item.ends_at).toLocaleString("en-GB", {
                   day: "2-digit",
@@ -143,7 +196,7 @@ export function DistributionRowCard({ item }: Props) {
         </div>
 
         {/* Right Actions */}
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
           <Badge variant="secondary">{status}</Badge>
 
           {status === "scheduled" && (
@@ -187,11 +240,9 @@ export function DistributionRowCard({ item }: Props) {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>{deleteTitle}</AlertDialogTitle>
-
                 <AlertDialogDescription asChild>
                   <div className="space-y-4">
                     <p>{deleteDescription}</p>
-
                     <DangerConfirmInput
                       confirmText="DELETE"
                       onValidChange={setCanDelete}
@@ -204,7 +255,6 @@ export function DistributionRowCard({ item }: Props) {
                 <AlertDialogCancel disabled={deleting}>
                   Cancel
                 </AlertDialogCancel>
-
                 <Button
                   variant="destructive"
                   onClick={handleDelete}

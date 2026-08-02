@@ -10,7 +10,7 @@ import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator"
 import { Pagination } from "@/src/components/ui/pagination/pagination";
 import { Separator } from "@/src/components/ui/separator";
 
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 
 import { useInstructorOptions } from "@/src/hooks/use-instructor-options";
 
@@ -42,7 +42,7 @@ export function DistributionsClient() {
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();

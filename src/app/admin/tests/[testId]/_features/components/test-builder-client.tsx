@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 
 import { TestBuilderHeader } from "./test-builder-header";
 
@@ -26,7 +26,7 @@ export function TestBuilderClient() {
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();
@@ -37,7 +37,7 @@ export function TestBuilderClient() {
 
   if (!data) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message="Test not found."
         onRetry={() => {
           void refetch();
@@ -46,7 +46,7 @@ export function TestBuilderClient() {
     );
   }
 
-  const { test, sections, totalMarks, totalQuestions } = data;
+  const { test, sections, totalMarks, totalQuestions, totalSections } = data;
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6">
@@ -54,6 +54,7 @@ export function TestBuilderClient() {
         test={test}
         totalMarks={totalMarks}
         totalQuestions={totalQuestions}
+        totalSections={totalSections}
       />
 
       {sections.length === 0 ? (

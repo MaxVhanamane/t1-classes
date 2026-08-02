@@ -14,7 +14,7 @@ import { BatchTestsTabs } from "./batch-tests-tabs";
 import { BatchTestsList } from "./batch-tests-list";
 import { BatchTestsSkeleton } from "./batch-tests-skeleton";
 import { BatchTestsEmptyState } from "./batch-tests-empty-state";
-import { BatchTestsErrorState } from "./batch-tests-error-state";
+import { ErrorStateCard } from "../../../../../../../../components/ui/common/error-state-card";
 import { TestNotAttemptedDialog } from "./test-not-attempted-dialog";
 
 import { BatchTestsResponse, TestStatus } from "../../types/test.types";
@@ -91,7 +91,7 @@ export default function BatchTestsPanel({ batchId }: Props) {
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();

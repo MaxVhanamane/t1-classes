@@ -119,6 +119,7 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-muted-subtle: var(--muted-subtle);
   --color-inverse: var(--inverse);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -166,9 +167,11 @@
 }
 
 :root {
+  --border-50: color-mix(in oklch, var(--border) 50%, transparent);
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --inverse: oklch(1 0 0);
+  --muted-subtle: oklch(0.96 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -208,6 +211,7 @@
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
+  --muted-subtle: oklch(0.22 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
@@ -274,10 +278,17 @@
 
   }
 
+  html {
+    scroll-padding-top: 56px;
+  }
+
+
+
   html body[data-scroll-locked]:not([data-scroll-no-lock]) {
     min-width: 100%;
     margin-right: 0 !important;
     overflow: inherit !important;
+
   }
 
 }

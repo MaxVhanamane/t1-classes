@@ -4,10 +4,9 @@ import { useState } from "react";
 import { cn } from "@/src/lib/utils";
 
 import { Pagination } from "@/src/components/ui/pagination/pagination";
-import { CardSkeleton } from "@/src/components/ui/skeleton/table/table-cards-skeleton";
 import { TableSkeleton } from "@/src/components/ui/skeleton/table/table-skeleton";
 
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 
 import { useInstructorOptions } from "@/src/hooks/use-instructor-options";
 
@@ -54,7 +53,7 @@ export function MentorshipClient({
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();

@@ -16,7 +16,7 @@ import { BatchDialog } from "./batch-dialog";
 import { BatchesCards } from "./batches-cards";
 import { BatchesHeader } from "./batches-header";
 import { BatchesTable } from "./batches-table";
-import { BatchTestsErrorState } from "@/src/app/student/learn/batches/[batchId]/_features/components/tests/batch-tests-error-state";
+import { ErrorStateCard } from "@/src/components/ui/common/error-state-card";
 import { BatchFiltersBar } from "./filter/batch-filters-bar";
 import { BatchesEmptyState } from "./batches-empty-state";
 import { useCourseOptions } from "@/src/hooks/use-course-options";
@@ -54,7 +54,7 @@ export function BatchesClient() {
 
   if (error instanceof Error) {
     return (
-      <BatchTestsErrorState
+      <ErrorStateCard
         message={error.message}
         onRetry={() => {
           void refetch();

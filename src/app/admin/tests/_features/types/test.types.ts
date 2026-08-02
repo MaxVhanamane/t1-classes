@@ -4,37 +4,27 @@ export type TestType =
 
 export interface TestRow {
     id: string;
-
     title: string;
-
     description: string | null;
-
     test_type: TestType;
-
     created_at: string;
-
     is_locked: boolean;
-
+    total_sections: number;
+    total_questions: number;
+    total_marks: number;
+    subject_labels: string[];
     created_by: {
         id: string;
-
         full_name: string;
     } | null;
 }
 
-
 export type TestListResponse = {
     items: TestRow[];
-
     page: number;
-
     total: number;
-
     totalPages: number;
-
     pageSize: number;
-
-    currentUserId: string,
-
-    isAdmin: boolean,
+    currentUserId: string;
+    isAdmin: boolean;
 };

@@ -14,6 +14,15 @@ export interface DistributionItem {
 
     test_title: string;
 
+    // NEW FIELDS
+    test_type: "standard" | "sectioned";
+    total_sections: number;
+    total_questions: number;
+    total_marks: number;
+
+    // NEW: Array of subject labels covered in this test
+    subject_labels: string[];
+
     batch_name: string | null;
 
     starts_at: string;
@@ -44,6 +53,14 @@ export interface DistributionRow {
 
     tests: {
         title: string;
+        // NEW FIELDS
+        test_type: "standard" | "sectioned";
+        total_sections: number;
+        total_questions: number;
+        total_marks: number;
+        test_sections?: Array<{
+            subject_label: string;
+        }>;
     } | null;
 
     batches: {

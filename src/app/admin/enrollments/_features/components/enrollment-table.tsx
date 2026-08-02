@@ -138,252 +138,273 @@ export function EnrollmentTable({ enrollments, onEdit }: EnrollmentTableProps) {
   }
 
   return (
-    <div className="rounded-md border ">
-      <Table>
-        <TableHeader className="bg-secondary hover:bg-secondary">
-          <TableRow>
-            <TableHead className="sticky left-0 z-20 bg-secondary">
-              Student
-            </TableHead>
+    <div className="overflow-hidden rounded-lg border border-border/60 bg-card">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-secondary hover:bg-secondary">
+              <TableHead className="sticky left-0 z-20 w-16 bg-secondary text-center font-medium shadow-[inset_-1px_0_0_0_var(--border-50)]">
+                No.
+              </TableHead>
+              <TableHead>Student</TableHead>
 
-            <TableHead>Target</TableHead>
+              <TableHead>Target</TableHead>
 
-            <TableHead>Enrollment</TableHead>
-            <TableHead>Registration channel</TableHead>
+              <TableHead>Enrollment</TableHead>
+              <TableHead>Registration channel</TableHead>
 
-            <TableHead>Status</TableHead>
+              <TableHead>Status</TableHead>
 
-            <TableHead>Access Status</TableHead>
+              <TableHead>Access Status</TableHead>
 
-            <TableHead>Starts</TableHead>
+              <TableHead>Starts</TableHead>
 
-            <TableHead>Ends</TableHead>
+              <TableHead>Ends</TableHead>
 
-            <TableHead>Fee Status</TableHead>
+              <TableHead>Fee Status</TableHead>
 
-            <TableHead className="text-center">Final Fee</TableHead>
+              <TableHead className="text-center">Final Fee</TableHead>
 
-            <TableHead className="text-center">Paid</TableHead>
+              <TableHead className="text-center">Paid</TableHead>
 
-            <TableHead className="text-center">Pending</TableHead>
-            <TableHead className="text-center">Revisions</TableHead>
-            <TableHead className="text-center">Overpaid</TableHead>
-            <TableHead>Created</TableHead>
+              <TableHead className="text-center">Pending</TableHead>
+              <TableHead className="text-center">Revisions</TableHead>
+              <TableHead className="text-center">Overpaid</TableHead>
+              <TableHead>Created</TableHead>
 
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
+              <TableHead className="sticky right-0 z-20 w-16 bg-secondary text-center font-medium shadow-[inset_1px_0_0_0_var(--border-50)]">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
 
-        <TableBody>
-          {enrollments.map((enrollment) => {
-            const { user, batch, course, financialOverview } = enrollment;
+          <TableBody>
+            {enrollments.map((enrollment, index) => {
+              const { user, batch, course, financialOverview } = enrollment;
 
-            const isBatch = enrollment.target_type === "batch";
+              const isBatch = enrollment.target_type === "batch";
 
-            return (
-              <TableRow
-                key={enrollment.id}
-                className="group transition-colors  bg-card hover:bg-muted/30"
-              >
-                {/* STUDENT */}
-                <TableCell className="sticky left-0 z-20  bg-card  font-semibold transition-colors group-hover:bg-muted/0">
-                  <div className="space-y-0.5">
-                    <TruncatedWithTooltip text={user.full_name} />
+              return (
+                <TableRow
+                  key={enrollment.id}
+                  className="group transition-colors hover:bg-muted-subtle"
+                >
+                  {/* STUDENT */}
+                  <TableCell
+                    className="sticky left-0 z-20 w-16 text-center bg-card font-semibold
+             transition-colors group-hover:bg-muted-subtle
+             shadow-[inset_-1px_0_0_0_var(--border-50)]"
+                  >
+                    {index + 1}
+                  </TableCell>
+                  {/* STUDENT */}
+                  <TableCell>
+                    <div className="space-y-0.5">
+                      <TruncatedWithTooltip text={user.full_name} />
 
-                    {user.phone && (
-                      <div className="text-xs text-muted-foreground">
-                        {user.phone}
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
-
-                {/* TARGET */}
-                <TableCell>
-                  <TargetBadge type={enrollment.target_type} />
-                </TableCell>
-                {/* ENROLLMENT */}
-                <TableCell>
-                  {isBatch && batch ? (
-                    <div className="space-y-1">
-                      <TruncatedWithTooltip
-                        text={batch.title}
-                        className="font-medium"
-                      />
-                    </div>
-                  ) : course ? (
-                    <div className="space-y-1">
-                      <TruncatedWithTooltip
-                        text={course.title}
-                        className="font-medium"
-                      />
-                    </div>
-                  ) : (
-                    <span className="text-sm text-destructive">
-                      Missing target
-                    </span>
-                  )}
-                </TableCell>
-
-                {/* Registration channel */}
-                <TableCell>
-                  <RegistrationChannelBadge
-                    channel={enrollment.registration_channel}
-                  />
-                </TableCell>
-
-                {/* STATUS */}
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge isActive={enrollment.is_active} />
-
-                    {!enrollment.is_active &&
-                      enrollment.deactivation_reason && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                className="text-muted-foreground transition-colors hover:text-foreground"
-                              >
-                                <Info className="h-4 w-4" />
-                              </button>
-                            </TooltipTrigger>
-
-                            <TooltipContent className="max-w-xs text-sm">
-                              {getDeactivationReasonLabel(
-                                enrollment.deactivation_reason,
-                              )}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                      {user.phone && (
+                        <div className="text-xs text-muted-foreground">
+                          {user.phone}
+                        </div>
                       )}
-                  </div>
-                </TableCell>
+                    </div>
+                  </TableCell>
 
-                {/* ACCESS */}
-                <TableCell>
-                  <AccessStatusBadge status={getAccessStatus(enrollment)} />
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {format(new Date(enrollment.access_starts_at), "dd MMM yyyy")}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {enrollment.access_ends_at
-                    ? format(new Date(enrollment.access_ends_at), "dd MMM yyyy")
-                    : "Unlimited"}
-                </TableCell>
-                {/* FEE STATUS */}
-                <TableCell>
-                  {financialOverview ? (
-                    <div className="space-y-1">
-                      <Badge
-                        variant={
-                          financialOverview.fee_status === "paid"
-                            ? "success"
-                            : financialOverview.fee_status === "pending"
-                              ? "secondary"
-                              : financialOverview.fee_status === "overpaid"
-                                ? "outline"
-                                : "destructive"
+                  {/* TARGET */}
+                  <TableCell>
+                    <TargetBadge type={enrollment.target_type} />
+                  </TableCell>
+                  {/* ENROLLMENT */}
+                  <TableCell>
+                    {isBatch && batch ? (
+                      <div className="space-y-1">
+                        <TruncatedWithTooltip
+                          text={batch.title}
+                          className="font-medium"
+                        />
+                      </div>
+                    ) : course ? (
+                      <div className="space-y-1">
+                        <TruncatedWithTooltip
+                          text={course.title}
+                          className="font-medium"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-sm text-destructive">
+                        Missing target
+                      </span>
+                    )}
+                  </TableCell>
+
+                  {/* Registration channel */}
+                  <TableCell>
+                    <RegistrationChannelBadge
+                      channel={enrollment.registration_channel}
+                    />
+                  </TableCell>
+
+                  {/* STATUS */}
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <StatusBadge isActive={enrollment.is_active} />
+
+                      {!enrollment.is_active &&
+                        enrollment.deactivation_reason && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="text-muted-foreground transition-colors hover:text-foreground"
+                                >
+                                  <Info className="h-4 w-4" />
+                                </button>
+                              </TooltipTrigger>
+
+                              <TooltipContent className="max-w-xs text-sm">
+                                {getDeactivationReasonLabel(
+                                  enrollment.deactivation_reason,
+                                )}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                    </div>
+                  </TableCell>
+
+                  {/* ACCESS */}
+                  <TableCell>
+                    <AccessStatusBadge status={getAccessStatus(enrollment)} />
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {format(
+                      new Date(enrollment.access_starts_at),
+                      "dd MMM yyyy",
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {enrollment.access_ends_at
+                      ? format(
+                          new Date(enrollment.access_ends_at),
+                          "dd MMM yyyy",
+                        )
+                      : "Unlimited"}
+                  </TableCell>
+                  {/* FEE STATUS */}
+                  <TableCell>
+                    {financialOverview ? (
+                      <div className="space-y-1">
+                        <Badge
+                          variant={
+                            financialOverview.fee_status === "paid"
+                              ? "success"
+                              : financialOverview.fee_status === "pending"
+                                ? "secondary"
+                                : financialOverview.fee_status === "overpaid"
+                                  ? "outline"
+                                  : "destructive"
+                          }
+                        >
+                          {financialOverview.fee_status.replaceAll("_", " ")}
+                        </Badge>
+                      </div>
+                    ) : (
+                      <Badge variant="outline">No fee plan</Badge>
+                    )}
+                  </TableCell>
+
+                  {/* FINAL */}
+                  <TableCell className="text-center font-medium">
+                    {formatCurrency(financialOverview?.final_amount, {
+                      emptyValue: "Not set",
+                    })}
+                  </TableCell>
+
+                  {/* PAID */}
+                  <TableCell className="text-center">
+                    {formatCurrency(financialOverview?.paid_amount ?? 0)}
+                  </TableCell>
+
+                  {/* PENDING */}
+                  <TableCell
+                    className={cn(
+                      financialOverview?.pending_amount === 0
+                        ? "text-center text-muted-foreground"
+                        : financialOverview?.pending_amount &&
+                            financialOverview.pending_amount > 0
+                          ? "text-right font-medium text-red-500"
+                          : "text-right",
+                    )}
+                  >
+                    {formatCurrency(financialOverview?.pending_amount, {
+                      emptyValue: "Not set",
+                    })}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {financialOverview ? (
+                      financialOverview.superseded_count > 0 ? (
+                        <span className="font-medium">
+                          {financialOverview.superseded_count}{" "}
+                          {financialOverview.superseded_count === 1
+                            ? "revision"
+                            : "revisions"}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">Never</span>
+                      )
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell
+                    className={cn(
+                      "text-center",
+                      financialOverview?.overpaid_amount &&
+                        financialOverview.overpaid_amount > 0 &&
+                        "font-medium text-amber-600 dark:text-amber-400",
+                    )}
+                  >
+                    {formatCurrency(financialOverview?.overpaid_amount ?? 0)}
+                  </TableCell>
+
+                  {/* CREATED */}
+                  <TableCell className="text-sm text-muted-foreground">
+                    {format(new Date(enrollment.created_at), "dd MMM yyyy")}
+                  </TableCell>
+
+                  {/* ACTIONS */}
+                  <TableCell className="sticky right-0 z-20 text-center bg-card font-semibold transition-colors group-hover:bg-muted-subtle shadow-[inset_1px_0_0_0_var(--border-50)]">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="cursor-pointer"
+                        onClick={() => onEdit(enrollment)}
+                      >
+                        Edit
+                      </Button>
+
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="cursor-pointer"
+                        onClick={() =>
+                          router.push(
+                            `/admin/enrollments/${enrollment.id}/fees`,
+                          )
                         }
                       >
-                        {financialOverview.fee_status.replaceAll("_", " ")}
-                      </Badge>
+                        Fees
+                      </Button>
                     </div>
-                  ) : (
-                    <Badge variant="outline">No fee plan</Badge>
-                  )}
-                </TableCell>
-
-                {/* FINAL */}
-                <TableCell className="text-center font-medium">
-                  {formatCurrency(financialOverview?.final_amount, {
-                    emptyValue: "Not set",
-                  })}
-                </TableCell>
-
-                {/* PAID */}
-                <TableCell className="text-center">
-                  {formatCurrency(financialOverview?.paid_amount ?? 0)}
-                </TableCell>
-
-                {/* PENDING */}
-                <TableCell
-                  className={cn(
-                    financialOverview?.pending_amount === 0
-                      ? "text-center text-muted-foreground"
-                      : financialOverview?.pending_amount &&
-                          financialOverview.pending_amount > 0
-                        ? "text-right font-medium text-red-500"
-                        : "text-right",
-                  )}
-                >
-                  {formatCurrency(financialOverview?.pending_amount, {
-                    emptyValue: "Not set",
-                  })}
-                </TableCell>
-                <TableCell className="text-center">
-                  {financialOverview ? (
-                    financialOverview.superseded_count > 0 ? (
-                      <span className="font-medium">
-                        {financialOverview.superseded_count}{" "}
-                        {financialOverview.superseded_count === 1
-                          ? "revision"
-                          : "revisions"}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">Never</span>
-                    )
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-                <TableCell
-                  className={cn(
-                    "text-center",
-                    financialOverview?.overpaid_amount &&
-                      financialOverview.overpaid_amount > 0 &&
-                      "font-medium text-amber-600 dark:text-amber-400",
-                  )}
-                >
-                  {formatCurrency(financialOverview?.overpaid_amount ?? 0)}
-                </TableCell>
-
-                {/* CREATED */}
-                <TableCell className="text-sm text-muted-foreground">
-                  {format(new Date(enrollment.created_at), "dd MMM yyyy")}
-                </TableCell>
-
-                {/* ACTIONS */}
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="cursor-pointer"
-                      onClick={() => onEdit(enrollment)}
-                    >
-                      Edit
-                    </Button>
-
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="cursor-pointer"
-                      onClick={() =>
-                        router.push(`/admin/enrollments/${enrollment.id}/fees`)
-                      }
-                    >
-                      Fees
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
