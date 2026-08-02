@@ -291,7 +291,7 @@
   }
 
   /* --- RECHARTS GLOBAL OVERRIDES --- */
-  .recharts-surface {
+  /* .recharts-surface {
     outline-width: 0px;
   }
 
@@ -306,6 +306,10 @@
   .recharts-surface:focus-visible {
     outline: none;
     box-shadow: none;
+  } */
+
+  .recharts-wrapper svg *:focus {
+    outline: none;
   }
 
 }

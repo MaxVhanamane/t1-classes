@@ -251,7 +251,7 @@ export function AttendanceBarChart({
               Attendance Trends
             </CardTitle>
             {!isFullscreen && (
-              <CardDescription>
+              <CardDescription className="text-xs">
                 Monthly breakdown of classes attended
               </CardDescription>
             )}

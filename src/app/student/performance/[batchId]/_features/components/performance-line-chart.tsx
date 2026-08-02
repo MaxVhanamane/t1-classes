@@ -175,39 +175,54 @@ const CustomLineTooltip = ({
 
     return (
       <div
-        className={`rounded-xl border ${data.isTopper ? "border-amber-500/40 shadow-amber-500/10" : "border-border"} bg-background/95 shadow-md backdrop-blur-md overflow-hidden ${isMobile ? "max-w-[210px] p-3" : "max-w-[240px] p-4"}`}
+        className={`rounded-xl border ${
+          data.isTopper
+            ? "border-amber-500/40 shadow-amber-500/10"
+            : "border-border"
+        } bg-background/95 shadow-md backdrop-blur-md overflow-hidden ${
+          isMobile ? "max-w-[210px] p-2.5" : "max-w-[235px] p-3"
+        }`}
       >
         {data.isTopper && <CardGlow color="amber" />}
+
+        {/* Header */}
         <div
-          className={`border-b ${data.isTopper ? "border-amber-500/20" : "border-border/50"} ${isMobile ? "mb-2 pb-2" : "mb-3 pb-3"}`}
+          className={`border-b ${
+            data.isTopper ? "border-amber-500/20" : "border-border/50"
+          } pb-1.5 mb-1.5`}
         >
           {data.isTopper && (
-            <div className="mb-1.5 flex items-center gap-1.5 text-amber-600 dark:text-amber-500">
-              <Trophy className="h-3.5 w-3.5" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">
+            <div className="mb-0.5 flex items-center gap-1 text-amber-600 dark:text-amber-500">
+              <Trophy className="h-3 w-3 shrink-0" />
+              <span className="text-[9px] font-bold uppercase tracking-wider">
                 You were the Batch Topper!
               </span>
             </div>
           )}
           <p
-            className={`block w-full truncate text-sm font-bold leading-tight tracking-tight ${data.isTopper ? "text-amber-600 dark:text-amber-500" : "text-foreground"}`}
+            className={`block w-full truncate text-xs font-bold leading-tight ${
+              data.isTopper
+                ? "text-amber-600 dark:text-amber-500"
+                : "text-foreground"
+            }`}
           >
             {data.testName}
           </p>
-          <p className="mt-1 text-[10px] font-medium text-muted-foreground sm:text-xs">
+          <p className="mt-0.5 text-[9px] font-medium text-muted-foreground">
             Evaluated on {data.testDate}
           </p>
         </div>
 
-        <div className={`space-y-2 font-medium text-xs`}>
+        {/* Metrics List */}
+        <div className="space-y-1 text-[11px] font-medium leading-snug">
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-sky-600 dark:text-sky-500">
-              <span className="h-1.5 w-1.5 rounded-full bg-sky-500 sm:h-2 sm:w-2" />{" "}
+            <span className="flex items-center gap-1 text-sky-600 dark:text-sky-500">
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
               Your Score
             </span>
             <span className="font-bold">
-              {data.studentScore.toFixed(0)} / {data.totalMarks}{" "}
-              <span className="font-normal text-muted-foreground">
+              {data.studentScore.toFixed(0)}/{data.totalMarks}{" "}
+              <span className="font-normal text-muted-foreground text-[10px]">
                 ({data.studentPercentage.toFixed(1)}%)
               </span>
             </span>
@@ -215,13 +230,13 @@ const CustomLineTooltip = ({
 
           {!data.isTopper && (
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 sm:h-2 sm:w-2" />{" "}
+              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                 Topper
               </span>
               <span>
-                {data.classHighest.toFixed(0)} / {data.totalMarks}{" "}
-                <span className="font-normal text-muted-foreground">
+                {data.classHighest.toFixed(0)}/{data.totalMarks}{" "}
+                <span className="font-normal text-muted-foreground text-[10px]">
                   ({data.classHighestPercentage.toFixed(1)}%)
                 </span>
               </span>
@@ -229,33 +244,30 @@ const CustomLineTooltip = ({
           )}
 
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 sm:h-2 sm:w-2" />{" "}
+            <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
               Class Avg
             </span>
             <span>
-              {data.classAverage.toFixed(1)} / {data.totalMarks}{" "}
-              <span className="font-normal text-muted-foreground">
+              {data.classAverage.toFixed(1)}/{data.totalMarks}{" "}
+              <span className="font-normal text-muted-foreground text-[10px]">
                 ({data.classAvgPercentage.toFixed(1)}%)
               </span>
             </span>
           </div>
         </div>
 
-        <div
-          className={`${isMobile ? "-mx-3 -mb-3 mt-3 px-3 pb-3 pt-3" : "-mx-4 -mb-4 mt-5 px-4 pb-4 pt-4"} rounded-b-xl border-t border-border/50 bg-muted/30`}
-        >
-          <div className="mb-1.5 flex items-center justify-between text-xs sm:text-sm">
+        {/* Footer: Percentile & Wording */}
+        <div className="mt-2 pt-1.5 border-t border-border/50">
+          <div className="flex items-center justify-between text-[11px] mb-0.5">
             <span className="font-medium text-muted-foreground">
               Rank Percentile
             </span>
-            <span className="font-bold text-foreground sm:text-base">
-              {data.percentile.toFixed(1)} %
+            <span className="font-bold text-foreground">
+              {data.percentile.toFixed(1)}%
             </span>
           </div>
-          <p
-            className={`${isMobile ? "text-[9px]" : "text-[11px]"} leading-relaxed text-muted-foreground`}
-          >
+          <p className="text-[9px] leading-tight text-muted-foreground">
             {percentileWording}
           </p>
         </div>
@@ -384,7 +396,7 @@ export function PerformanceLineChart({
   // ResponsiveContainer collapses to 0 height — that was the bug.
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col pb-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
+      className={`relative flex flex-col pb-0 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none"
           : "h-[500px] lg:h-[550px] w-full"
@@ -429,7 +441,7 @@ export function PerformanceLineChart({
               )}
             </div>
             {!isFullscreen && (
-              <CardDescription>
+              <CardDescription className="text-xs">
                 Your normalized test scores compared to the class average and
                 top performer.
               </CardDescription>
@@ -442,21 +454,17 @@ export function PerformanceLineChart({
               className={`flex items-center justify-center gap-1.5 rounded-md bg-muted font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground ${
                 isFullscreen
                   ? "px-2 py-1.5 text-[10px]"
-                  : "px-3 py-2 text-xs sm:px-2.5 sm:py-1.5"
+                  : "px-3 py-1.5 text-xs sm:px-2.5 sm:py-1.5"
               }`}
             >
               {fitToScreen ? (
                 <>
-                  <ArrowRightLeft
-                    className={isFullscreen ? "h-3 w-3" : "h-3.5 w-3.5"}
-                  />
+                  <ArrowRightLeft className="h-3 w-3" />
                   <span>Enable Scroll</span>
                 </>
               ) : (
                 <>
-                  <Scaling
-                    className={isFullscreen ? "h-3 w-3" : "h-3.5 w-3.5"}
-                  />
+                  <Scaling className="h-3 w-3" />
                   <span>Fit to Screen</span>
                 </>
               )}
@@ -467,19 +475,17 @@ export function PerformanceLineChart({
               className={`flex items-center justify-center gap-1.5 rounded-md bg-sky-500/10 font-medium text-sky-600 transition-colors hover:bg-sky-500/20 dark:text-sky-500 ${
                 isFullscreen
                   ? "px-2 py-1.5 text-[10px]"
-                  : "px-3 py-2 text-xs sm:px-2.5 sm:py-1.5"
+                  : "px-3 py-1.5 text-xs sm:px-2.5 sm:py-1.5"
               }`}
             >
               {isFullscreen ? (
                 <>
-                  <Minimize2
-                    className={isFullscreen ? "h-3 w-3" : "h-3.5 w-3.5"}
-                  />
+                  <Minimize2 className="h-3 w-3" />
                   <span>Exit Full Screen</span>
                 </>
               ) : (
                 <>
-                  <Maximize2 className="h-3.5 w-3.5" />
+                  <Maximize2 className="h-3 w-3" />
                   <span>Full Screen</span>
                 </>
               )}
@@ -488,7 +494,7 @@ export function PerformanceLineChart({
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-2 pb-2 sm:px-6 sm:pb-6">
+      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-2 pb-0 sm:px-6">
         {chartSafeHistory.length > 0 && (
           <div className="shrink-0 mb-2 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-2">
             <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">
@@ -532,7 +538,7 @@ export function PerformanceLineChart({
             } pb-2`}
           >
             <div
-              className="h-full"
+              className="h-full "
               style={{
                 width: "100%",
                 minWidth: fitToScreen
@@ -558,7 +564,7 @@ export function PerformanceLineChart({
                     style={{ outline: "none" }}
                     data={chartSafeHistory}
                     margin={{
-                      top: 10,
+                      top: 15,
                       right: 30,
                       bottom: isMobile ? 10 : 50,
                       left: isMobile ? 0 : 25,
@@ -587,7 +593,7 @@ export function PerformanceLineChart({
                     >
                       <Label
                         value="Tests (Chronological Order)"
-                        offset={fitToScreen ? 0 : -40}
+                        offset={fitToScreen ? 0 : -30}
                         position="insideBottom"
                         fill="var(--muted-foreground)"
                         fontSize={12}

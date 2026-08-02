@@ -355,7 +355,7 @@ export function SubjectGrowthTrendlineChart({
               )}
             </div>
             {!isFullscreen && (
-              <CardDescription>
+              <CardDescription className="text-xs">
                 Your percentage score over time, broken down by subject.
               </CardDescription>
             )}

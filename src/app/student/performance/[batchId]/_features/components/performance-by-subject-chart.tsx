@@ -327,7 +327,7 @@ export function PerformanceBySubjectChart({
               )}
             </div>
             {!isFullscreen && (
-              <CardDescription>
+              <CardDescription className="text-xs">
                 Your total percentage in each subject across all your tests.
               </CardDescription>
             )}

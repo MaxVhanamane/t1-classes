@@ -280,7 +280,7 @@ export function QuestionDonutChart({
       {/* Restored Header with clearer wording */}
       <CardHeader>
         <CardTitle className="tracking-tight">Question Distribution</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-xs">
           Breakdown of how you answered every question across all tests.
         </CardDescription>
       </CardHeader>
