@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import {
   Info,
@@ -285,14 +285,6 @@ export function PerformanceLineChart({
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!scrollRef.current) return;
-
-    const isRotated =
-      typeof window !== "undefined" &&
-      isFullscreen &&
-      window.innerHeight > window.innerWidth &&
-      window.innerWidth < 768;
-
-    if (e.pointerType === "touch" && !isRotated) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
 
     setIsDragging(true);
@@ -308,15 +300,7 @@ export function PerformanceLineChart({
     if (!isDragging || !scrollRef.current) return;
 
     const deltaX = e.clientX - startPos.x;
-    const deltaY = e.clientY - startPos.y;
-
-    const isRotated =
-      typeof window !== "undefined" &&
-      isFullscreen &&
-      window.innerHeight > window.innerWidth &&
-      window.innerWidth < 768;
-
-    const walk = (isRotated ? deltaY : deltaX) * 1.5;
+    const walk = deltaX * 1.5;
     scrollRef.current.scrollLeft = startPos.scrollLeft - walk;
   };
 
@@ -324,6 +308,75 @@ export function PerformanceLineChart({
     setIsDragging(false);
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
+
+  // --- NATIVE FULLSCREEN + ORIENTATION LOCK ---
+  // Replaces the old CSS rotate-90 hack. That approach visually rotated the
+  // chart, but touch/pointer clientX/clientY coordinates are still reported
+  // in the original, un-rotated space — causing a mismatch between what you
+  // see and what you can actually tap, worst near the edges (the first
+  // couple of points). Physically locking the device into landscape via the
+  // Fullscreen + Screen Orientation APIs means the browser itself reports
+  // correct landscape coordinates, so there's no mismatch at all.
+  //
+  // Support for orientation lock varies (notably unsupported on iOS Safari),
+  // so this fails silently and falls back to a plain portrait fullscreen
+  // dialog with horizontal drag/scroll, which still works correctly.
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    const lockLandscape = async () => {
+      try {
+        const isNarrowMobile =
+          typeof window !== "undefined" && window.innerWidth < 768;
+        if (!isNarrowMobile) return;
+
+        if (
+          document.documentElement.requestFullscreen &&
+          !document.fullscreenElement
+        ) {
+          await document.documentElement.requestFullscreen();
+        }
+        const orientation = screen.orientation as
+          | (ScreenOrientation & { lock?: (o: string) => Promise<void> })
+          | undefined;
+        if (orientation?.lock) {
+          await orientation.lock("landscape");
+        }
+      } catch {
+        // Not supported on this browser/device — ignore and fall back to
+        // the plain (non-rotated) portrait fullscreen dialog.
+      }
+    };
+
+    void lockLandscape();
+
+    return () => {
+      try {
+        const orientation = screen.orientation as
+          | (ScreenOrientation & { unlock?: () => void })
+          | undefined;
+        orientation?.unlock?.();
+      } catch {
+        // ignore
+      }
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    };
+  }, [isFullscreen]);
+
+  // Keep React state in sync if the user exits fullscreen via the system
+  // back button/gesture instead of our own "Exit Full Screen" button.
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [isFullscreen]);
 
   // NOTE: Card carries the real fixed height (h-[450px] normally, h-full in
   // fullscreen) exactly like the working SubjectGrowthTrendlineChart. Without
@@ -464,12 +517,13 @@ export function PerformanceLineChart({
         {chartSafeHistory.length > 0 ? (
           <div
             ref={scrollRef}
+            tabIndex={-1}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
             onPointerCancel={handlePointerUp}
-            className={`custom-scrollbar flex-1 min-h-0 focus:outline-none w-full overflow-y-hidden overscroll-x-contain scrollbar-thin ${
+            className={`custom-scrollbar focus:outline-none [-webkit-tap-highlight-color:transparent] flex-1 min-h-0 focus:outline-none w-full overflow-y-hidden overscroll-x-contain scrollbar-thin ${
               fitToScreen
                 ? "overflow-x-hidden"
                 : "overflow-x-auto scrollbar-thumb-sky-600"
@@ -632,15 +686,18 @@ export function PerformanceLineChart({
       {/* Standard In-Page Render */}
       {!isFullscreen && renderChart()}
 
-      {/* Fullscreen dialog portal, same rotate-on-mobile-portrait trick as the working chart */}
+      {/* Fullscreen dialog portal — landscape orientation is requested
+          natively (see the useEffect above) rather than faked with CSS
+          rotation, so touch hit-testing lines up correctly with what's
+          rendered on screen. */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none sm:max-w-none  [&>button]:hidden ">
+        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none outline-none focus:outline-none focus-visible:outline-none sm:max-w-none  [&>button]:hidden ">
           <DialogTitle className="sr-only">Fullscreen Chart</DialogTitle>
           <DialogDescription className="sr-only">
             Fullscreen view of the test consistency and performance chart.
           </DialogDescription>
 
-          <div className="absolute left-0 top-0 flex h-[100dvh] w-[100dvw] flex-col bg-card max-md:portrait:top-1/2 max-md:portrait:left-1/2 max-md:portrait:h-[100dvw] max-md:portrait:w-[100dvh] max-md:portrait:-translate-x-1/2 max-md:portrait:-translate-y-1/2 max-md:portrait:rotate-90 ">
+          <div className="absolute left-0 top-0 flex h-[100dvh] w-[100dvw] flex-col bg-card">
             {renderChart()}
           </div>
         </DialogContent>
