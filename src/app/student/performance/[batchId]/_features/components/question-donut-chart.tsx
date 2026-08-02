@@ -273,7 +273,7 @@ export function QuestionDonutChart({
   };
 
   return (
-    <Card className="relative w-full overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none!">
+    <Card className="relative w-full overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent]">
       <DottedBackground className="opacity-20" />
       <CardGlow color="indigo" hideLightGlow />
 
@@ -299,7 +299,10 @@ export function QuestionDonutChart({
                 minWidth={1}
                 minHeight={1}
               >
-                <PieChart>
+                <PieChart
+                  accessibilityLayer={false}
+                  style={{ outline: "none" }}
+                >
                   <defs>
                     {chartData.map((entry, index) => (
                       <linearGradient

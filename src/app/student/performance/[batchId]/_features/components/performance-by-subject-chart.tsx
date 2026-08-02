@@ -33,6 +33,7 @@ import {
   DialogDescription,
 } from "@/src/components/ui/dialog";
 import { SubjectPerformance } from "../types/performance.types";
+import { cn } from "@/src/lib/utils";
 
 interface PerformanceBySubjectChartProps {
   performanceBySubject: SubjectPerformance[];
@@ -62,102 +63,101 @@ const CustomBarTooltip = ({ active, payload }: CustomBarTooltipProps) => {
       data.accuracyBreakdown.unanswered;
 
     return (
-      <div className="w-[220px] overflow-hidden rounded-lg border border-border/60 bg-background/95 p-2.5 text-foreground shadow-lg backdrop-blur-2xl">
+      <div className="w-[240px] overflow-hidden rounded-xl border border-border/60 bg-background/95 p-3 text-foreground shadow-xl backdrop-blur-2xl">
         {/* Tooltip Header */}
-        <div className="mb-2 flex items-center justify-between border-b border-border/50 pb-1.5 dark:border-zinc-800/80">
+        <div className="mb-2.5 flex items-center justify-between border-b border-border/50 pb-2 dark:border-zinc-800/80">
           <div>
-            <h4 className="text-xs font-medium tracking-wide text-foreground capitalize dark:text-white">
+            <h4 className="text-[13px] font-bold tracking-wide text-foreground capitalize dark:text-white">
               {data.subject}
             </h4>
-            <span className="text-[9px] uppercase text-muted-foreground">
+            <span className="text-[10px] font-medium uppercase text-muted-foreground">
               {data.obtainedMarks} / {data.totalMarks} Marks
             </span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-xs font-bold text-teal-600 dark:text-teal-400">
+            <span className="text-sm font-black text-teal-600 dark:text-teal-400">
               {data.studentPercentage.toFixed(1)}%
             </span>
-            <span className="text-[9px] text-muted-foreground">Your Score</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+              Score
+            </span>
           </div>
         </div>
 
-        {/* List Items */}
-        <div className="space-y-1 text-[11px]">
-          {/* Class Average Context */}
-          <div className="flex items-center justify-between rounded-md border border-border/40 bg-muted/40 px-2 py-1 dark:border-zinc-800/40 dark:bg-zinc-900/60">
+        {/* Beautiful & Airy Layout */}
+        <div className="flex flex-col gap-2.5">
+          {/* Context Row - Soft pill shape */}
+          <div className="flex items-center justify-between rounded-lg bg-muted/50 px-2.5 py-1.5 dark:bg-zinc-900/50">
             <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-              <span className="text-muted-foreground dark:text-zinc-300">
-                Class Average
+              <span className="text-[11px] text-muted-foreground">
+                Class Avg:{" "}
+                <span className="font-semibold text-foreground dark:text-white">
+                  {data.classAveragePercentage.toFixed(1)}%
+                </span>
               </span>
             </div>
-            <span className="font-semibold text-foreground dark:text-white">
-              {data.classAveragePercentage.toFixed(1)}%
-            </span>
+            <div className="h-3 w-px bg-border" /> {/* Sleek divider */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-muted-foreground">
+                Total Qs:{" "}
+                <span className="font-semibold text-foreground dark:text-white">
+                  {totalQs}
+                </span>
+              </span>
+            </div>
           </div>
 
-          <div className="my-1.5 border-b border-border/30 dark:border-zinc-800/50" />
-
-          {/* Total Questions Tracker */}
-          <div className="flex items-center justify-between rounded-md border border-border/40 bg-slate-500/10 px-2 py-1 dark:border-slate-500/20">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
-              <span className="font-medium text-slate-700 dark:text-slate-300">
-                Total Questions
+          {/* 2x2 Grid - Clean text with glowing indicator dots */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 px-1">
+            {/* Correct */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
+                <span className="text-[11px] text-muted-foreground">
+                  Correct
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                {data.accuracyBreakdown.correct}
               </span>
             </div>
-            <span className="font-bold text-slate-700 dark:text-slate-300">
-              {totalQs}
-            </span>
-          </div>
 
-          {/* Diagnostic Breakdown */}
-          <div className="flex items-center justify-between rounded-md border border-border/40 bg-emerald-500/10 px-2 py-1 dark:border-emerald-500/20">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="text-emerald-700 dark:text-emerald-400">
-                Correct Answers
+            {/* Wrong */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shadow-[0_0_4px_rgba(244,63,94,0.5)]" />
+                <span className="text-[11px] text-muted-foreground">Wrong</span>
+              </div>
+              <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                {data.accuracyBreakdown.wrong}
               </span>
             </div>
-            <span className="font-semibold text-emerald-700 dark:text-emerald-400">
-              {data.accuracyBreakdown.correct}
-            </span>
-          </div>
 
-          <div className="flex items-center justify-between rounded-md border border-border/40 bg-rose-500/10 px-2 py-1 dark:border-rose-500/20">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-              <span className="text-rose-700 dark:text-rose-400">
-                Incorrect Answers
+            {/* Partial */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]" />
+                <span className="text-[11px] text-muted-foreground">
+                  Partial
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                {data.accuracyBreakdown.partial}
               </span>
             </div>
-            <span className="font-semibold text-rose-700 dark:text-rose-400">
-              {data.accuracyBreakdown.wrong}
-            </span>
-          </div>
 
-          <div className="flex items-center justify-between rounded-md border border-border/40 bg-amber-500/10 px-2 py-1 dark:border-amber-500/20">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-              <span className="text-amber-700 dark:text-amber-400">
-                Partially Correct
+            {/* Skipped */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-400 shadow-[0_0_4px_rgba(148,163,184,0.5)]" />
+                <span className="text-[11px] text-muted-foreground">
+                  Skipped
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                {data.accuracyBreakdown.unanswered}
               </span>
             </div>
-            <span className="font-semibold text-amber-700 dark:text-amber-400">
-              {data.accuracyBreakdown.partial}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between rounded-md border border-border/40 bg-slate-500/10 px-2 py-1 dark:border-slate-500/20">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-              <span className="text-slate-700 dark:text-slate-400">
-                Skipped / Unanswered
-              </span>
-            </div>
-            <span className="font-semibold text-slate-700 dark:text-slate-400">
-              {data.accuracyBreakdown.unanswered}
-            </span>
           </div>
         </div>
       </div>
@@ -235,14 +235,20 @@ export function PerformanceBySubjectChart({
 
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col pb-2 gap-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! ${
+      className={`relative flex flex-col pb-2 gap-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none"
           : "h-[500px] w-full"
       }`}
     >
       {<DottedBackground className="opacity-30" />}
-      {<CardGlow color="teal" hideLightGlow />}
+      {
+        <CardGlow
+          color="teal"
+          hideLightGlow
+          className={cn(isFullscreen && "rounded-none opacity-50")}
+        />
+      }
 
       <CardHeader
         className={`shrink-0 ${
@@ -394,6 +400,7 @@ export function PerformanceBySubjectChart({
               className={isDragging ? "pointer-events-none" : ""}
             >
               <BarChart
+                accessibilityLayer={false}
                 data={performanceBySubject}
                 margin={{
                   top: 10, // Gives the chart maximum vertical breathing room

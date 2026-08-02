@@ -47,6 +47,7 @@ import {
   DialogDescription,
 } from "@/src/components/ui/dialog";
 import { SubjectHistoryNode } from "../types/performance.types";
+import { cn } from "@/src/lib/utils";
 
 // PREMIUM COLOR PALETTE (High Contrast)
 const SUBJECT_COLORS = [
@@ -278,14 +279,20 @@ export function SubjectGrowthTrendlineChart({
 
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col pb-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! ${
+      className={`relative flex flex-col pb-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none"
           : "h-[500px] lg:h-[550px] w-full"
       }`}
     >
       {<DottedBackground className="opacity-30" />}
-      {<CardGlow color="amber" hideLightGlow />}
+      {
+        <CardGlow
+          color="amber"
+          hideLightGlow
+          className={cn(isFullscreen && "rounded-none opacity-50")}
+        />
+      }
 
       <CardHeader
         className={`shrink-0 ${
@@ -461,6 +468,7 @@ export function SubjectGrowthTrendlineChart({
                 className={isDragging ? "pointer-events-none" : ""}
               >
                 <LineChart
+                  accessibilityLayer={false}
                   data={chartData}
                   margin={{
                     top: 10,

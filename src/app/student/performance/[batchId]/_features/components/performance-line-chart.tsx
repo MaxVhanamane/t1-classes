@@ -49,6 +49,7 @@ import {
   RechartsLineTooltipProps,
 } from "../types/performance.types";
 import { COLORS } from "../constants/performance.constants";
+import { cn } from "@/src/lib/utils";
 
 const CustomXAxisTick = ({
   x = 0,
@@ -330,14 +331,20 @@ export function PerformanceLineChart({
   // ResponsiveContainer collapses to 0 height — that was the bug.
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col pb-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! ${
+      className={`relative flex flex-col pb-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none"
           : "h-[500px] lg:h-[550px] w-full"
       }`}
     >
       {<DottedBackground className="opacity-30" />}
-      {<CardGlow color="sky" />}
+      {
+        <CardGlow
+          color="sky"
+          hideLightGlow
+          className={cn(isFullscreen && "rounded-none opacity-50")}
+        />
+      }
 
       <CardHeader
         className={`shrink-0 ${
@@ -493,6 +500,7 @@ export function PerformanceLineChart({
                   style={{ outline: "none" }}
                 >
                   <LineChart
+                    accessibilityLayer={false}
                     style={{ outline: "none" }}
                     data={chartSafeHistory}
                     margin={{
@@ -626,7 +634,7 @@ export function PerformanceLineChart({
 
       {/* Fullscreen dialog portal, same rotate-on-mobile-portrait trick as the working chart */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none sm:max-w-none sm:rounded-none [&>button]:hidden ">
+        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none sm:max-w-none  [&>button]:hidden ">
           <DialogTitle className="sr-only">Fullscreen Chart</DialogTitle>
           <DialogDescription className="sr-only">
             Fullscreen view of the test consistency and performance chart.

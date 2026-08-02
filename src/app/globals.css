@@ -288,7 +288,24 @@
     min-width: 100%;
     margin-right: 0 !important;
     overflow: inherit !important;
+  }
 
+  /* --- RECHARTS GLOBAL OVERRIDES --- */
+  .recharts-surface {
+    outline-width: 0px;
+  }
+
+  .recharts-wrapper,
+  .recharts-surface {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .recharts-wrapper:focus,
+  .recharts-wrapper:focus-visible,
+  .recharts-surface:focus,
+  .recharts-surface:focus-visible {
+    outline: none;
+    box-shadow: none;
   }
 
 }

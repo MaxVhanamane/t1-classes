@@ -34,6 +34,7 @@ import {
   AttendanceHistoryRow,
   RechartsBarTooltipProps,
 } from "../types/performance.types";
+import { cn } from "@/src/lib/utils";
 
 const CustomBarTooltip = ({ active, payload }: RechartsBarTooltipProps) => {
   if (active && payload && payload.length > 0) {
@@ -224,14 +225,20 @@ export function AttendanceBarChart({
 
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col gap-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! ${
+      className={`relative flex flex-col gap-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none pb-2"
           : "h-[500px] w-full"
       }`}
     >
       {<DottedBackground className="opacity-30" />}
-      {<CardGlow color="purple" hideLightGlow />}
+      {
+        <CardGlow
+          color="purple"
+          hideLightGlow
+          className={cn(isFullscreen && "rounded-none opacity-50")}
+        />
+      }
 
       <CardHeader
         className={`shrink-0 ${
@@ -322,6 +329,7 @@ export function AttendanceBarChart({
                   className={isDragging ? "pointer-events-none" : ""}
                 >
                   <BarChart
+                    accessibilityLayer={false}
                     data={attendanceHistory}
                     barGap={2}
                     margin={{
@@ -452,7 +460,7 @@ export function AttendanceBarChart({
 
       {/* SHADCN DIALOG FIX: Flawless scroll-lock portal */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none sm:max-w-none sm:rounded-none [&>button]:hidden ">
+        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none sm:max-w-none  [&>button]:hidden ">
           <DialogTitle className="sr-only">Fullscreen Chart</DialogTitle>
           <DialogDescription className="sr-only">
             Fullscreen view of the attendance trends chart.

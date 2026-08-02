@@ -23,7 +23,7 @@ export type GlowColor =
 interface CardGlowProps {
   color?: GlowColor;
   className?: string;
-  hideLightGlow?: boolean; // New prop
+  hideLightGlow?: boolean;
 }
 
 const LIGHT_GRADIENTS: Record<GlowColor, string> = {
@@ -97,35 +97,39 @@ export function CardGlow({
   hideLightGlow = false,
 }: CardGlowProps) {
   return (
-    <>
-      {/* TOP GLOW (Conditional: shown in both modes if hideLightGlow is true, otherwise dark-only) */}
+    <div
+      // 1. Master Wrapper takes the structural overrides (opacity, rounded, etc.)
+      className={cn(
+        "pointer-events-none absolute inset-0 rounded-xl",
+        className,
+      )}
+    >
+      {/* TOP GLOW - Doesn't need borders, just lives inside the wrapper */}
       <div
         className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 h-24 blur-2xl",
+          "absolute inset-x-0 top-0 h-24 blur-2xl",
           hideLightGlow ? "block" : "hidden dark:block",
           DARK_TOP_GLOWS[color],
         )}
       />
 
-      {/* BORDER GLOW */}
+      {/* BORDER GLOW - Perfectly inherits whatever border radius the wrapper has! */}
       <div
         className={cn(
-          "pointer-events-none absolute inset-0 rounded-xl dark:ring-1 dark:ring-inset",
+          "absolute inset-0 rounded-[inherit] dark:ring-1 dark:ring-inset",
           DARK_RINGS[color],
-          className,
         )}
       />
 
-      {/* LIGHT MODE GRADIENT (Skipped if hideLightGlow is true) */}
+      {/* LIGHT MODE GRADIENT - Inherits border radius so it doesn't spill */}
       {!hideLightGlow && (
         <div
           className={cn(
-            "pointer-events-none absolute inset-0 bg-linear-to-br dark:hidden",
+            "absolute inset-0 rounded-[inherit] bg-linear-to-br dark:hidden",
             LIGHT_GRADIENTS[color],
-            className,
           )}
         />
       )}
-    </>
+    </div>
   );
 }
