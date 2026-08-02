@@ -224,14 +224,14 @@ export function AttendanceBarChart({
 
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col overflow-hidden ${
+      className={`relative flex flex-col gap-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! ${
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none pb-2"
           : "h-[500px] w-full"
       }`}
     >
-      {!isFullscreen && <DottedBackground className="opacity-30" />}
-      {!isFullscreen && <CardGlow color="purple" hideLightGlow />}
+      {<DottedBackground className="opacity-30" />}
+      {<CardGlow color="purple" hideLightGlow />}
 
       <CardHeader
         className={`shrink-0 ${
@@ -279,152 +279,163 @@ export function AttendanceBarChart({
 
       <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-2 pb-2 sm:px-6 sm:pb-6">
         {attendanceHistory.length > 0 ? (
-          <div
-            ref={scrollRef}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            className={`custom-scrollbar flex-1 min-h-0 w-full overflow-y-hidden overflow-x-auto scrollbar-thumb-violet-600 overscroll-x-contain scrollbar-thin ${
-              isDragging ? "cursor-grabbing select-none" : "cursor-grab"
-            } ${isFullscreen ? "touch-none" : ""} pb-2 pt-4`}
-          >
-            <div
-              className="h-full"
-              style={{
-                width: "100%",
-                minWidth: `max(100%, ${minChartWidth}px)`,
-              }}
-            >
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-                className={isDragging ? "pointer-events-none" : ""}
-              >
-                <BarChart
-                  data={attendanceHistory}
-                  barGap={2}
-                  margin={{
-                    top: 10,
-                    right: isMobile ? 4 : 10,
-                    bottom: isMobile ? 15 : 30,
-                    left: isMobile ? 0 : 10,
-                  }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="presentGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#6e3ff3" stopOpacity={1} />
-                      <stop
-                        offset="100%"
-                        stopColor="#6e3ff3"
-                        stopOpacity={0.6}
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id="absentGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#e255f2" stopOpacity={1} />
-                      <stop
-                        offset="100%"
-                        stopColor="#e255f2"
-                        stopOpacity={0.6}
-                      />
-                    </linearGradient>
-                  </defs>
-
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={gridColor}
-                    vertical={false}
-                  />
-
-                  <XAxis
-                    dataKey="month"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: axisColor, fontSize: 11 }}
-                    tickMargin={12}
-                  >
-                    {!isMobile && (
-                      <Label
-                        value="Timeline (Months)"
-                        offset={-20}
-                        position="insideBottom"
-                        fill="var(--muted-foreground)"
-                        fontSize={12}
-                      />
-                    )}
-                  </XAxis>
-
-                  <YAxis
-                    width={isMobile ? 24 : 45}
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: axisColor, fontSize: 11 }}
-                    dx={-5}
-                    allowDecimals={false}
-                  >
-                    {!isMobile && (
-                      <Label
-                        value="Classes (Count)"
-                        angle={-90}
-                        position="insideLeft"
-                        style={{ textAnchor: "middle" }}
-                        fill="var(--muted-foreground)"
-                        fontSize={12}
-                        dx={-10}
-                      />
-                    )}
-                  </YAxis>
-
-                  <RechartsTooltip
-                    content={<CustomBarTooltip />}
-                    cursor={{
-                      fill: isDark ? "#27272a" : "#f1f5f9",
-                      opacity: 0.4,
-                    }}
-                  />
-
-                  <Legend
-                    position="top"
-                    iconType="circle"
-                    iconSize={8}
-                    wrapperStyle={{
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      paddingBottom: "20px",
-                    }}
-                  />
-
-                  <Bar
-                    name="Classes Attended"
-                    dataKey="present"
-                    fill="url(#presentGradient)"
-                    maxBarSize={20}
-                    shape={<CustomPresentBar />}
-                  />
-                  <Bar
-                    name="Classes Missed"
-                    dataKey="absent"
-                    fill="url(#absentGradient)"
-                    maxBarSize={20}
-                    shape={<CustomAbsentBar />}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+          <>
+            {/* NEW CUSTOM HTML LEGEND */}
+            <div className="shrink-0 mb-2 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-2">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: "#6e3ff3" }}
+                />
+                Classes Attended
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: "#e255f2" }}
+                />
+                Classes Missed
+              </div>
             </div>
-          </div>
+
+            <div
+              ref={scrollRef}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              className={`custom-scrollbar flex-1 min-h-0 w-full overflow-y-hidden overflow-x-auto scrollbar-thumb-violet-600 overscroll-x-contain scrollbar-thin ${
+                isDragging ? "cursor-grabbing select-none" : "cursor-grab"
+              } ${isFullscreen ? "touch-none" : ""} pb-2 pt-2`}
+            >
+              <div
+                className="h-full"
+                style={{
+                  width: "100%",
+                  minWidth: `max(100%, ${minChartWidth}px)`,
+                }}
+              >
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
+                  className={isDragging ? "pointer-events-none" : ""}
+                >
+                  <BarChart
+                    data={attendanceHistory}
+                    barGap={2}
+                    margin={{
+                      top: 10, // Keeps maximum vertical breathing room
+                      right: isMobile ? 4 : 10,
+                      bottom: isMobile ? 15 : 30,
+                      left: isMobile ? 0 : 10,
+                    }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="presentGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor="#6e3ff3" stopOpacity={1} />
+                        <stop
+                          offset="100%"
+                          stopColor="#6e3ff3"
+                          stopOpacity={0.6}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="absentGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor="#e255f2" stopOpacity={1} />
+                        <stop
+                          offset="100%"
+                          stopColor="#e255f2"
+                          stopOpacity={0.6}
+                        />
+                      </linearGradient>
+                    </defs>
+
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={gridColor}
+                      vertical={false}
+                    />
+
+                    <XAxis
+                      dataKey="month"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: axisColor, fontSize: 11 }}
+                      tickMargin={12}
+                    >
+                      {!isMobile && (
+                        <Label
+                          value="Timeline (Months)"
+                          offset={-20}
+                          position="insideBottom"
+                          fill="var(--muted-foreground)"
+                          fontSize={12}
+                        />
+                      )}
+                    </XAxis>
+
+                    <YAxis
+                      width={isMobile ? 24 : 45}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: axisColor, fontSize: 11 }}
+                      dx={-5}
+                      allowDecimals={false}
+                    >
+                      {!isMobile && (
+                        <Label
+                          value="Classes (Count)"
+                          angle={-90}
+                          position="insideLeft"
+                          style={{ textAnchor: "middle" }}
+                          fill="var(--muted-foreground)"
+                          fontSize={12}
+                          dx={-10}
+                        />
+                      )}
+                    </YAxis>
+
+                    <RechartsTooltip
+                      content={<CustomBarTooltip />}
+                      cursor={{
+                        fill: isDark ? "#27272a" : "#f1f5f9",
+                        opacity: 0.4,
+                      }}
+                    />
+
+                    {/* THE RECHARTS <Legend /> HAS BEEN REMOVED FROM HERE */}
+
+                    <Bar
+                      name="Classes Attended"
+                      dataKey="present"
+                      fill="url(#presentGradient)"
+                      maxBarSize={20}
+                      shape={<CustomPresentBar />}
+                    />
+                    <Bar
+                      name="Classes Missed"
+                      dataKey="absent"
+                      fill="url(#absentGradient)"
+                      maxBarSize={20}
+                      shape={<CustomAbsentBar />}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
         ) : (
           <div className="flex flex-1 h-full items-center justify-center rounded-lg bg-muted/10 text-sm text-muted-foreground">
             No attendance records found.

@@ -273,7 +273,7 @@ export function QuestionDonutChart({
   };
 
   return (
-    <Card className="relative w-full overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl">
+    <Card className="relative w-full overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none!">
       <DottedBackground className="opacity-20" />
       <CardGlow color="indigo" hideLightGlow />
 

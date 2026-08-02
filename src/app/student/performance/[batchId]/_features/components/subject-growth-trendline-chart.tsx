@@ -278,14 +278,14 @@ export function SubjectGrowthTrendlineChart({
 
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col pb-2 overflow-hidden ${
+      className={`relative flex flex-col pb-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! ${
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none"
-          : "h-[450px] w-full"
+          : "h-[500px] lg:h-[550px] w-full"
       }`}
     >
-      {!isFullscreen && <DottedBackground className="opacity-30" />}
-      {!isFullscreen && <CardGlow color="amber" hideLightGlow />}
+      {<DottedBackground className="opacity-30" />}
+      {<CardGlow color="amber" hideLightGlow />}
 
       <CardHeader
         className={`shrink-0 ${
@@ -464,7 +464,7 @@ export function SubjectGrowthTrendlineChart({
                   data={chartData}
                   margin={{
                     top: 10,
-                    right: isMobile ? 20 : 30,
+                    right: isMobile ? 40 : 30,
                     bottom: 10,
                     left: 0,
                   }}

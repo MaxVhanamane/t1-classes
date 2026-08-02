@@ -235,14 +235,14 @@ export function PerformanceBySubjectChart({
 
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col pb-2 overflow-hidden ${
+      className={`relative flex flex-col pb-2 gap-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! ${
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none"
           : "h-[500px] w-full"
       }`}
     >
-      {!isFullscreen && <DottedBackground className="opacity-30" />}
-      {!isFullscreen && <CardGlow color="teal" hideLightGlow />}
+      {<DottedBackground className="opacity-30" />}
+      {<CardGlow color="teal" hideLightGlow />}
 
       <CardHeader
         className={`shrink-0 ${
@@ -354,7 +354,22 @@ export function PerformanceBySubjectChart({
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-2 pb-2 sm:px-6 sm:pb-6">
+      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-2 pb-2 sm:px-6 sm:pb-6 ">
+        {/* NEW CUSTOM HTML LEGEND */}
+        <div className="shrink-0 mb-2 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-2">
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-teal-500" />
+            Your Score
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">
+            <span
+              className="h-2 w-2 shrink-0 rounded-full"
+              style={{ backgroundColor: isDark ? "#52525b" : "#94a3b8" }}
+            />
+            Class Average
+          </div>
+        </div>
+
         <div
           ref={scrollRef}
           onPointerDown={handlePointerDown}
@@ -364,7 +379,7 @@ export function PerformanceBySubjectChart({
           onPointerCancel={handlePointerUp}
           className={`custom-scrollbar flex-1 min-h-0 w-full overflow-y-hidden overflow-x-auto scrollbar-thumb-teal-600 overscroll-x-contain scrollbar-thin ${
             isDragging ? "cursor-grabbing select-none" : "cursor-grab"
-          } ${isFullscreen ? "touch-none" : ""} pb-2 pt-4`}
+          } ${isFullscreen ? "touch-none" : ""} pb-2 pt-2`}
         >
           <div
             className="h-full"
@@ -381,7 +396,7 @@ export function PerformanceBySubjectChart({
               <BarChart
                 data={performanceBySubject}
                 margin={{
-                  top: 10,
+                  top: 10, // Gives the chart maximum vertical breathing room
                   right: isMobile ? 4 : 10,
                   bottom: isMobile ? 15 : 30,
                   left: isMobile ? 0 : 10,
@@ -389,7 +404,6 @@ export function PerformanceBySubjectChart({
                 barGap={4}
               >
                 <defs>
-                  {/* NEW PREMIUM TEAL/EMERALD GRADIENT */}
                   <linearGradient
                     id="studentBarGradient"
                     x1="0"
@@ -485,19 +499,9 @@ export function PerformanceBySubjectChart({
                     />
                   )}
                 />
-                <Legend
-                  position="top"
-                  height={40}
-                  iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{
-                    fontSize: "13px",
-                    fontWeight: 500,
-                    paddingBottom: "20px",
-                  }}
-                />
 
-                {/* REDUCED WIDTH FOR PREMIUM FEEL */}
+                {/* THE RECHARTS <Legend /> HAS BEEN REMOVED FROM HERE */}
+
                 <Bar
                   name="Your Score"
                   dataKey="studentPercentage"
