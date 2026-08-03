@@ -106,7 +106,7 @@ export function PerformanceDashboardClient() {
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="space-y-8 p-2 sm:p-8 [&_:focus]:outline-none">
+    <div className="space-y-8">
       <div className="flex items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">

@@ -396,9 +396,9 @@ export function PerformanceLineChart({
   // ResponsiveContainer collapses to 0 height — that was the bug.
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col pb-0 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
+      className={`relative gap-3 flex flex-col pb-0 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
         isFullscreen
-          ? "h-full w-full rounded-none border-none shadow-none"
+          ? "h-full w-full rounded-none border-none shadow-none pt-4"
           : "h-[500px] lg:h-[550px] w-full"
       }`}
     >
@@ -411,14 +411,15 @@ export function PerformanceLineChart({
         />
       }
 
-      <CardHeader
-        className={`shrink-0 ${
-          isFullscreen ? "p-2 pb-1 sm:p-4 sm:pb-2" : "pb-2"
-        }`}
-      >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <CardHeader className="px-3 sm:px-6">
+        <div
+          className={cn(
+            "flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between",
+            isFullscreen && "flex-row justify-between",
+          )}
+        >
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 truncate">
               <CardTitle
                 className={`flex items-center gap-2 ${
                   isFullscreen ? "text-sm sm:text-base" : ""
@@ -429,16 +430,15 @@ export function PerformanceLineChart({
                 </span>
                 {isFullscreen && <span className="sm:hidden">Performance</span>}
               </CardTitle>
-              {!isFullscreen && (
-                <RichPopover
-                  color="cyan"
-                  title="Reading this chart"
-                  description="This chart tracks your performance test by test, comparing your score directly against the class average and the batch topper. Tap or hover over any point to see the full details."
-                  trigger={
-                    <Info className="h-4 w-4 shrink-0 cursor-pointer text-muted-foreground transition-colors hover:text-foreground" />
-                  }
-                />
-              )}
+
+              <RichPopover
+                color="cyan"
+                title="Reading this chart"
+                description="This chart tracks your performance test by test, comparing your score directly against the class average and the batch topper. Tap or hover over any point to see the full details."
+                trigger={
+                  <Info className="h-4 w-4 shrink-0 cursor-pointer text-muted-foreground transition-colors hover:text-foreground" />
+                }
+              />
             </div>
             {!isFullscreen && (
               <CardDescription className="text-xs">
@@ -494,7 +494,7 @@ export function PerformanceLineChart({
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-2 pb-0 sm:px-6">
+      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-3 pb-0 sm:px-6 ">
         {chartSafeHistory.length > 0 && (
           <div className="shrink-0 mb-2 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-2">
             <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">

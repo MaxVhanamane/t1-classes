@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
@@ -176,15 +176,7 @@ export function AttendanceBarChart({
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!scrollRef.current) return;
-
-    const isRotated =
-      typeof window !== "undefined" &&
-      isFullscreen &&
-      window.innerHeight > window.innerWidth &&
-      window.innerWidth < 768;
-
-    if (e.pointerType === "touch" && !isRotated) return;
-    if (e.pointerType === "mouse" && e.button !== 0) return; // Only left click
+    if (e.pointerType === "mouse" && e.button !== 0) return;
 
     setIsDragging(true);
     setStartPos({
@@ -199,15 +191,7 @@ export function AttendanceBarChart({
     if (!isDragging || !scrollRef.current) return;
 
     const deltaX = e.clientX - startPos.x;
-    const deltaY = e.clientY - startPos.y;
-
-    const isRotated =
-      typeof window !== "undefined" &&
-      isFullscreen &&
-      window.innerHeight > window.innerWidth &&
-      window.innerWidth < 768;
-
-    const walk = (isRotated ? deltaY : deltaX) * 1.5;
+    const walk = deltaX * 1.5;
     scrollRef.current.scrollLeft = startPos.scrollLeft - walk;
   };
 
@@ -215,6 +199,75 @@ export function AttendanceBarChart({
     setIsDragging(false);
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
+
+  // --- NATIVE FULLSCREEN + ORIENTATION LOCK ---
+  // Replaces the old CSS rotate-90 hack. That approach visually rotated the
+  // chart, but touch/pointer clientX/clientY coordinates are still reported
+  // in the original, un-rotated space — causing a mismatch between what you
+  // see and what you can actually tap, worst near the edges. Physically
+  // locking the device into landscape via the Fullscreen + Screen
+  // Orientation APIs means the browser itself reports correct landscape
+  // coordinates, so there's no mismatch at all.
+  //
+  // Support for orientation lock varies (notably unsupported on iOS Safari),
+  // so this fails silently and falls back to a plain portrait fullscreen
+  // dialog with horizontal drag/scroll, which still works correctly.
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    const lockLandscape = async () => {
+      try {
+        const isNarrowMobile =
+          typeof window !== "undefined" && window.innerWidth < 768;
+        if (!isNarrowMobile) return;
+
+        if (
+          document.documentElement.requestFullscreen &&
+          !document.fullscreenElement
+        ) {
+          await document.documentElement.requestFullscreen();
+        }
+        const orientation = screen.orientation as
+          | (ScreenOrientation & { lock?: (o: string) => Promise<void> })
+          | undefined;
+        if (orientation?.lock) {
+          await orientation.lock("landscape");
+        }
+      } catch {
+        // Not supported on this browser/device — ignore and fall back to
+        // the plain (non-rotated) portrait fullscreen dialog.
+      }
+    };
+
+    void lockLandscape();
+
+    return () => {
+      try {
+        const orientation = screen.orientation as
+          | (ScreenOrientation & { unlock?: () => void })
+          | undefined;
+        orientation?.unlock?.();
+      } catch {
+        // ignore
+      }
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    };
+  }, [isFullscreen]);
+
+  // Keep React state in sync if the user exits fullscreen via the system
+  // back button/gesture instead of our own "Exit Full Screen" button.
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [isFullscreen]);
 
   const isDark = resolvedTheme === "dark";
   const axisColor = isDark ? "#71717a" : "#64748b";
@@ -225,9 +278,9 @@ export function AttendanceBarChart({
 
   const renderChart = () => (
     <Card
-      className={`relative flex flex-col gap-2 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
+      className={`relative gap-3 flex flex-col pb-0 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
         isFullscreen
-          ? "h-full w-full rounded-none border-none shadow-none pb-2"
+          ? "h-full w-full rounded-none border-none shadow-none pt-4"
           : "h-[500px] w-full"
       }`}
     >
@@ -240,15 +293,23 @@ export function AttendanceBarChart({
         />
       }
 
-      <CardHeader
-        className={`shrink-0 ${
-          isFullscreen ? "p-2 pb-1 sm:p-4 sm:pb-2" : "pb-2"
-        }`}
-      >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <CardHeader className="px-3 sm:px-6">
+        <div
+          className={cn(
+            "flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between",
+            isFullscreen && "flex-row justify-between",
+          )}
+        >
           <div className="space-y-1.5">
-            <CardTitle className={isFullscreen ? "text-sm sm:text-base" : ""}>
-              Attendance Trends
+            <CardTitle
+              className={`truncate ${
+                isFullscreen ? "text-sm sm:text-base" : ""
+              }`}
+            >
+              <span className={isFullscreen ? "hidden sm:inline" : ""}>
+                Attendance Trends
+              </span>
+              {isFullscreen && <span className="sm:hidden">Attendance</span>}
             </CardTitle>
             {!isFullscreen && (
               <CardDescription className="text-xs">
@@ -263,19 +324,17 @@ export function AttendanceBarChart({
               className={`flex items-center justify-center gap-1.5 rounded-md bg-purple-500/10 font-medium text-purple-600 transition-colors hover:bg-purple-500/20 dark:text-purple-400 ${
                 isFullscreen
                   ? "px-2 py-1.5 text-[10px]"
-                  : "px-3 py-2 text-xs sm:px-2.5 sm:py-1.5"
+                  : "px-3 py-1.5 text-xs sm:px-2.5 sm:py-1.5"
               }`}
             >
               {isFullscreen ? (
                 <>
-                  <Minimize2
-                    className={isFullscreen ? "h-3 w-3" : "h-3.5 w-3.5"}
-                  />
+                  <Minimize2 className="h-3 w-3" />
                   <span>Exit Full Screen</span>
                 </>
               ) : (
                 <>
-                  <Maximize2 className="h-3.5 w-3.5" />
+                  <Maximize2 className="h-3 w-3" />
                   <span>Full Screen</span>
                 </>
               )}
@@ -284,7 +343,7 @@ export function AttendanceBarChart({
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-2 pb-2 sm:px-6 sm:pb-6">
+      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-3 pb-0 sm:px-6 ">
         {attendanceHistory.length > 0 ? (
           <>
             {/* NEW CUSTOM HTML LEGEND */}
@@ -307,12 +366,13 @@ export function AttendanceBarChart({
 
             <div
               ref={scrollRef}
+              tabIndex={-1}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerLeave={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              className={`custom-scrollbar flex-1 min-h-0 w-full overflow-y-hidden overflow-x-auto scrollbar-thumb-violet-600 overscroll-x-contain scrollbar-thin ${
+              className={`custom-scrollbar focus:outline-none [-webkit-tap-highlight-color:transparent] flex-1 min-h-0 focus:outline-none w-full overflow-y-hidden overflow-x-auto scrollbar-thumb-violet-600 overscroll-x-contain scrollbar-thin ${
                 isDragging ? "cursor-grabbing select-none" : "cursor-grab"
               } ${isFullscreen ? "touch-none" : ""} pb-2 pt-2`}
             >
@@ -327,9 +387,11 @@ export function AttendanceBarChart({
                   width="100%"
                   height="100%"
                   className={isDragging ? "pointer-events-none" : ""}
+                  style={{ outline: "none" }}
                 >
                   <BarChart
                     accessibilityLayer={false}
+                    style={{ outline: "none" }}
                     data={attendanceHistory}
                     barGap={2}
                     margin={{
@@ -458,15 +520,18 @@ export function AttendanceBarChart({
       {/* Standard In-Page Render */}
       {!isFullscreen && renderChart()}
 
-      {/* SHADCN DIALOG FIX: Flawless scroll-lock portal */}
+      {/* Fullscreen dialog portal — landscape orientation is requested
+          natively (see the useEffect above) rather than faked with CSS
+          rotation, so touch hit-testing lines up correctly with what's
+          rendered on screen. */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none sm:max-w-none  [&>button]:hidden ">
+        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none outline-none focus:outline-none focus-visible:outline-none sm:max-w-none  [&>button]:hidden ">
           <DialogTitle className="sr-only">Fullscreen Chart</DialogTitle>
           <DialogDescription className="sr-only">
             Fullscreen view of the attendance trends chart.
           </DialogDescription>
 
-          <div className="absolute left-0 top-0 flex h-[100dvh] w-[100dvw] flex-col bg-card max-md:portrait:top-1/2 max-md:portrait:left-1/2 max-md:portrait:h-[100dvw] max-md:portrait:w-[100dvh] max-md:portrait:-translate-x-1/2 max-md:portrait:-translate-y-1/2 max-md:portrait:rotate-90 ">
+          <div className="absolute left-0 top-0 flex h-[100dvh] w-[100dvw] flex-col bg-card">
             {renderChart()}
           </div>
         </DialogContent>

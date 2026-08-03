@@ -26,7 +26,7 @@ const PerformanceDashboardClient = dynamic(
 export default function BatchPerformancePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto w-full max-w-7xl">
+      <div className="mx-auto w-full max-w-7xl p-2 sm:p-8">
         <PerformanceDashboardClient />
       </div>
     </div>
