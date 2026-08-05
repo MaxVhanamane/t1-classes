@@ -50,7 +50,7 @@ export function StatCard({
     >
       <Card
         className="
-          group relative h-full overflow-hidden rounded-sm
+          group relative py-4 h-full overflow-hidden rounded-sm
           border border-border/60
           bg-background/80 backdrop-blur-xl"
       >
@@ -63,7 +63,7 @@ export function StatCard({
         {/* premium radial highlight */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_32%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_28%)]" />
 
-        <CardContent className="relative z-10 flex h-full flex-col justify-between p-6">
+        <CardContent className="relative z-10 flex h-full flex-col justify-between p-4">
           {/* top */}
           <div className="flex items-start justify-between gap-4">
             <div
@@ -91,7 +91,7 @@ export function StatCard({
           {/* bottom */}
           <div className="pt-7">
             <p className="text-sm font-semibold tracking-tight">{title}</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-3">
               {description}
             </p>
           </div>

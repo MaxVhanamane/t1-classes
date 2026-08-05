@@ -2,15 +2,22 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-
 import { SectionSidebar } from "./section-sidebar";
 import { QuestionViewer } from "./question-viewer";
 import { MobileSectionDrawer } from "./mobile-section-drawer";
-
-import { AnalysisLoadingScreen } from "./analysis-loading-screen.tsx";
 import { useSections } from "../hooks/use-get-sections";
 import { useResultSummary } from "../../../_features/hooks/use-result-summary";
 import { useSectionQuestions } from "../hooks/use-section-questions";
+import { ProgressiveTextLoader } from "@/src/components/ui/loading/progressive-text-loader";
+
+const messages = [
+  "Reviewing your test responses…",
+  "Calculating your total score…",
+  "Measuring your overall accuracy…",
+  "Reviewing correct and incorrect answers…",
+  "Identifying unanswered questions…",
+  "Finalizing your result analysis…",
+];
 
 export function DetailedResultClient() {
   const { attemptId } = useParams<{
@@ -18,19 +25,14 @@ export function DetailedResultClient() {
   }>();
 
   /* ---------------- Queries ---------------- */
-
   const sectionsQuery = useSections(attemptId);
-
   const summaryQuery = useResultSummary(attemptId);
 
   /* ---------------- State ---------------- */
-
   const [selected, setSelected] = useState<string | null>(null);
-
   const [page, setPage] = useState(1);
 
   /* ---------------- Active Section ---------------- */
-
   const active =
     selected ??
     (sectionsQuery.data?.kind === "ok"
@@ -38,7 +40,6 @@ export function DetailedResultClient() {
       : null);
 
   /* ---------------- Questions Query ---------------- */
-
   const questionsQuery = useSectionQuestions(attemptId, active, page);
 
   /* reset page on section change */
@@ -48,9 +49,12 @@ export function DetailedResultClient() {
   };
 
   /* ---------------- Loading ---------------- */
-
   if (sectionsQuery.isLoading) {
-    return <AnalysisLoadingScreen />;
+    return (
+      <div className="flex h-(--h-viewport-minus-navbar) w-full items-center justify-center bg-background">
+        <ProgressiveTextLoader messages={messages} />
+      </div>
+    );
   }
 
   if (
@@ -65,8 +69,10 @@ export function DetailedResultClient() {
   }
 
   const sections = sectionsQuery.data.sections;
-
   const activeSection = sections.find((s) => s.id === active);
+
+  // Get the summary directly from the Sections query
+  const activeSectionSummary = activeSection?.summary ?? null;
 
   // Calculate the total number of questions in all preceding sections
   const activeSectionIndex = sections.findIndex((s) => s.id === active);
@@ -79,8 +85,8 @@ export function DetailedResultClient() {
 
   return (
     <div className="flex h-(--h-viewport-minus-navbar) overflow-hidden bg-background w-full">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block w-[60%]">
+      {/* Desktop Sidebar - Fixed Left Side */}
+      <div className="hidden md:block w-[60%] h-full overflow-y-auto border-r">
         <SectionSidebar
           sections={sections}
           active={active}
@@ -89,8 +95,8 @@ export function DetailedResultClient() {
         />
       </div>
 
-      {/* Main Content */}
-      <div className="flex flex-col w-full">
+      {/* Main Content - Right Side */}
+      <div className="flex flex-col w-full h-full overflow-hidden">
         <MobileSectionDrawer
           sections={sections}
           active={active}
@@ -102,13 +108,16 @@ export function DetailedResultClient() {
           negativeMarks={activeSection?.negativeMarks}
           partialMarks={activeSection?.partialMarks}
           questionCount={activeSection?.questionCount}
-          sectionSummary={questionData?.summary ?? null}
-          isSectionSummaryLoading={questionsQuery.isLoading}
+          sectionSummary={activeSectionSummary}
           currentPage={questionData?.page ?? 1}
           totalPages={questionData?.totalPages ?? 1}
         />
 
-        <div className="overflow-y-auto">
+        {/* 
+          flex-1 ensures this takes the remaining vertical space 
+          overflow-y-auto ensures ONLY the questions scroll 
+        */}
+        <div className="flex-1 overflow-y-auto relative">
           {active && (
             <QuestionViewer
               loading={questionsQuery.isLoading}
@@ -120,6 +129,7 @@ export function DetailedResultClient() {
               fullMarks={activeSection?.fullMarks}
               negativeMarks={activeSection?.negativeMarks}
               partialMarks={activeSection?.partialMarks}
+              summary={activeSectionSummary}
               rankingAvailableAt={
                 summaryQuery.data?.kind === "ok"
                   ? summaryQuery.data.rankingAvailableAt

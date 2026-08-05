@@ -160,6 +160,8 @@ export const RichPopover = forwardRef<
 
         <PopoverContent
           ref={ref}
+          collisionPadding={16} // <-- Keeps it 16px away from screen edges
+          sideOffset={8}
           className={cn(
             "w-72 p-5 rounded-2xl shadow-lg text-sm",
             "border-t-4 border-l-2 border-r-2 border-b-2",

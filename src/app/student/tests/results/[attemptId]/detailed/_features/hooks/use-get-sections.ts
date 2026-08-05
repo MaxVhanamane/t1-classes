@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
+import { SectionReviewSummary } from "../types/question-details.types";
 
 /* ---------------- Types ---------------- */
 
@@ -21,6 +22,9 @@ export type SectionItem = {
     partialMarks: PartialMarkingByCorrectCount | null;
     maxSelections: number | null;
     questionCount: number;
+
+    // NEW: Summary is now directly attached to the section
+    summary: SectionReviewSummary;
 };
 
 export type SectionsResponse =

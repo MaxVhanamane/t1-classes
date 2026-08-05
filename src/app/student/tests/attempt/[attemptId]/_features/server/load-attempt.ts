@@ -3,7 +3,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
-import { LoadAttemptResponse, Section } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
+import { LoadAttemptResponse, CachedTestPayload } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
 import {
     getAttemptExpiryMs,
     isAttemptExpired,
@@ -14,11 +14,6 @@ import { requireStudentServerOnly } from "@/src/lib/auth/claims/require-role-ser
 /* =========================================================
    CACHED TEST PAYLOAD
 ========================================================= */
-
-type CachedTestPayload = {
-    title: string;
-    sections: Section[];
-};
 
 async function getCachedTestPayload(
     testId: string,
@@ -45,6 +40,9 @@ async function getCachedTestPayload(
     return (
         (data as CachedTestPayload | null) ?? {
             title: "Test",
+            totalMarks: 0,
+            totalSections: 0,
+            totalQuestions: 0,
             sections: [],
         }
     );
@@ -54,14 +52,10 @@ export async function loadAttempt(
     attemptId: string,
 ): Promise<LoadAttemptResponse> {
     const supabase = await createServerSupabaseClient();
-
     const user = await requireStudentServerOnly();
 
     if (!user) {
-        return {
-            kind: "denied",
-            reason: "not_owner",
-        };
+        return { kind: "denied", reason: "not_owner" };
     }
 
     const now = Date.now();
@@ -92,10 +86,7 @@ export async function loadAttempt(
         .single();
 
     if (error || !attempt) {
-        return {
-            kind: "denied",
-            reason: "not_found",
-        };
+        return { kind: "denied", reason: "not_found" };
     }
 
     const distribution = (attempt.distribution as unknown) as {
@@ -106,74 +97,40 @@ export async function loadAttempt(
     } | null;
 
     if (!distribution) {
-        return {
-            kind: "denied",
-            reason: "not_found",
-        };
+        return { kind: "denied", reason: "not_found" };
     }
 
     /* =========================================================
-       OWNERSHIP
+       OWNERSHIP & STATUS
     ========================================================= */
 
     if (attempt.user_id !== user.userId) {
-        return {
-            kind: "denied",
-            reason: "not_owner",
-        };
+        return { kind: "denied", reason: "not_owner" };
     }
 
-    /* =========================================================
-       STATUS
-    ========================================================= */
-
     if (attempt.status === "submitted") {
-        return {
-            kind: "denied",
-            reason: "submitted",
-        };
+        return { kind: "denied", reason: "submitted" };
     }
 
     if (attempt.status === "expired") {
-        return {
-            kind: "denied",
-            reason: "expired",
-        };
+        return { kind: "denied", reason: "expired" };
     }
 
     /* =========================================================
-       DISTRIBUTION WINDOW
+       DISTRIBUTION WINDOW & EXPIRY
     ========================================================= */
 
-    const startsAtMs = new Date(
-        distribution.starts_at,
-    ).getTime();
-
-    const endsAtMs = new Date(
-        distribution.ends_at,
-    ).getTime();
+    const startsAtMs = new Date(distribution.starts_at).getTime();
+    const endsAtMs = new Date(distribution.ends_at).getTime();
 
     if (now < startsAtMs || now >= endsAtMs) {
-        return {
-            kind: "denied",
-            reason: "ended",
-        };
+        return { kind: "denied", reason: "ended" };
     }
 
-    /* =========================================================
-       ATTEMPT EXPIRY
-    ========================================================= */
-
-    const expiresAtMs = getAttemptExpiryMs(
-        attempt,
-        distribution,
-    );
+    const expiresAtMs = getAttemptExpiryMs(attempt, distribution);
 
     if (isAttemptExpired(expiresAtMs, now)) {
-        return {
-            kind: "denied",
-            reason: "expired",
-        };
+        return { kind: "denied", reason: "expired" };
     }
 
     /* =========================================================
@@ -182,10 +139,7 @@ export async function loadAttempt(
 
     const [testPayload, statesResult] =
         await Promise.all([
-            getCachedTestPayload(
-                attempt.test_id,
-            ),
-
+            getCachedTestPayload(attempt.test_id),
             supabase
                 .from("test_attempt_answers")
                 .select(`
@@ -197,6 +151,7 @@ export async function loadAttempt(
                 .eq("attempt_id", attempt.id),
         ]);
 
+
     const states = statesResult.data ?? [];
 
     /* =========================================================
@@ -205,33 +160,19 @@ export async function loadAttempt(
 
     return {
         kind: "ok",
-
         attemptId: attempt.id,
-
         testId: attempt.test_id,
-
-        distributionId:
-            attempt.distribution_id,
-
+        distributionId: attempt.distribution_id,
         startedAt: attempt.started_at,
-
-        expiresAt: new Date(
-            expiresAtMs,
-        ).toISOString(),
-
-        timeLimitSeconds:
-            attempt.time_limit_seconds,
-
+        expiresAt: new Date(expiresAtMs).toISOString(),
+        timeLimitSeconds: attempt.time_limit_seconds,
         test: testPayload,
-
         state: states.map((state) => ({
             questionId: state.question_id,
             answer: state.answer,
             visited: false,
-            markedForReview:
-                state.marked_for_review,
-            timeSpentSeconds:
-                state.time_spent_seconds ?? 0,
+            markedForReview: state.marked_for_review,
+            timeSpentSeconds: state.time_spent_seconds ?? 0,
         })),
     };
 }

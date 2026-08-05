@@ -16,7 +16,6 @@ import { SectionItem } from "../hooks/use-get-sections";
 import { MetaStrip } from "./meta-strip";
 import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
 import { SectionSummaryAccordion } from "./section-summary-accordion";
-import { Skeleton } from "@/src/components/ui/skeleton";
 import {
   ResultSummary,
   SectionReviewSummary,
@@ -26,7 +25,7 @@ type Props = {
   sections: SectionItem[];
   active: string | null;
   onChange: (id: string) => void;
-  summary: ResultSummary;
+  summary: ResultSummary | null;
   sectionTitle?: string;
   subjectLabel?: string;
   fullMarks?: number;
@@ -36,7 +35,6 @@ type Props = {
   currentPage?: number;
   totalPages?: number;
   sectionSummary: SectionReviewSummary | null;
-  isSectionSummaryLoading: boolean;
 };
 
 export function MobileSectionDrawer({
@@ -51,7 +49,6 @@ export function MobileSectionDrawer({
   partialMarks,
   questionCount,
   sectionSummary,
-  isSectionSummaryLoading,
   currentPage = 1,
   totalPages = 1,
 }: Props) {
@@ -124,30 +121,11 @@ export function MobileSectionDrawer({
             totalPages={totalPages}
           />
 
-          {isSectionSummaryLoading ? (
-            <SectionSummaryAccordionSkeleton />
-          ) : sectionSummary ? (
+          {sectionSummary && (
             <SectionSummaryAccordion summary={sectionSummary} />
-          ) : null}
+          )}
         </div>
       )}
-    </div>
-  );
-}
-
-function SectionSummaryAccordionSkeleton() {
-  return (
-    <div className="w-full pt-2">
-      <div className="rounded-xl border px-2">
-        <div className="flex items-center justify-between gap-3 py-3">
-          <div className="min-w-0 flex-1 space-y-2">
-            <Skeleton className="h-4 w-44" />
-            <Skeleton className="h-3 w-56 max-w-full" />
-          </div>
-
-          <Skeleton className="h-4 w-4 shrink-0 rounded-sm -mt-2" />
-        </div>
-      </div>
     </div>
   );
 }

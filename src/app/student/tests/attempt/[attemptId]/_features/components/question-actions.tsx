@@ -98,7 +98,7 @@ export default function QuestionActions({
   }, [sections, state]);
 
   return (
-    <div className="space-y-3 rounded-lg min-[820px]:border bg-background min-[820px]:bg-card px-0  shadow-sm min-[820px]:p-4 ">
+    <div className="space-y-3 rounded-lg min-[820px]:border bg-background min-[820px]:bg-card px-0 shadow-none min-[820px]:p-4 ">
       {/* PRIMARY ACTIONS */}
       <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         <Button

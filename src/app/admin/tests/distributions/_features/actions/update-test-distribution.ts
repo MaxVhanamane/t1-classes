@@ -14,8 +14,6 @@ export async function updateTestDistribution(
     // redirect() throws internally; calling inside try/catch would prevent the redirect
     const staff = await requireStaffServerOnly();
     try {
-
-
         const supabase = await createServerSupabaseClient();
 
         /* ---------------- Fetch Distribution ---------------- */
@@ -45,12 +43,26 @@ export async function updateTestDistribution(
             return { error: "DISTRIBUTION_NOT_EDITABLE" };
         }
 
-        /* ---------------- Validate Time ---------------- */
+        /* ---------------- Validate Time & Duration ---------------- */
         const start = new Date(input.starts_at);
         const end = new Date(input.ends_at);
 
         if (start >= end) {
             return { error: "INVALID_TIME_RANGE" };
+        }
+
+        // Truncate current time to the minute (allow current minute, block past)
+        const now = new Date();
+        now.setSeconds(0, 0);
+
+        if (start < now) {
+            return { error: "CANNOT_SCHEDULE_IN_PAST" };
+        }
+
+        // Ensure duration fits inside the window
+        const windowMinutes = (end.getTime() - start.getTime()) / 60000;
+        if (input.duration_minutes > windowMinutes) {
+            return { error: "DURATION_EXCEEDS_DISTRIBUTION_WINDOW" };
         }
 
         /* ---------------- Update ---------------- */
@@ -68,7 +80,10 @@ export async function updateTestDistribution(
         if (error) {
             return { error: error.message };
         }
-        updateTag(`distribution:${distributionId}`)
+
+        updateTag(`distribution:${distributionId}`);
+
+
 
     } catch (err) {
         console.error("[UPDATE_TEST_DISTRIBUTION_ERROR]", err);

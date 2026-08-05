@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { useRouter } from "nextjs-toploader/app";
@@ -14,7 +14,6 @@ export function useTestSubmit(attemptId: string, timer: QuestionTimer,) {
     const [failed, setFailed] = useState(false);
 
     const router = useRouter();
-    const queryClient = useQueryClient();
 
     // Prevent duplicate submissions
     const hasSubmittedRef = useRef(false);
@@ -55,14 +54,8 @@ export function useTestSubmit(attemptId: string, timer: QuestionTimer,) {
             }
         },
 
-        onSuccess: (data) => {
+        onSuccess: () => {
             timer.clear();
-
-            queryClient.setQueryData(
-                ["result-summary", attemptId],
-                data,
-            );
-
             toast.success(
                 "Test submitted successfully",
             );

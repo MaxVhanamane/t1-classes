@@ -7,6 +7,8 @@ import { QuestionsPageResponse } from "@/src/app/student/tests/results/[attemptI
    ROUTE
 ========================================================= */
 
+export const PAGE_LIMIT = 25;
+
 export async function GET(
     req: Request,
     {
@@ -18,98 +20,61 @@ export async function GET(
         }>;
     }
 ) {
-    const auth =
-        await requireStudentApiRoute();
+    const auth = await requireStudentApiRoute();
 
     if (!auth.authorized) {
         return auth.response;
     }
 
-
-    const supabase =
-        await createServerSupabaseClient();
-
-    const { attemptId, sectionId } =
-        await params;
+    const supabase = await createServerSupabaseClient();
+    const { attemptId, sectionId } = await params;
 
     const url = new URL(req.url);
+    const page = Math.max(Number(url.searchParams.get("page") ?? 1), 1);
+    const limit = PAGE_LIMIT;
 
-    const page = Math.max(
-        Number(
-            url.searchParams.get("page") ??
-            1
-        ),
-        1
+    const { data, error } = await supabase.rpc(
+        "get_attempt_section_answer_review",
+        {
+            p_attempt_id: attemptId,
+            p_section_id: sectionId,
+            p_page: page,
+            p_limit: limit,
+        }
     );
-
-    const limit = Math.min(
-        Math.max(
-            Number(
-                url.searchParams.get(
-                    "limit"
-                ) ?? 20
-            ),
-            1
-        ),
-        100
-    );
-
-    const { data, error } =
-        await supabase.rpc(
-            "get_attempt_section_answer_review",
-            {
-                p_attempt_id: attemptId,
-                p_section_id: sectionId,
-                p_page: page,
-                p_limit: limit,
-            }
-        );
 
     if (error) {
-        console.error(
-            "get_attempt_section_answer_review error:",
-            error
-        );
-
+        console.error("get_attempt_section_answer_review error:", error);
         return NextResponse.json<QuestionsPageResponse>(
-            {
-                kind: "denied",
-                reason: "not_found",
-            },
+            { kind: "denied", reason: "not_found" },
             { status: 500 }
         );
     }
 
-    const result =
-        data as QuestionsPageResponse | null;
+    const result = data as QuestionsPageResponse | null;
 
     if (!result) {
         return NextResponse.json<QuestionsPageResponse>(
-            {
-                kind: "denied",
-                reason: "not_found",
-            },
+            { kind: "denied", reason: "not_found" },
             { status: 404 }
         );
     }
 
     if (result.kind === "denied") {
         const status =
-            result.reason ===
-                "not_owner"
+            result.reason === "not_owner"
                 ? 403
-                : result.reason ===
-                    "not_enrolled"
+                : result.reason === "not_enrolled"
                     ? 403
                     : 404;
 
-        return NextResponse.json(result, {
-            status,
-        });
+        return NextResponse.json(result, { status });
     }
 
     return NextResponse.json(result, {
         status: 200,
-
+        headers: {
+            "Cache-Control": "private, no-store",
+        },
     });
 }

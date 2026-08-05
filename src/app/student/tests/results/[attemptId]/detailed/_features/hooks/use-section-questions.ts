@@ -10,7 +10,6 @@ type Params = {
     page: number;
 };
 
-export const LIMIT = 25;
 
 function fetchSectionQuestions({
     attemptId,
@@ -18,7 +17,7 @@ function fetchSectionQuestions({
     page,
 }: Params): Promise<QuestionsPageResponse> {
     return fetchWrapper<QuestionsPageResponse>(
-        `/api/tests/results/${attemptId}/sections/${sectionId}/questions?page=${page}&limit=${LIMIT}`
+        `/api/tests/results/${attemptId}/sections/${sectionId}/questions?page=${page}`
     );
 }
 

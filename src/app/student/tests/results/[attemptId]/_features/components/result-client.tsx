@@ -1,12 +1,6 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
+import { Card, CardContent } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import {
   Trophy,
@@ -23,27 +17,24 @@ import { Link } from "@/src/components/ui/link";
 import { useParams } from "next/navigation";
 import { motion } from "motion/react";
 import { StatCard } from "./stat-card";
-import { LoadingState } from "./loading";
 import { CountUpNumber } from "./count-up-number";
 import { ApiErrorState } from "@/src/components/ui/ApiErrorState";
 import { PendingResultState } from "./pending-state";
 import DottedBackground from "@/src/components/dotted-background";
 import { useResultSummary } from "../hooks/use-result-summary";
 import { secondsToDurationString } from "../../../../../../../lib/helper-functions/seconds-to-duration-string";
-/* -------------------------------------------------- */
+import { DetailedAnalysisCTA } from "./detailed-analysis-cta";
+import { ProgressiveTextLoader } from "@/src/components/ui/loading/progressive-text-loader";
 
-type SummaryCache = {
-  kind: "submitted";
-  obtainedMarks: number;
-  totalMarks: number;
-  correctCount: number;
-  partialCorrectCount: number;
-  wrongCount: number;
-  unansweredCount: number;
-  submittedAt: string;
-  percentage: number;
-  activeTimeSeconds: number;
-};
+const analysisMessages = [
+  "Calculating your final score and percentage...",
+  "Evaluating correct, partial, and incorrect answers...",
+  "Calculating time spent on active questions...",
+  "Checking peer rankings and percentiles...",
+  "Generating your performance summary...",
+];
+
+/* -------------------------------------------------- */
 
 const performanceBarStyles: Record<string, string> = {
   Perfect: "bg-emerald-500",
@@ -76,89 +67,76 @@ const containerVariants = {
 export function ResultClient() {
   const { attemptId } = useParams<{ attemptId: string }>();
 
-  const queryClient = useQueryClient();
-
-  const summary = queryClient.getQueryData<SummaryCache>([
-    "result-summary",
-    attemptId,
-  ]);
-
   const { data, error, isLoading, isError, refetch } =
     useResultSummary(attemptId);
 
   /* -------------------------------------------------- */
-  /* Source resolution                                  */
-  /* -------------------------------------------------- */
-
-  const hasValidData = data && data.kind === "ok";
-
-  const hasValidSummary = summary && summary.kind === "submitted";
-
-  const source = hasValidData ? data : hasValidSummary ? summary : null;
-
-  /* -------------------------------------------------- */
-  /* Rank fallback logic                                */
-  /* -------------------------------------------------- */
-
-  const activeTimeSeconds =
-    source && "activeTimeSeconds" in source ? source.activeTimeSeconds : 0;
-
-  const finalRank = source && "rank" in source ? source.rank : null;
-
-  const percentile =
-    source && "percentile" in source ? source.percentile : null;
-
-  const totalParticipants =
-    source && "totalParticipants" in source ? source.totalParticipants : null;
-
-  const performanceLabel =
-    source && "performanceLabel" in source ? source.performanceLabel : null;
-
-  const distributionEndsAt =
-    source && "distributionEndsAt" in source ? source.distributionEndsAt : null;
-
-  const rankingAvailableAt =
-    source && "rankingAvailableAt" in source ? source.rankingAvailableAt : null;
-
-  /* -------------------------------------------------- */
   /* Guards                                             */
   /* -------------------------------------------------- */
-
-  if (!data && !summary && isLoading) {
-    return <LoadingState />;
+  if (isLoading) {
+    return (
+      <div className="flex h-(--h-viewport-minus-navbar) w-full items-center justify-center">
+        <ProgressiveTextLoader messages={analysisMessages} />
+      </div>
+    );
   }
 
-  if (isError && !data && !summary) {
+  if (isError || !data) {
     return <ApiErrorState error={error} onRetry={() => refetch()} />;
   }
 
-  if (data && data.kind === "pending") {
+  if (data.kind === "pending") {
     return <PendingResultState message={data.message} />;
   }
 
-  if (!source) return null;
+  // --- FIXED DENIED STATE ---
+  if (data.kind === "denied") {
+    return (
+      <div className="flex h-(--h-viewport-minus-navbar) flex-col items-center justify-center text-center">
+        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-500/10">
+          <XCircle className="h-10 w-10 text-red-600" />
+        </div>
+        <h2 className="mb-2 text-2xl font-bold tracking-tight">
+          {data.reason === "attempt_not_found" || data.reason === "not_found"
+            ? "Result Not Found"
+            : "Access Denied"}
+        </h2>
+        <p className="mb-8 max-w-md text-muted-foreground">
+          {data.reason === "attempt_not_found" || data.reason === "not_found"
+            ? "We couldn't find the result for this test attempt. It may have been deleted or the link is incorrect."
+            : "You do not have permission to view these test results."}
+        </p>
+        <Link href="/student/dashboard">
+          <Button size="lg" className="rounded-sm">
+            Return to dashboard
+          </Button>
+        </Link>
+      </div>
+    );
+  }
 
   /* -------------------------------------------------- */
-  /* Summary values                                    */
+  /* Destructure Values (TypeScript knows kind === 'ok')*/
   /* -------------------------------------------------- */
 
-  const obtainedMarks = source.obtainedMarks;
-
-  const totalMarks = source.totalMarks;
-
-  const correctCount = source.correctCount;
-
-  const partialCorrectCount = source.partialCorrectCount;
-
-  const wrongCount = source.wrongCount;
-
-  const unansweredCount = source.unansweredCount;
-
-  const submittedAt = source.submittedAt;
-
-  const percentage = source.percentage;
-
-  const title = "test" in source ? source.test.title : "Test Result";
+  const {
+    obtainedMarks,
+    totalMarks,
+    correctCount,
+    partialCorrectCount,
+    wrongCount,
+    unansweredCount,
+    submittedAt,
+    percentage,
+    test: { title },
+    activeTimeSeconds,
+    rank: finalRank,
+    percentile,
+    totalParticipants,
+    performanceLabel,
+    distributionEndsAt,
+    rankingAvailableAt,
+  } = data;
 
   const rankingAvailableText = rankingAvailableAt
     ? new Date(rankingAvailableAt).toLocaleString()
@@ -169,37 +147,37 @@ export function ResultClient() {
     : null;
 
   return (
-    <div className="mx-auto max-w-6xl p-4 sm:p-6 space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8 p-4 sm:p-6">
       {/* Header */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1.5">
+          <h1 className="text-xl lg:text-2xl truncate font-bold tracking-tight text-foreground">
+            {title || "Test Result"}
+          </h1>
 
-      <Card className="relative overflow-hidden rounded-sm shadow-none bg-background/80 backdrop-blur-xl">
-        <DottedBackground className="opacity-[0.35]" />
-        <CardHeader className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-2">
-            <CardTitle className="text-2xl  font-semibold tracking-tight">
-              {title}
-            </CardTitle>
-
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              Submitted At: <CalendarDays className="h-4 w-4" />
-              {new Date(submittedAt).toLocaleString()}
-            </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <CalendarDays className="h-4 w-4" />
+            <span>
+              Submitted on{" "}
+              {new Date(submittedAt).toLocaleString(undefined, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+            </span>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
 
       {/* Score */}
-
-      <Card className="rounded-sm shadow-none relative bg-background/80 backdrop-blur-xl">
+      <Card className="relative overflow-hidden rounded-sm bg-background/80 shadow-none backdrop-blur-xl py-4">
         <DottedBackground className="opacity-[0.35]" />
-        <CardContent className="p-8 space-y-8 ">
+        <CardContent className="space-y-8 p-8">
           <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
             {/* Marks */}
-
             <div className="flex items-center gap-5">
               <div className="relative flex items-center justify-center">
                 <div className="absolute h-16 w-16 rounded-full bg-primary/10 blur-xl" />
-                <div className="flex h-14 w-14 items-center justify-center rounded-full border bg-background ">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border bg-background">
                   <Trophy className="h-7 w-7 text-primary" />
                 </div>
               </div>
@@ -209,7 +187,7 @@ export function ResultClient() {
 
                 <p className="text-4xl font-bold tracking-tight">
                   <CountUpNumber value={obtainedMarks} start duration={1} />
-                  <span className="text-xl text-muted-foreground font-medium">
+                  <span className="text-xl font-medium text-muted-foreground">
                     /{totalMarks}
                   </span>
                 </p>
@@ -217,7 +195,7 @@ export function ResultClient() {
             </div>
 
             {/* Rank + Percentile */}
-            <div className="min-h-24 flex items-center">
+            <div className="flex min-h-24 items-center">
               {finalRank !== null ? (
                 <div className="flex flex-wrap items-center gap-8">
                   {/* Rank */}
@@ -318,11 +296,10 @@ export function ResultClient() {
           </div>
 
           {/* Percentage */}
-
           <div className="space-y-3">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Percent className="h-4 w-4" />
                 Score Percentage
               </div>
@@ -333,7 +310,7 @@ export function ResultClient() {
             </div>
 
             {/* Progress Bar */}
-            <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
+            <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${percentage}%` }}
@@ -347,13 +324,11 @@ export function ResultClient() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end absolute bottom-4 right-4">
+          <div className="absolute bottom-4 right-4 flex items-center justify-end">
             {/* Performance Text */}
             {performanceLabel && (
               <p
-                className={`text-xs font-medium ${
-                  performanceTextStyles[performanceLabel]
-                }`}
+                className={`text-xs font-medium ${performanceTextStyles[performanceLabel]}`}
               >
                 <span className="text-primary"> Overall Assessment: </span>{" "}
                 {performanceLabel}
@@ -364,12 +339,11 @@ export function ResultClient() {
       </Card>
 
       {/* Stats */}
-
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-2 gap-4 md:grid-cols-4 auto-rows-fr"
+        className="auto-rows-fr grid grid-cols-2 gap-4 md:grid-cols-4"
       >
         <StatCard
           title="Correct Answers"
@@ -383,8 +357,8 @@ export function ResultClient() {
           title="Partially Correct"
           value={partialCorrectCount}
           description="You selected some correct options, but missed others."
-          icon={<Target className="text-emerald-600" />}
-          tone="bg-emerald-500/10"
+          icon={<Target className="text-amber-600" />}
+          tone="bg-amber-500/10"
         />
 
         <StatCard
@@ -404,7 +378,7 @@ export function ResultClient() {
         />
       </motion.div>
 
-      <Card className="rounded-sm shadow-none bg-background/80 backdrop-blur-xl relative overflow-hidden">
+      <Card className="relative overflow-hidden rounded-sm bg-background/80 shadow-none backdrop-blur-xl py-4">
         <DottedBackground className="opacity-[0.35]" />
 
         <CardContent className="p-6">
@@ -431,21 +405,27 @@ export function ResultClient() {
         </CardContent>
       </Card>
 
-      {/* CTA (UNCHANGED) */}
-
-      <Card className="rounded-sm shadow-none bg-background/80 backdrop-blur-xl relative">
+      {/* CTA */}
+      <Card className="relative overflow-hidden rounded-sm bg-background/80 shadow-none backdrop-blur-xl border-primary/10 py-4">
         <DottedBackground className="opacity-[0.35]" />
-        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-6">
-          <p className="text-sm text-muted-foreground max-w-md">
-            Review question-wise solutions, correct answers, and detailed
-            performance insights.
-          </p>
 
-          <Link href={`/student/tests/results/${attemptId}/detailed`}>
-            <Button size="lg" className="rounded-sm">
-              View Detailed Analysis
-            </Button>
-          </Link>
+        <CardContent className="relative flex flex-col items-center gap-6 p-6 sm:flex-row sm:justify-between z-10">
+          <div className="max-w-md space-y-1 text-center sm:text-left">
+            <h3 className="text-base font-semibold text-foreground">
+              Deep-Dive Analysis & Solutions
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Review question-wise solutions, check correct answers, and compare
+              your score and time against the class average and the test topper.
+            </p>
+          </div>
+
+          <div className="flex w-full shrink-0 justify-center sm:w-auto sm:justify-end">
+            <DetailedAnalysisCTA
+              attemptId={attemptId}
+              rankingAvailableAt={rankingAvailableAt}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>

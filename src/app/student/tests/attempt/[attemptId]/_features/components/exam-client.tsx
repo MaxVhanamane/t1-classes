@@ -1,7 +1,10 @@
 "use client";
 
 import { useTestSubmit } from "../hooks/use-test-submit";
-import { Section } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
+import {
+  CachedTestPayload,
+  Section,
+} from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
 import { StateItem } from "../types/workspace.types";
 import dynamic from "next/dynamic";
 import CenteredLoader from "@/src/components/ui/loading/centered-loader";
@@ -17,17 +20,14 @@ const ExamHeader = dynamic(() => import("./exam-header"), {
 
 type Props = {
   attemptId: string;
-  testTitle: string;
+  testPayload: CachedTestPayload;
   expiresAt: string;
-  sections: Section[];
   state: StateItem[];
 };
-
 export default function ExamClient({
   attemptId,
-  testTitle,
+  testPayload,
   expiresAt,
-  sections,
   state,
 }: Props) {
   const timer = useQuestionTimeTracker(attemptId);
@@ -37,14 +37,14 @@ export default function ExamClient({
     <div className="flex flex-col h-full">
       <Suspense fallback={<CenteredLoader />}>
         <ExamHeader
-          testTitle={testTitle}
+          testTitle={testPayload.title}
           expiresAt={expiresAt}
           onAutoSubmit={() => testSubmission.submitTest("auto")}
         />
 
         <ExamShell
           attemptId={attemptId}
-          sections={sections}
+          testPayload={testPayload}
           state={state}
           testSubmission={testSubmission}
           timer={timer}

@@ -18,38 +18,29 @@ export type PerformanceLabelType =
 export type ResultSummaryResponse =
     | {
         kind: "ok";
-
         attemptId: string;
         testId: string;
         distributionId: string;
-
         distributionEndsAt: string;
         rankingAvailableAt: string;
-
         obtainedMarks: number;
         totalMarks: number;
         percentage: number;
-
         rank: number | null;
         percentile: number | null;
-
         performanceLabel: PerformanceLabelType;
         totalParticipants: number | null;
-
         activeTimeSeconds: number;
-
         correctCount: number;
         partialCorrectCount: number;
         wrongCount: number;
         unansweredCount: number;
-
         status:
         | "submitted"
         | "expired"
         | "in_progress";
 
         submittedAt: string;
-
         test: {
             title: string;
         };

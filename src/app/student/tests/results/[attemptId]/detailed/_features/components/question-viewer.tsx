@@ -7,9 +7,13 @@ import { MetaStrip } from "./meta-strip";
 import { SectionSummaryAccordion } from "./section-summary-accordion";
 
 import { PartialMarkingByCorrectCount } from "@/src/app/api/tests/results/[attemptId]/sections/route";
-import { QuestionsPageResponse } from "../types/question-details.types";
+import {
+  QuestionsPageResponse,
+  SectionReviewSummary,
+} from "../types/question-details.types";
 import { Pagination } from "@/src/components/ui/pagination/pagination";
-import { LIMIT } from "../hooks/use-section-questions";
+
+const PAGE_LIMIT = 25;
 
 type Props = {
   loading: boolean;
@@ -25,7 +29,9 @@ type Props = {
   partialMarks?: PartialMarkingByCorrectCount | null | undefined;
   rank: number | null;
   rankingAvailableAt: string | null;
-  previousQuestionCount: number; // <-- Added Prop
+  previousQuestionCount: number;
+
+  summary: SectionReviewSummary | null;
 };
 
 export function QuestionViewer({
@@ -39,32 +45,19 @@ export function QuestionViewer({
   partialMarks,
   rank,
   rankingAvailableAt,
-  previousQuestionCount, // <-- Added Prop
+  previousQuestionCount,
+  summary,
 }: Props) {
-  if (loading) {
-    return (
-      <div className="h-[calc(var(--h-viewport-minus-navbar)-108.78px)] md:h-(--h-viewport-minus-navbar) w-full flex items-center justify-center flex-col gap-2">
-        <Loader className="animate-spin text-muted-foreground" />
-        <span className="text-xs">Fetching questions...</span>
-      </div>
-    );
-  }
+  // If summary isn't available yet, we can't render the header.
+  if (!summary) return null;
 
-  if (!data) return null;
-
-  if (data.kind !== "ok") {
-    return (
-      <div className="p-6 text-sm text-muted-foreground">
-        Unable to load questions
-      </div>
-    );
-  }
-
-  const { questions, page: currentPage, totalPages, summary } = data;
+  // Safely extract pagination details for the MetaStrip even while loading
+  const currentPage = data?.kind === "ok" ? data.page : 1;
+  const totalPages = data?.kind === "ok" ? data.totalPages : 1;
 
   return (
     <div className="w-full">
-      {/* Desktop Header */}
+      {/* Desktop Header - ALWAYS VISIBLE, sticky to the top of the scrolling div */}
       <div
         className={cn(
           "hidden md:block sticky top-0 z-20",
@@ -90,27 +83,43 @@ export function QuestionViewer({
         </div>
       </div>
 
-      {/* Questions */}
+      {/* Body Content */}
       <div className="p-3 md:p-6 space-y-6">
-        {questions.map((q, i) => (
-          <QuestionCard
-            key={q.id}
-            // Add previous sections' total to the current pagination index
-            index={previousQuestionCount + (currentPage - 1) * LIMIT + i + 1}
-            question={q}
-            rank={rank}
-            rankingAvailableAt={rankingAvailableAt}
-          />
-        ))}
+        {loading ? (
+          <div className="flex min-h-[40vh] w-full flex-col items-center justify-center gap-2">
+            <Loader className="animate-spin text-muted-foreground" />
+            <span className="text-xs">Fetching questions...</span>
+          </div>
+        ) : !data || data.kind !== "ok" ? (
+          <div className="p-6 text-center text-sm text-muted-foreground border rounded-lg bg-muted/10">
+            Unable to load questions
+          </div>
+        ) : (
+          <>
+            {/* Render Questions */}
+            {data.questions.map((q, i) => (
+              <QuestionCard
+                key={q.id}
+                index={
+                  previousQuestionCount + (currentPage - 1) * PAGE_LIMIT + i + 1
+                }
+                question={q}
+                rank={rank}
+                rankingAvailableAt={rankingAvailableAt}
+              />
+            ))}
 
-        <Pagination
-          page={currentPage}
-          totalPages={totalPages}
-          totalCount={summary.totalQuestions}
-          pageSize={LIMIT}
-          onPageChange={setPage}
-          itemLabel="Questions"
-        />
+            {/* Render Pagination */}
+            <Pagination
+              page={currentPage}
+              totalPages={totalPages}
+              totalCount={summary.totalQuestions}
+              pageSize={PAGE_LIMIT}
+              onPageChange={setPage}
+              itemLabel="Questions"
+            />
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { requireStudentApiRoute } from "@/src/lib/auth/claims/require-role-api-route";
+import { SectionReviewSummary } from "@/src/app/student/tests/results/[attemptId]/detailed/_features/types/question-details.types";
 
 /* --------------------------------------------- */
 /* Types */
@@ -13,6 +14,7 @@ export type PartialMarkingByCorrectCount = {
         minCorrect: number;
     }[];
 };
+
 
 export type SectionOverview = {
     id: string;
@@ -32,6 +34,7 @@ export type SectionOverview = {
     maxSelections: number | null;
 
     questionCount: number;
+    summary: SectionReviewSummary;
 };
 
 export type SectionsResponse =
@@ -61,23 +64,19 @@ export async function GET(
         }>;
     }
 ) {
-    const auth =
-        await requireStudentApiRoute();
+    const auth = await requireStudentApiRoute();
 
     if (!auth.authorized) {
         return auth.response;
     }
 
-    const { attemptId } =
-        await params;
+    const { attemptId } = await params;
 
-    const supabase =
-        await createServerSupabaseClient();
+    const supabase = await createServerSupabaseClient();
 
-    const { data, error } =
-        await supabase.rpc("get_my_attempt_sections_overview", {
-            p_attempt_id: attemptId,
-        });
+    const { data, error } = await supabase.rpc("get_my_attempt_sections_overview", {
+        p_attempt_id: attemptId,
+    });
 
     if (error) {
         console.error(
@@ -94,8 +93,7 @@ export async function GET(
         );
     }
 
-    const result =
-        data as SectionsResponse | null;
+    const result = data as SectionsResponse | null;
 
     if (!result) {
         return NextResponse.json<SectionsResponse>(
@@ -109,28 +107,19 @@ export async function GET(
 
     if (result.kind === "denied") {
         const status =
-            result.reason ===
-                "not_owner"
+            result.reason === "not_owner"
                 ? 403
-                : result.reason ===
-                    "not_enrolled"
+                : result.reason === "not_enrolled"
                     ? 403
                     : 404;
 
-        return NextResponse.json(
-            result,
-            { status }
-        );
+        return NextResponse.json(result, { status });
     }
 
-    return NextResponse.json<
-        SectionsResponse
-    >(result, {
+    return NextResponse.json<SectionsResponse>(result, {
         status: 200,
         headers: {
-            "Cache-Control":
-                "private, no-store",
+            "Cache-Control": "private, no-store",
         },
     });
 }
-

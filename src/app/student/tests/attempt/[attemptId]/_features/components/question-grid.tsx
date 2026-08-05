@@ -9,35 +9,42 @@ import GridBadge from "./grid-badge";
 import { cn } from "@/src/lib/utils";
 import { getQuestionCounts, MappedSection } from "../helpers/question-map";
 import { ShortDivider } from "@/src/components/ui/divider/short-divider";
+import { CachedTestPayload } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
+import { TestOverviewPopover } from "./test-overview-popover";
 
 type Props = {
+  testPayload: CachedTestPayload;
   sections: MappedSection[];
   onJump: (questionId: string) => void;
   activeId: string;
 };
 
-export default function QuestionGrid({ sections, onJump, activeId }: Props) {
+export default function QuestionGrid({
+  testPayload,
+  sections,
+  onJump,
+  activeId,
+}: Props) {
   const mapped = sections;
 
   const counts = getQuestionCounts(mapped);
 
-  const totalQuestions = mapped.reduce(
-    (acc, section) => acc + section.questions.length,
-    0,
-  );
+  const totalQuestions = testPayload.totalQuestions;
 
   return (
-    <Card className="relative h-full overflow-y-auto scrollbar-none rounded-md bg-background border-0 min-[820px]:border min-[820px]:bg-muted-soft py-2">
+    <Card className="relative h-full overflow-y-auto scrollbar-none rounded-md bg-background border-0 min-[820px]:border min-[820px]:bg-muted-soft py-2 shadow-none">
       <CardContent className="p-0 pt-0.5 pb-3 min-[820px]:py-3">
         {/* Header */}
         <div className="mb-3 flex items-center justify-between px-3">
-          <h3 className="text-sm font-semibold tracking-tight">
-            Question Panel
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold tracking-tight">
+              Question Panel
+            </h3>
+            <TestOverviewPopover testPayload={testPayload} />
+          </div>
 
           <span className="inline-flex items-center rounded-full border border-border/50 bg-muted-soft px-2.5 py-1 text-[11px] font-medium tracking-wide text-muted-foreground backdrop-blur-sm">
             <span className="font-semibold tabular-nums">{totalQuestions}</span>
-
             <span className="ml-1">Questions</span>
           </span>
         </div>
@@ -49,13 +56,9 @@ export default function QuestionGrid({ sections, onJump, activeId }: Props) {
           </p>
           <div className="flex flex-wrap gap-2">
             <GridBadge state="answered" count={counts.answered} />
-
             <GridBadge state="not_visited" count={counts.not_visited} />
-
             <GridBadge state="not_answered" count={counts.not_answered} />
-
             <GridBadge state="review" count={counts.review} />
-
             <GridBadge state="answered_review" count={counts.answered_review} />
           </div>
           <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex items-center justify-center min-[820px]:hidden">
@@ -89,7 +92,6 @@ export default function QuestionGrid({ sections, onJump, activeId }: Props) {
                       <span className="font-semibold tabular-nums">
                         {section.questions.length}
                       </span>
-
                       <span className="ml-1">Qs</span>
                     </p>
                   </div>

@@ -27,12 +27,12 @@ export default function AdminStudentPerformancePage() {
   return (
     <div className="min-h-screen text-foreground">
       <div className="mx-auto w-full max-w-8xl p-2 sm:p-8">
-        <div className="flex justify-start">
+        <div className="flex justify-start mb-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.back()}
-            className="gap-1.5 text-muted-foreground hover:text-foreground hover:bg-transparent dark:hover:bg-transparent pl-0"
+            className="gap-1.5 text-muted-foreground hover:text-foreground hover:bg-transparent dark:hover:bg-transparent pl-0  has-[>svg]:px-0 justify-start"
           >
             <ArrowLeft className="h-4 w-4" />
             Back To Results

@@ -75,15 +75,18 @@ export default function StartGate({ distributionId, disabled }: Props) {
   const isLocked =
     disabled || !checked || startMutation.isPending || isNavigating;
 
+  // Create a combined loading state for cleaner rendering
+  const isLoading = startMutation.isPending || isNavigating;
+
   return (
     <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       {/* Left */}
-      <div className="flex items-center gap-3 text-sm text-muted-foreground min-w-0">
+      <div className="flex min-w-0 items-center gap-3 text-sm text-muted-foreground">
         <Checkbox
           id="instructions"
           checked={checked}
           onCheckedChange={(v) => setChecked(Boolean(v))}
-          disabled={isNavigating || startMutation.isPending}
+          disabled={isLoading}
           className="shrink-0"
         />
 
@@ -96,11 +99,11 @@ export default function StartGate({ distributionId, disabled }: Props) {
       </div>
 
       {/* Right */}
-      <div className="flex justify-end shrink-0">
+      <div className="flex shrink-0 justify-end">
         {disabled ? (
           <Button
             disabled
-            className="min-w-35 flex items-center justify-center gap-2"
+            className="flex min-w-36 items-center justify-center gap-2"
           >
             <Lock className="h-4 w-4" />
             {INSTRUCTION_COPY.startGate.locked}
@@ -109,15 +112,16 @@ export default function StartGate({ distributionId, disabled }: Props) {
           <Button
             disabled={isLocked}
             onClick={() => startMutation.mutate()}
-            className="min-w-35 flex items-center justify-center gap-2"
+            className="flex min-w-36 items-center justify-center gap-2"
           >
-            {startMutation.isPending || isNavigating ? (
+            {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Play className="h-4 w-4" />
             )}
 
-            {!isNavigating ? INSTRUCTION_COPY.startGate.start : "Starting..."}
+            {/* Now correctly shows "Starting..." during the API call too */}
+            {isLoading ? "Starting..." : INSTRUCTION_COPY.startGate.start}
           </Button>
         )}
       </div>

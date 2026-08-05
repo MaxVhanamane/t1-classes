@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/src/lib/utils";
 import { Badge } from "@/src/components/ui/badge";
@@ -17,7 +17,7 @@ import { secondsToDurationString } from "@/src/lib/helper-functions/seconds-to-d
 
 type Props = {
   sections: SectionItem[];
-  summary: ResultSummary;
+  summary: ResultSummary | null;
   active: string | null;
   onChange: (id: string) => void;
   className?: string;
@@ -31,7 +31,7 @@ function formatPercent(value: number) {
   return value % 1 === 0 ? value.toFixed(0) : value.toFixed(2);
 }
 
-function getAttemptStats(summary: ResultSummary) {
+function getAttemptStats(summary: ResultSummary | null) {
   if (!summary || summary.kind !== "ok") {
     return {
       attempted: 0,
@@ -47,7 +47,6 @@ function getAttemptStats(summary: ResultSummary) {
   const total = attempted + summary.unansweredCount;
 
   /* Accuracy excludes partial */
-
   const accuracy =
     attempted === 0 ? 0 : (summary.correctCount / attempted) * 100;
 
@@ -74,19 +73,35 @@ export function SectionSidebar({
 }: Props) {
   const stats = getAttemptStats(summary);
 
-  const [open, setOpen] = useState(false);
+  const [scoreOpen, setScoreOpen] = useState(true); // Title/Score/Accuracy accordion — open by default
+  const [open, setOpen] = useState(false); // existing Detailed Insights accordion
 
   /* Donut math */
-
   const radius = 16;
   const circumference = 2 * Math.PI * radius;
-
   const progress = (stats.attemptPercent / 100) * circumference;
 
   const totalQuestionCount = sections.reduce(
     (sum, section) => sum + (section.questionCount ?? 0),
     0,
   );
+
+  /* Group Sections by Subject */
+  const groupedSections = useMemo(() => {
+    return sections.reduce(
+      (acc, section) => {
+        const subject = section.subjectLabel || "General";
+        let group = acc.find((g) => g.subject === subject);
+        if (!group) {
+          group = { subject, items: [] };
+          acc.push(group);
+        }
+        group.items.push(section);
+        return acc;
+      },
+      [] as { subject: string; items: SectionItem[] }[],
+    );
+  }, [sections]);
 
   return (
     <aside
@@ -100,74 +115,87 @@ export function SectionSidebar({
       {/* ===================================================== */}
 
       <div className="p-4 border-b bg-background/80 backdrop-blur sticky top-0 z-10 space-y-4 shrink-0">
-        {/* Title */}
+        {/* ===================================================== */}
+        {/* Title (trigger) + Score/Accuracy (collapsible) */}
+        {/* ===================================================== */}
 
-        <div>
-          <div className="text-xs text-muted-foreground">Test Analysis</div>
-
-          <div className="font-semibold leading-tight line-clamp-2">
-            {summary?.test.title ?? "Loading test…"}
-          </div>
-        </div>
-
-        {/* Score */}
-
-        <div className="space-y-2">
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="text-xs text-muted-foreground">Total Score</div>
-
-              <div className="text-lg font-semibold">
-                {summary
-                  ? `${summary.obtainedMarks} / ${summary.totalMarks}`
-                  : "—"}
+        <Accordion
+          type="single"
+          collapsible
+          value={scoreOpen ? "score" : ""}
+          onValueChange={(v) => setScoreOpen(v === "score")}
+        >
+          <AccordionItem value="score" className="border-none">
+            <AccordionTrigger className="p-0 hover:no-underline cursor-pointer [&>svg]:text-muted-foreground [&>svg]:h-4 [&>svg]:w-4">
+              <div className="text-left">
+                <div className="text-xs text-muted-foreground">
+                  Test Analysis
+                </div>
+                <div className="font-semibold leading-tight line-clamp-2">
+                  {summary?.test.title ?? "Loading test…"}
+                </div>
               </div>
-            </div>
+            </AccordionTrigger>
 
-            <div className="text-right">
-              <div className="text-xs text-muted-foreground">Score %</div>
+            <AccordionContent className="space-y-4 pt-4">
+              {/* Score */}
+              <div className="space-y-2">
+                <div className="flex items-end justify-between">
+                  <div>
+                    <div className="text-xs text-muted-foreground">
+                      Total Score
+                    </div>
+                    <div className="text-lg font-semibold">
+                      {summary
+                        ? `${summary.obtainedMarks} / ${summary.totalMarks}`
+                        : "—"}
+                    </div>
+                  </div>
 
-              <div className="text-lg font-semibold">
-                {summary ? `${formatPercent(summary.percentage)}%` : "—"}
+                  <div className="text-right">
+                    <div className="text-xs text-muted-foreground">Score %</div>
+                    <div className="text-lg font-semibold">
+                      {summary ? `${formatPercent(summary.percentage)}%` : "—"}
+                    </div>
+                  </div>
+                </div>
+
+                {summary?.performanceLabel && (
+                  <Badge variant="outline" className="text-xs">
+                    {summary.performanceLabel}
+                  </Badge>
+                )}
               </div>
-            </div>
-          </div>
 
-          {summary?.performanceLabel && (
-            <Badge variant="outline" className="text-xs">
-              {summary.performanceLabel}
-            </Badge>
-          )}
-        </div>
+              {/* Accuracy */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Accuracy</span>
+                  <span className="font-medium">
+                    {formatPercent(stats.accuracy)}%
+                  </span>
+                </div>
 
-        {/* Accuracy */}
-
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Accuracy</span>
-
-            <span className="font-medium">
-              {formatPercent(stats.accuracy)}%
-            </span>
-          </div>
-
-          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-linear-to-r from-green-500 via-yellow-500 to-red-500"
-              initial={{ width: 0 }}
-              animate={{
-                width: `${stats.accuracy}%`,
-              }}
-              transition={{
-                duration: 0.9,
-                ease: "easeOut",
-              }}
-            />
-          </div>
-        </div>
+                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-linear-to-r from-green-500 via-yellow-500 to-red-500"
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${stats.accuracy}%`,
+                    }}
+                    transition={{
+                      duration: 0.9,
+                      ease: "easeOut",
+                    }}
+                  />
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         {/* ===================================================== */}
-        {/* Collapsible Insights */}
+        {/* Collapsible Insights (unchanged) */}
         {/* ===================================================== */}
 
         <Accordion
@@ -183,19 +211,14 @@ export function SectionSidebar({
 
             <AccordionContent className="space-y-5 pt-3">
               {/* ---------------- Donut ---------------- */}
-
               <div className="space-y-2">
                 <div className="text-xs text-muted-foreground">
                   Attempt Rate
                 </div>
 
                 <div className="flex items-center gap-4">
-                  {/* Gradient Animated Donut */}
-
                   <div className="relative w-16 h-16">
                     <svg viewBox="0 0 36 36" className="-rotate-90 w-16 h-16">
-                      {/* Gradient */}
-
                       <defs>
                         <linearGradient
                           id="donutGradient"
@@ -210,8 +233,6 @@ export function SectionSidebar({
                         </linearGradient>
                       </defs>
 
-                      {/* Background */}
-
                       <circle
                         cx="18"
                         cy="18"
@@ -221,8 +242,6 @@ export function SectionSidebar({
                         strokeWidth="3"
                         className="text-muted"
                       />
-
-                      {/* Animated Progress */}
 
                       {open && (
                         <motion.circle
@@ -248,20 +267,15 @@ export function SectionSidebar({
                       )}
                     </svg>
 
-                    {/* Label */}
-
                     <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold">
                       {formatPercent(stats.attemptPercent)}%
                     </div>
                   </div>
 
-                  {/* Context */}
-
                   <div className="space-y-1">
                     <div className="text-sm font-semibold">
                       {stats.attempted} /{stats.total}
                     </div>
-
                     <div className="text-xs text-muted-foreground">
                       Questions Attempted
                     </div>
@@ -270,7 +284,6 @@ export function SectionSidebar({
               </div>
 
               {/* Performance */}
-
               <div className="flex flex-wrap gap-2">
                 {summary?.rank && (
                   <Badge variant="outline">Rank #{summary.rank}</Badge>
@@ -284,43 +297,39 @@ export function SectionSidebar({
                   Total Questions : {totalQuestionCount}
                 </Badge>
               </div>
+
               <div className="rounded-xl border bg-muted/5 px-4 py-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">
                     Time Spent Answering
                   </span>
-
                   <span className="text-base font-semibold">
                     {secondsToDurationString(summary?.activeTimeSeconds ?? 0)}
                   </span>
                 </div>
-
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                   Combined across all sections. Includes only questions where an
                   answer was submitted.
                 </p>
               </div>
-              {/* Stats */}
 
+              {/* Stats */}
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <Stat
                   label="Correct"
                   value={summary?.correctCount}
                   color="text-green-500"
                 />
-
                 <Stat
                   label="Partially Correct"
                   value={summary?.partialCorrectCount}
                   color="text-yellow-500"
                 />
-
                 <Stat
                   label="Incorrect"
                   value={summary?.wrongCount}
                   color="text-rose-500"
                 />
-
                 <Stat
                   label="Unanswered"
                   value={summary?.unansweredCount}
@@ -333,64 +342,95 @@ export function SectionSidebar({
       </div>
 
       {/* ===================================================== */}
-      {/* Sections List */}
+      {/* Sections List (Grouped by Subject) */}
       {/* ===================================================== */}
 
-      <div className="p-4 space-y-3">
-        {sections.map((s, i) => (
-          <button
-            key={s.id}
-            onClick={() => onChange(s.id)}
-            className={cn(
-              "w-full text-left rounded-2xl border transition-all p-4 space-y-2 cursor-pointer",
-              "hover:bg-muted/60",
-              active === s.id
-                ? "bg-secondary border-gray-400 dark:border-secondary"
-                : "bg-background",
-            )}
-          >
-            {/* Header */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-xs text-muted-foreground">
-                  Section {i + 1}
-                </div>
-
-                <Badge
-                  variant="secondary"
-                  className="text-xs shrink-0 whitespace-nowrap"
-                >
-                  {s.questionCount}{" "}
-                  {s.questionCount === 1 ? "Question" : "Questions"}
-                </Badge>
-              </div>
-
-              <div className="font-semibold text-sm leading-tight">
-                {s.title}
-              </div>
-
-              <div className="text-xs text-muted-foreground">
-                {s.subjectLabel}
-              </div>
+      <div className="p-2 sm:p-4 space-y-8">
+        {groupedSections.map((group) => (
+          <div key={group.subject} className="space-y-3">
+            {/* Subject Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                {group.subject}
+              </h3>
             </div>
 
-            {/* Meta */}
-            <div className="flex flex-wrap gap-2 text-xs pt-1">
-              <Meta label="Marks" value={`+${s.fullMarks}`} tone="positive" />
+            {/* Subject's Sections */}
+            <div className="space-y-3">
+              {group.items.map((s, index) => {
+                const isActive = active === s.id;
 
-              {s.negativeMarks !== 0 && (
-                <Meta
-                  label="Negative"
-                  value={String(s.negativeMarks)}
-                  tone="negative"
-                />
-              )}
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => onChange(s.id)}
+                    className={cn(
+                      "relative w-full text-left rounded-2xl border transition-all duration-200 overflow-hidden cursor-pointer p-4 space-y-2",
+                      isActive
+                        ? "bg-primary/3 border-primary/30 ring-1 ring-primary/20 shadow-sm"
+                        : "bg-background border-border hover:bg-muted/50 hover:border-foreground/20",
+                    )}
+                  >
+                    {/* Header */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div
+                          className={cn(
+                            "text-xs font-medium",
+                            isActive ? "text-primary" : "text-muted-foreground",
+                          )}
+                        >
+                          Section {index + 1}
+                        </div>
 
-              {s.partialMarks && (
-                <Meta label="Partial" value="Available" tone="warning" />
-              )}
+                        <Badge
+                          variant={isActive ? "default" : "secondary"}
+                          className="text-[10px] shrink-0 whitespace-nowrap"
+                        >
+                          {s.questionCount}{" "}
+                          {s.questionCount === 1 ? "Question" : "Questions"}
+                        </Badge>
+                      </div>
+
+                      <div className="font-semibold text-xs sm:text-sm leading-tight pr-2">
+                        {s.title}
+                      </div>
+
+                      {/* Kept subject label inside the card as requested */}
+                      <div className="text-xs text-muted-foreground">
+                        {s.subjectLabel}
+                      </div>
+                    </div>
+
+                    {/* Meta */}
+                    <div className="flex flex-wrap gap-2 text-xs pt-1">
+                      <Meta
+                        label="Marks"
+                        value={`+${s.fullMarks}`}
+                        tone="positive"
+                      />
+
+                      {s.negativeMarks !== 0 && (
+                        <Meta
+                          label="Negative"
+                          value={String(s.negativeMarks)}
+                          tone="negative"
+                        />
+                      )}
+
+                      {s.partialMarks && (
+                        <Meta
+                          label="Partial"
+                          value="Available"
+                          tone="warning"
+                        />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-          </button>
+          </div>
         ))}
       </div>
     </aside>

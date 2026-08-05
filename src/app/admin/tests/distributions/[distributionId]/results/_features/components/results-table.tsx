@@ -210,7 +210,7 @@ export function ResultsTable({
                   Unattempted
                 </TableHead>
                 <TableHead>
-                  <div className="flex items-center gap-1.5 font-semibold text-foreground min-w-[150px]">
+                  <div className="flex items-center gap-1.5 font-semibold text-foreground min-w-[150px] pl-0.5">
                     Completion
                     <RichPopover
                       color="cyan"
@@ -238,7 +238,7 @@ export function ResultsTable({
                 <TableHead className="font-semibold text-foreground min-w-[120px]">
                   Evaluated
                 </TableHead>
-                <TableHead className="text-right font-semibold text-foreground min-w-[80px]">
+                <TableHead className="sticky right-0 z-20 w-16 bg-secondary text-center font-medium shadow-[inset_1px_0_0_0_var(--border-50)]">
                   Actions
                 </TableHead>
               </TableRow>
@@ -473,7 +473,7 @@ export function ResultsTable({
                       )}
                     </TableCell>
 
-                    <TableCell className="text-center font-medium text-foreground border-l border-border/50">
+                    <TableCell className="text-center font-medium text-foreground">
                       {row.correct_count}
                     </TableCell>
                     <TableCell className="text-center font-medium text-foreground">
@@ -482,12 +482,12 @@ export function ResultsTable({
                     <TableCell className="text-center font-medium text-foreground">
                       {row.partial_correct_count}
                     </TableCell>
-                    <TableCell className="text-center font-medium text-muted-foreground border-r border-border/50">
+                    <TableCell className="text-center font-medium text-muted-foreground">
                       {row.unanswered_count}
                     </TableCell>
 
                     <TableCell>
-                      <div className="flex flex-col gap-1.5 min-w-[130px]">
+                      <div className="flex flex-col gap-1.5 min-w-[130px] pl-0.5">
                         <div className="flex items-center justify-between text-xs font-medium">
                           <span className="font-bold text-foreground">
                             {row.completion_percentage}%
@@ -527,7 +527,7 @@ export function ResultsTable({
                       </div>
                     </TableCell>
 
-                    <TableCell className="text-right">
+                    <TableCell className="sticky right-0 z-20 text-center bg-card font-semibold transition-colors group-hover:bg-muted-subtle shadow-[inset_1px_0_0_0_var(--border-50)]">
                       <TooltipProvider delayDuration={100}>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -591,20 +591,22 @@ ResultsTable.Skeleton = function ResultsTableSkeleton() {
               {/* Skeleton column for Breakdown */}
               <TableHead className="min-w-[130px]">Breakdown</TableHead>
               <TableHead className="min-w-[120px]">Percentile</TableHead>
-              <TableHead className="text-center min-w-[70px] border-l border-border/50">
+              <TableHead className="text-center min-w-[70px]">
                 Correct
               </TableHead>
               <TableHead className="text-center min-w-[70px]">Wrong</TableHead>
               <TableHead className="text-center min-w-[70px]">
                 Partial
               </TableHead>
-              <TableHead className="text-center min-w-[90px] border-r border-border/50">
+              <TableHead className="text-center min-w-[90px]">
                 Unattempted
               </TableHead>
               <TableHead className="min-w-[150px]">Completion</TableHead>
               <TableHead className="min-w-[140px]">Time (Active)</TableHead>
               <TableHead className="min-w-[120px]">Evaluated</TableHead>
-              <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+              <TableHead className="sticky right-0 z-20 w-16 bg-secondary text-center font-medium shadow-[inset_1px_0_0_0_var(--border-50)]">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -638,16 +640,16 @@ ResultsTable.Skeleton = function ResultsTableSkeleton() {
                 <TableCell className="min-w-[120px]">
                   <Skeleton className="h-4 w-10" />
                 </TableCell>
-                <TableCell className="text-center min-w-[70px] border-l border-border/50">
-                  <Skeleton className="h-4 w-4 mx-auto" />
-                </TableCell>
                 <TableCell className="text-center min-w-[70px]">
                   <Skeleton className="h-4 w-4 mx-auto" />
                 </TableCell>
                 <TableCell className="text-center min-w-[70px]">
                   <Skeleton className="h-4 w-4 mx-auto" />
                 </TableCell>
-                <TableCell className="text-center min-w-[90px] border-r border-border/50">
+                <TableCell className="text-center min-w-[70px]">
+                  <Skeleton className="h-4 w-4 mx-auto" />
+                </TableCell>
+                <TableCell className="text-center min-w-[90px]">
                   <Skeleton className="h-4 w-4 mx-auto" />
                 </TableCell>
                 <TableCell className="min-w-[150px]">
@@ -671,8 +673,8 @@ ResultsTable.Skeleton = function ResultsTableSkeleton() {
                     <Skeleton className="h-2.5 w-12" />
                   </div>
                 </TableCell>
-                <TableCell className="text-right min-w-[80px]">
-                  <Skeleton className="h-8 w-8 ml-auto rounded-md" />
+                <TableCell className="sticky right-0 z-20 flex items-center justify-center bg-card font-semibold transition-colors group-hover:bg-muted-subtle shadow-[inset_1px_0_0_0_var(--border-50)]">
+                  <Skeleton className="h-8 w-8 rounded-md" />
                 </TableCell>
               </TableRow>
             ))}

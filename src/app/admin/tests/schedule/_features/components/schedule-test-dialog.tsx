@@ -102,7 +102,21 @@ export function ScheduleTestDialog({
 
   const isSubmitting = form.formState.isSubmitting;
 
-  /* ---------------- Load Batches ---------------- */
+  /* ---------------- Calculated Helper Text ---------------- */
+  let maxDurationText = "";
+  let dateErrorText = "";
+  if (startsAt && endsAt) {
+    const s = new Date(startsAt);
+    const e = new Date(endsAt);
+    if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+      if (e > s) {
+        const windowMinutes = Math.floor((e.getTime() - s.getTime()) / 60000);
+        maxDurationText = `Maximum available duration: ${windowMinutes} mins`;
+      } else {
+        dateErrorText = "End time must be after start time";
+      }
+    }
+  }
 
   /* ---------------- Populate Edit Mode ---------------- */
 
@@ -148,7 +162,14 @@ export function ScheduleTestDialog({
           return;
         }
 
-        if (start < new Date()) {
+        // Create a truncated current time (zeroed seconds & ms)
+        const now = new Date();
+        now.setSeconds(0, 0);
+
+        // CHANGED HERE: Changed <= to < and updated the error message.
+        // This ensures if current time is 11:14am and user selects 11:14am, it passes.
+        // If they select 11:13am, it fails.
+        if (start < now) {
           toast.error("Cannot schedule a test in the past", {
             id: toastId,
           });
@@ -219,11 +240,8 @@ export function ScheduleTestDialog({
 
     (errors) => {
       console.log("Validation errors", errors);
-
       const message = extractFirstErrorMessage(errors);
-
       toast.dismiss();
-
       toast.error(message ?? "Please fix the highlighted fields");
     },
   );
@@ -303,7 +321,7 @@ export function ScheduleTestDialog({
 
           {/* Duration */}
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label>Duration (minutes)</Label>
 
             <Input
@@ -314,6 +332,18 @@ export function ScheduleTestDialog({
                 valueAsNumber: true,
               })}
             />
+            {/* The min-h-[1.25rem] wrapper prevents layout shift when text appears */}
+            <div className="min-h-[1.25rem] px-1 pt-1">
+              {dateErrorText ? (
+                <p className="text-xs text-destructive font-medium">
+                  {dateErrorText}
+                </p>
+              ) : maxDurationText ? (
+                <p className="text-xs text-muted-foreground">
+                  {maxDurationText}
+                </p>
+              ) : null}
+            </div>
           </div>
 
           <DialogFooter>

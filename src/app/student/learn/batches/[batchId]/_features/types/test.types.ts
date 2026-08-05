@@ -16,6 +16,14 @@ export type BatchTest = {
 
     title: string;
 
+    testType: "standard" | "sectioned";
+
+    totalMarks: number;
+
+    totalQuestions: number;
+
+    subjectLabels: string[];
+
     startsAt: string;
 
     endsAt: string;

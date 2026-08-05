@@ -8,7 +8,7 @@ import QuestionWorkspace from "./question-workspace";
 import MobileQuestionStrip from "./mobile-question-strip";
 
 import { StateItem } from "../types/workspace.types";
-import { Section } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
+import { CachedTestPayload } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
 import { useAttemptState } from "../hooks/use-attempt-state";
 
 import {
@@ -26,7 +26,7 @@ import { QuestionTimer } from "../hooks/use-question-time-tracker";
 
 type Props = {
   attemptId: string;
-  sections: Section[];
+  testPayload: CachedTestPayload;
   state: StateItem[];
   testSubmission: ReturnType<typeof useTestSubmit>;
   timer: QuestionTimer;
@@ -34,13 +34,14 @@ type Props = {
 
 export default function ExamShell({
   attemptId,
-  sections,
+  testPayload,
   state,
   testSubmission,
   timer,
 }: Props) {
   const queryClient = useQueryClient();
   const didInitFirstVisit = useRef(false);
+  const sections = testPayload.sections;
   // ----------------------------------
   // Hydrate cache ONCE from server
   // ----------------------------------
@@ -213,6 +214,7 @@ export default function ExamShell({
         <aside className="hidden w-82.5 border-l bg-background min-[820px]:block shrink-0">
           <div className="sticky top-0 h-[calc(100dvh-101.6px)]  p-4">
             <QuestionGrid
+              testPayload={testPayload}
               sections={mappedSections}
               onJump={handleNavigate}
               activeId={activeId}
@@ -235,6 +237,7 @@ export default function ExamShell({
           {/* Navigator */}
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             <QuestionGrid
+              testPayload={testPayload}
               sections={mappedSections}
               activeId={activeId}
               onJump={(id) => {

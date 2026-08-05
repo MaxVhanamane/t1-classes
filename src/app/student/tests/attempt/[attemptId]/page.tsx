@@ -24,9 +24,8 @@ export default async function AttemptPage({
   return (
     <ExamClient
       attemptId={attemptId}
-      testTitle={data.test.title}
+      testPayload={data.test}
       expiresAt={data.expiresAt}
-      sections={data.test.sections}
       state={data.state}
     />
   );

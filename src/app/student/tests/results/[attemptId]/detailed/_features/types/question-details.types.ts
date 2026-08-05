@@ -147,7 +147,6 @@ export type SectionReviewSummary = {
 
     negativePenalty: number;
 };
-
 /* =========================================================
    API RESPONSES
 ========================================================= */
@@ -158,8 +157,6 @@ export type QuestionsPageResponse =
 
         page: number;
         totalPages: number;
-
-        summary: SectionReviewSummary;
 
         questions: QuestionReview[];
     }

@@ -1,22 +1,25 @@
 import { cn } from "@/src/lib/utils";
-import { Loader } from "lucide-react";
+import { LoadingIndicator } from "./loading-indicator";
+
+type LoaderSize = "sm" | "md" | "lg";
 
 type CenteredLoaderProps = {
   message?: string;
   className?: string;
+  type?: "spiked" | "normal";
+  showGlow?: boolean;
+  size?: LoaderSize;
 };
 
-const CenteredLoader = ({ message, className }: CenteredLoaderProps) => {
+const CenteredLoader = ({ className, ...props }: CenteredLoaderProps) => {
   return (
     <div
       className={cn(
-        "flex h-(--h-viewport-minus-navbar) flex-col items-center justify-center gap-3 overflow-hidden",
+        "flex h-(--h-viewport-minus-navbar) w-full flex-col items-center justify-center overflow-hidden",
         className,
       )}
     >
-      <Loader className="size-6 animate-spin text-muted-foreground" />
-
-      {message && <p className="text-sm text-muted-foreground">{message}</p>}
+      <LoadingIndicator {...props} />
     </div>
   );
 };

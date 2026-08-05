@@ -19,16 +19,26 @@ export type Question = {
 }
 
 export type Section = {
-    id: string
-    title: string
-    subjectLabel: string
-    description: string | null
-    answerMode: AnswerMode
-    fullMarks: number
-    negativeMarks: number
-    maxSelections: number | null
-    questions: Question[]
-}
+    id: string;
+    title: string;
+    subjectLabel: string;
+    description: string | null;
+    answerMode: "single_select" | "multi_select" | "numerical_input" | "match_matrix";
+    fullMarks: number;
+    negativeMarks: number;
+    maxSelections: number | null;
+    sectionTotalMarks: number;
+    sectionTotalQuestions: number;
+    questions: Question[];
+};
+
+export type CachedTestPayload = {
+    title: string;
+    totalMarks: number;
+    totalSections: number;
+    totalQuestions: number;
+    sections: Section[];
+};
 
 export type AttemptDeniedReason =
     | "not_found"
@@ -37,7 +47,6 @@ export type AttemptDeniedReason =
     | "submitted"
     | "expired"
     | "ended"
-
 
 export type LoadAttemptResponse =
     | {
@@ -52,10 +61,7 @@ export type LoadAttemptResponse =
         startedAt: string
         expiresAt: string
         timeLimitSeconds: number
-        test: {
-            title: string
-            sections: Section[]
-        }
+        test: CachedTestPayload
         state: {
             questionId: string
             answer: unknown | null
@@ -63,4 +69,4 @@ export type LoadAttemptResponse =
             markedForReview: boolean
             timeSpentSeconds: number;
         }[]
-    }
+    };

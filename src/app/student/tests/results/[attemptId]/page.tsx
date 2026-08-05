@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 
-import CenteredLoader from "@/src/components/ui/loading/centered-loader";
+import { LoadingIndicator } from "@/src/components/ui/loading/loading-indicator";
 
 const ResultClient = dynamic(
   () =>
@@ -10,7 +10,16 @@ const ResultClient = dynamic(
     ),
   {
     ssr: false,
-    loading: () => <CenteredLoader />,
+    // 2. Use the exact same wrapper and loader as the child component
+    loading: () => (
+      <div className="flex h-(--h-viewport-minus-navbar) w-full items-center justify-center">
+        <LoadingIndicator
+          message="Loading test result..."
+          type="spiked"
+          showGlow
+        />
+      </div>
+    ),
   },
 );
 

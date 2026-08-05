@@ -96,7 +96,7 @@ export default function QuestionWorkspace({
         onRetry={() => testSubmission.submitTest("manual")}
       />
 
-      <Card className="relative flex flex-col pt-0 min-[820px]:pt-7 h-full rounded-md border-0 min-[820px]:border bg-background min-[820px]:bg-muted-soft gap-2 min-[820px]:gap-4 pb-0 min-[820px]:pb-3">
+      <Card className="relative flex flex-col pt-0 min-[820px]:pt-7 h-full rounded-md border-0 min-[820px]:border bg-background min-[820px]:bg-muted-soft gap-2 min-[820px]:gap-4 pb-0 min-[820px]:pb-3 shadow-none">
         {/* Sync */}
         <div className="absolute top-2 right-2 items-center justify-start min-w-18.75 hidden min-[820px]:flex">
           <SyncDot status={syncStatus} />

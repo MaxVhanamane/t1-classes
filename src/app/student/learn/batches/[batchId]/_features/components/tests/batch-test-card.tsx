@@ -1,11 +1,11 @@
 "use client";
 
 import { addSeconds, format } from "date-fns";
-import { BarChart3, ClipboardCheck, Lock, RotateCcw } from "lucide-react";
+import { Info } from "lucide-react";
 
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
-
+import { RichPopover } from "@/src/components/ui/common/rich-popover";
 import DottedBackground from "@/src/components/dotted-background";
 
 import { BatchTest } from "../../types/test.types";
@@ -13,11 +13,8 @@ import { TEST_GRACE_TIME_IN_SECONDS } from "@/src/lib/constants/rpc-constants";
 
 type BatchTestCardProps = {
   test: BatchTest;
-
   onStartTest: (distributionId: string) => void;
-
   onResumeAttempt: (attemptId: string) => void;
-
   onViewResult: (attemptId: string | undefined, title: string) => void;
 };
 
@@ -28,43 +25,37 @@ export function BatchTestCard({
   onViewResult,
 }: BatchTestCardProps) {
   const status = test.status;
-
   const attempt = test.attempt;
 
   const start = new Date(test.startsAt);
-
   const end = new Date(test.endsAt);
 
   const isAttemptExpired = test.isAttemptExpired;
-
   const isResultUnlocked = test.isResultUnlocked;
   const resultAvailableAt = addSeconds(end, TEST_GRACE_TIME_IN_SECONDS);
 
-  const badgeClass =
+  const statusBadgeClass =
     status === "scheduled"
-      ? "bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20"
+      ? "bg-sky-500/10 text-sky-700 dark:text-sky-400"
       : status === "ongoing"
-        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
-        : "bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border border-zinc-500/20";
+        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+        : "bg-secondary text-secondary-foreground";
 
   let actionButton: React.ReactNode;
 
   if (status === "scheduled") {
     actionButton = (
-      <Button
-        size="sm"
-        variant="ghost"
-        disabled
-        className="border border-border disabled:opacity-100"
-      >
-        <Lock className="mr-2 h-4 w-4" />
+      <Button size="sm" variant="outline" disabled className="w-full sm:w-auto">
         Locked
       </Button>
     );
   } else if (status === "ongoing" && attempt.status === "none") {
     actionButton = (
-      <Button size="sm" onClick={() => onStartTest(test.distributionId)}>
-        <ClipboardCheck className="mr-2 h-4 w-4" />
+      <Button
+        size="sm"
+        onClick={() => onStartTest(test.distributionId)}
+        className="w-full sm:w-auto"
+      >
         Go to Test
       </Button>
     );
@@ -79,9 +70,9 @@ export function BatchTestCard({
         size="sm"
         variant="secondary"
         onClick={() => onResumeAttempt(attempt.attemptId!)}
+        className="w-full sm:w-auto"
       >
-        <RotateCcw className="mr-2 h-4 w-4" />
-        Resume
+        Resume Attempt
       </Button>
     );
   } else if (
@@ -91,12 +82,16 @@ export function BatchTestCard({
     !isResultUnlocked
   ) {
     actionButton = (
-      <div className="flex w-full  items-center justify-between gap-1">
-        <p className="text-[11px] text-muted-foreground">
-          Results available at {format(resultAvailableAt, "h:mm a")}
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+        <p className="text-center text-xs text-muted-foreground sm:text-right">
+          Results at {format(resultAvailableAt, "h:mm a")}
         </p>
-        <Button size="sm" variant="outline" disabled>
-          <BarChart3 className="mr-2 h-4 w-4" />
+        <Button
+          size="sm"
+          variant="outline"
+          disabled
+          className="w-full sm:w-auto"
+        >
           Result Pending
         </Button>
       </div>
@@ -107,59 +102,124 @@ export function BatchTestCard({
         size="sm"
         variant="outline"
         onClick={() => onViewResult(attempt.attemptId, test.title)}
+        className="w-full sm:w-auto"
       >
-        <BarChart3 className="mr-2 h-4 w-4" />
-        Result
+        View Result
       </Button>
     );
   }
 
   return (
-    <Card className="relative rounded-lg border py-4 transition hover:bg-muted/40 dark:bg-black md:w-2xl">
+    <Card className="relative overflow-hidden rounded-xl border py-3 shadow-sm transition hover:shadow-md dark:bg-black md:max-w-2xl">
       <DottedBackground />
 
-      <CardContent className="z-10 space-y-4 p-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold">{test.title}</h3>
+      <CardContent className="relative z-10 flex flex-col px-4 py-2 sm:px-5">
+        {/* === TITLE & SUBTITLE === */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex min-w-0 flex-col gap-1">
+            <h3 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
+              {test.title}
+            </h3>
+
+            {test.subjectLabels && test.subjectLabels.length > 0 && (
+              <p className="truncate text-xs text-muted-foreground sm:text-sm">
+                {test.subjectLabels.join(" • ")}
+              </p>
+            )}
+          </div>
 
           <span
-            className={`rounded-md px-2 py-1 text-xs capitalize ${badgeClass}`}
+            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide sm:text-[11px] ${statusBadgeClass}`}
           >
             {status}
           </span>
         </div>
 
-        <div className="flex flex-col gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Duration:</span>
-
-            <span className="text-xs">{test.durationMinutes} min</span>
+        {/* === METADATA (Auto Grid to keep items close) === */}
+        <div className="mt-4 grid grid-cols-[auto_auto] justify-start gap-x-6 gap-y-2.5 sm:gap-x-10">
+          {/* Duration */}
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-muted-foreground">Duration:</span>
+            <span className="font-medium text-foreground">
+              {test.durationMinutes} mins
+            </span>
           </div>
 
-          <div className="flex gap-3">
+          {/* Total Questions */}
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-muted-foreground">Questions:</span>
+            <span className="font-medium text-foreground">
+              {test.totalQuestions}
+            </span>
+          </div>
+
+          {/* Total Marks */}
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-muted-foreground">Total Marks:</span>
+            <span className="font-medium text-foreground">
+              {test.totalMarks}
+            </span>
+          </div>
+
+          {/* Format */}
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-muted-foreground">Format:</span>
+            <div className="flex items-center gap-1 font-medium text-foreground">
+              <span className="capitalize">{test.testType}</span>
+              <RichPopover
+                trigger={
+                  <button
+                    type="button"
+                    className="flex items-center focus:outline-none"
+                    aria-label="Format Info"
+                  >
+                    <Info className="size-3.5 text-muted-foreground transition-colors hover:text-foreground" />
+                  </button>
+                }
+              >
+                <div className="max-w-70 space-y-2 p-1 text-sm">
+                  <p className="font-semibold text-foreground">
+                    {test.testType === "standard"
+                      ? "Standard Format"
+                      : "Sectioned Format"}
+                  </p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    {test.testType === "standard"
+                      ? "This test contains a continuous list of questions with a single answering format and marking scheme."
+                      : "This test is divided into multiple sections. These sections may vary by subject, question format (e.g., Single Choice, Numerical), or marking schemes."}
+                  </p>
+                </div>
+              </RichPopover>
+            </div>
+          </div>
+        </div>
+
+        {/* === BOTTOM ROW (Dates & Action Button) === */}
+        <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-1.5 text-[11px] text-muted-foreground sm:text-xs">
             {status !== "completed" && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  {status === "scheduled" ? "Starts:" : "Started:"}
+                <span className="w-11 sm:w-12">
+                  {status === "scheduled" ? "Starts" : "Started"}
                 </span>
-
-                <span className="text-xs">
+                <span className="font-medium text-foreground">
                   {format(start, "d MMM · h:mm a")}
                 </span>
               </div>
             )}
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {status === "completed" ? "Ended:" : "Ends:"}
+              <span className="w-11 sm:w-12">
+                {status === "completed" ? "Ended" : "Ends"}
               </span>
-
-              <span className="text-xs">{format(end, "d MMM · h:mm a")}</span>
+              <span className="font-medium text-foreground">
+                {format(end, "d MMM · h:mm a")}
+              </span>
             </div>
           </div>
-        </div>
 
-        <div className="flex justify-end">{actionButton}</div>
+          <div className="w-full shrink-0 sm:w-auto">{actionButton}</div>
+        </div>
       </CardContent>
     </Card>
   );
