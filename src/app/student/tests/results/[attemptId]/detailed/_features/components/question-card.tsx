@@ -143,15 +143,23 @@ export function QuestionCard({
     <div className="border rounded-2xl py-5 p-3 md:p-5 space-y-4 bg-background">
       {/* ================= Header ================= */}
 
-      <div className="flex items-start gap-3">
-        <h3 className="font-medium flex gap-1">
-          <span className="text-sm mt-0.5">Q{index}.</span>
+      <div className="space-y-3">
+        {/* 1. COMPLETELY SEPARATED QUESTION NUMBER */}
 
+        <div>
+          <span className="inline-flex items-center rounded-md bg-muted/30 border border-border/50 px-2.5 py-1 text-xs font-semibold  tracking-tight text-muted-foreground">
+            Question {index}
+          </span>
+        </div>
+
+        {/* 2. QUESTION TEXT SITS ON ITS OWN LINE */}
+
+        <div className="font-medium min-w-0">
           <RichTextHTMLContent
             content={question.questionText}
-            className="text-sm "
+            className="text-sm"
           />
-        </h3>
+        </div>
       </div>
 
       {/* ================= MCQ OPTIONS ================= */}

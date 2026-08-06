@@ -149,10 +149,16 @@ export function QuestionCard({
       <Card className="p-3 sm:p-4 gap-0" onClick={handleImageClick}>
         {/* Header */}
         <div className="flex justify-between items-start gap-2 sm:gap-4">
-          <div className="flex items-start gap-1.5 sm:gap-2 flex-1 min-w-0">
-            <span className="font-medium shrink-0 pt-[2px]">Q{index + 1}.</span>
+          <div className="flex-1 min-w-0 space-y-3">
+            {/* 1. COMPLETELY SEPARATED QUESTION NUMBER */}
+            <div>
+              <span className="inline-flex items-center rounded-md bg-muted/30 border border-border/50 px-2.5 py-1 text-xs font-semibold tracking-tight text-muted-foreground">
+                Question {index + 1}
+              </span>
+            </div>
 
-            <div className="flex flex-col gap-1 flex-1 min-w-0">
+            {/* 2. QUESTION TEXT SITS ON ITS OWN LINE */}
+            <div className="flex flex-col gap-1 min-w-0">
               <RichTextHTMLContent
                 content={question.questionText}
                 variant="prose"
