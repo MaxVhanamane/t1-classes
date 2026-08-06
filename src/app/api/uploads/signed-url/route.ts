@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
         const instructorId: string | undefined =
             body.instructorId;
         const batchId: string | undefined = body.batchId;
+        const testId: string | undefined = body.testId;
 
         if (!fileType) {
             return NextResponse.json(
@@ -237,6 +238,20 @@ export async function POST(req: NextRequest) {
                 key =
                     `question-papers/${timestamp}_${uuid}.${ext}`;
 
+                break;
+            }
+
+            case "question_image": {
+                if (!testId) {
+                    return NextResponse.json(
+                        { message: "testId required for question images" },
+                        { status: 400 }
+                    );
+                }
+
+                // Group by test ID, use UUID so it cannot be guessed
+                bucket = R2_PUBLIC_BUCKET_NAME;
+                key = `tests/${testId}/images/${timestamp}_${uuid}.${ext}`;
                 break;
             }
         }

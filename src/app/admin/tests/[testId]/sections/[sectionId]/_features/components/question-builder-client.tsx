@@ -41,13 +41,14 @@ export function QuestionBuilderClient() {
     data: section,
     isLoading: isSectionLoading,
     error: sectionError,
-    refetch: refetchSection,
+    refetch: refetchSectionDetails,
   } = useSectionDetails(testId, sectionId);
 
   const {
     data: questionsData,
     isLoading: isQuestionsLoading,
     isFetching,
+    refetch: refetchQuestions,
   } = useQuestions(sectionId, page);
 
   const questions = questionsData?.items ?? [];
@@ -92,7 +93,7 @@ export function QuestionBuilderClient() {
       <ErrorStateCard
         message={sectionError.message}
         onRetry={() => {
-          void refetchSection();
+          void refetchSectionDetails();
         }}
       />
     );
@@ -140,7 +141,6 @@ export function QuestionBuilderClient() {
       <QuestionBuilderHeader
         testId={testId}
         section={section}
-        // Grab the total count instantly from our new DB column!
         questionCount={section.sectionTotalQuestions}
         onAddQuestion={handleAdd}
         isLoading={isQuestionsLoading}
@@ -233,6 +233,8 @@ export function QuestionBuilderClient() {
         onQuestionCreated={(question) => {
           setRecentQuestion(question);
         }}
+        refetchSectionDetails={refetchSectionDetails}
+        refetchQuestions={refetchQuestions}
       />
     </div>
   );

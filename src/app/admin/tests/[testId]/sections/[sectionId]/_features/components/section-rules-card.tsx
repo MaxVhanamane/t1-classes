@@ -24,7 +24,7 @@ export function SectionRulesCard({ section }: Props) {
   return (
     <Accordion type="single" collapsible className="mt-3">
       <AccordionItem value="instructions" className="border-none">
-        <div className="overflow-hidden rounded-md border border-border/60 bg-muted/30 shadow-sm transition-colors hover:border-border">
+        <div className="overflow-hidden rounded-md border border-border/60 bg-muted/30 shadow-none transition-colors hover:border-border">
           <AccordionTrigger className="group px-4 py-3 hover:no-underline">
             <div className="flex flex-col items-start text-left">
               <span className="text-sm font-medium">Section Instructions</span>

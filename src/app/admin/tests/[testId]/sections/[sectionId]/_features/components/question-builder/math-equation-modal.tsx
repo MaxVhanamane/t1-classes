@@ -10,7 +10,15 @@ import {
   DialogTitle,
 } from "@/src/components/ui/dialog";
 
-type Tab = "math" | "geometry" | "chemistry" | "physics";
+// Import the sub-components
+import { CommonTools } from "./math-tabs/common-tools";
+import { MathTab } from "./math-tabs/math-tab";
+import { CalculusTab } from "./math-tabs/calculus-tab";
+import { GeometryTab } from "./math-tabs/geometry-tab";
+import { ChemistryTab } from "./math-tabs/chemistry-tab";
+import { PhysicsTab } from "./math-tabs/physics-tab";
+
+type Tab = "math" | "calculus" | "geometry" | "chemistry" | "physics";
 
 interface Props {
   open: boolean;
@@ -20,26 +28,22 @@ interface Props {
 
 export function MathEquationModal({ open, onClose, onInsert }: Props) {
   const [tab, setTab] = useState<Tab>("math");
-
   const mathRef = useRef<MathfieldElement | null>(null);
 
-  const insertTemplate = (latex: string, moveLeft = 1) => {
+  const btnClass =
+    "h-8 px-3 py-1 text-[11px] font-medium border shadow-sm hover:bg-accent";
+
+  // Completely simplified: #? tells MathLive exactly where the boxes are
+  const insertTemplate = (latex: string) => {
     const mf = mathRef.current;
     if (!mf) return;
-
     mf.insert(latex);
-
-    for (let i = 0; i < moveLeft; i++) {
-      mf.executeCommand("moveToPreviousChar");
-    }
-
     mf.focus();
   };
 
   const insertSimple = (latex: string) => {
     const mf = mathRef.current;
     if (!mf) return;
-
     mf.insert(latex);
     mf.focus();
   };
@@ -49,14 +53,15 @@ export function MathEquationModal({ open, onClose, onInsert }: Props) {
     if (!mf) return;
 
     const latex = mf.getValue().trim();
-
     if (!latex) return;
 
     onInsert(latex);
-
     mf.setValue("");
     onClose();
   };
+
+  // Shared props for all tab components
+  const tabProps = { insertSimple, insertTemplate, btnClass };
 
   return (
     <Dialog
@@ -66,357 +71,77 @@ export function MathEquationModal({ open, onClose, onInsert }: Props) {
       }}
     >
       <DialogContent
-        className="sm:max-w-3xl bg-card"
+        className="sm:max-w-4xl bg-card p-4 top-5 translate-y-0"
         onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => {
+          // 1. Check if the MathLive virtual keyboard is currently open
+          if (
+            window.mathVirtualKeyboard &&
+            window.mathVirtualKeyboard.visible
+          ) {
+            e.preventDefault(); // Stop the modal from closing
+            window.mathVirtualKeyboard.hide(); // Close the virtual keyboard
+          } else {
+            // 2. If the keyboard is NOT open, do you want Escape to close the whole modal?
+            // If YES: delete the line below.
+            // If NO (you want to force users to click "Cancel"): keep the line below.
+            e.preventDefault();
+          }
+        }}
       >
-        <DialogHeader>
-          <DialogTitle>Insert Equation</DialogTitle>
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg">Equation Editor</DialogTitle>
         </DialogHeader>
 
-        {/* Tabs */}
-        <div className="flex gap-2 border-b pb-2">
-          <Button
-            type="button"
-            size="sm"
-            variant={tab === "math" ? "default" : "ghost"}
-            onClick={() => setTab("math")}
-          >
-            Math
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={tab === "geometry" ? "default" : "ghost"}
-            onClick={() => setTab("geometry")}
-          >
-            Geometry
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={tab === "chemistry" ? "default" : "ghost"}
-            onClick={() => setTab("chemistry")}
-          >
-            Chemistry
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={tab === "physics" ? "default" : "ghost"}
-            onClick={() => setTab("physics")}
-          >
-            Physics
-          </Button>
+        {/* --- TABS --- */}
+        <div className="flex flex-wrap gap-1.5 border-b pb-2">
+          {(
+            ["math", "calculus", "geometry", "chemistry", "physics"] as Tab[]
+          ).map((t) => (
+            <Button
+              key={t}
+              type="button"
+              size="sm"
+              variant={tab === t ? "default" : "ghost"}
+              className="h-7 text-xs px-3 capitalize"
+              onClick={() => setTab(t)}
+            >
+              {t}
+            </Button>
+          ))}
         </div>
 
-        {/* Toolbar */}
-        <div className="flex flex-wrap gap-2 pt-3">
-          {tab === "math" && (
-            <>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertTemplate("\\frac{}{}", 3)}
-              >
-                a/b
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertTemplate("\\sqrt{}", 1)}
-              >
-                √
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertTemplate("^{}", 1)}
-              >
-                x²
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertTemplate("_{}", 1)}
-              >
-                x₂
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\int")}
-              >
-                ∫
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\sum")}
-              >
-                ∑
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\lim")}
-              >
-                lim
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\infty")}
-              >
-                ∞
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\pi")}
-              >
-                π
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\theta")}
-              >
-                θ
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\log")}
-              >
-                log
-              </Button>
-            </>
-          )}
+        {/* --- COMMON TOOLS (ALWAYS VISIBLE) --- */}
+        <CommonTools {...tabProps} />
 
-          {tab === "geometry" && (
-            <>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\triangle ")}
-              >
-                △
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\angle ")}
-              >
-                ∠
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\parallel ")}
-              >
-                ∥
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\perp ")}
-              >
-                ⟂
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\cong ")}
-              >
-                ≅
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\sim ")}
-              >
-                ∼
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertTemplate("\\overline{}", 1)}
-              >
-                AB̅
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertTemplate("\\overrightarrow{}", 1)}
-              >
-                →AB
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("^\\circ")}
-              >
-                °
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertTemplate("\\overset{\\frown}{}", 1)}
-              >
-                ⌢AB
-              </Button>
-            </>
-          )}
-
-          {tab === "chemistry" && (
-            <>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\rightarrow")}
-              >
-                →
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\rightleftharpoons")}
-              >
-                ⇌
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertTemplate("\\xrightarrow{}", 1)}
-              >
-                →()
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("^{+}")}
-              >
-                ⁺
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("^{-}")}
-              >
-                ⁻
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\uparrow")}
-              >
-                ↑
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\downarrow")}
-              >
-                ↓
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\Delta")}
-              >
-                Δ
-              </Button>
-            </>
-          )}
-
-          {tab === "physics" && (
-            <>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertTemplate("\\vec{}", 1)}
-              >
-                →v
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\nabla")}
-              >
-                ∇
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\partial")}
-              >
-                ∂
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\cdot")}
-              >
-                ·
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\times")}
-              >
-                ×
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\omega")}
-              >
-                ω
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\lambda")}
-              >
-                λ
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => insertSimple("\\mu")}
-              >
-                μ
-              </Button>
-            </>
-          )}
+        {/* --- DYNAMIC TAB CONTENT --- */}
+        <div className="flex flex-wrap gap-1.5 pt-2 min-h-[90px] content-start">
+          {tab === "math" && <MathTab {...tabProps} />}
+          {tab === "calculus" && <CalculusTab {...tabProps} />}
+          {tab === "geometry" && <GeometryTab {...tabProps} />}
+          {tab === "chemistry" && <ChemistryTab {...tabProps} />}
+          {tab === "physics" && <PhysicsTab {...tabProps} />}
         </div>
 
-        {/* Math Field */}
-        <div className="border rounded-lg p-3 bg-muted/20 mt-4">
+        {/* --- MATH FIELD --- */}
+        <div className="border rounded-md p-2 bg-muted/10 mt-2 shadow-inner">
           <math-field
             ref={(el) => {
-              if (el) mathRef.current = el;
+              if (el) {
+                mathRef.current = el;
+                el.smartSuperscript = false; // Prevents kicking out of boxes
+              }
             }}
             virtual-keyboard-mode="auto"
             smart-fence
-            style={{
-              width: "100%",
-              minHeight: "70px",
-              fontSize: "22px",
-            }}
+            className="w-full min-h-[100px] text-2xl outline-none [--caret-color:currentColor] [--selection-background-color:Highlight] [--selection-color:HighlightText]"
           />
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-2 pt-4">
+        <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="ghost" size="sm" onClick={onClose}>
             Cancel
           </Button>
-
           <Button type="button" size="sm" onClick={handleInsert}>
             Insert
           </Button>

@@ -22,11 +22,12 @@ import { Button } from "@/src/components/ui/button";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { TestQuestion } from "../../types/question.types";
 import { deleteQuestion } from "../../actions/delete-question";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
-import { useQueryClient } from "@tanstack/react-query";
+import { extractR2Keys } from "@/src/lib/rich-text/extract-r2-key";
 
 interface Props {
   question: TestQuestion;
@@ -34,7 +35,6 @@ interface Props {
   sectionId: string;
   onEdit: () => void;
   dismissRecentQuestion: () => void;
-
   is_locked: boolean;
 }
 
@@ -50,35 +50,41 @@ export function QuestionActionsMenu({
   const [loading, setLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const queryClient = useQueryClient();
+
   async function handleDelete() {
     setLoading(true);
     dismissRecentQuestion();
     const toastId = toast.loading("Deleting question...");
 
+    // 1. Extract all R2 keys from the in-memory question object
+    const allR2Images = [
+      ...extractR2Keys(question.questionText),
+      ...extractR2Keys(question.explanation),
+      ...(question.options?.flatMap((opt) => extractR2Keys(opt.text)) || []),
+    ];
+
+    // 2. Pass them to the server action
     const { error } = await callServerAction(
-      deleteQuestion(question.id, testId, sectionId),
+      deleteQuestion(question.id, testId, sectionId, allR2Images),
     );
 
     if (error) {
-      toast.error(error, {
-        id: toastId,
-      });
-
+      toast.error(error, { id: toastId });
       setLoading(false);
-
       return;
     }
 
-    await queryClient.invalidateQueries({
-      queryKey: ["admin", "tests", "sections", sectionId, "questions"],
-    });
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "tests", "sections", sectionId, "questions"],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "tests", "sections", sectionId, "details"],
+      }),
+    ]);
 
-    toast.success("Deleted", {
-      id: toastId,
-    });
-
+    toast.success("Deleted", { id: toastId });
     setLoading(false);
-
     setConfirmOpen(false);
   }
 
@@ -89,7 +95,6 @@ export function QuestionActionsMenu({
       );
       return;
     }
-
     setConfirmOpen(true);
   }
 
@@ -97,7 +102,6 @@ export function QuestionActionsMenu({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
-
   if (!isMounted) return null;
 
   return (

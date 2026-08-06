@@ -22,7 +22,10 @@ import {
 } from "../../zod/question.schema";
 
 import { TestSection } from "../../types/section.types";
-import { TestQuestion } from "../../types/question.types";
+import {
+  PaginatedQuestionsResponse,
+  TestQuestion,
+} from "../../types/question.types";
 import { CorrectAnswer } from "../../types/correct-answer.types";
 
 import { upsertQuestion } from "../../actions/upsert-question";
@@ -32,7 +35,7 @@ import { MultiSelectBuilder } from "./multi-select-builder";
 import { NumericalInputBuilder } from "./numerical-input-builder";
 import { MatchMatrixBuilder } from "./match-matrix-builder";
 import { JSONContent } from "@tiptap/react";
-import { useQueryClient } from "@tanstack/react-query";
+import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 /* --------------------------------------------
  * Types
@@ -48,6 +51,12 @@ interface Props {
   section: TestSection;
   editingQuestion: TestQuestion | null;
   onQuestionCreated?: (question: TestQuestion) => void;
+  refetchSectionDetails: (
+    options?: RefetchOptions | undefined,
+  ) => Promise<QueryObserverResult<TestSection, Error>>;
+  refetchQuestions: (
+    options?: RefetchOptions | undefined,
+  ) => Promise<QueryObserverResult<PaginatedQuestionsResponse, Error>>;
 }
 
 const emptyDoc = {
@@ -233,9 +242,10 @@ export function QuestionBuilderDialog({
   section,
   editingQuestion,
   onQuestionCreated,
+  refetchSectionDetails,
+  refetchQuestions,
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
-  const queryClient = useQueryClient();
   const form = useForm<CreateQuestionInput>({
     resolver: zodResolver(createQuestionSchema),
     defaultValues: {
@@ -344,9 +354,11 @@ export function QuestionBuilderDialog({
       id: toastId,
     });
 
-    await queryClient.invalidateQueries({
-      queryKey: ["admin", "tests", "sections", section.id, "questions"],
-    });
+    if (editingQuestion) {
+      await refetchQuestions();
+    } else {
+      await Promise.all([refetchQuestions(), refetchSectionDetails()]);
+    }
 
     if (!editingQuestion) {
       onQuestionCreated?.(buildPreviewQuestion(values));
@@ -411,6 +423,7 @@ export function QuestionBuilderDialog({
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Question</label>
             <RichTextEditor
+              testId={section.testId}
               value={questionText}
               onChange={(v) =>
                 form.setValue("questionText", v, { shouldDirty: true })
@@ -448,6 +461,7 @@ export function QuestionBuilderDialog({
               Explanation (Optional)
             </label>
             <RichTextEditor
+              testId={section.testId}
               value={explanation ?? emptyDoc}
               onChange={(v) =>
                 form.setValue("explanation", v, { shouldDirty: true })

@@ -8,11 +8,7 @@ export function useSectionDetails(
 ) {
   return useQuery({
     queryKey: [
-      "admin",
-      "tests",
-      testId,
-      "sections",
-      sectionId,
+      "admin", "tests", "sections", sectionId, "details"
     ],
 
     queryFn: async (): Promise<TestSection> => {

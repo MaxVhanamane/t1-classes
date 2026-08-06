@@ -63,7 +63,7 @@ export function DetailedAnalysisCTA({ attemptId, rankingAvailableAt }: Props) {
   // Prevent hydration mismatch on the server
   if (!isMounted) {
     return (
-      <Button size="lg" className="min-w-[230px] rounded-sm opacity-0">
+      <Button size="lg" className="min-w-58 rounded-sm opacity-0">
         Loading...
       </Button>
     );
@@ -77,7 +77,7 @@ export function DetailedAnalysisCTA({ attemptId, rankingAvailableAt }: Props) {
       <Link href={`/student/tests/results/${attemptId}/detailed`}>
         <Button
           size="lg"
-          className="min-w-[230px] rounded-sm bg-primary hover:bg-primary/90"
+          className="min-w-58 rounded-sm bg-primary hover:bg-primary/90"
         >
           <Unlock className="mr-2 h-4 w-4" />
           View Detailed Analysis

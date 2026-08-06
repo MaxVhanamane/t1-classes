@@ -21,7 +21,6 @@ const EMPTY_DOC: JSONContent = {
   content: [{ type: "paragraph" }],
 };
 
-// Cap to avoid unbounded growth in long-lived sessions (e.g. admin editing many questions).
 const MAX_CACHE_SIZE = 500;
 const mathCache = new Map<string, string>();
 
@@ -37,9 +36,6 @@ function renderLatex(latex: string): string {
       output: "html",
     });
   } catch {
-    // Should be rare since throwOnError is false, but guard against katex
-    // internal errors (e.g. pathological input) so one bad expression
-    // never breaks the whole page render.
     rendered = `<span class="katex-error" title="Failed to render expression">${escapeHtml(
       latex,
     )}</span>`;
@@ -76,9 +72,6 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&amp;/g, "&");
 }
 
-// Matches ONLY empty math nodes: <span ... data-type="inline-math" ...></span>
-// or self-closing <span ... data-type="inline-math" .../>
-// Never matches tags with real children, so it can't swallow surrounding HTML.
 const MATH_NODE_RE =
   /<(span|div)([^>]*data-type="(inline-math|block-math)"[^>]*)>\s*(?:<\/\1>)|<(span|div)([^>]*data-type="(inline-math|block-math)"[^>]*)\/>/g;
 
@@ -102,8 +95,6 @@ function renderMath(html: string): string {
       },
     );
   } catch {
-    // Worst case: math nodes stay unrendered (visually missing) but the
-    // rest of the content (tables, text, images) still renders fine.
     return html;
   }
 }
@@ -113,7 +104,6 @@ function safeGenerateHTML(content: JSONContent): string {
     return generateHTML(content, TiptapExtensions);
   } catch (err) {
     if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
       console.error("Failed to generate HTML from Tiptap content:", err);
     }
     return "";
@@ -139,6 +129,11 @@ export function RichTextHTMLContent({
         "max-w-none",
         isProse ? "prose prose-sm dark:prose-invert" : "rich-content",
         clamp && "line-clamp-2",
+
+        // --- FIXED FOR MOBILE IMAGES ---
+        // max-h-[60vh] allows tall mobile screenshots to span the full width of the phone.
+        "[&_img]:max-w-full [&_img]:max-h-[60vh] sm:[&_img]:max-h-[400px] [&_img]:w-auto [&_img]:object-contain [&_img]:rounded-md [&_img]:my-3 sm:[&_img]:my-4",
+
         className,
       )}
       dangerouslySetInnerHTML={{ __html: html }}

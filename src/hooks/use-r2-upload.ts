@@ -12,7 +12,8 @@ export type UploadAssetType =
     | "user_avatar"
     | "course_pdf"
     | "batch_thumbnail"
-    | "question_paper";
+    | "question_paper"
+    | "question_image";
 
 type UploadParams = {
     file: File
@@ -21,6 +22,7 @@ type UploadParams = {
     topicId?: string
     batchId?: string
     instructorId?: string
+    testId?: string
 }
 
 type UploadResult = {
@@ -42,7 +44,8 @@ export function useR2Upload() {
         courseId,
         instructorId,
         batchId,
-        topicId
+        topicId,
+        testId // <-- Added here
     }: UploadParams): Promise<UploadResult> {
 
         setUploading(true);
@@ -62,7 +65,8 @@ export function useR2Upload() {
                     courseId,
                     topicId,
                     batchId,
-                    instructorId
+                    instructorId,
+                    testId
                 })
             });
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react"; // <-- ADDED useState
 import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { TestQuestion } from "../../types/question.types";
@@ -15,6 +16,10 @@ import {
   AccordionTrigger,
 } from "@/src/components/ui/accordion";
 import { RichTextHTMLContent } from "./rich-text-html-content";
+
+// --- ADDED SHADCN DIALOG IMPORTS ---
+import { Dialog, DialogContent, DialogTitle } from "@/src/components/ui/dialog";
+
 interface Props {
   question: TestQuestion;
   index: number;
@@ -114,7 +119,6 @@ function formatNumericAnswer(target: number, tolerance: number) {
 }
 
 /* ------------------ Component ------------------ */
-
 export function QuestionCard({
   question,
   index,
@@ -124,90 +128,131 @@ export function QuestionCard({
   isPreview = false,
 }: Props) {
   const correct = question.correctAnswer;
-  console.log("questionText", question.questionText);
+
+  // =========================
+  // State: Lightbox
+  // =========================
+  const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
+
+  // EVENT DELEGATION: Catch clicks on any image inside the card
+  const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === "IMG") {
+      e.preventDefault();
+      setFullScreenImage((target as HTMLImageElement).src);
+    }
+  };
+
   return (
-    <Card className="p-4 gap-0">
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div className="flex items-baseline gap-2">
-          <span className="font-medium">Q{index + 1}.</span>
+    <>
+      {/* ATTACHED onClick={handleImageClick} HERE */}
+      <Card className="p-3 sm:p-4 gap-0" onClick={handleImageClick}>
+        {/* Header */}
+        <div className="flex justify-between items-start gap-2 sm:gap-4">
+          <div className="flex items-start gap-1.5 sm:gap-2 flex-1 min-w-0">
+            <span className="font-medium shrink-0 pt-[2px]">Q{index + 1}.</span>
 
-          <div className="flex flex-col gap-1">
-            <RichTextHTMLContent
-              content={question.questionText}
-              variant="prose"
-            />
+            <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <RichTextHTMLContent
+                content={question.questionText}
+                variant="prose"
+              />
+            </div>
           </div>
+
+          {!isPreview && (
+            <div className="shrink-0 -mr-2 sm:mr-0">
+              {/* -mr-2 pulls the menu slightly to the right edge on mobile to save space */}
+              <QuestionActionsMenu
+                question={question}
+                onEdit={() => onEdit(question)}
+                sectionId={section.id}
+                testId={section.testId}
+                is_locked={section.is_locked}
+                dismissRecentQuestion={dismissRecentQuestion}
+              />
+            </div>
+          )}
         </div>
 
-        {!isPreview && (
-          <QuestionActionsMenu
-            question={question}
-            onEdit={() => onEdit(question)}
-            sectionId={section.id}
-            testId={section.testId}
-            is_locked={section.is_locked}
-            dismissRecentQuestion={dismissRecentQuestion}
-          />
-        )}
-      </div>
+        {/* Options OR Numerical Answer */}
+        {question.options.length > 0 ? (
+          <div className="grid gap-2 pt-2">
+            {question.options.map((opt) => {
+              const correctOption = isOptionCorrect(correct, opt.id);
 
-      {/* Options OR Numerical Answer */}
-      {question.options.length > 0 ? (
-        <div className="grid gap-2 pt-2">
-          {question.options.map((opt) => {
-            const correctOption = isOptionCorrect(correct, opt.id);
+              return (
+                <div
+                  key={opt.id}
+                  className={cn(
+                    "flex items-start gap-1.5 sm:gap-2 rounded-md border px-2.5 sm:px-3 py-2 text-sm transition",
+                    correctOption
+                      ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                      : "border-muted",
+                  )}
+                >
+                  <span className="font-medium shrink-0 w-5 sm:w-6 pt-[2px]">
+                    {opt.label}.
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <RichTextHTMLContent content={opt.text} />
+                  </div>
 
-            return (
-              <div
-                key={opt.id}
-                className={cn(
-                  "flex gap-2 rounded-md border px-3 py-2 text-sm transition",
-                  correctOption
-                    ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                    : "border-muted",
-                )}
-              >
-                <span className="font-medium w-6">{opt.label}.</span>
-                <div className="flex-1">
-                  <RichTextHTMLContent content={opt.text} />
+                  {correctOption && (
+                    <Badge variant="success" className="ml-auto shrink-0">
+                      Correct
+                    </Badge>
+                  )}
                 </div>
-
-                {correctOption && (
-                  <Badge variant="success" className="ml-auto">
-                    Correct
-                  </Badge>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ) : isNumericRange(correct) ? (
-        <div className="pt-3 text-sm text-muted-foreground flex items-center justify-start gap-2">
-          <div className="font-medium text-foreground">
-            {formatNumericAnswer(correct.target, correct.tolerance)}
+              );
+            })}
           </div>
-        </div>
-      ) : null}
+        ) : isNumericRange(correct) ? (
+          <div className="pt-3 text-sm text-muted-foreground flex items-center justify-start gap-2">
+            <div className="font-medium text-foreground">
+              {formatNumericAnswer(correct.target, correct.tolerance)}
+            </div>
+          </div>
+        ) : null}
 
-      {hasRichTextContent(question.explanation) && (
-        <Accordion type="single" collapsible className="mt-4">
-          <AccordionItem
-            value="explanation"
-            className="rounded-md border border-border/60 bg-muted/30 px-3"
-          >
-            <AccordionTrigger className="py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:no-underline">
-              Explanation
-            </AccordionTrigger>
+        {/* Explanation */}
+        {hasRichTextContent(question.explanation) && (
+          <Accordion type="single" collapsible className="mt-4">
+            <AccordionItem
+              value="explanation"
+              className="rounded-md border border-border/60 bg-muted/30 px-3"
+            >
+              <AccordionTrigger className="py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:no-underline">
+                Explanation
+              </AccordionTrigger>
 
-            <AccordionContent className="pb-3">
-              <div className="text-sm text-foreground/90">
-                <RichTextHTMLContent content={question.explanation} />
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      )}
-    </Card>
+              <AccordionContent className="pb-3">
+                <div className="text-sm text-foreground/90">
+                  <RichTextHTMLContent content={question.explanation} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        )}
+      </Card>
+
+      {/* --- LIGHTBOX DIALOG --- */}
+      <Dialog
+        open={!!fullScreenImage}
+        onOpenChange={(open) => !open && setFullScreenImage(null)}
+      >
+        <DialogContent className="sm:max-w-xl w-[95vw] h-[90vh] bg-black/90 border-none shadow-none p-0 flex justify-center items-center">
+          <DialogTitle className="sr-only">Image Preview</DialogTitle>
+
+          {fullScreenImage && (
+            <img
+              src={fullScreenImage}
+              className="w-full h-full object-contain p-1"
+              alt="Fullscreen preview"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -312,4 +312,29 @@
     outline: none;
   }
 
+  /* Style MathLive internal buttons to match Shadcn's 'ghost' variant */
+
+  /* 1. Base State */
+  math-field::part(virtual-keyboard-toggle),
+  math-field::part(menu-toggle) {
+    color: var(--muted-foreground) !important;
+    background-color: transparent !important;
+    border-radius: calc(var(--radius) - 2px) !important;
+    padding: 6px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+  }
+
+  /* 2. Hover State (Using Shadcn's actual button-hover colors) */
+  math-field::part(virtual-keyboard-toggle):hover,
+  math-field::part(menu-toggle):hover {
+    color: var(--accent-foreground) !important;
+    background-color: var(--accent) !important;
+  }
+
+  /* 3. Active/Click State */
+  math-field::part(virtual-keyboard-toggle):active,
+  math-field::part(menu-toggle):active {
+    background-color: var(--border) !important;
+  }
 }

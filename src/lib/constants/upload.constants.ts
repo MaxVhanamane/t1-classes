@@ -43,7 +43,8 @@ export type AssetType =
     | "user_avatar"
     | "course_pdf"
     | "batch_thumbnail"
-    | "question_paper";
+    | "question_paper"
+    | "question_image";
 
 /* ================================================== */
 /* SIZE LIMITS                                        */
@@ -57,19 +58,22 @@ export const SIZE_LIMITS: Record<
         500 * 1024, // 500KB
 
     batch_thumbnail:
-        500 * 1024,
+        500 * 1024, // 500KB
 
     instructor_avatar:
-        500 * 1024,
+        500 * 1024, // 500KB
 
     user_avatar:
-        200 * 1024,
+        200 * 1024, // 200KB
 
     course_pdf:
         5 * 1024 * 1024, // 5MB
 
     question_paper:
         5 * 1024 * 1024, // 5MB
+
+    question_image:
+        100 * 1024, // 100KB 
 };
 
 export const VALID_ASSET_TYPES: AssetType[] = [
@@ -79,6 +83,7 @@ export const VALID_ASSET_TYPES: AssetType[] = [
     "course_pdf",
     "batch_thumbnail",
     "question_paper",
+    "question_image"
 ];
 
 /* ================================================== */
