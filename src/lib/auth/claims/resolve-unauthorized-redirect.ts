@@ -16,8 +16,10 @@ export function resolveUnauthorizedRedirect(
     // User is authenticated but lacks permission
     switch (role) {
         case "admin":
-        case "teacher":
             redirect("/admin");
+
+        case "teacher":
+            redirect("/admin/syllabus-progress");
 
         case "student":
             redirect("/student/dashboard");

@@ -954,7 +954,7 @@ export function BatchDialog({
                     onChange={field.onChange}
                     instructors={instructors}
                     isLoading={isInstructorsLoading}
-                    disabled={editLocked || checkingLock}
+                    disabled={checkingLock}
                   />
                 </div>
               )}

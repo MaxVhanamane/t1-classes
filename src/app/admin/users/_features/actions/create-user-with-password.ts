@@ -17,7 +17,6 @@ export async function createUserWithPassword(
     rawData: CreateUserWithPasswordInput
 ): Promise<ServerActionResponse> {
     await requireAdminServerOnly();
-    console.log("creating userrrrrrrrrrrr")
 
     try {
         const adminSupabase = await createServiceRoleSupabaseClient();

@@ -4,12 +4,40 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/supabase-server";
 import { LoadAttemptResponse, CachedTestPayload } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
-import {
-    getAttemptExpiryMs,
-    isAttemptExpired,
-} from "@/src/lib/helper-functions/attempt-expiry";
 import { createStaticSupabaseClient } from "@/src/lib/supabase/supabase-static";
 import { requireStudentServerOnly } from "@/src/lib/auth/claims/require-role-server-only";
+
+
+type RpcAnswer = {
+    question_id: string;
+    answer: unknown;
+    marked_for_review: boolean;
+    time_spent_seconds: number | null;
+};
+
+type RpcResponseOk = {
+    kind: "ok";
+    attempt: {
+        id: string;
+        test_id: string;
+        distribution_id: string;
+        started_at: string;
+        time_limit_seconds: number;
+        expires_at: string;
+    };
+    distribution: {
+        starts_at: string;
+        ends_at: string;
+    };
+    answers: RpcAnswer[];
+};
+
+type RpcResponseDenied = {
+    kind: "denied";
+    reason: "not_owner" | "not_found" | "submitted" | "expired" | "ended";
+};
+
+type RpcResponse = RpcResponseOk | RpcResponseDenied;
 
 /* =========================================================
    CACHED TEST PAYLOAD
@@ -58,101 +86,31 @@ export async function loadAttempt(
         return { kind: "denied", reason: "not_owner" };
     }
 
-    const now = Date.now();
-
     /* =========================================================
-       ATTEMPT + DISTRIBUTION
+       FETCH UNIFIED ATTEMPT DATA (SECURITY DEFINER RPC)
     ========================================================= */
 
-    const { data: attempt, error } = await supabase
-        .from("test_attempts")
-        .select(`
-      id,
-      test_id,
-      distribution_id,
-      user_id,
-      status,
-      started_at,
-      time_limit_seconds,
-      time_spent_seconds,
-      distribution:test_distributions (
-        id,
-        batch_id,
-        starts_at,
-        ends_at
-      )
-    `)
-        .eq("id", attemptId)
-        .single();
+    const { data, error } = await supabase.rpc(
+        "load_test_attempt_data",
+        { p_attempt_id: attemptId }
+    );
 
-    if (error || !attempt) {
+    if (error || !data) {
         return { kind: "denied", reason: "not_found" };
     }
 
-    const distribution = (attempt.distribution as unknown) as {
-        id: string;
-        batch_id: string | null;
-        starts_at: string;
-        ends_at: string;
-    } | null;
+    // Strongly type the JSONB response
+    const rpcResponse = data as RpcResponse;
 
-    if (!distribution) {
-        return { kind: "denied", reason: "not_found" };
+    if (rpcResponse.kind === "denied") {
+        return { kind: "denied", reason: rpcResponse.reason };
     }
 
     /* =========================================================
-       OWNERSHIP & STATUS
+       LOAD CACHED TEST PAYLOAD
     ========================================================= */
 
-    if (attempt.user_id !== user.userId) {
-        return { kind: "denied", reason: "not_owner" };
-    }
-
-    if (attempt.status === "submitted") {
-        return { kind: "denied", reason: "submitted" };
-    }
-
-    if (attempt.status === "expired") {
-        return { kind: "denied", reason: "expired" };
-    }
-
-    /* =========================================================
-       DISTRIBUTION WINDOW & EXPIRY
-    ========================================================= */
-
-    const startsAtMs = new Date(distribution.starts_at).getTime();
-    const endsAtMs = new Date(distribution.ends_at).getTime();
-
-    if (now < startsAtMs || now >= endsAtMs) {
-        return { kind: "denied", reason: "ended" };
-    }
-
-    const expiresAtMs = getAttemptExpiryMs(attempt, distribution);
-
-    if (isAttemptExpired(expiresAtMs, now)) {
-        return { kind: "denied", reason: "expired" };
-    }
-
-    /* =========================================================
-       LOAD CACHED + DYNAMIC DATA
-    ========================================================= */
-
-    const [testPayload, statesResult] =
-        await Promise.all([
-            getCachedTestPayload(attempt.test_id),
-            supabase
-                .from("test_attempt_answers")
-                .select(`
-          question_id,
-          answer,
-          marked_for_review,
-          time_spent_seconds
-        `)
-                .eq("attempt_id", attempt.id),
-        ]);
-
-
-    const states = statesResult.data ?? [];
+    const testPayload = await getCachedTestPayload(rpcResponse.attempt.test_id);
 
     /* =========================================================
        RESPONSE
@@ -160,14 +118,14 @@ export async function loadAttempt(
 
     return {
         kind: "ok",
-        attemptId: attempt.id,
-        testId: attempt.test_id,
-        distributionId: attempt.distribution_id,
-        startedAt: attempt.started_at,
-        expiresAt: new Date(expiresAtMs).toISOString(),
-        timeLimitSeconds: attempt.time_limit_seconds,
+        attemptId: rpcResponse.attempt.id,
+        testId: rpcResponse.attempt.test_id,
+        distributionId: rpcResponse.attempt.distribution_id,
+        startedAt: rpcResponse.attempt.started_at,
+        expiresAt: new Date(rpcResponse.attempt.expires_at).toISOString(),
+        timeLimitSeconds: rpcResponse.attempt.time_limit_seconds,
         test: testPayload,
-        state: states.map((state) => ({
+        state: rpcResponse.answers.map((state) => ({
             questionId: state.question_id,
             answer: state.answer,
             visited: false,

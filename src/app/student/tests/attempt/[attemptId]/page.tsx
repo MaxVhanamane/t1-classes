@@ -23,6 +23,7 @@ export default async function AttemptPage({
 
   return (
     <ExamClient
+      key={attemptId}
       attemptId={attemptId}
       testPayload={data.test}
       expiresAt={data.expiresAt}

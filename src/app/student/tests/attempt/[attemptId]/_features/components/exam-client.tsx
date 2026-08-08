@@ -1,10 +1,7 @@
 "use client";
 
 import { useTestSubmit } from "../hooks/use-test-submit";
-import {
-  CachedTestPayload,
-  Section,
-} from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
+import { CachedTestPayload } from "@/src/app/api/tests/attempts/[attemptId]/attempt-types";
 import { StateItem } from "../types/workspace.types";
 import dynamic from "next/dynamic";
 import CenteredLoader from "@/src/components/ui/loading/centered-loader";

@@ -1,7 +1,7 @@
 "use client";
 
 import { addSeconds, format } from "date-fns";
-import { Info } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
 
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
@@ -10,6 +10,7 @@ import DottedBackground from "@/src/components/dotted-background";
 
 import { BatchTest } from "../../types/test.types";
 import { TEST_GRACE_TIME_IN_SECONDS } from "@/src/lib/constants/rpc-constants";
+import { useTransition } from "react";
 
 type BatchTestCardProps = {
   test: BatchTest;
@@ -24,6 +25,9 @@ export function BatchTestCard({
   onResumeAttempt,
   onViewResult,
 }: BatchTestCardProps) {
+  // 1. Initialize the transition hook
+  const [isPending, startTransition] = useTransition();
+
   const status = test.status;
   const attempt = test.attempt;
 
@@ -41,8 +45,28 @@ export function BatchTestCard({
         ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
         : "bg-secondary text-secondary-foreground";
 
+  // 2. Create transition wrappers for your navigation callbacks
+  const handleStartTest = () => {
+    startTransition(() => {
+      onStartTest(test.distributionId);
+    });
+  };
+
+  const handleResumeAttempt = () => {
+    startTransition(() => {
+      onResumeAttempt(attempt.attemptId!);
+    });
+  };
+
+  const handleViewResult = () => {
+    startTransition(() => {
+      onViewResult(attempt.attemptId, test.title);
+    });
+  };
+
   let actionButton: React.ReactNode;
 
+  // 3. Inject isPending, the new handlers, and the Loader2 spinner
   if (status === "scheduled") {
     actionButton = (
       <Button size="sm" variant="outline" disabled className="w-full sm:w-auto">
@@ -53,10 +77,18 @@ export function BatchTestCard({
     actionButton = (
       <Button
         size="sm"
-        onClick={() => onStartTest(test.distributionId)}
-        className="w-full sm:w-auto"
+        disabled={isPending}
+        onClick={handleStartTest}
+        className="relative w-full sm:w-auto"
       >
-        Go to Test
+        <span className={isPending ? "opacity-0" : "opacity-100"}>
+          Go to Test
+        </span>
+        {isPending && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        )}
       </Button>
     );
   } else if (
@@ -69,10 +101,18 @@ export function BatchTestCard({
       <Button
         size="sm"
         variant="secondary"
-        onClick={() => onResumeAttempt(attempt.attemptId!)}
-        className="w-full sm:w-auto"
+        disabled={isPending}
+        onClick={handleResumeAttempt}
+        className="relative w-full sm:w-auto"
       >
-        Resume Attempt
+        <span className={isPending ? "opacity-0" : "opacity-100"}>
+          Resume Attempt
+        </span>
+        {isPending && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        )}
       </Button>
     );
   } else if (
@@ -101,14 +141,21 @@ export function BatchTestCard({
       <Button
         size="sm"
         variant="outline"
-        onClick={() => onViewResult(attempt.attemptId, test.title)}
-        className="w-full sm:w-auto"
+        disabled={isPending}
+        onClick={handleViewResult}
+        className="relative w-full sm:w-auto"
       >
-        View Result
+        <span className={isPending ? "opacity-0" : "opacity-100"}>
+          View Result
+        </span>
+        {isPending && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        )}
       </Button>
     );
   }
-
   return (
     <Card className="relative overflow-hidden rounded-xl border py-3 shadow-sm transition hover:shadow-md dark:bg-black md:max-w-2xl">
       <DottedBackground />

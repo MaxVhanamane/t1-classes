@@ -80,10 +80,13 @@ export default function LoginForm() {
         localStorage.removeItem(PUSH_STORAGE_KEY);
         setRedirecting(true);
 
+        // --- UPDATED ROLE ROUTING ---
         switch (role) {
           case "admin":
-          case "teacher":
             router.replace("/admin");
+            break;
+          case "teacher":
+            router.replace("/admin/syllabus-progress");
             break;
           case "student":
             router.replace("/student/dashboard");

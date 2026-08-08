@@ -138,39 +138,6 @@ export function useQuestionTimeTracker(
             [flushCurrentQuestion],
         );
 
-    // useEffect(() => {
-    //     const id = setInterval(() => {
-    //         const questionId =
-    //             currentQuestionRef.current;
-
-    //         if (
-    //             !questionId ||
-    //             startedAtRef.current === 0
-    //         ) {
-    //             return;
-    //         }
-
-    //         const baseMs =
-    //             pendingTimesMsRef.current[
-    //             questionId
-    //             ] ?? 0;
-
-    //         const liveMs =
-    //             Date.now() -
-    //             startedAtRef.current;
-
-    //         setCurrentQuestionSeconds(
-    //             Math.floor(
-    //                 (baseMs + liveMs) /
-    //                 1000,
-    //             ),
-    //         );
-    //     }, 1000);
-
-    //     return () =>
-    //         clearInterval(id);
-    // }, []);
-
     useEffect(() => {
         const saveCurrentTime = () => {
             flushCurrentQuestion();

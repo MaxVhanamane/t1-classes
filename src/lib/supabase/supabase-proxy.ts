@@ -13,7 +13,7 @@ const PUBLIC_ROUTES = ['/', '/explore', '/login', '/auth', '/api']
 // After login, each role lands on this route
 const ROLE_HOME: Record<string, string> = {
     admin: '/admin',
-    teacher: '/admin',
+    teacher: '/admin/syllabus-progress',
     student: '/student/dashboard',
 }
 
@@ -141,6 +141,12 @@ export async function updateSession(request: NextRequest) {
         pathname.startsWith(p.prefix)
     )
     if (matchedPrefix && !matchedPrefix.roles.includes(role)) {
+        return redirect(request, home, supabaseResponse)
+    }
+
+    // Rule 3.5 - Restrict teachers from hitting the main admin dashboard directly
+    // If a teacher tries to navigate to exactly /admin, redirect them to their home.
+    if (role === 'teacher' && (pathname === '/admin' || pathname === '/admin/')) {
         return redirect(request, home, supabaseResponse)
     }
 

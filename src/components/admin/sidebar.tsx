@@ -31,61 +31,134 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/src/components/ui/sidebar";
+import { UserRole } from "@/src/lib/auth/types/auth.types";
 
-const navGroups = [
+type NavItem = {
+  label: string;
+  href: string;
+  icon: React.ElementType;
+  allowedRoles: string[];
+};
+
+type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
+const navGroups: NavGroup[] = [
   {
     label: "Overview",
     items: [
-      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-      { label: "Users", href: "/admin/users", icon: Users },
+      {
+        label: "Dashboard",
+        href: "/admin",
+        icon: LayoutDashboard,
+        allowedRoles: ["admin"],
+      },
+      {
+        label: "Users",
+        href: "/admin/users",
+        icon: Users,
+        allowedRoles: ["admin"],
+      },
     ],
   },
   {
     label: "Academics",
     items: [
-      { label: "Courses", href: "/admin/courses", icon: BookOpen },
-      { label: "Batches", href: "/admin/batches", icon: Layers },
-      { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
-      { label: "Tests", href: "/admin/tests", icon: NotepadText },
+      {
+        label: "Courses",
+        href: "/admin/courses",
+        icon: BookOpen,
+        allowedRoles: ["admin"],
+      },
+      {
+        label: "Batches",
+        href: "/admin/batches",
+        icon: Layers,
+        allowedRoles: ["admin"],
+      },
+      {
+        label: "Enrollments",
+        href: "/admin/enrollments",
+        icon: GraduationCap,
+        allowedRoles: ["admin"],
+      },
+      {
+        label: "Tests",
+        href: "/admin/tests",
+        icon: NotepadText,
+        allowedRoles: ["admin", "teacher"],
+      },
       {
         label: "Question Papers",
         href: "/admin/question-papers",
         icon: FileText,
+        allowedRoles: ["admin"],
       },
       {
         label: "Syllabus Progress",
         href: "/admin/syllabus-progress",
         icon: ListChecks,
+        allowedRoles: ["admin", "teacher"],
       },
     ],
   },
   {
     label: "Interactive",
     items: [
-      { label: "Live Classes", href: "/admin/live-classes", icon: Video },
+      {
+        label: "Live Classes",
+        href: "/admin/live-classes",
+        icon: Video,
+        allowedRoles: ["admin", "teacher"],
+      },
       {
         label: "Mentorship Sessions",
         href: "/admin/mentorship_sessions",
         icon: Handshake,
+        allowedRoles: ["admin", "teacher"],
       },
       {
         label: "Group Sessions",
         href: "/admin/group-sessions",
         icon: MonitorPlay,
+        allowedRoles: ["admin", "teacher"],
       },
     ],
   },
   {
     label: "Operations",
     items: [
-      { label: "Attendance", href: "/admin/attendance", icon: UserCheck },
-      { label: "Notifications", href: "/admin/notifications", icon: Bell },
+      {
+        label: "Attendance",
+        href: "/admin/attendance",
+        icon: UserCheck,
+        allowedRoles: ["admin", "teacher"],
+      },
+      {
+        label: "Notifications",
+        href: "/admin/notifications",
+        icon: Bell,
+        allowedRoles: ["admin", "teacher"],
+      },
     ],
   },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ userRole }: { userRole: UserRole }) {
   const pathname = usePathname();
+  const normalizedRole = String(userRole).toLowerCase();
+
+  // Filter items by role, and exclude groups that end up with 0 visible items
+  const visibleNavGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) =>
+        item.allowedRoles.map((r) => r.toLowerCase()).includes(normalizedRole),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <Sidebar collapsible="icon" className="border-r z-50">
@@ -109,7 +182,7 @@ export default function AdminSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {navGroups.map((group) => (
+        {visibleNavGroups.map((group) => (
           <SidebarGroup key={group.label}>
             <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             <SidebarGroupContent>

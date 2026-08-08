@@ -9,6 +9,11 @@ import { QuestionTimer } from "./use-question-time-tracker";
 
 type SubmitSource = "manual" | "auto";
 
+type SubmitResponseData = {
+    kind: "submitted";
+    status?: "submitted" | "expired";
+};
+
 export function useTestSubmit(attemptId: string, timer: QuestionTimer,) {
     const [locked, setLocked] = useState(false);
     const [failed, setFailed] = useState(false);
@@ -20,9 +25,10 @@ export function useTestSubmit(attemptId: string, timer: QuestionTimer,) {
 
     const mutation = useMutation({
         mutationFn: ({
+
         }: {
             source: SubmitSource;
-        }) => {
+        }): Promise<SubmitResponseData> => {
             timer.flushCurrentQuestion();
 
             return fetchWrapper(
@@ -54,14 +60,24 @@ export function useTestSubmit(attemptId: string, timer: QuestionTimer,) {
             }
         },
 
-        onSuccess: () => {
+        onSuccess: (data) => {
             timer.clear();
-            toast.success(
-                "Test submitted successfully",
-            );
-            // Let React flush state updates first
+
+            // "expired" = The student's timer naturally ran out (or hit the grace period), 
+            // and the database marked the test as submitted/expired automatically 
+            // while grading whatever answers they saved up to that point.
+            // Anything else = The student manually clicked submit before time ran out ("submitted").
+            if (data?.status === "expired") {
+                toast.info(
+                    "Test time expired. Your saved answers have been evaluated."
+                );
+            } else {
+                toast.success(
+                    "Test submitted successfully"
+                );
+            }
+
             setLocked(false);
-            // Remove submission guard before navigation
             setTimeout(() => {
                 router.replace(
                     `/student/tests/results/${attemptId}`,
