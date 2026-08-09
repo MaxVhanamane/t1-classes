@@ -9,6 +9,7 @@ import { SerwistProvider } from "./serwist";
 import { StatusThemeScript } from "../components/status-theme-script";
 import { ThemeColorSync } from "../components/status-theme-color-sync";
 import { ForceSonnerSpinner } from "../components/ui/force-sonnar-spinner";
+import { PWAInstallProvider } from "../providers/pwa-install-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,11 +89,13 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <ThemeColorSync />
-            <SerwistProvider swUrl="/serwist/sw.js">
-              <div className="min-h-dvh px-safe pb-safe pt-safe">
-                {children}
-              </div>
-            </SerwistProvider>
+            <PWAInstallProvider>
+              <SerwistProvider swUrl="/serwist/sw.js">
+                <div className="min-h-dvh px-safe pb-safe pt-safe">
+                  {children}
+                </div>
+              </SerwistProvider>
+            </PWAInstallProvider>
           </ThemeProvider>
         </ReactQueryProvider>
         <Toaster

@@ -2,6 +2,7 @@ import { Button } from "@/src/components/ui/button";
 import { Link } from "@/src/components/ui/link";
 import { ThemeToggle } from "@/src/components/ui/Theme-toggle";
 import { AnimatedLogo } from "./animated-logo";
+import { InstallAppButton } from "@/src/components/ui/common/pwa-install-button";
 
 type LandingNavbarProps = {
   action: {
@@ -28,6 +29,7 @@ export function LandingNavbar({ action }: LandingNavbarProps) {
         {/* RIGHT */}
         <div className="flex items-center gap-4">
           <ThemeToggle />
+          <InstallAppButton iconOnly />
 
           {action && (
             <Button size="sm" asChild>

@@ -2,6 +2,7 @@
 
 import { AvatarUploader } from "./avtar-uploader";
 import { LogoutButton } from "../logout-buttont";
+import { InstallAppButton } from "../common/pwa-install-button";
 
 type User = {
   id: string;
@@ -44,6 +45,10 @@ export function UserMenuContent({ user, onUserUpdate }: Props) {
       </div>
 
       <div className="border-t pt-2">
+        <InstallAppButton
+          variant="ghost"
+          className="w-full justify-start text-sm"
+        />
         <LogoutButton />
       </div>
     </div>
