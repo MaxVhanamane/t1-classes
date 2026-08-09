@@ -9,51 +9,87 @@ import {
   DistributionResultsSummary,
   SectionDetail,
 } from "../types/results.types";
+import { CardGlow, type GlowColor } from "@/src/components/ui/common/card-glow";
+
+// Assuming these are imported elsewhere in your actual file
+// import { ScoreBar } from "...";
+// import { formatAnswerMode } from "...";
 
 interface Props {
   summary?: DistributionResultsSummary;
   isLoading?: boolean;
 }
 
-const SUBJECT_PALETTE = [
-  {
-    bar: "bg-blue-500",
-    tint: "bg-blue-50/80 dark:bg-blue-500/10",
-    text: "text-blue-700 dark:text-blue-300",
-  },
-  {
-    bar: "bg-emerald-500",
-    tint: "bg-emerald-50/80 dark:bg-emerald-500/10",
-    text: "text-emerald-700 dark:text-emerald-300",
-  },
-  {
-    bar: "bg-purple-500",
-    tint: "bg-purple-50/80 dark:bg-purple-500/10",
-    text: "text-purple-700 dark:text-purple-300",
-  },
-  {
-    bar: "bg-amber-500",
-    tint: "bg-amber-50/80 dark:bg-amber-500/10",
-    text: "text-amber-700 dark:text-amber-400",
-  },
-  {
-    bar: "bg-rose-500",
-    tint: "bg-rose-50/80 dark:bg-rose-500/10",
-    text: "text-rose-700 dark:text-rose-300",
-  },
-  {
-    bar: "bg-cyan-500",
-    tint: "bg-cyan-50/80 dark:bg-cyan-500/10",
-    text: "text-cyan-700 dark:text-cyan-300",
-  },
+const GLOW_COLORS: GlowColor[] = [
+  "cyan",
+  "emerald",
+  "yellow",
+  "pink",
+  "purple",
+  "indigo",
+  "teal",
+  "gray",
+  "blue",
+  "red",
+  "orange",
+  "amber",
+  "lime",
+  "green",
+  "sky",
+  "violet",
+  "fuchsia",
+  "rose",
 ];
 
-function subjectAccent(subject: string) {
+// Tailwind needs complete class names to prevent them from being purged
+const COLOR_CLASSES: Record<GlowColor, { bar: string; tint: string }> = {
+  cyan: { bar: "bg-cyan-500", tint: "bg-cyan-50/80 dark:bg-cyan-500/10" },
+  emerald: {
+    bar: "bg-emerald-500",
+    tint: "bg-emerald-50/80 dark:bg-emerald-500/10",
+  },
+  yellow: {
+    bar: "bg-yellow-500",
+    tint: "bg-yellow-50/80 dark:bg-yellow-500/10",
+  },
+  pink: { bar: "bg-pink-500", tint: "bg-pink-50/80 dark:bg-pink-500/10" },
+  purple: {
+    bar: "bg-purple-500",
+    tint: "bg-purple-50/80 dark:bg-purple-500/10",
+  },
+  indigo: {
+    bar: "bg-indigo-500",
+    tint: "bg-indigo-50/80 dark:bg-indigo-500/10",
+  },
+  teal: { bar: "bg-teal-500", tint: "bg-teal-50/80 dark:bg-teal-500/10" },
+  gray: { bar: "bg-gray-500", tint: "bg-gray-50/80 dark:bg-gray-500/10" },
+  blue: { bar: "bg-blue-500", tint: "bg-blue-50/80 dark:bg-blue-500/10" },
+  red: { bar: "bg-red-500", tint: "bg-red-50/80 dark:bg-red-500/10" },
+  orange: {
+    bar: "bg-orange-500",
+    tint: "bg-orange-50/80 dark:bg-orange-500/10",
+  },
+  amber: { bar: "bg-amber-500", tint: "bg-amber-50/80 dark:bg-amber-500/10" },
+  lime: { bar: "bg-lime-500", tint: "bg-lime-50/80 dark:bg-lime-500/10" },
+  green: { bar: "bg-green-500", tint: "bg-green-50/80 dark:bg-green-500/10" },
+  sky: { bar: "bg-sky-500", tint: "bg-sky-50/80 dark:bg-sky-500/10" },
+  violet: {
+    bar: "bg-violet-500",
+    tint: "bg-violet-50/80 dark:bg-violet-500/10",
+  },
+  fuchsia: {
+    bar: "bg-fuchsia-500",
+    tint: "bg-fuchsia-50/80 dark:bg-fuchsia-500/10",
+  },
+  rose: { bar: "bg-rose-500", tint: "bg-rose-50/80 dark:bg-rose-500/10" },
+};
+
+function getSubjectColor(subject: string): GlowColor {
   let hash = 0;
   for (let i = 0; i < subject.length; i++) {
     hash = subject.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return SUBJECT_PALETTE[Math.abs(hash) % SUBJECT_PALETTE.length];
+  return GLOW_COLORS[Math.abs(hash) % GLOW_COLORS.length];
 }
 
 export function ResultsSummaryCards({ summary, isLoading = false }: Props) {
@@ -255,7 +291,9 @@ export function ResultsSummaryCards({ summary, isLoading = false }: Props) {
       {Object.keys(groupedSections).length > 0 && (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {Object.entries(groupedSections).map(([subject, secList]) => {
-            const accent = subjectAccent(subject);
+            const color = getSubjectColor(subject);
+            const accentClasses = COLOR_CLASSES[color];
+
             const subjectMarks = secList.reduce(
               (sum, sec) => sum + sec.sectionTotalMarks,
               0,
@@ -268,15 +306,20 @@ export function ResultsSummaryCards({ summary, isLoading = false }: Props) {
             return (
               <Card
                 key={subject}
-                className="flex h-46 flex-col overflow-hidden rounded-xl border-border/70 py-0 gap-2"
+                className="flex h-46 flex-col overflow-hidden rounded-xl border-border/70 py-0 gap-2 relative"
               >
+                <CardGlow
+                  color={color}
+                  className="rounded-tr-xl rounded-tl-xl"
+                  hideLightGlow
+                />
                 {/* Header (Sticky/Fixed) */}
                 <div
-                  className={`flex shrink-0 items-center justify-between border-b border-border/70 px-3.5 py-2 ${accent.tint}`}
+                  className={`flex shrink-0 items-center justify-between border-b border-border/70 px-3.5 py-2 ${accentClasses.tint}`}
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <span
-                      className={`h-2 w-2 shrink-0 rounded-full ${accent.bar}`}
+                      className={`h-2 w-2 shrink-0 rounded-full ${accentClasses.bar}`}
                     />
                     <span
                       className="truncate text-sm font-bold capitalize"

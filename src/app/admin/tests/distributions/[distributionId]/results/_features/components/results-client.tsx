@@ -166,7 +166,7 @@ export function ResultsClient() {
             {isFetching && (
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <LoadingIndicator className="size-4" />
-                Updating results...
+                Fetching results...
               </div>
             )}
           </div>

@@ -15,19 +15,12 @@ import { CreatedByCombobox } from "../../../../_features/components/filter/creat
 
 type Props = {
   filters: DistributionFilters;
-
   searchInput: string;
-
   onSearchInputChange: (value: string) => void;
-
   onFiltersChange: (filters: DistributionFilters) => void;
-
   instructors: InstructorOption[];
-
   isInstructorsLoading: boolean;
-
   isAdmin: boolean;
-
   currentUserId: string;
 };
 
@@ -44,39 +37,24 @@ export function DistributionFiltersBar({
   function handleSearch() {
     onFiltersChange({
       ...filters,
-
       search: searchInput.trim(),
-
       page: 1,
     });
   }
 
   function handleReset() {
     onSearchInputChange("");
-
     onFiltersChange(DEFAULT_DISTRIBUTION_FILTERS);
   }
 
   return (
     <div className="space-y-4 rounded-lg border bg-card p-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <DistributionTabs
-          value={filters.status}
-          onChange={(status) =>
-            onFiltersChange({
-              ...filters,
-
-              status: status as DistributionStatus,
-
-              page: 1,
-            })
-          }
-        />
-
-        <div className="flex gap-2">
-          <div className="relative min-w-0 flex-1 lg:w-80">
+      {/* TOP: Search and Filters */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        {/* Search Input Area */}
+        <div className="flex flex-1 gap-2">
+          <div className="relative min-w-0 flex-1 lg:max-w-md">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-
             <Input
               placeholder="Search test title..."
               value={searchInput}
@@ -89,35 +67,49 @@ export function DistributionFiltersBar({
               className="pl-9"
             />
           </div>
-
           <Button onClick={handleSearch}>
-            <Search className="mr-2 size-4" />
+            <Search className="mr-2 size-4 hidden sm:inline-block" />
             Search
+          </Button>
+        </div>
+
+        {/* Action Filters Area */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          {isAdmin && (
+            <CreatedByCombobox
+              value={filters.createdBy}
+              instructors={instructors}
+              currentUserId={currentUserId}
+              isLoading={isInstructorsLoading}
+              onChange={(createdBy) =>
+                onFiltersChange({
+                  ...filters,
+                  createdBy,
+                  page: 1,
+                })
+              }
+            />
+          )}
+
+          <Button variant="outline" onClick={handleReset} className="w-fit">
+            <RotateCcw className="mr-2 size-4" />
+            Reset Filters
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row md:justify-end items-end md:items-center gap-3">
-        {isAdmin && (
-          <CreatedByCombobox
-            value={filters.createdBy}
-            instructors={instructors}
-            currentUserId={currentUserId}
-            isLoading={isInstructorsLoading}
-            onChange={(createdBy) =>
-              onFiltersChange({
-                ...filters,
-                createdBy,
-                page: 1,
-              })
-            }
-          />
-        )}
-
-        <Button variant="outline" onClick={handleReset} className="w-fit">
-          <RotateCcw className="mr-2 size-4" />
-          Reset Filters
-        </Button>
+      {/* BOTTOM: Tabs */}
+      <div className="pt-2">
+        <DistributionTabs
+          value={filters.status}
+          onChange={(status) =>
+            onFiltersChange({
+              ...filters,
+              status: status as DistributionStatus,
+              page: 1,
+            })
+          }
+        />
       </div>
     </div>
   );

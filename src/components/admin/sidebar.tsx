@@ -17,6 +17,7 @@ import {
   FileText,
   Command,
   ListChecks,
+  LineChart,
 } from "lucide-react";
 
 import {
@@ -32,6 +33,7 @@ import {
   SidebarRail,
 } from "@/src/components/ui/sidebar";
 import { UserRole } from "@/src/lib/auth/types/auth.types";
+import { ScrollArea } from "../ui/scroll-area";
 
 type NavItem = {
   label: string;
@@ -100,6 +102,12 @@ const navGroups: NavGroup[] = [
         label: "Syllabus Progress",
         href: "/admin/syllabus-progress",
         icon: ListChecks,
+        allowedRoles: ["admin", "teacher"],
+      },
+      {
+        label: "Student Progress",
+        href: "/admin/student-progress",
+        icon: LineChart,
         allowedRoles: ["admin", "teacher"],
       },
     ],
@@ -182,34 +190,37 @@ export default function AdminSidebar({ userRole }: { userRole: UserRole }) {
       </SidebarHeader>
 
       <SidebarContent>
-        {visibleNavGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = item.href === pathname;
+        {/* Wrapped the content in Shadcn's ScrollArea */}
+        <ScrollArea className="h-full">
+          {visibleNavGroups.map((group) => (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = item.href === pathname;
 
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.label}
-                      >
-                        <Link href={item.href}>
-                          <Icon />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={item.label}
+                        >
+                          <Link href={item.href}>
+                            <Icon />
+                            <span>{item.label}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </ScrollArea>
       </SidebarContent>
 
       <SidebarRail />

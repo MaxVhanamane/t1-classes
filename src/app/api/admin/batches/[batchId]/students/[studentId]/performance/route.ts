@@ -9,7 +9,7 @@ export async function GET(
 ) {
     await connection();
 
-    const auth = await requireStaffApiRoute(); // Or requireTeacherApiRoute depending on your setup
+    const auth = await requireStaffApiRoute();
     if (!auth.authorized) {
         return auth.response;
     }
