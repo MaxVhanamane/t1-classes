@@ -18,6 +18,8 @@ import {
   Command,
   ListChecks,
   LineChart,
+  BookCheckIcon,
+  PhoneCall,
 } from "lucide-react";
 
 import {
@@ -150,6 +152,12 @@ const navGroups: NavGroup[] = [
         href: "/admin/notifications",
         icon: Bell,
         allowedRoles: ["admin", "teacher"],
+      },
+      {
+        label: "Leads",
+        href: "/admin/leads",
+        icon: PhoneCall,
+        allowedRoles: ["admin"],
       },
     ],
   },
