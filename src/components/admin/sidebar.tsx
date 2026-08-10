@@ -31,6 +31,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar, // <-- Imported useSidebar here
 } from "@/src/components/ui/sidebar";
 import { UserRole } from "@/src/lib/auth/types/auth.types";
 import { ScrollArea } from "../ui/scroll-area";
@@ -158,6 +159,9 @@ export default function AdminSidebar({ userRole }: { userRole: UserRole }) {
   const pathname = usePathname();
   const normalizedRole = String(userRole).toLowerCase();
 
+  // <-- Extract setOpenMobile and isMobile from the hook
+  const { setOpenMobile, isMobile } = useSidebar();
+
   // Filter items by role, and exclude groups that end up with 0 visible items
   const visibleNavGroups = navGroups
     .map((group) => ({
@@ -208,7 +212,15 @@ export default function AdminSidebar({ userRole }: { userRole: UserRole }) {
                           isActive={isActive}
                           tooltip={item.label}
                         >
-                          <Link href={item.href}>
+                          <Link
+                            href={item.href}
+                            // <-- ADD THIS ONCLICK HANDLER
+                            onClick={() => {
+                              if (isMobile) {
+                                setOpenMobile(false);
+                              }
+                            }}
+                          >
                             <Icon />
                             <span>{item.label}</span>
                           </Link>

@@ -56,7 +56,7 @@ export function FeesClient() {
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-semibold">Fees</h1>
 
-          {isFetching && <LoadingIndicator className="size-3" />}
+          {isFetching && <LoadingIndicator size="xs" className="mt-1" />}
         </div>
 
         <div className="text-sm text-muted-foreground">

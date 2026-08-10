@@ -28,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import { CardGlow } from "@/src/components/ui/common/card-glow";
 import DottedBackground from "@/src/components/dotted-background";
 import {
   Dialog,
@@ -312,10 +311,10 @@ export function RevenueTrendChart() {
 
   const renderChart = () => (
     <Card
-      className={`col-span-1 md:col-span-2 relative gap-3 flex flex-col pb-0 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
+      className={`col-span-1 md:col-span-2 shadow-none relative gap-3 flex flex-col pb-0 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none pt-4"
-          : "h-[500px] w-full shadow-sm"
+          : "h-[500px] w-full"
       }`}
     >
       <DottedBackground className="opacity-30" />

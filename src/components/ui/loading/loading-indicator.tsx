@@ -1,7 +1,7 @@
 import { cn } from "@/src/lib/utils";
 import { Loader, Loader2 } from "lucide-react";
 
-type LoaderSize = "sm" | "md" | "lg";
+type LoaderSize = "xs" | "sm" | "md" | "lg";
 
 type LoadingIndicatorProps = {
   message?: string;
@@ -15,6 +15,11 @@ const sizeStyles: Record<
   LoaderSize,
   { icon: string; text: string; gap: string }
 > = {
+  xs: {
+    icon: "h-4 w-4",
+    text: "text-[10px]",
+    gap: "gap-2",
+  },
   sm: {
     icon: "h-6 w-6",
     text: "text-xs",

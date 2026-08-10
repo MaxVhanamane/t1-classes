@@ -86,7 +86,7 @@ export function BatchHealthTable() {
   };
 
   return (
-    <Card className="rounded-xl border bg-card shadow-none transition-all overflow-hidden pt-0">
+    <Card className="rounded-xl border bg-card shadow-none transition-all overflow-hidden pt-0 gap-0">
       <CardHeader className="border-b border-border/50 bg-muted/20 py-3">
         <div className="flex items-center gap-2">
           <Activity className="h-5 w-5 text-primary" />

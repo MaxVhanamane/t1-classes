@@ -117,6 +117,8 @@ export function useEnrollments(
                     previousData
                 : undefined,
 
+        refetchOnMount: 'always',
+
         staleTime:
             1000 * 60,
 
