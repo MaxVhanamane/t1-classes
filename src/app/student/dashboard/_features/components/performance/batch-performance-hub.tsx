@@ -85,7 +85,7 @@ export function BatchPerformanceHub({
                 </span>
               </div>
 
-              <h3 className="block w-full truncate text-xl font-semibold tracking-tight">
+              <h3 className="block w-full truncate font-semibold tracking-tight">
                 {batch.batch.title || "Your Batch"}
               </h3>
 

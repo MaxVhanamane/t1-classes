@@ -9,26 +9,27 @@ export function MyEnrollmentsSkeleton() {
         {Array.from({ length: 2 }).map((_, idx) => (
           <Card
             key={`enrollment-skel-${idx}`}
-            className="flex h-72 flex-col py-5"
+            className="flex h-74 flex-col py-3 rounded-xl"
           >
-            <CardContent className="flex flex-1 flex-col gap-3 px-4 py-2">
+            <CardContent className="flex flex-1 flex-col gap-3 px-4 py-2 overflow-hidden">
               {/* Header */}
               <div className="flex items-start justify-between gap-2">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-12 rounded-full shrink-0" />
+                <Skeleton className="h-5 w-3/4 rounded-md" />
+                <Skeleton className="h-4 w-12 shrink-0 rounded-full" />
               </div>
 
-              {/* Subtitle */}
-              <Skeleton className="h-3 w-1/2" />
+              {/* Metadata Grid Skeleton (Pushed down matching mt-2) */}
+              <div className="mt-2 flex flex-col gap-3.5">
+                <div className="flex flex-col gap-3 mt-1">
+                  <Skeleton className="h-3 w-1/2 rounded-md" />
+                  <Skeleton className="h-3 w-2/3 rounded-md" />
+                  <Skeleton className="h-3 w-3/4 rounded-md" />
+                  <Skeleton className="h-3 w-2/5 rounded-md" />
+                </div>
 
-              {/* Meta / badges */}
-              <Skeleton className="h-4 w-28 rounded-full" />
-
-              {/* Supporting text */}
-              <Skeleton className="h-3 w-2/3" />
-
-              {/* Spacer to push dates down */}
-              <div className="flex-1" />
+                {/* Batch Meta Badges (e.g. Online/Offline) */}
+                <Skeleton className="h-5 w-28 rounded-full" />
+              </div>
             </CardContent>
 
             {/* Footer */}

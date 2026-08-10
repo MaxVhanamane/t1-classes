@@ -5,6 +5,12 @@ import { Button } from "@/src/components/ui/button";
 import type { CourseEnrollment } from "../../../../../../../lib/services/enrollments/types";
 import { formatDateShort } from "@/src/lib/date";
 import { GrafanaBackground } from "@/src/components/ui/grafana-background";
+import {
+  BookOpen,
+  CalendarClock,
+  GraduationCap,
+  Languages,
+} from "lucide-react";
 
 interface Props {
   enrollment: CourseEnrollment;
@@ -13,9 +19,17 @@ interface Props {
 export function CourseEnrollmentCard({ enrollment }: Props) {
   const { course, accessEndsAt } = enrollment;
 
+  // Format the academic context based on the category
+  const academicContext =
+    course.category === "boards" && course.class_level && course.board
+      ? `Class ${course.class_level} • ${course.board.toUpperCase().replace("_", " ")}`
+      : course.target_exam
+        ? course.target_exam.toUpperCase().replace("_", " ")
+        : course.category.toUpperCase().replace("_", " ");
+
   return (
-    <Card className="relative overflow-hidden flex h-72 flex-col py-5 rounded-xl transition bg-background ">
-      {/*  Subtle top light (main effect) */}
+    <Card className="relative overflow-hidden flex h-74 flex-col py-3 rounded-xl transition bg-background group">
+      {/* Subtle top light (main effect) */}
       <GrafanaBackground opacity={0.5} />
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-24 
@@ -29,18 +43,11 @@ export function CourseEnrollmentCard({ enrollment }: Props) {
     ring-violet-400/10 dark:ring-violet-300/15"
       />
 
-      {/*  Hover enhancement (very subtle) */}
-      <div
-        className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition duration-500 
-    group-hover:opacity-100 
-    bg-linear-to-b from-violet-400/10 to-transparent"
-      />
-
-      {/*  Content */}
+      {/* Content */}
       <CardContent className="relative z-10 flex flex-1 flex-col gap-3 px-4 py-2 overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-2 text-[1.05rem] font-semibold leading-snug">
+          <h3 className="line-clamp-1 text-[1.05rem] font-semibold leading-snug">
             {course.title}
           </h3>
           <Badge
@@ -51,22 +58,42 @@ export function CourseEnrollmentCard({ enrollment }: Props) {
           </Badge>
         </div>
 
-        {/* Meta */}
-        <p className="text-xs capitalize text-muted-foreground">
-          {course.category}
-        </p>
+        {/* Course Metadata Grid (pushed to bottom) */}
+        <div className="mt-2 flex flex-col gap-2.5">
+          {/* Academic Context */}
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <GraduationCap className="size-3.5 text-muted-foreground" />
+            <span className="truncate">{academicContext}</span>
+          </div>
 
-        {/* Context */}
-        <p className="text-sm text-muted-foreground">
-          Continue learning where you left off.
-        </p>
+          {/* Subjects */}
+          {course.subjects && course.subjects.length > 0 && (
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              <BookOpen className="size-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+              <span className="line-clamp-1 capitalize">
+                {course.subjects.join(", ").replace(/_/g, " ")}
+              </span>
+            </div>
+          )}
 
-        {/* Access */}
-        {accessEndsAt && (
-          <p className="text-xs text-muted-foreground">
-            Access till {formatDateShort(accessEndsAt)}
-          </p>
-        )}
+          {/* Languages */}
+          {course.languages && course.languages.length > 0 && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Languages className="size-3.5 text-muted-foreground" />
+              <span className="capitalize">{course.languages.join(", ")}</span>
+            </div>
+          )}
+
+          {/* Access Info */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <CalendarClock className="size-3.5 text-muted-foreground" />
+            <span>
+              {accessEndsAt
+                ? `Access till ${formatDateShort(accessEndsAt)}`
+                : "Lifetime access"}
+            </span>
+          </div>
+        </div>
       </CardContent>
 
       {/* Footer */}

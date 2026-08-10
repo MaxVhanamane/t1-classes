@@ -88,53 +88,48 @@ interface BaseEnrollment {
     | string
     | null;
 }
-
 /* -------------------------------------------------------------------------- */
-/*                           Course Enrollment                                */
+/*                  Course Enrollment                                         */
 /* -------------------------------------------------------------------------- */
 
-export interface CourseEnrollment
-    extends BaseEnrollment {
+export interface CourseEnrollment extends BaseEnrollment {
     targetType: "course";
-
     course: {
         id: string;
-
         title: string;
-
         slug: string;
-
         category: Category;
+        subtitle: string | null;
+        class_level: number | null;
+        board: string | null;
+        target_exam: string | null;
+        subjects: string[] | null;
+        languages: string[];
     };
 }
 
 /* -------------------------------------------------------------------------- */
-/*                           Batch Enrollment                                 */
+/*                  Batch Enrollment                                          */
 /* -------------------------------------------------------------------------- */
 
-export interface BatchEnrollment
-    extends BaseEnrollment {
+export interface BatchEnrollment extends BaseEnrollment {
     targetType: "batch";
-
     batch: {
         id: string;
-
         title: string;
-
-        subtitle:
-        | string
-        | null;
-
+        subtitle: string | null;
         slug: string;
-
         mode: BatchMode;
-
         start_date: string;
-
         end_date: string;
+        category: Category;
+        class_level: number | null;
+        board: string | null;
+        target_exam: string | null;
+        subjects: string[] | null;
+        languages: string[];
     };
 }
-
 /* -------------------------------------------------------------------------- */
 /*                              UI Union Type                                 */
 /* -------------------------------------------------------------------------- */

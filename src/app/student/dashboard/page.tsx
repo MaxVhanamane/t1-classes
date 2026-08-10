@@ -7,7 +7,7 @@ import { Layers } from "lucide-react";
 export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-7xl px-4 py-2  sm:px-10 ">
+      <div className="mx-auto w-full max-w-7xl px-3 py-2 sm:px-10 ">
         {/* Main surface */}
         <div className="bg-background">
           {/* Header */}
