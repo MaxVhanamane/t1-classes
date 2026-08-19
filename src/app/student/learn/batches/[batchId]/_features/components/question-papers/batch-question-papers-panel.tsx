@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { PdfViewerDialog } from "@/src/app/student/learn/courses/[slug]/_features/components/pdf/pdf-viewer-dialog";
+import { PdfViewerDialog } from "@/src/components/ui/pdf/pdf-viewer-dialog";
 import { getPdfSignedUrl } from "@/src/app/admin/curriculum/[courseId]/_features/actions/topic/pdf/get-signed-pdf-url";
 
 import { Pagination } from "@/src/components/ui/pagination/pagination";

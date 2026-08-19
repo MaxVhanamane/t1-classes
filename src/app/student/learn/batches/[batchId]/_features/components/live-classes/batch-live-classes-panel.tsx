@@ -43,7 +43,7 @@ export default function BatchLiveClassesPanel({ batchId }: Props) {
 
   const [page, setPage] = useState(1);
 
-  const [status, setStatus] = useState<LiveClassStatus>("live");
+  const [status, setStatus] = useState<LiveClassStatus>("completed");
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["batch-live-classes", batchId, status, page],

@@ -38,7 +38,7 @@ export default function BatchTestsPanel({ batchId }: Props) {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
-  const [status, setStatus] = useState<TestStatus>("ongoing");
+  const [status, setStatus] = useState<TestStatus>("completed");
 
   const [notAttemptedOpen, setNotAttemptedOpen] = useState(false);
 

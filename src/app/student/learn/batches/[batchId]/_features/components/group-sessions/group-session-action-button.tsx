@@ -14,7 +14,7 @@ type Props = {
 export function GroupSessionActionButton({ session }: Props) {
   if (session.canJoin) {
     return (
-      <Button asChild className="h-11 w-full rounded-2xl text-sm font-medium">
+      <Button asChild className="h-11 w-full rounded-xl text-sm font-medium">
         <Link href={`/student/group-session/live/${session.id}`}>
           <Video className="mr-2 size-4" />
           Join Session
@@ -28,7 +28,7 @@ export function GroupSessionActionButton({ session }: Props) {
       <Button
         disabled
         variant="secondary"
-        className="h-11 w-full rounded-2xl text-sm font-medium"
+        className="h-11 w-full rounded-xl text-sm font-medium"
       >
         Waiting for Link
       </Button>
@@ -40,7 +40,7 @@ export function GroupSessionActionButton({ session }: Props) {
       <Button
         disabled
         variant="secondary"
-        className="h-11 w-full rounded-2xl text-sm font-medium"
+        className="h-11 w-full rounded-xl text-sm font-medium"
       >
         Starts Soon
       </Button>
@@ -51,7 +51,7 @@ export function GroupSessionActionButton({ session }: Props) {
     <Button
       disabled
       variant="outline"
-      className="h-11 w-full rounded-2xl text-sm font-medium"
+      className="h-11 w-full rounded-xl text-sm font-medium"
     >
       Session Ended
     </Button>

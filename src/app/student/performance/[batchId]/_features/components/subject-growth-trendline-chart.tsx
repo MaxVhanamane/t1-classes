@@ -46,8 +46,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/src/components/ui/dialog";
+
 import { SubjectHistoryNode } from "../types/performance.types";
 import { cn } from "@/src/lib/utils";
+import { EmptyState } from "./empty-state";
 
 // PREMIUM COLOR PALETTE (High Contrast)
 const SUBJECT_COLORS = [
@@ -214,21 +216,6 @@ export function SubjectGrowthTrendlineChart({
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
-  // --- NATIVE FULLSCREEN + ORIENTATION LOCK ---
-  // Replaces the old CSS rotate-90 hack. That approach visually rotated the
-  // chart, but touch/pointer clientX/clientY coordinates are still reported
-  // in the original, un-rotated space — causing a mismatch between what you
-  // see and what you can actually tap, worst near the edges (the first
-  // couple of points). Physically locking the device into landscape via the
-  // Fullscreen + Screen Orientation APIs means the browser itself reports
-  // correct landscape coordinates, so there's no mismatch at all.
-  //
-  // Support for orientation lock varies (notably unsupported on iOS Safari),
-  // so this fails silently and falls back to a plain portrait fullscreen
-  // dialog with horizontal drag/scroll, which still works correctly.
-  //
-  // NOTE: placed above the `chartData.length === 0` early return below so
-  // hook call order stays consistent across renders (rules of hooks).
   useEffect(() => {
     if (!isFullscreen) return;
 
@@ -250,10 +237,7 @@ export function SubjectGrowthTrendlineChart({
         if (orientation?.lock) {
           await orientation.lock("landscape");
         }
-      } catch {
-        // Not supported on this browser/device — ignore and fall back to
-        // the plain (non-rotated) portrait fullscreen dialog.
-      }
+      } catch {}
     };
 
     void lockLandscape();
@@ -264,17 +248,13 @@ export function SubjectGrowthTrendlineChart({
           | (ScreenOrientation & { unlock?: () => void })
           | undefined;
         orientation?.unlock?.();
-      } catch {
-        // ignore
-      }
+      } catch {}
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
       }
     };
   }, [isFullscreen]);
 
-  // Keep React state in sync if the user exits fullscreen via the system
-  // back button/gesture instead of our own "Exit Full Screen" button.
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement && isFullscreen) {
@@ -320,13 +300,12 @@ export function SubjectGrowthTrendlineChart({
     return { chartData: data, uniqueSubjects: Array.from(subjectsSet) };
   }, [subjectGrowthTrends]);
 
-  if (chartData.length === 0 || uniqueSubjects.length === 0) return null;
-
   const isDark = resolvedTheme === "dark";
   const axisColor = isDark ? "#71717a" : "#64748b";
   const gridColor = isDark ? "#27272a" : "#e2e8f0";
 
   const minChartWidth = Math.max(700, chartData.length * 100);
+  const hasData = chartData.length > 0 && uniqueSubjects.length > 0;
 
   const renderChart = () => (
     <Card
@@ -336,14 +315,12 @@ export function SubjectGrowthTrendlineChart({
           : "h-[500px] lg:h-[550px] w-full"
       }`}
     >
-      {<DottedBackground className="opacity-30" />}
-      {
-        <CardGlow
-          color="lime"
-          hideLightGlow
-          className={cn(isFullscreen && "rounded-none opacity-50")}
-        />
-      }
+      <DottedBackground className="opacity-30" />
+      <CardGlow
+        color="lime"
+        hideLightGlow
+        className={cn(isFullscreen && "rounded-none opacity-50")}
+      />
 
       <CardHeader className="px-3 sm:px-6">
         <div
@@ -411,26 +388,28 @@ export function SubjectGrowthTrendlineChart({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5 self-end lg:gap-2 lg:self-auto">
-            <button
-              onClick={() => setFitToScreen((prev) => !prev)}
-              className={`flex items-center justify-center gap-1.5 rounded-md bg-muted font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground ${
-                isFullscreen
-                  ? "px-2 py-1.5 text-[10px]"
-                  : "px-3 py-1.5 text-xs sm:px-2.5 sm:py-1.5"
-              }`}
-            >
-              {fitToScreen ? (
-                <>
-                  <ArrowRightLeft className="h-3 w-3" />
-                  <span>Enable Scroll</span>
-                </>
-              ) : (
-                <>
-                  <Scaling className="h-3 w-3" />
-                  <span>Fit to Screen</span>
-                </>
-              )}
-            </button>
+            {hasData && (
+              <button
+                onClick={() => setFitToScreen((prev) => !prev)}
+                className={`flex items-center justify-center gap-1.5 rounded-md bg-muted font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground ${
+                  isFullscreen
+                    ? "px-2 py-1.5 text-[10px]"
+                    : "px-3 py-1.5 text-xs sm:px-2.5 sm:py-1.5"
+                }`}
+              >
+                {fitToScreen ? (
+                  <>
+                    <ArrowRightLeft className="h-3 w-3" />
+                    <span>Enable Scroll</span>
+                  </>
+                ) : (
+                  <>
+                    <Scaling className="h-3 w-3" />
+                    <span>Fit to Screen</span>
+                  </>
+                )}
+              </button>
+            )}
 
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
@@ -457,187 +436,190 @@ export function SubjectGrowthTrendlineChart({
       </CardHeader>
 
       <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-3 pb-0 sm:px-6 ">
-        <div className="shrink-0 mb-2 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-2">
-          {uniqueSubjects.map((subject, index) => (
-            <div
-              key={subject}
-              className="flex items-center gap-1.5 text-[11px] font-medium capitalize text-foreground sm:text-xs"
-            >
-              <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{
-                  backgroundColor:
-                    SUBJECT_COLORS[index % SUBJECT_COLORS.length],
-                }}
-              />
-              {subject}
-            </div>
-          ))}
-        </div>
-
-        <div
-          ref={scrollRef}
-          tabIndex={-1}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          className={`custom-scrollbar focus:outline-none [-webkit-tap-highlight-color:transparent] flex-1 min-h-0 focus:outline-none w-full overflow-y-hidden overscroll-x-contain scrollbar-thin ${
-            fitToScreen
-              ? "overflow-x-hidden"
-              : "overflow-x-auto scrollbar-thumb-lime-600"
-          } ${isDragging ? "cursor-grabbing select-none" : "cursor-grab"} ${
-            isFullscreen ? "touch-none" : ""
-          } pb-2`}
-        >
-          <div
-            className="h-full"
-            style={{
-              // Desktop width fix: Ensures it takes minimum 100% of screen
-              width: "100%",
-              minWidth: fitToScreen ? "100%" : `max(100%, ${minChartWidth}px)`,
-            }}
-          >
-            <motion.div
-              initial={false}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-                debounce={100}
-                className={isDragging ? "pointer-events-none" : ""}
-                style={{ outline: "none" }}
-              >
-                <LineChart
-                  accessibilityLayer={false}
-                  style={{ outline: "none" }}
-                  data={chartData}
-                  margin={{
-                    top: 10,
-                    right: isMobile ? 40 : 30,
-                    bottom: 10,
-                    left: 0,
-                  }}
+        {hasData ? (
+          <>
+            <div className="shrink-0 mb-2 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-2">
+              {uniqueSubjects.map((subject, index) => (
+                <div
+                  key={subject}
+                  className="flex items-center gap-1.5 text-[11px] font-medium capitalize text-foreground sm:text-xs"
                 >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke={gridColor}
-                  />
-                  <XAxis
-                    dataKey="uniqueChartKey"
-                    tickLine={false}
-                    axisLine={false}
-                    interval={0}
-                    height={60}
-                    tick={
-                      fitToScreen ? false : <CustomXAxisTick data={chartData} />
-                    }
-                    dy={12}
-                  >
-                    {(!isMobile || isFullscreen) && (
-                      <Label
-                        value="Timeline (Chronological Tests)"
-                        offset={fitToScreen ? 0 : -40}
-                        position="insideBottom"
-                        fill="var(--muted-foreground)"
-                        fontSize={12}
-                      />
-                    )}
-                  </XAxis>
-
-                  {/* GAP FIX: Massive container (100px width) with huge offset strictly enforces clearance */}
-                  <YAxis
-                    width={isMobile && !isFullscreen ? 55 : 60}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(val: number) => `${val}%`}
-                    tick={{ fill: axisColor, fontSize: 11 }}
-                    ticks={[0, 25, 50, 75, 100]}
-                    domain={[0, 100]}
-                    interval={0}
-                    dx={0}
-                  >
-                    {(!isMobile || isFullscreen) && (
-                      <Label
-                        value="Percentage (%)"
-                        angle={-90}
-                        position="insideLeft"
-                        style={{ textAnchor: "middle" }}
-                        fill="var(--muted-foreground)"
-                        fontSize={12}
-                        offset={isMobile && !isFullscreen ? 15 : 10}
-                      />
-                    )}
-                  </YAxis>
-
-                  <RechartsTooltip
-                    cursor={{
-                      stroke: isDark ? "#52525b" : "#94a3b8",
-                      strokeWidth: 1.5,
-                      strokeDasharray: "4 4",
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor:
+                        SUBJECT_COLORS[index % SUBJECT_COLORS.length],
                     }}
-                    content={(props) => (
-                      <CustomTrendTooltip
-                        active={props.active}
-                        payload={
-                          props.payload as unknown as TrendTooltipPayload[]
-                        }
-                      />
-                    )}
                   />
+                  {subject}
+                </div>
+              ))}
+            </div>
 
-                  {uniqueSubjects.map((subject, index) => (
-                    <Line
-                      key={subject}
-                      type="monotone"
-                      dataKey={subject}
-                      name={subject}
-                      stroke={SUBJECT_COLORS[index % SUBJECT_COLORS.length]}
-                      strokeWidth={2.5}
-                      dot={{
-                        r: 4,
-                        fill: SUBJECT_COLORS[index % SUBJECT_COLORS.length],
-                        strokeWidth: 2,
-                        stroke: "var(--background)",
+            <div
+              ref={scrollRef}
+              tabIndex={-1}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              className={`custom-scrollbar focus:outline-none [-webkit-tap-highlight-color:transparent] flex-1 min-h-0 focus:outline-none w-full overflow-y-hidden overscroll-x-contain scrollbar-thin ${
+                fitToScreen
+                  ? "overflow-x-hidden"
+                  : "overflow-x-auto scrollbar-thumb-lime-600"
+              } ${isDragging ? "cursor-grabbing select-none" : "cursor-grab"} ${
+                isFullscreen ? "touch-none" : ""
+              } pb-2`}
+            >
+              <div
+                className="h-full"
+                style={{
+                  width: "100%",
+                  minWidth: fitToScreen
+                    ? "100%"
+                    : `max(100%, ${minChartWidth}px)`,
+                }}
+              >
+                <motion.div
+                  initial={false}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <ResponsiveContainer
+                    width="100%"
+                    height="100%"
+                    debounce={100}
+                    className={isDragging ? "pointer-events-none" : ""}
+                    style={{ outline: "none" }}
+                  >
+                    <LineChart
+                      accessibilityLayer={false}
+                      style={{ outline: "none" }}
+                      data={chartData}
+                      margin={{
+                        top: 10,
+                        right: isMobile ? 40 : 30,
+                        bottom: 10,
+                        left: 0,
                       }}
-                      activeDot={{
-                        r: 6,
-                        strokeWidth: 2,
-                        stroke: "var(--background)",
-                      }}
-                      connectNulls
-                    />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-            </motion.div>
-          </div>
-        </div>
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke={gridColor}
+                      />
+                      <XAxis
+                        dataKey="uniqueChartKey"
+                        tickLine={false}
+                        axisLine={false}
+                        interval={0}
+                        height={60}
+                        tick={
+                          fitToScreen ? (
+                            false
+                          ) : (
+                            <CustomXAxisTick data={chartData} />
+                          )
+                        }
+                        dy={12}
+                      >
+                        {(!isMobile || isFullscreen) && (
+                          <Label
+                            value="Timeline (Chronological Tests)"
+                            offset={fitToScreen ? 0 : -40}
+                            position="insideBottom"
+                            fill="var(--muted-foreground)"
+                            fontSize={12}
+                          />
+                        )}
+                      </XAxis>
+                      <YAxis
+                        width={isMobile && !isFullscreen ? 55 : 60}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(val: number) => `${val}%`}
+                        tick={{ fill: axisColor, fontSize: 11 }}
+                        ticks={[0, 25, 50, 75, 100]}
+                        domain={[0, 100]}
+                        interval={0}
+                        dx={0}
+                      >
+                        {(!isMobile || isFullscreen) && (
+                          <Label
+                            value="Percentage (%)"
+                            angle={-90}
+                            position="insideLeft"
+                            style={{ textAnchor: "middle" }}
+                            fill="var(--muted-foreground)"
+                            fontSize={12}
+                            offset={isMobile && !isFullscreen ? 15 : 10}
+                          />
+                        )}
+                      </YAxis>
+                      <RechartsTooltip
+                        cursor={{
+                          stroke: isDark ? "#52525b" : "#94a3b8",
+                          strokeWidth: 1.5,
+                          strokeDasharray: "4 4",
+                        }}
+                        content={(props) => (
+                          <CustomTrendTooltip
+                            active={props.active}
+                            payload={
+                              props.payload as unknown as TrendTooltipPayload[]
+                            }
+                          />
+                        )}
+                      />
+                      {uniqueSubjects.map((subject, index) => (
+                        <Line
+                          key={subject}
+                          type="monotone"
+                          dataKey={subject}
+                          name={subject}
+                          stroke={SUBJECT_COLORS[index % SUBJECT_COLORS.length]}
+                          strokeWidth={2.5}
+                          dot={{
+                            r: 4,
+                            fill: SUBJECT_COLORS[index % SUBJECT_COLORS.length],
+                            strokeWidth: 2,
+                            stroke: "var(--background)",
+                          }}
+                          activeDot={{
+                            r: 6,
+                            strokeWidth: 2,
+                            stroke: "var(--background)",
+                          }}
+                          connectNulls
+                        />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </motion.div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <EmptyState
+            title="No growth trends available yet"
+            description="Complete more tests across different subjects to view your performance progression over time."
+          />
+        )}
       </CardContent>
     </Card>
   );
 
   return (
     <>
-      {/* Standard In-Page Render */}
       {!isFullscreen && renderChart()}
-
-      {/* Fullscreen dialog portal — landscape orientation is requested
-          natively (see the useEffect above) rather than faked with CSS
-          rotation, so touch hit-testing lines up correctly with what's
-          rendered on screen. */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none outline-none focus:outline-none focus-visible:outline-none sm:max-w-none  [&>button]:hidden ">
+        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none outline-none focus:outline-none focus-visible:outline-none sm:max-w-none [&>button]:hidden">
           <DialogTitle className="sr-only">Fullscreen Chart</DialogTitle>
           <DialogDescription className="sr-only">
             Fullscreen view of the subject growth trends chart.
           </DialogDescription>
-
           <div className="absolute left-0 top-0 flex h-[100dvh] w-[100dvw] flex-col bg-card">
             {renderChart()}
           </div>

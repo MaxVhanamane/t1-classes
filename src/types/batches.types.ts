@@ -52,7 +52,6 @@ export interface BatchDetails {
 export interface BatchCourse {
     id: string;
     title: string;
-    subtitle: string | null;
     slug: string;
     thumbnail_image: string | null;
 
@@ -63,8 +62,10 @@ export interface BatchCourse {
     target_exam: TargetExam | null;
     class_level: number | null;
     subjects: Subject[] | null;
-}
 
+    board: string | null;
+    languages: string[] | null;
+}
 /* ---------------- API Response ---------------- */
 
 export interface BatchDetailsResponse {

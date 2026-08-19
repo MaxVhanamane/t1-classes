@@ -13,17 +13,20 @@ export type UploadAssetType =
     | "course_pdf"
     | "batch_thumbnail"
     | "question_paper"
-    | "question_image";
+    | "question_image"
+    | "homework"
+    | "homework_solution";
 
 type UploadParams = {
-    file: File
-    assetType: UploadAssetType
-    courseId?: string
-    topicId?: string
-    batchId?: string
-    instructorId?: string
-    testId?: string
-}
+    file: File;
+    assetType: UploadAssetType;
+    courseId?: string;
+    topicId?: string;
+    batchId?: string;
+    instructorId?: string;
+    testId?: string;
+    chapterId?: string;
+};
 
 type UploadResult = {
     key: string;
@@ -45,9 +48,9 @@ export function useR2Upload() {
         instructorId,
         batchId,
         topicId,
-        testId // <-- Added here
+        testId,
+        chapterId,
     }: UploadParams): Promise<UploadResult> {
-
         setUploading(true);
 
         try {
@@ -66,10 +69,10 @@ export function useR2Upload() {
                     topicId,
                     batchId,
                     instructorId,
-                    testId
-                })
+                    testId,
+                    chapterId,
+                }),
             });
-
 
             if (!res.ok) {
                 const err = await res.json().catch(() => null);
@@ -83,7 +86,6 @@ export function useR2Upload() {
                 bucket: string;
             } = await res.json();
 
-
             /* ---------------- Upload ---------------- */
 
             const uploadRes = await fetch(data.signedUrl, {
@@ -95,13 +97,11 @@ export function useR2Upload() {
                 throw new Error("Upload failed");
             }
 
-
             return {
                 key: data.key,
                 publicUrl: data.publicUrl,
                 bucket: data.bucket,
             };
-
         } catch (error) {
             throw error instanceof Error
                 ? error

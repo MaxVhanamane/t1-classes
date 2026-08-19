@@ -16,6 +16,14 @@ export type TestHistoryRow = {
     uniqueChartKey?: string;
 };
 
+export interface HomeworkHistoryRow {
+    month: string;
+    subject: string;
+    total: number;
+    completed: number;
+    missed: number;
+}
+
 export type AttendanceHistoryRow = {
     month: string;
     total: number;
@@ -49,6 +57,14 @@ export interface SubjectHistoryNode {
 }
 
 export interface PerformanceData {
+    homework: {
+        summary: {
+            totalAssigned: number;
+            totalCompleted: number;
+            totalMissed: number;
+        };
+        history: HomeworkHistoryRow[];
+    };
     metrics: {
         totalTestsAttempted: number;
         averagePercentile: number;

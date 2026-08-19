@@ -50,6 +50,7 @@ import {
 } from "../types/performance.types";
 import { COLORS } from "../constants/performance.constants";
 import { cn } from "@/src/lib/utils";
+import { EmptyState } from "./empty-state";
 
 const CustomXAxisTick = ({
   x = 0,
@@ -679,9 +680,10 @@ export function PerformanceLineChart({
             </div>
           </div>
         ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-lg bg-muted/10 text-sm text-muted-foreground">
-            No test data available yet.
-          </div>
+          <EmptyState
+            title="No test data available yet."
+            description="When test scores are published, your performance history will appear here."
+          />
         )}
       </CardContent>
     </Card>

@@ -16,7 +16,7 @@ import { QuestionPaperDeleteDialog } from "./question-paper-delete-dialog";
 import { useQuestionPapers } from "../hooks/use-question-papers";
 
 import { QuestionPaper } from "../types/question-paper";
-import { PdfViewerDialog } from "@/src/app/student/learn/courses/[slug]/_features/components/pdf/pdf-viewer-dialog";
+import { PdfViewerDialog } from "@/src/components/ui/pdf/pdf-viewer-dialog";
 import { getPdfSignedUrl } from "../../../curriculum/[courseId]/_features/actions/topic/pdf/get-signed-pdf-url";
 import { Link } from "@/src/components/ui/link";
 import { Pagination } from "@/src/components/ui/pagination/pagination";

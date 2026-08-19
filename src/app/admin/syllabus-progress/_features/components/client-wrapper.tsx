@@ -111,7 +111,7 @@ export function SyllabusProgressClient() {
               value={selectedBatchId ?? ""}
               onValueChange={setSelectedBatchId}
             >
-              <SelectTrigger className="w-full bg-background h-11 border-border/60 shadow-none rounded-lg text-base">
+              <SelectTrigger className="w-full bg-background border-border/60 shadow-none rounded-lg text-base">
                 <SelectValue placeholder="Select a batch..." />
               </SelectTrigger>
               <SelectContent>

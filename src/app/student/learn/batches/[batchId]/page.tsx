@@ -28,7 +28,7 @@ export default async function BatchPage({ params, searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6">
+      <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6">
         {/* Header */}
         <header className="mb-6 space-y-3">
           <div className="flex items-start justify-between gap-3">

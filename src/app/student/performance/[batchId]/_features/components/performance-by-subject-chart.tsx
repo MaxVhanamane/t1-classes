@@ -11,7 +11,6 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
-  Legend,
   Label,
 } from "recharts";
 
@@ -32,8 +31,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/src/components/ui/dialog";
+
 import { SubjectPerformance } from "../types/performance.types";
 import { cn } from "@/src/lib/utils";
+import { EmptyState } from "./empty-state";
 
 interface PerformanceBySubjectChartProps {
   performanceBySubject: SubjectPerformance[];
@@ -204,21 +205,6 @@ export function PerformanceBySubjectChart({
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
-  // --- NATIVE FULLSCREEN + ORIENTATION LOCK ---
-  // Replaces the old CSS rotate-90 hack. That approach visually rotated the
-  // chart, but touch/pointer clientX/clientY coordinates are still reported
-  // in the original, un-rotated space — causing a mismatch between what you
-  // see and what you can actually tap, worst near the edges. Physically
-  // locking the device into landscape via the Fullscreen + Screen
-  // Orientation APIs means the browser itself reports correct landscape
-  // coordinates, so there's no mismatch at all.
-  //
-  // Support for orientation lock varies (notably unsupported on iOS Safari),
-  // so this fails silently and falls back to a plain portrait fullscreen
-  // dialog with horizontal drag/scroll, which still works correctly.
-  //
-  // NOTE: placed above the `!performanceBySubject` early return below so
-  // hook call order stays consistent across renders (rules of hooks).
   useEffect(() => {
     if (!isFullscreen) return;
 
@@ -240,10 +226,7 @@ export function PerformanceBySubjectChart({
         if (orientation?.lock) {
           await orientation.lock("landscape");
         }
-      } catch {
-        // Not supported on this browser/device — ignore and fall back to
-        // the plain (non-rotated) portrait fullscreen dialog.
-      }
+      } catch {}
     };
 
     void lockLandscape();
@@ -254,17 +237,13 @@ export function PerformanceBySubjectChart({
           | (ScreenOrientation & { unlock?: () => void })
           | undefined;
         orientation?.unlock?.();
-      } catch {
-        // ignore
-      }
+      } catch {}
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
       }
     };
   }, [isFullscreen]);
 
-  // Keep React state in sync if the user exits fullscreen via the system
-  // back button/gesture instead of our own "Exit Full Screen" button.
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement && isFullscreen) {
@@ -276,31 +255,31 @@ export function PerformanceBySubjectChart({
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, [isFullscreen]);
 
-  if (!performanceBySubject || performanceBySubject.length === 0) return null;
+  const hasData = performanceBySubject && performanceBySubject.length > 0;
+  const safeData = performanceBySubject || [];
 
   const isDark = resolvedTheme === "dark";
   const axisColor = isDark ? "#71717a" : "#64748b";
   const gridColor = isDark ? "#27272a" : "#e2e8f0";
 
   // Dynamic width based on the number of subjects to ensure scrolling activates when there are many bars
-  const minChartWidth = Math.max(600, performanceBySubject.length * 80);
+  const minChartWidth = Math.max(600, safeData.length * 80);
 
   const renderChart = () => (
     <Card
-      className={`relative gap-3 flex flex-col pb-0 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent] ${
+      className={cn(
+        "relative gap-3 flex flex-col pb-0 overflow-hidden [&_.recharts-wrapper]:outline-none! [&_.recharts-surface]:outline-none! [&_.recharts-wrapper]:[-webkit-tap-highlight-color:transparent] [&_.recharts-surface]:[-webkit-tap-highlight-color:transparent]",
         isFullscreen
           ? "h-full w-full rounded-none border-none shadow-none pt-4"
-          : "h-[500px] w-full"
-      }`}
+          : "h-[500px] w-full",
+      )}
     >
-      {<DottedBackground className="opacity-30" />}
-      {
-        <CardGlow
-          color="teal"
-          hideLightGlow
-          className={cn(isFullscreen && "rounded-none opacity-50")}
-        />
-      }
+      <DottedBackground className="opacity-30" />
+      <CardGlow
+        color="teal"
+        hideLightGlow
+        className={cn(isFullscreen && "rounded-none opacity-50")}
+      />
 
       <CardHeader className="px-3 sm:px-6">
         <div
@@ -312,16 +291,18 @@ export function PerformanceBySubjectChart({
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 truncate">
               <CardTitle
-                className={`flex items-center gap-2 ${
-                  isFullscreen ? "text-sm sm:text-base" : ""
-                }`}
+                className={cn(
+                  "flex items-center gap-2",
+                  isFullscreen && "text-sm sm:text-base",
+                )}
               >
                 <BookOpen
-                  className={`${
-                    isFullscreen ? "h-4 w-4" : "h-5 w-5"
-                  } text-teal-500`}
+                  className={cn(
+                    "text-teal-500",
+                    isFullscreen ? "h-4 w-4" : "h-5 w-5",
+                  )}
                 />
-                <span className={isFullscreen ? "hidden sm:inline" : ""}>
+                <span className={cn(isFullscreen && "hidden sm:inline")}>
                   Performance by Subject
                 </span>
                 {isFullscreen && (
@@ -388,218 +369,232 @@ export function PerformanceBySubjectChart({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5 self-end lg:gap-2 lg:self-auto">
-            <button
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              className={`flex items-center justify-center gap-1.5 rounded-md bg-teal-500/10 font-medium text-teal-600 transition-colors hover:bg-teal-500/20 dark:text-teal-500 ${
-                isFullscreen
-                  ? "px-2 py-1.5 text-[10px]"
-                  : "px-3 py-1.5 text-xs sm:px-2.5 sm:py-1.5"
-              }`}
-            >
-              {isFullscreen ? (
-                <>
-                  <Minimize2 className="h-3 w-3" />
-                  <span>Exit Full Screen</span>
-                </>
-              ) : (
-                <>
-                  <Maximize2 className="h-3 w-3" />
-                  <span>Full Screen</span>
-                </>
-              )}
-            </button>
+            {hasData && (
+              <button
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 rounded-md bg-teal-500/10 font-medium text-teal-600 transition-colors hover:bg-teal-500/20 dark:text-teal-500",
+                  isFullscreen
+                    ? "px-2 py-1.5 text-[10px]"
+                    : "px-3 py-1.5 text-xs sm:px-2.5 sm:py-1.5",
+                )}
+              >
+                {isFullscreen ? (
+                  <>
+                    <Minimize2 className="h-3 w-3" />
+                    <span>Exit Full Screen</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="h-3 w-3" />
+                    <span>Full Screen</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-3 pb-0 sm:px-6 ">
-        {/* NEW CUSTOM HTML LEGEND */}
-        <div className="shrink-0 mb-2 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-2">
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">
-            <span className="h-2 w-2 shrink-0 rounded-full bg-teal-500" />
-            Your Score
-          </div>
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">
-            <span
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: isDark ? "#52525b" : "#94a3b8" }}
-            />
-            Class Average
-          </div>
-        </div>
+      <CardContent className="flex flex-1 min-h-0 flex-col overflow-hidden px-3 pb-0 sm:px-6">
+        {hasData ? (
+          <>
+            <div className="shrink-0 mb-2 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-2">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-teal-500" />
+                Your Score
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground sm:text-xs">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: isDark ? "#52525b" : "#94a3b8" }}
+                />
+                Class Average
+              </div>
+            </div>
 
-        <div
-          ref={scrollRef}
-          tabIndex={-1}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          className={`custom-scrollbar focus:outline-none [-webkit-tap-highlight-color:transparent] flex-1 min-h-0 focus:outline-none w-full overflow-y-hidden overflow-x-auto scrollbar-thumb-teal-600 overscroll-x-contain scrollbar-thin ${
-            isDragging ? "cursor-grabbing select-none" : "cursor-grab"
-          } ${isFullscreen ? "touch-none" : ""} pb-2 pt-2`}
-        >
-          <div
-            className="h-full"
-            style={{
-              width: "100%",
-              minWidth: `max(100%, ${minChartWidth}px)`,
-            }}
-          >
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-              className={isDragging ? "pointer-events-none" : ""}
-              style={{ outline: "none" }}
+            <div
+              ref={scrollRef}
+              tabIndex={-1}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              className={cn(
+                "custom-scrollbar focus:outline-none [-webkit-tap-highlight-color:transparent] flex-1 min-h-0 w-full overflow-y-hidden overflow-x-auto scrollbar-thumb-teal-600 overscroll-x-contain scrollbar-thin pb-2 pt-2",
+                isDragging ? "cursor-grabbing select-none" : "cursor-grab",
+                isFullscreen && "touch-none",
+              )}
             >
-              <BarChart
-                accessibilityLayer={false}
-                style={{ outline: "none" }}
-                data={performanceBySubject}
-                margin={{
-                  top: 10, // Gives the chart maximum vertical breathing room
-                  right: isMobile ? 4 : 10,
-                  bottom: isMobile ? 15 : 30,
-                  left: isMobile ? 0 : 10,
+              <div
+                className="h-full"
+                style={{
+                  width: "100%",
+                  minWidth: `max(100%, ${minChartWidth}px)`,
                 }}
-                barGap={4}
               >
-                <defs>
-                  <linearGradient
-                    id="studentBarGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="0%" stopColor="#14b8a6" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#0f766e" stopOpacity={0.9} />
-                  </linearGradient>
-                  <linearGradient
-                    id="averageBarGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor={isDark ? "#52525b" : "#94a3b8"}
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor={isDark ? "#3f3f46" : "#cbd5e1"}
-                      stopOpacity={0.3}
-                    />
-                  </linearGradient>
-                </defs>
-
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke={gridColor}
-                />
-                <XAxis
-                  dataKey="subject"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{
-                    fill: axisColor,
-                    fontSize: 11,
-                    fontWeight: 500,
-                  }}
-                  tickFormatter={(val: string) =>
-                    val.charAt(0).toUpperCase() + val.slice(1)
-                  }
-                  dy={12}
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
+                  className={isDragging ? "pointer-events-none" : ""}
+                  style={{ outline: "none" }}
                 >
-                  {!isMobile && (
-                    <Label
-                      value="Subjects"
-                      offset={-20}
-                      position="insideBottom"
-                      fill="var(--muted-foreground)"
-                      fontSize={12}
-                    />
-                  )}
-                </XAxis>
-                <YAxis
-                  width={isMobile ? 35 : 45}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fill: axisColor, fontSize: 11 }}
-                  tickFormatter={(val: number) => `${val}%`}
-                  domain={[0, 100]}
-                  dx={0}
-                >
-                  {!isMobile && (
-                    <Label
-                      value="Percentage (%)"
-                      angle={-90}
-                      position="insideLeft"
-                      style={{ textAnchor: "middle" }}
-                      fill="var(--muted-foreground)"
-                      fontSize={12}
-                      dx={-10}
-                    />
-                  )}
-                </YAxis>
+                  <BarChart
+                    accessibilityLayer={false}
+                    style={{ outline: "none" }}
+                    data={safeData}
+                    margin={{
+                      top: 10,
+                      right: isMobile ? 4 : 10,
+                      bottom: isMobile ? 15 : 30,
+                      left: isMobile ? 0 : 10,
+                    }}
+                    barGap={4}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="studentBarGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor="#14b8a6" stopOpacity={1} />
+                        <stop
+                          offset="100%"
+                          stopColor="#0f766e"
+                          stopOpacity={0.9}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="averageBarGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stopColor={isDark ? "#52525b" : "#94a3b8"}
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor={isDark ? "#3f3f46" : "#cbd5e1"}
+                          stopOpacity={0.3}
+                        />
+                      </linearGradient>
+                    </defs>
 
-                <RechartsTooltip
-                  cursor={{
-                    fill: isDark ? "#27272a" : "#f1f5f9",
-                    opacity: 0.4,
-                  }}
-                  content={(props) => (
-                    <CustomBarTooltip
-                      active={props.active}
-                      payload={
-                        props.payload as unknown as MasteryTooltipPayload[]
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke={gridColor}
+                    />
+                    <XAxis
+                      dataKey="subject"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{
+                        fill: axisColor,
+                        fontSize: 11,
+                        fontWeight: 500,
+                      }}
+                      tickFormatter={(val: string) =>
+                        val.charAt(0).toUpperCase() + val.slice(1)
                       }
+                      dy={12}
+                    >
+                      {!isMobile && (
+                        <Label
+                          value="Subjects"
+                          offset={-20}
+                          position="insideBottom"
+                          fill="var(--muted-foreground)"
+                          fontSize={12}
+                        />
+                      )}
+                    </XAxis>
+                    <YAxis
+                      width={isMobile ? 35 : 45}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: axisColor, fontSize: 11 }}
+                      tickFormatter={(val: number) => `${val}%`}
+                      domain={[0, 100]}
+                      dx={0}
+                    >
+                      {!isMobile && (
+                        <Label
+                          value="Percentage (%)"
+                          angle={-90}
+                          position="insideLeft"
+                          style={{ textAnchor: "middle" }}
+                          fill="var(--muted-foreground)"
+                          fontSize={12}
+                          dx={-10}
+                        />
+                      )}
+                    </YAxis>
+
+                    <RechartsTooltip
+                      cursor={{
+                        fill: isDark ? "#27272a" : "#f1f5f9",
+                        opacity: 0.4,
+                      }}
+                      content={(props) => (
+                        <CustomBarTooltip
+                          active={props.active}
+                          payload={
+                            props.payload as unknown as MasteryTooltipPayload[]
+                          }
+                        />
+                      )}
                     />
-                  )}
-                />
 
-                {/* THE RECHARTS <Legend /> HAS BEEN REMOVED FROM HERE */}
+                    <Bar
+                      name="Your Score"
+                      dataKey="studentPercentage"
+                      fill="url(#studentBarGradient)"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={isMobile ? 16 : 20}
+                      animationDuration={1200}
+                    />
 
-                <Bar
-                  name="Your Score"
-                  dataKey="studentPercentage"
-                  fill="url(#studentBarGradient)"
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={isMobile ? 16 : 20}
-                  animationDuration={1200}
-                />
-
-                <Bar
-                  name="Class Average"
-                  dataKey="classAveragePercentage"
-                  fill="url(#averageBarGradient)"
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={isMobile ? 16 : 20}
-                  animationDuration={1200}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+                    <Bar
+                      name="Class Average"
+                      dataKey="classAveragePercentage"
+                      fill="url(#averageBarGradient)"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={isMobile ? 16 : 20}
+                      animationDuration={1200}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        ) : (
+          <EmptyState
+            title="No performance data available"
+            description="Complete tests to see your subject-wise performance breakdown."
+          />
+        )}
       </CardContent>
     </Card>
   );
 
   return (
     <>
-      {/* Standard In-Page Render */}
       {!isFullscreen && renderChart()}
 
-      {/* Fullscreen dialog portal — landscape orientation is requested
-          natively (see the useEffect above) rather than faked with CSS
-          rotation, so touch hit-testing lines up correctly with what's
-          rendered on screen. */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-        <DialogContent className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none outline-none focus:outline-none focus-visible:outline-none sm:max-w-none  [&>button]:hidden ">
+        <DialogContent
+          className={cn(
+            "m-0 h-[100dvh] w-screen max-w-none overflow-hidden rounded-none border-none bg-card p-0 shadow-none outline-none focus:outline-none focus-visible:outline-none sm:max-w-none [&>button]:hidden",
+          )}
+        >
           <DialogTitle className="sr-only">Fullscreen Chart</DialogTitle>
           <DialogDescription className="sr-only">
             Fullscreen view of the performance by subject chart.

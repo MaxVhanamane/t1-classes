@@ -35,6 +35,7 @@ import {
   RechartsBarTooltipProps,
 } from "../types/performance.types";
 import { cn } from "@/src/lib/utils";
+import { EmptyState } from "./empty-state";
 
 const CustomBarTooltip = ({ active, payload }: RechartsBarTooltipProps) => {
   if (active && payload && payload.length > 0) {
@@ -507,9 +508,10 @@ export function AttendanceBarChart({
             </div>
           </>
         ) : (
-          <div className="flex flex-1 h-full items-center justify-center rounded-lg bg-muted/10 text-sm text-muted-foreground">
-            No attendance records found.
-          </div>
+          <EmptyState
+            title="No attendance records found"
+            description="When classes are held and attendance is marked, the monthly trends will appear here."
+          />
         )}
       </CardContent>
     </Card>

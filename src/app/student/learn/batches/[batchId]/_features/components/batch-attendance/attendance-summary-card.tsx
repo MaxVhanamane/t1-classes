@@ -36,7 +36,7 @@ export function AttendanceSummaryCard({
           : "Needs Improvement";
 
   return (
-    <Card className="relative overflow-hidden border bg-linear-to-br from-background via-background to-muted/30 backdrop-blur">
+    <Card className="relative overflow-hidden border bg-inverse bg-linear-to-br from-background via-background to-muted/30 backdrop-blur">
       <DottedBackground />
 
       <CardContent className="p-6">
@@ -70,7 +70,7 @@ export function AttendanceSummaryCard({
           />
         </div>
 
-        <div className="mt-8 grid grid-cols-3 gap-2 border-t border-border/50 pt-6 lg:gap-6">
+        <div className="mt-8 grid grid-cols-3 gap-2 pt-6 lg:gap-6">
           <div>
             <p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
               Present

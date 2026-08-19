@@ -173,7 +173,7 @@ export function PdfViewerDialog({
 
           {!loading && pdfUrl && (
             <>
-              <div className="h-full overflow-auto overscroll-contain bg-background pb-24">
+              <div className="h-full overflow-auto overscroll-contain scrollbar-thin bg-background pb-24">
                 <div className="min-h-full px-4 pb-6">
                   <div className="w-fit min-w-full">
                     <div className="mx-auto w-fit">
@@ -192,9 +192,9 @@ export function PdfViewerDialog({
               {/* ================= FLOATING ZOOM CONTROL ================= */}
 
               {/* ================= FLOATING ZOOM CONTROL ================= */}
-
               <motion.div
-                layout
+                layout="position"
+                layoutDependency={zoomBarOpen}
                 transition={{
                   type: "spring",
                   stiffness: 260,
@@ -202,10 +202,8 @@ export function PdfViewerDialog({
                   mass: 0.9,
                 }}
                 className={cn(
-                  "absolute bottom-4 z-20",
-                  zoomBarOpen
-                    ? "left-1/2 -translate-x-1/2"
-                    : "right-3 md:right-8",
+                  "absolute bottom-4 z-20 w-fit",
+                  zoomBarOpen ? "left-0 right-0 mx-auto" : "right-3 md:right-8",
                 )}
               >
                 <AnimatePresence mode="wait">
@@ -250,7 +248,7 @@ export function PdfViewerDialog({
 
                       <div
                         className="
-    flex h-7 w-14.5 items-center justify-center
+    flex h-7 w-16 shrink-0 items-center justify-center 
     rounded-full
     bg-muted
     px-2.5

@@ -131,6 +131,10 @@ interface RichPopoverProps extends Omit<
   title?: React.ReactNode;
   icon?: React.ReactNode;
   description?: React.ReactNode;
+  /** If true, wraps the children in a scrolling container */
+  scrollable?: boolean;
+  /** Controls the max height of the scrollable area. Default is max-h-[250px] */
+  scrollClass?: string;
 }
 
 export const RichPopover = forwardRef<
@@ -147,6 +151,8 @@ export const RichPopover = forwardRef<
       title,
       icon,
       description,
+      scrollable = false,
+      scrollClass = "max-h-[250px]",
       children,
       ...props
     },
@@ -160,12 +166,12 @@ export const RichPopover = forwardRef<
 
         <PopoverContent
           ref={ref}
-          collisionPadding={16} // <-- Keeps it 16px away from screen edges
+          collisionPadding={16}
           sideOffset={8}
           className={cn(
             "w-72 p-5 rounded-2xl shadow-lg text-sm",
             "border-t-4 border-l-2 border-r-2 border-b-2",
-            "bg-white dark:bg-[#24242d]",
+            "bg-card",
             activeColor.border,
             className,
           )}
@@ -209,7 +215,19 @@ export const RichPopover = forwardRef<
               </p>
             )}
 
-            {children}
+            {/* Conditionally wrap children in scrollable div */}
+            {children && scrollable ? (
+              <div
+                className={cn(
+                  "overflow-y-auto pr-2 -mr-2 scrollbar-thin scrollbar-thumb-border",
+                  scrollClass,
+                )}
+              >
+                {children}
+              </div>
+            ) : (
+              children
+            )}
           </div>
         </PopoverContent>
       </Popover>

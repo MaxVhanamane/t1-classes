@@ -38,7 +38,7 @@ export default function BatchMentorshipSessionsPanel({ batchId }: Props) {
 
   const [page, setPage] = useState(1);
 
-  const [status, setStatus] = useState<MentorshipSessionStatus>("live");
+  const [status, setStatus] = useState<MentorshipSessionStatus>("ended");
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["batch-mentorship-sessions", batchId, status, page],

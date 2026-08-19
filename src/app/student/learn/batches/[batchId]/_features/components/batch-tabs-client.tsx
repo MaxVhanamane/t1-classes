@@ -11,10 +11,12 @@ import BatchLiveClassesPanel from "./live-classes/batch-live-classes-panel";
 import BatchMentorshipSessionsPanel from "./mentorship-sessions/batch-mentorship-sessions-panel";
 import BatchGroupSessionsPanel from "./group-sessions/batch-group-sessions-panel";
 import { BatchAttendancePanel } from "./batch-attendance/batch-attendance-panel";
+import BatchHomeworkPanel from "./homework/batch-homework-panel";
 
 type TabKey =
   | "courses"
   | "tests"
+  | "homework"
   | "question-papers"
   | "live-classes"
   | "mentorship"
@@ -33,6 +35,7 @@ const tabs: {
     key: "tests",
     label: "Tests",
   },
+  { key: "homework", label: "Homework" },
   {
     key: "question-papers",
     label: "Question Papers",
@@ -225,6 +228,11 @@ export default function BatchTabsClient({
             {activeTab === "tests" && (
               <section className="mb-6">
                 <BatchTestsPanel batchId={batchId} />
+              </section>
+            )}
+            {activeTab === "homework" && (
+              <section className="mb-6">
+                <BatchHomeworkPanel batchId={batchId} />
               </section>
             )}
             {activeTab === "question-papers" && (

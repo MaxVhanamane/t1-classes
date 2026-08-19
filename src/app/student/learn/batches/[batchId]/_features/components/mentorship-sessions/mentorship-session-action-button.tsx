@@ -19,7 +19,7 @@ export function MentorshipSessionActionButton({ session }: Props) {
 
   if (session.canJoin) {
     return (
-      <Button asChild className="h-10 w-full text-sm font-medium">
+      <Button asChild className="h-10 w-full text-sm font-medium rounded-xl">
         <Link href={`/student/mentorship/setup/${session.id}`}>
           <Video className="mr-2 size-4" />
           Join Session
@@ -34,7 +34,7 @@ export function MentorshipSessionActionButton({ session }: Props) {
         <Button
           disabled
           variant="secondary"
-          className="h-10 w-full text-sm font-medium"
+          className="h-10 w-full text-sm font-medium rounded-xl"
         >
           Waiting for Teacher
         </Button>
@@ -51,7 +51,7 @@ export function MentorshipSessionActionButton({ session }: Props) {
       <Button
         disabled
         variant="secondary"
-        className="h-10 w-full text-sm font-medium"
+        className="h-10 w-full text-sm font-medium rounded-xl"
       >
         Starts Soon
       </Button>
@@ -62,7 +62,7 @@ export function MentorshipSessionActionButton({ session }: Props) {
     <Button
       disabled
       variant="outline"
-      className="h-10 w-full text-sm font-medium"
+      className="h-10 w-full text-sm font-medium rounded-xl"
     >
       Session Ended
     </Button>

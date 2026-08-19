@@ -10,7 +10,7 @@ import { AttachedQuestionPapersTable } from "@/src/components/admin/shared/attac
 import { AvailableQuestionPapersTable } from "@/src/components/admin/shared/available-question-papers-table";
 import { RemoveQuestionPaperDialog } from "@/src/components/admin/shared/remove-question-paper-dialog";
 import { useAttachCourseQuestionPapers } from "../use-attach-course-question-papers";
-import { PdfViewerDialog } from "@/src/app/student/learn/courses/[slug]/_features/components/pdf/pdf-viewer-dialog";
+import { PdfViewerDialog } from "@/src/components/ui/pdf/pdf-viewer-dialog";
 
 import { getPdfSignedUrl } from "@/src/app/admin/curriculum/[courseId]/_features/actions/topic/pdf/get-signed-pdf-url";
 

@@ -2,15 +2,10 @@ import { Link } from "@/src/components/ui/link";
 import Image from "next/image";
 
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
-import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/src/components/ui/popover";
 import { BatchCourse } from "@/src/types/batches.types";
 import { R2_BUCKET_PUBLIC_URL } from "@/src/lib/constants/config";
+import { BookOpen, GraduationCap, Languages } from "lucide-react";
 
 interface CourseCardProps {
   course: BatchCourse;
@@ -18,11 +13,23 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, batchId }: CourseCardProps) {
-  const visibleSubjects = course.subjects?.slice(0, 3) ?? [];
-  const hiddenSubjects = course.subjects?.slice(3) ?? [];
+  // 1. Format the category to be Title Case (e.g., "competitive" -> "Competitive")
+  const categoryText = course.category
+    ? course.category.charAt(0).toUpperCase() +
+      course.category.slice(1).replace(/_/g, " ")
+    : "";
+
+  // 2. Prepend the category to the academic context
+  const academicContext =
+    course.category === "boards" && course.class_level && course.board
+      ? `${categoryText} • Class ${course.class_level} • ${course.board.toUpperCase().replace(/_/g, " ")}`
+      : course.target_exam
+        ? `${categoryText} • ${course.target_exam.toUpperCase().replace(/_/g, " ")}`
+        : categoryText;
 
   return (
     <Card className="flex h-110 flex-col overflow-hidden bg-background gap-0 p-0">
+      {/* Top Image Section */}
       <div className="px-3 pt-3">
         <div className="relative aspect-video w-full bg-muted overflow-hidden shrink-0 rounded-md">
           <Image
@@ -32,104 +39,49 @@ export function CourseCard({ course, batchId }: CourseCardProps) {
             priority={false}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
-
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-muted/80 to-transparent" />
-
-          <Badge
-            variant="secondary"
-            className="absolute left-3 top-3 bg-background/90 text-[10px] capitalize"
-          >
-            {course.category}
-          </Badge>
         </div>
       </div>
-      <CardContent className="flex flex-1 flex-col gap-3 px-4 pt-4 pb-0 ">
-        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug tracking-tight">
+
+      <CardContent className="flex flex-1 flex-col gap-3 px-4 pt-4 pb-0">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight">
           {course.title}
         </h3>
 
-        {/* Subtitle */}
-        {course.subtitle && (
-          <p className="line-clamp-2 text-sm text-muted-foreground">
-            {course.subtitle}
-          </p>
-        )}
-        {(course.target_exam || course.class_level) && (
-          <div className="text-xs text-muted-foreground space-y-0.5">
-            {course.target_exam && (
-              <p className="line-clamp-1">
-                <span className="font-medium text-foreground/80">
-                  Target Exam:{" "}
-                </span>
-                {course.target_exam}
-              </p>
-            )}
-
-            {course.class_level && (
-              <p>
-                <span className="font-medium text-foreground/80">
-                  Class Level:{" "}
-                </span>
-                {course.class_level}
-              </p>
-            )}
+        {/* Sleek Icon-Based Metadata Grid */}
+        <div className="mt-1 flex flex-col gap-2.5">
+          {/* Academic Context with Category Integrated */}
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <GraduationCap className="size-3.5 shrink-0 text-muted-foreground" />
+            <span className="truncate">{academicContext}</span>
           </div>
-        )}
 
-        {course.subjects && course.subjects.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1">
-            {visibleSubjects.map((subject) => (
-              <Badge
-                key={subject}
-                variant="outline"
-                className="rounded-sm px-2 py-0.5 text-[10px]"
-              >
-                {subject}
-              </Badge>
-            ))}
+          {/* Subjects */}
+          {course.subjects && course.subjects.length > 0 && (
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              <BookOpen className="size-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+              <span className="line-clamp-1 capitalize">
+                {course.subjects.join(", ").replace(/_/g, " ")}
+              </span>
+            </div>
+          )}
 
-            {hiddenSubjects.length > 0 && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="rounded-sm border border-dashed px-2 py-0.5 text-[10px] text-muted-foreground"
-                  >
-                    +{hiddenSubjects.length} more
-                  </button>
-                </PopoverTrigger>
+          {/* Languages */}
+          {course.languages && course.languages.length > 0 && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Languages className="size-3.5 shrink-0 text-muted-foreground" />
+              <span className="capitalize line-clamp-1">
+                {course.languages.join(", ")}
+              </span>
+            </div>
+          )}
+        </div>
 
-                <PopoverContent
-                  side="top"
-                  align="center"
-                  className="w-auto max-w-60 rounded-lg border bg-background p-3 shadow-md"
-                >
-                  <div className="flex flex-wrap justify-center gap-1">
-                    {hiddenSubjects.map((subject) => (
-                      <Badge
-                        key={subject}
-                        variant="secondary"
-                        className="text-[10px]"
-                      >
-                        {subject}
-                      </Badge>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )}
-          </div>
-        )}
-
-        {course.subtitle && (
-          <p className="line-clamp-5 text-xs leading-relaxed text-muted-foreground">
-            {course.subtitle}
-          </p>
-        )}
+        {/* Spacer to dynamically push footer down */}
         <div className="flex-1" />
       </CardContent>
 
-      <CardFooter className="px-4 pb-4 pt-0 ">
+      <CardFooter className="px-4 pb-4 pt-0">
         <Button asChild className="w-full">
           <Link
             href={

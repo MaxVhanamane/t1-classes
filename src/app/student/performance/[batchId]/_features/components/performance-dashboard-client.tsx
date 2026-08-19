@@ -15,6 +15,7 @@ import { COLORS } from "../constants/performance.constants";
 import { AttendanceBarChart } from "./attendance-bar-chart";
 import { PerformanceBySubjectChart } from "./performance-by-subject-chart";
 import { SubjectGrowthTrendlineChart } from "./subject-growth-trendline-chart";
+import { HomeworkTrendsChart } from "./homework-trends-chart";
 
 export function PerformanceDashboardClient() {
   const { batchId, studentId } = useParams<{
@@ -23,19 +24,20 @@ export function PerformanceDashboardClient() {
   }>();
   const isMobile = useIsMobile();
 
-  const { data, isLoading, isError, error } = useQuery<PerformanceData>({
-    queryKey: ["batch-performance", batchId, studentId],
-    queryFn: async () => {
-      const fetchUrl = studentId
-        ? `/api/admin/batches/${batchId}/students/${studentId}/performance`
-        : `/api/student/batches/${batchId}/performance`;
+  const { data, isLoading, isError, error, refetch } =
+    useQuery<PerformanceData>({
+      queryKey: ["batch-performance", batchId, studentId],
+      queryFn: async () => {
+        const fetchUrl = studentId
+          ? `/api/admin/batches/${batchId}/students/${studentId}/performance`
+          : `/api/student/batches/${batchId}/performance`;
 
-      const res = await fetch(fetchUrl);
-      if (!res.ok) throw new Error("Failed to fetch performance data");
-      return res.json();
-    },
-    staleTime: 5 * 60 * 1000,
-  });
+        const res = await fetch(fetchUrl);
+        if (!res.ok) throw new Error("Failed to fetch performance data");
+        return res.json();
+      },
+      staleTime: 5 * 60 * 1000,
+    });
 
   if (isLoading) {
     return (
@@ -51,6 +53,7 @@ export function PerformanceDashboardClient() {
         <SectionError
           title="Couldn't load performance"
           message={error?.message || "Please try again later."}
+          onRetry={refetch}
         />
       </div>
     );
@@ -139,6 +142,11 @@ export function PerformanceDashboardClient() {
 
       <PerformanceBySubjectChart
         performanceBySubject={data.performanceBySubject}
+        isMobile={isMobile}
+      />
+
+      <HomeworkTrendsChart
+        homeworkHistory={data.homework.history}
         isMobile={isMobile}
       />
 

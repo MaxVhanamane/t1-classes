@@ -50,7 +50,7 @@ export function QuestionPaperCard({
   const hasDescription = !!questionPaper.description?.trim();
 
   return (
-    <Card className="relative dark:bg-black py-4">
+    <Card className="relative dark:bg-black py-3">
       <DottedBackground />
 
       <CardContent
@@ -68,7 +68,7 @@ export function QuestionPaperCard({
 
             <div className="min-w-0 flex-1">
               <div className="flex items-start gap-2">
-                <h3 className="line-clamp-2 font-medium">
+                <h3 className="line-clamp-2 font-medium text-sm sm:text-base">
                   {questionPaper.title}
                 </h3>
 
@@ -103,7 +103,7 @@ export function QuestionPaperCard({
                 </p>
               )}
 
-              <p className="text-muted-foreground mt-1 text-sm">
+              <p className="text-muted-foreground mt-1 text-xs">
                 PDF
                 {questionPaper.fileSize &&
                   ` • ${formatFileSize(questionPaper.fileSize)}`}

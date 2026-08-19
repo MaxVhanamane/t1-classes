@@ -15,7 +15,7 @@ export function QuestionPapersSkeleton({
   return (
     <div className="space-y-3">
       {Array.from({ length: 3 }).map((_, index) => (
-        <Card key={index} className="relative py-4 dark:bg-black">
+        <Card key={index} className="relative py-3 dark:bg-black">
           <DottedBackground />
 
           <CardContent

@@ -83,7 +83,7 @@ export function StudentProgressClient() {
 
         <div className="w-full md:w-[320px]">
           {isLoadingBatches ? (
-            <Skeleton className="flex items-center h-11 w-full rounded-lg px-4 border border-border/60">
+            <Skeleton className="flex items-center h-9 w-full rounded-lg px-4 border border-border/60">
               <span className="text-muted-foreground text-sm">
                 Loading batches...
               </span>
@@ -93,7 +93,7 @@ export function StudentProgressClient() {
               value={selectedBatchId ?? ""}
               onValueChange={handleBatchSelect}
             >
-              <SelectTrigger className="w-full bg-background h-11 border-border/60 shadow-none rounded-lg text-base">
+              <SelectTrigger className="w-full bg-background border-border/60 shadow-none rounded-lg text-base">
                 <SelectValue placeholder="Select a batch..." />
               </SelectTrigger>
               <SelectContent>

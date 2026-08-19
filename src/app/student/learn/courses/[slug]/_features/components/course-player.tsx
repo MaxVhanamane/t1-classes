@@ -26,7 +26,10 @@ import { CourseSidebar } from "./course-sidebar";
 import { CourseMobileContent } from "./course-mobile-content";
 
 const PdfViewerDialog = dynamic(
-  () => import("./pdf/pdf-viewer-dialog").then((mod) => mod.PdfViewerDialog),
+  () =>
+    import("../../../../../../../components/ui/pdf/pdf-viewer-dialog").then(
+      (mod) => mod.PdfViewerDialog,
+    ),
   {
     loading: () => null,
   },

@@ -140,7 +140,7 @@ function SheetContent({
         {/* Close Button */}
         <SheetPrimitive.Close
           className={cn(
-            "absolute top-4 right-4 rounded-xs",
+            "absolute top-4 right-4 rounded-xs cursor-pointer",
 
             /* Opacity animation synced */
             "opacity-70 hover:opacity-100",

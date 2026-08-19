@@ -18,8 +18,9 @@ import {
   Command,
   ListChecks,
   LineChart,
-  BookCheckIcon,
   PhoneCall,
+  Library,
+  ClipboardList,
 } from "lucide-react";
 
 import {
@@ -33,7 +34,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  useSidebar, // <-- Imported useSidebar here
+  useSidebar,
 } from "@/src/components/ui/sidebar";
 import { UserRole } from "@/src/lib/auth/types/auth.types";
 import { ScrollArea } from "../ui/scroll-area";
@@ -96,6 +97,12 @@ const navGroups: NavGroup[] = [
         allowedRoles: ["admin", "teacher"],
       },
       {
+        label: "Assignments",
+        href: "/admin/assignments",
+        icon: ClipboardList,
+        allowedRoles: ["admin", "teacher"],
+      },
+      {
         label: "Question Papers",
         href: "/admin/question-papers",
         icon: FileText,
@@ -146,6 +153,12 @@ const navGroups: NavGroup[] = [
         href: "/admin/attendance",
         icon: UserCheck,
         allowedRoles: ["admin", "teacher"],
+      },
+      {
+        label: "Manage Homework",
+        href: "/admin/homework",
+        icon: Library,
+        allowedRoles: ["admin"],
       },
       {
         label: "Notifications",

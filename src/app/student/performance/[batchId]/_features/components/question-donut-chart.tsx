@@ -12,6 +12,7 @@ import {
 } from "@/src/components/ui/card";
 import { CardGlow } from "@/src/components/ui/common/card-glow";
 import DottedBackground from "@/src/components/dotted-background";
+import { EmptyState } from "./empty-state";
 
 const GRADIENT_MAP: Record<
   string,
@@ -386,9 +387,10 @@ export function QuestionDonutChart({
             </div>
           </div>
         ) : (
-          <div className="flex h-[240px] w-full items-center justify-center rounded-xl bg-card text-sm text-muted-foreground">
-            No questions attempted yet.
-          </div>
+          <EmptyState
+            title="No questions attempted yet"
+            description="Your question accuracy breakdown will appear here once you complete a test."
+          />
         )}
 
         {chartData.length > 0 && (

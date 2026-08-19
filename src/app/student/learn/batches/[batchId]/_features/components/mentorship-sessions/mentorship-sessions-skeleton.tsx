@@ -1,7 +1,6 @@
 "use client";
 
 import DottedBackground from "@/src/components/dotted-background";
-
 import { Card, CardContent } from "@/src/components/ui/card";
 import { Skeleton } from "@/src/components/ui/skeleton";
 
@@ -11,61 +10,50 @@ export function MentorshipSessionsSkeleton() {
       {Array.from({ length: 3 }).map((_, index) => (
         <Card
           key={index}
-          className="relative overflow-hidden rounded-3xl border bg-background p-5 dark:bg-black"
+          className="relative flex flex-col overflow-hidden rounded-3xl border bg-background p-4 sm:p-5 dark:bg-black"
         >
           <DottedBackground className="opacity-50" />
 
-          <CardContent className="relative z-10 p-0">
-            {/* Top */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-7 w-40 rounded-md" />
+          <CardContent className="relative z-10 flex flex-col flex-1 p-0">
+            {/* Top Header Section */}
+            <div className="min-w-0 w-full">
+              {/* Title (matches text-sm sm:text-base) */}
+              <Skeleton className="h-5 sm:h-6 w-3/4 max-w-[260px] rounded-md" />
 
-                  <Skeleton className="h-5 w-16 rounded-full" />
-                </div>
-
-                <div className="mt-3 flex items-center gap-2">
-                  <Skeleton className="size-4 rounded-full" />
-
-                  <Skeleton className="h-4 w-16 rounded" />
-
-                  <Skeleton className="h-4 w-24 rounded" />
-                </div>
-              </div>
-
-              <Skeleton className="h-6 w-20 rounded-md" />
-            </div>
-
-            {/* Description */}
-            <div className="mt-5 space-y-2">
-              <Skeleton className="h-4 w-full rounded" />
-
-              <Skeleton className="h-4 w-[80%] rounded" />
-            </div>
-
-            {/* Meta Section */}
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border bg-white/5 p-3">
-                <Skeleton className="h-3 w-24 rounded" />
-
-                <Skeleton className="mt-3 h-4 w-24 rounded" />
-
-                <Skeleton className="mt-2 h-3 w-16 rounded" />
-              </div>
-
-              <div className="rounded-2xl border bg-white/5 p-3">
-                <Skeleton className="h-3 w-20 rounded" />
-
-                <Skeleton className="mt-3 h-4 w-20 rounded" />
-
-                <Skeleton className="mt-2 h-3 w-24 rounded" />
+              {/* Mentor Row */}
+              <div className="mt-2 flex items-center gap-1.5">
+                <Skeleton className="size-3.5 shrink-0 rounded-full" />
+                <Skeleton className="h-3 sm:h-3.5 w-12 rounded-sm" />
+                <Skeleton className="h-3 sm:h-3.5 w-24 rounded-sm" />
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="mt-6">
-              <Skeleton className="h-11 w-full rounded-2xl" />
+            {/* Description Section */}
+            <div className="mt-3.5 space-y-1.5 sm:space-y-2">
+              <Skeleton className="h-3 sm:h-3.5 w-full rounded-sm" />
+              <Skeleton className="h-3 sm:h-3.5 w-[80%] rounded-sm" />
+            </div>
+
+            {/* Metadata Cards Grid */}
+            <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+              {/* Date Card */}
+              <div className="rounded-2xl border bg-white/5 p-2.5 sm:p-3">
+                <Skeleton className="h-3 w-20 rounded-sm" />
+                <Skeleton className="mt-1.5 h-3.5 sm:h-4 w-24 rounded-sm" />
+                <Skeleton className="mt-1 h-2.5 sm:h-3 w-16 rounded-sm" />
+              </div>
+
+              {/* Duration Card */}
+              <div className="rounded-2xl border bg-white/5 p-2.5 sm:p-3">
+                <Skeleton className="h-3 w-20 rounded-sm" />
+                <Skeleton className="mt-1.5 h-3.5 sm:h-4 w-16 rounded-sm" />
+                <Skeleton className="mt-1 h-2.5 sm:h-3 w-24 rounded-sm" />
+              </div>
+            </div>
+
+            {/* Footer Actions (Pushed to bottom, strictly right-aligned) */}
+            <div className="mt-auto pt-5 flex items-center justify-end">
+              <Skeleton className="h-9 sm:h-10 w-full rounded-xl" />
             </div>
           </CardContent>
         </Card>

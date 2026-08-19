@@ -1,27 +1,21 @@
 "use client";
 
 import { useState } from "react";
-
 import { useQuery } from "@tanstack/react-query";
 
 import { AttendanceFilters } from "./attendance-filters";
 import { AttendanceSkeleton } from "./attendance-skeleton";
 import { AttendanceErrorState } from "./attendance-error-state";
 import { AttendanceSummaryCard } from "./attendance-summary-card";
-import { AttendanceRecentList } from "./attendance-recent-list";
+import { BatchAttendanceCalendar } from "./batch-attendance-calendar";
 
 type AttendanceResponse = {
   attendance_percentage: number;
-
   present_count: number;
-
   absent_count: number;
-
   total_classes: number;
-
-  recent_sessions: {
-    attendance_date: string;
-
+  daily_records: {
+    date: string;
     status: "present" | "absent";
   }[];
 };
@@ -47,9 +41,7 @@ async function fetchAttendance(
   year: string,
 ): Promise<AttendanceResponse> {
   const searchParams = new URLSearchParams();
-
   searchParams.set("month", month);
-
   searchParams.set("year", year);
 
   const response = await fetch(
@@ -76,39 +68,18 @@ export function BatchAttendancePanel({ batchId }: Props) {
   const [selectedMonth, setSelectedMonth] = useState(
     String(today.getMonth() + 1),
   );
-
   const [selectedYear, setSelectedYear] = useState(String(today.getFullYear()));
 
   const years = Array.from({ length: 6 }, (_, index) =>
     String(today.getFullYear() - 3 + index),
   );
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["student-attendance", batchId, selectedMonth, selectedYear],
-
     queryFn: () => fetchAttendance(batchId, selectedMonth, selectedYear),
-
     staleTime: 1000 * 60 * 5,
+    placeholderData: (prev) => prev,
   });
-
-  if (isLoading) {
-    return <AttendanceSkeleton />;
-  }
-
-  if (error instanceof Error) {
-    return (
-      <AttendanceErrorState
-        message={error.message}
-        onRetry={() => {
-          void refetch();
-        }}
-      />
-    );
-  }
-
-  if (!data) {
-    return <AttendanceSkeleton />;
-  }
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -121,15 +92,38 @@ export function BatchAttendancePanel({ batchId }: Props) {
         onYearChange={setSelectedYear}
       />
 
-      <AttendanceSummaryCard
-        key={`${selectedMonth}-${selectedYear}`}
-        attendancePercentage={data.attendance_percentage}
-        presentCount={data.present_count}
-        absentCount={data.absent_count}
-        totalClasses={data.total_classes}
-      />
+      {error instanceof Error ? (
+        <AttendanceErrorState
+          message={error.message}
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      ) : (
+        <>
+          {/* Top Summary Card handles its own skeleton swap */}
+          {isLoading || !data ? (
+            <AttendanceSkeleton />
+          ) : (
+            <AttendanceSummaryCard
+              key={`${selectedMonth}-${selectedYear}`}
+              attendancePercentage={data.attendance_percentage}
+              presentCount={data.present_count}
+              absentCount={data.absent_count}
+              totalClasses={data.total_classes}
+            />
+          )}
 
-      <AttendanceRecentList sessions={data.recent_sessions} />
+          {/* Calendar is ALWAYS mounted, handles internal loading internally */}
+          <BatchAttendanceCalendar
+            month={Number(selectedMonth)}
+            year={Number(selectedYear)}
+            records={data?.daily_records || []}
+            isLoading={isLoading || !data}
+            isFetching={isFetching}
+          />
+        </>
+      )}
     </div>
   );
 }

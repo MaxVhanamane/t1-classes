@@ -1,21 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { useForm, useWatch } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { format } from "date-fns";
-
 import { useQueryClient } from "@tanstack/react-query";
-
 import { toast } from "sonner";
-
 import { Info } from "lucide-react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/src/components/ui/dialog";
-
 import {
   Form,
   FormControl,
@@ -24,53 +17,40 @@ import {
   FormLabel,
   FormMessage,
 } from "@/src/components/ui/form";
-
 import { Input } from "@/src/components/ui/input";
-
 import { Textarea } from "@/src/components/ui/textarea";
-
 import { Button } from "@/src/components/ui/button";
-
 import { RadioGroup, RadioGroupItem } from "@/src/components/ui/radio-group";
-
 import { cn } from "@/src/lib/utils";
-
 import { callServerAction } from "@/src/lib/actions/call-server-action";
 
 import {
   createGroupSessionSchema,
   CreateGroupSessionSchema,
+  updateGroupSessionSchema,
 } from "../zod/create-group-session.schema";
-
 import { GroupSession } from "../types/group-session.types";
-
 import { groupSessionsQueryKeys } from "../constants/query-keys";
-
 import { createGroupSession } from "../actions/create-group-session";
-
 import { updateGroupSession } from "../actions/update-group-session";
-
 import { getGroupSessionStudents } from "../api/group-sessions-api";
 
 import { useMentorshipBatches } from "../../../mentorship_sessions/_features/hooks/use-mentorship-batches";
 import { useBatchStudents } from "../../../mentorship_sessions/_features/hooks/use-batch-students";
 import { MentorshipBatchCombobox } from "../../../mentorship_sessions/_features/components/mentorship-batch-combobox";
 import { MentorshipStudentsCombobox } from "../../../mentorship_sessions/_features/components/mentorship-students-combobox";
+import { extractFirstErrorMessage } from "@/src/lib/form/extract-first-error-message";
 
 interface GroupSessionDialogProps {
   open: boolean;
-
   onOpenChange: (open: boolean) => void;
-
   session?: GroupSession;
 }
 
 function extractMeetingData(link: string) {
   try {
     const parsed = new URL(link);
-
     const meetingId = parsed.pathname.match(/\/(?:j|wc\/join)\/(\d+)/)?.[1];
-
     const meetingPwd = parsed.searchParams.get("pwd");
 
     if (!meetingId) {
@@ -79,7 +59,6 @@ function extractMeetingData(link: string) {
 
     return {
       meeting_id: meetingId,
-
       meeting_pwd: meetingPwd,
     };
   } catch {
@@ -93,24 +72,20 @@ export function GroupSessionDialog({
   session,
 }: GroupSessionDialogProps) {
   const isEdit = !!session;
-
   const queryClient = useQueryClient();
   const [isLoadingSelectedStudents, setIsLoadingSelectedStudents] =
     useState(false);
-  const form = useForm<CreateGroupSessionSchema>({
-    resolver: zodResolver(createGroupSessionSchema),
 
+  const form = useForm<CreateGroupSessionSchema>({
+    resolver: zodResolver(
+      isEdit ? updateGroupSessionSchema : createGroupSessionSchema,
+    ),
     defaultValues: {
       title: "",
-
       description: "",
-
       audience_type: "batch",
-
       student_ids: [],
-
       expected_duration_minutes: 40,
-
       meeting_link: "",
       meeting_passcode: "",
     },
@@ -118,80 +93,46 @@ export function GroupSessionDialog({
 
   const batchId = useWatch({
     control: form.control,
-
     name: "batch_id",
   });
 
   const audienceType = useWatch({
     control: form.control,
-
     name: "audience_type",
   });
 
-  const {
-    data: batches,
+  /* -------------------------------------------------- */
+  /* Query States (Fixed locking issue)                 */
+  /* -------------------------------------------------- */
 
-    isLoading: isBatchesLoading,
-  } = useMentorshipBatches(open);
+  const { data: batches, isFetching: isBatchesFetching } =
+    useMentorshipBatches(open);
+  const isBatchesLoading = isBatchesFetching && batches === undefined;
 
-  const {
-    data: students,
-
-    isLoading: isStudentsLoading,
-  } = useBatchStudents({
+  const { data: students, isFetching: isStudentsFetching } = useBatchStudents({
     batchId,
-
     enabled: audienceType === "selected_students" && !!batchId,
   });
+  const isStudentsLoading = isStudentsFetching && students === undefined;
 
-  useEffect(() => {
-    async function loadStudents() {
-      if (
-        !open ||
-        !isEdit ||
-        !session ||
-        audienceType !== "selected_students"
-      ) {
-        return;
-      }
+  /* -------------------------------------------------- */
+  /* Form Lifecycle Updates                             */
+  /* -------------------------------------------------- */
 
-      try {
-        setIsLoadingSelectedStudents(true);
-
-        const studentIds = await getGroupSessionStudents(session.id);
-
-        form.setValue("student_ids", studentIds);
-      } catch {
-        toast.error("Failed to load selected students");
-      } finally {
-        setIsLoadingSelectedStudents(false);
-      }
-    }
-
-    void loadStudents();
-  }, [open, isEdit, session, audienceType, form]);
-
+  // 1. Reset Effect MUST be FIRST
   useEffect(() => {
     if (!open) {
       form.reset({
         title: "",
-
         description: "",
-
         batch_id: undefined,
-
         audience_type: "batch",
-
         student_ids: [],
-
         expected_duration_minutes: 40,
-
-        starts_at: undefined,
-
+        starts_at: undefined as unknown as Date,
         meeting_link: "",
         meeting_passcode: "",
       });
-
       return;
     }
 
@@ -204,24 +145,56 @@ export function GroupSessionDialog({
 
       form.reset({
         title: session.title,
-
         description: session.description ?? "",
-
         batch_id: session.batch_id,
-
         audience_type: session.audience_type,
-
-        student_ids: [],
-
+        student_ids: [], // Start empty, loaded in the next effect
         expected_duration_minutes: session.expected_duration_minutes,
-
         starts_at: new Date(session.starts_at),
-
         meeting_link: joinUrl,
         meeting_passcode: session.meeting_passcode ?? "",
       });
     }
   }, [open, isEdit, session, form]);
+
+  // 2. Load Selected Students Effect MUST be SECOND
+  useEffect(() => {
+    let isMounted = true; // Prevent state updates if dialog closes while fetching
+
+    async function loadStudents() {
+      if (
+        !open ||
+        !isEdit ||
+        !session ||
+        audienceType !== "selected_students"
+      ) {
+        return;
+      }
+
+      try {
+        setIsLoadingSelectedStudents(true);
+        const studentIds = await getGroupSessionStudents(session.id);
+
+        if (isMounted) {
+          form.setValue("student_ids", studentIds || []);
+        }
+      } catch {
+        if (isMounted) toast.error("Failed to load selected students");
+      } finally {
+        if (isMounted) setIsLoadingSelectedStudents(false);
+      }
+    }
+
+    void loadStudents();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open, isEdit, session, audienceType, form]);
+
+  /* -------------------------------------------------- */
+  /* Submission                                         */
+  /* -------------------------------------------------- */
 
   const onSubmit = form.handleSubmit(
     async (values: CreateGroupSessionSchema) => {
@@ -231,15 +204,12 @@ export function GroupSessionDialog({
 
       if (values.meeting_link && !extracted) {
         toast.error("Invalid Zoom meeting link");
-
         return;
       }
 
       const payload = {
         ...values,
-
         meeting_id: extracted?.meeting_id ?? null,
-
         meeting_pwd: extracted?.meeting_pwd ?? null,
         meeting_passcode: values.meeting_passcode?.trim() || null,
       };
@@ -254,18 +224,13 @@ export function GroupSessionDialog({
           : await callServerAction(createGroupSession(payload));
 
         if (error) {
-          toast.error(error, {
-            id: toastId,
-          });
-
+          toast.error(error, { id: toastId });
           return;
         }
 
         toast.success(
           isEdit ? "Group session updated" : "Group session created",
-          {
-            id: toastId,
-          },
+          { id: toastId },
         );
 
         await queryClient.invalidateQueries({
@@ -274,24 +239,23 @@ export function GroupSessionDialog({
 
         onOpenChange(false);
       } catch {
-        toast.error("Something went wrong", {
-          id: toastId,
-        });
+        toast.error("Something went wrong", { id: toastId });
       }
     },
-
     (errors) => {
-      const firstError = Object.values(errors)[0];
-
-      toast.error(firstError?.message ?? "Please fix form errors");
+      const message = extractFirstErrorMessage(errors);
+      toast.dismiss();
+      toast.error(message ?? "Please fix the form errors");
     },
   );
+
+  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
-        className="max-h-[90vh] overflow-y-auto sm:max-w-xl"
+        className="max-h-[90vh] overflow-y-auto sm:max-w-xl scrollbar-thin"
       >
         <DialogTitle>
           {isEdit ? "Edit Group Session" : "Create Group Session"}
@@ -300,35 +264,30 @@ export function GroupSessionDialog({
         <Form {...form}>
           <form onSubmit={onSubmit} className="space-y-6">
             {/* ---------- Title ---------- */}
-
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Title</FormLabel>
-
                   <FormControl>
                     <Input
                       placeholder="Weekly live revision class"
                       {...field}
                     />
                   </FormControl>
-
                   <FormMessage />
                 </FormItem>
               )}
             />
 
             {/* ---------- Description ---------- */}
-
             <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
-
                   <FormControl>
                     <Textarea
                       placeholder="Optional class notes..."
@@ -336,14 +295,12 @@ export function GroupSessionDialog({
                       {...field}
                     />
                   </FormControl>
-
                   <FormMessage />
                 </FormItem>
               )}
             />
 
             {/* ---------- Batch ---------- */}
-
             <FormField
               control={form.control}
               name="batch_id"
@@ -355,21 +312,18 @@ export function GroupSessionDialog({
                       value={field.value}
                       onChange={(value) => {
                         field.onChange(value);
-
                         form.setValue("student_ids", []);
                       }}
                       disabled={isBatchesLoading}
                       isLoading={isBatchesLoading}
                     />
                   </FormControl>
-
                   <FormMessage />
                 </FormItem>
               )}
             />
 
             {/* ---------- Audience ---------- */}
-
             <FormField
               control={form.control}
               name="audience_type"
@@ -379,7 +333,6 @@ export function GroupSessionDialog({
                 ) => {
                   if (value === "selected_students" && !batchId) {
                     toast.error("Select a batch first");
-
                     return;
                   }
 
@@ -393,7 +346,6 @@ export function GroupSessionDialog({
                 return (
                   <FormItem className="space-y-3">
                     <FormLabel>Audience</FormLabel>
-
                     <FormControl>
                       <RadioGroup
                         value={field.value}
@@ -405,7 +357,6 @@ export function GroupSessionDialog({
                           className={cn(
                             "flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors",
                             "hover:bg-muted/50",
-
                             field.value === "batch" &&
                               "border-primary bg-primary/5",
                           )}
@@ -415,12 +366,10 @@ export function GroupSessionDialog({
                             id="audience-batch"
                             className="mt-0.5"
                           />
-
                           <div className="space-y-1">
                             <div className="text-sm font-medium">
                               Entire Batch
                             </div>
-
                             <p className="text-sm text-muted-foreground">
                               Every student enrolled in this batch can join the
                               session.
@@ -433,7 +382,6 @@ export function GroupSessionDialog({
                           className={cn(
                             "flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors",
                             "hover:bg-muted/50",
-
                             field.value === "selected_students" &&
                               "border-primary bg-primary/5",
                           )}
@@ -443,12 +391,10 @@ export function GroupSessionDialog({
                             id="audience-selected-students"
                             className="mt-0.5"
                           />
-
                           <div className="space-y-1">
                             <div className="text-sm font-medium">
                               Selected Students
                             </div>
-
                             <p className="text-sm text-muted-foreground">
                               Only manually selected students will be able to
                               join.
@@ -457,7 +403,6 @@ export function GroupSessionDialog({
                         </label>
                       </RadioGroup>
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 );
@@ -465,7 +410,6 @@ export function GroupSessionDialog({
             />
 
             {/* ---------- Students ---------- */}
-
             {audienceType === "selected_students" && (
               <FormField
                 control={form.control}
@@ -473,11 +417,10 @@ export function GroupSessionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Students</FormLabel>
-
                     <FormControl>
                       <MentorshipStudentsCombobox
                         students={students ?? []}
-                        value={field.value}
+                        value={field.value || []}
                         onChange={field.onChange}
                         batchId={batchId}
                         disabled={
@@ -492,7 +435,6 @@ export function GroupSessionDialog({
                         Loading selected students...
                       </p>
                     )}
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -500,14 +442,12 @@ export function GroupSessionDialog({
             )}
 
             {/* ---------- Start Time ---------- */}
-
             <FormField
               control={form.control}
               name="starts_at"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Session Date & Time</FormLabel>
-
                   <FormControl>
                     <Input
                       type="datetime-local"
@@ -519,24 +459,26 @@ export function GroupSessionDialog({
                       onChange={(e) => {
                         field.onChange(new Date(e.target.value));
                       }}
-                      min={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
+                      // Fix: Only enforce future dates in HTML when creating a new session
+                      min={
+                        isEdit
+                          ? undefined
+                          : format(new Date(), "yyyy-MM-dd'T'HH:mm")
+                      }
                     />
                   </FormControl>
-
                   <FormMessage />
                 </FormItem>
               )}
             />
 
             {/* ---------- Duration ---------- */}
-
             <FormField
               control={form.control}
               name="expected_duration_minutes"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Expected Duration</FormLabel>
-
                   <FormControl>
                     <Input
                       type="number"
@@ -546,43 +488,38 @@ export function GroupSessionDialog({
                       value={field.value ?? ""}
                       onChange={(e) => {
                         const value = e.target.value;
-
                         field.onChange(value === "" ? null : Number(value));
                       }}
                     />
                   </FormControl>
-
                   <p className="text-xs leading-relaxed text-muted-foreground">
                     Sessions with 3 or more participants may automatically end
                     after 40 minutes. If needed, The teacher may need to start a
                     new meeting and ask participants to rejoin.
                   </p>
-
                   <FormMessage />
                 </FormItem>
               )}
             />
 
             {/* ---------- Meeting Link ---------- */}
-
             <FormField
               control={form.control}
               name="meeting_link"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Meeting Link</FormLabel>
-
                   <FormControl>
                     <Input
                       placeholder="https://us05web.zoom.us/j/..."
                       {...field}
                     />
                   </FormControl>
-
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             {/* ---------- Passcode ---------- */}
             <FormField
               control={form.control}
@@ -590,11 +527,9 @@ export function GroupSessionDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Meeting Passcode</FormLabel>
-
                   <FormControl>
                     <Input placeholder="6Jpwa3" {...field} />
                   </FormControl>
-
                   <p className="text-xs text-muted-foreground">
                     Required as a fallback if Zoom asks students to enter the
                     passcode manually.
@@ -602,28 +537,31 @@ export function GroupSessionDialog({
 
                   <div className="flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950 dark:text-sky-200">
                     <Info className="mt-0.5 size-4 shrink-0" />
-
                     <div className="space-y-1">
                       <p className="font-medium">
                         Meeting details can be added later
                       </p>
-
                       <p className="text-xs text-sky-700 dark:text-sky-300">
                         Students will only be able to join after the scheduled
                         start time.
                       </p>
                     </div>
                   </div>
-
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {/* ---------- Submit ---------- */}
 
+            {/* ---------- Submit ---------- */}
             <div className="flex justify-end">
-              <Button type="submit">
-                {isEdit ? "Update Session" : "Create Session"}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? isEdit
+                    ? "Updating..."
+                    : "Creating..."
+                  : isEdit
+                    ? "Update Session"
+                    : "Create Session"}
               </Button>
             </div>
           </form>

@@ -19,8 +19,7 @@ const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID!;
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY!;
 const R2_PUBLIC_BUCKET_NAME = process.env.R2_PUBLIC_BUCKET_NAME!;
 const R2_PRIVATE_BUCKET_NAME = process.env.R2_PRIVATE_BUCKET_NAME!;
-const PUBLIC_BASE_URL =
-    process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL!;
+const PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL!;
 
 /* ================================================== */
 /* S3 CLIENT                                          */
@@ -35,15 +34,9 @@ const s3 = new S3Client({
     },
 });
 
-/* Remove checksum middleware (R2 compatibility) */
 s3.middlewareStack.remove(
     flexibleChecksumsMiddlewareOptions.name!
 );
-
-/* ================================================== */
-/* TYPES                                              */
-/* ================================================== */
-
 
 /* ================================================== */
 /* MIME MAPS                                          */
@@ -60,8 +53,6 @@ const PDF_TYPES = {
     "application/pdf": "pdf",
 };
 
-
-
 /* ================================================== */
 /* POST                                               */
 /* ================================================== */
@@ -75,7 +66,8 @@ export async function POST(req: NextRequest) {
         if (!auth.authorized) {
             return auth.response;
         }
-        const user = auth.user
+        const user = auth.user;
+
         /* ---------------- Body ---------------- */
 
         const body = await req.json().catch(() => null);
@@ -87,18 +79,16 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const assetType: AssetType = body.assetType;
+        const assetType: AssetType | "homework" | "homework_solution" = body.assetType;
         const fileType: string = body.fileType;
         const fileSize: number = body.fileSize;
 
-        const courseId: string | undefined =
-            body.courseId;
-        const topicId: string | undefined =
-            body.topicId;
-        const instructorId: string | undefined =
-            body.instructorId;
+        const courseId: string | undefined = body.courseId;
+        const topicId: string | undefined = body.topicId;
+        const instructorId: string | undefined = body.instructorId;
         const batchId: string | undefined = body.batchId;
         const testId: string | undefined = body.testId;
+        const chapterId: string | undefined = body.chapterId;
 
         if (!fileType) {
             return NextResponse.json(
@@ -107,7 +97,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        if (!VALID_ASSET_TYPES.includes(assetType)) {
+        if (!VALID_ASSET_TYPES.includes(assetType as AssetType) && assetType !== "homework" && assetType !== "homework_solution") {
             return NextResponse.json(
                 { message: "Invalid asset type" },
                 { status: 400 }
@@ -127,6 +117,7 @@ export async function POST(req: NextRequest) {
                 { status: 403 }
             );
         }
+
         /* ================================================== */
         /* Extension validation                               */
         /* ================================================== */
@@ -134,20 +125,14 @@ export async function POST(req: NextRequest) {
         let ext: string | undefined;
 
         if (
-            assetType ===
-            "course_pdf" ||
-            assetType ===
-            "question_paper"
+            assetType === "course_pdf" ||
+            assetType === "question_paper" ||
+            assetType === "homework" ||
+            assetType === "homework_solution"
         ) {
-            ext =
-                PDF_TYPES[
-                fileType as keyof typeof PDF_TYPES
-                ];
+            ext = PDF_TYPES[fileType as keyof typeof PDF_TYPES];
         } else {
-            ext =
-                IMAGE_TYPES[
-                fileType as keyof typeof IMAGE_TYPES
-                ];
+            ext = IMAGE_TYPES[fileType as keyof typeof IMAGE_TYPES];
         }
 
         if (!ext) {
@@ -161,7 +146,8 @@ export async function POST(req: NextRequest) {
         /* Size validation                                    */
         /* ================================================== */
 
-        if (fileSize > SIZE_LIMITS[assetType]) {
+        const limit = SIZE_LIMITS[assetType as AssetType] || 10 * 1024 * 1024;
+        if (fileSize > limit) {
             return NextResponse.json(
                 { message: "File too large" },
                 { status: 400 }
@@ -186,11 +172,9 @@ export async function POST(req: NextRequest) {
                         { status: 400 }
                     );
                 }
-
                 key = `courses/${courseId}/thumbnail_${timestamp}_${uuid}.${ext}`;
                 break;
             }
-
             case "batch_thumbnail": {
                 if (!batchId) {
                     return NextResponse.json(
@@ -198,11 +182,9 @@ export async function POST(req: NextRequest) {
                         { status: 400 }
                     );
                 }
-
                 key = `batches/${batchId}/thumbnail_${timestamp}_${uuid}.${ext}`;
                 break;
             }
-
             case "instructor_avatar": {
                 if (!instructorId) {
                     return NextResponse.json(
@@ -210,7 +192,6 @@ export async function POST(req: NextRequest) {
                         { status: 400 }
                     );
                 }
-
                 key = `instructors/${instructorId}/avatar_${timestamp}_${uuid}.${ext}`;
                 break;
             }
@@ -225,22 +206,15 @@ export async function POST(req: NextRequest) {
                         { status: 400 }
                     );
                 }
-
                 bucket = R2_PRIVATE_BUCKET_NAME;
-
                 key = `courses/${courseId}/topics/${topicId}/pdfs/${timestamp}_${uuid}.${ext}`;
                 break;
             }
             case "question_paper": {
-                bucket =
-                    R2_PRIVATE_BUCKET_NAME;
-
-                key =
-                    `question-papers/${timestamp}_${uuid}.${ext}`;
-
+                bucket = R2_PRIVATE_BUCKET_NAME;
+                key = `question-papers/${timestamp}_${uuid}.${ext}`;
                 break;
             }
-
             case "question_image": {
                 if (!testId) {
                     return NextResponse.json(
@@ -248,10 +222,20 @@ export async function POST(req: NextRequest) {
                         { status: 400 }
                     );
                 }
-
-                // Group by test ID, use UUID so it cannot be guessed
                 bucket = R2_PUBLIC_BUCKET_NAME;
                 key = `tests/${testId}/images/${timestamp}_${uuid}.${ext}`;
+                break;
+            }
+            case "homework": {
+                bucket = R2_PRIVATE_BUCKET_NAME;
+                const folderPath = chapterId ? `chapters/${chapterId}` : "general";
+                key = `homework/questions/${folderPath}/${timestamp}_${uuid}.${ext}`;
+                break;
+            }
+            case "homework_solution": {
+                bucket = R2_PRIVATE_BUCKET_NAME;
+                const folderPath = chapterId ? `chapters/${chapterId}` : "general";
+                key = `homework/solutions/${folderPath}/${timestamp}_${uuid}.${ext}`;
                 break;
             }
         }
@@ -266,14 +250,9 @@ export async function POST(req: NextRequest) {
             ContentType: fileType,
         });
 
-        const signedUrl = await getSignedUrl(
-            s3,
-            command,
-            {
-                expiresIn: 60 * 5, // 5 min
-            }
-        );
-
+        const signedUrl = await getSignedUrl(s3, command, {
+            expiresIn: 60 * 5,
+        });
 
         /* ================================================== */
         /* Public URL                                         */
@@ -295,15 +274,11 @@ export async function POST(req: NextRequest) {
             bucket,
         });
     } catch (error) {
-        console.error(
-            "[SIGNED_UPLOAD_ERROR]",
-            error
-        );
+        console.error("[SIGNED_UPLOAD_ERROR]", error);
 
         return NextResponse.json(
             {
-                message:
-                    "Failed to generate upload URL",
+                message: "Failed to generate upload URL",
             },
             { status: 500 }
         );

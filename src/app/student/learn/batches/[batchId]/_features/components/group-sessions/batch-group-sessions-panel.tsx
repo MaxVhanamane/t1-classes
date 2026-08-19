@@ -38,7 +38,7 @@ export default function BatchGroupSessionsPanel({ batchId }: Props) {
 
   const [page, setPage] = useState(1);
 
-  const [status, setStatus] = useState<GroupSessionStatus>("live");
+  const [status, setStatus] = useState<GroupSessionStatus>("ended");
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["batch-group-sessions", batchId, status, page],
