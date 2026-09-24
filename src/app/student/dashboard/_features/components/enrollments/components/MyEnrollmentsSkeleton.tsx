@@ -53,12 +53,12 @@ export function MyEnrollmentsSkeleton() {
           {Array.from({ length: 1 }).map((_, idx) => (
             <div
               key={`perf-skel-${idx}`}
-              className="relative flex h-55 flex-col justify-between overflow-hidden rounded-xl border p-6 bg-card"
+              className="relative flex h-54 flex-col justify-between overflow-hidden rounded-xl border bg-card p-6"
             >
               {/* Top content area */}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {/* Badge/Tag line */}
-                <div className="flex items-center gap-2">
+                <div className="mb-2 flex items-center gap-2">
                   <Skeleton className="h-4 w-4 rounded-sm" />
                   <Skeleton className="h-3 w-28" />
                 </div>
@@ -67,14 +67,14 @@ export function MyEnrollmentsSkeleton() {
                 <Skeleton className="h-6 w-3/4" />
 
                 {/* Description lines */}
-                <div className="space-y-1 pt-1">
+                <div className="space-y-1.5 pt-1">
                   <Skeleton className="h-3.5 w-full" />
                   <Skeleton className="h-3.5 w-2/3" />
                 </div>
               </div>
 
-              {/* Bottom action link line */}
-              <div className="flex items-center justify-between">
+              {/* Bottom action link line - matched to bottom right */}
+              <div className="mt-6 flex w-full justify-end">
                 <Skeleton className="h-4 w-36" />
               </div>
             </div>
