@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { motion, type Transition } from "motion/react";
+import { motion, useInView, type Transition } from "motion/react";
 
 const AnimatedStudent = () => {
   const [phase, setPhase] = useState<
@@ -31,16 +31,20 @@ const AnimatedStudent = () => {
   const neckX = headPoses.cx;
   const neckY = headPoses.cy.map((cy) => cy + 3);
 
+  // EXACT ORIGINAL PATH - Not changed!
   const pathD = "M-80,0 L0,0 C100,0 150,-60 250,-40 C350,-20 420,-90 500,-100";
 
   const climbRef = useRef<SVGAnimateMotionElement>(null);
   const slideRef = useRef<SVGAnimateMotionElement>(null);
 
-  useEffect(() => {
-    climbRef.current?.beginElement();
-  }, []);
+  // 1. Create a ref to track visibility
+  const containerRef = useRef<SVGGElement>(null);
+  const isInView = useInView(containerRef, { once: true, amount: 0.1 });
 
   useEffect(() => {
+    // 2. Prevent animation sequence from starting until in view
+    if (!isInView) return;
+
     if (phase === "running") {
       climbRef.current?.beginElement();
       const t = setTimeout(() => setPhase("dancing"), 7000);
@@ -50,7 +54,7 @@ const AnimatedStudent = () => {
       const t = setTimeout(() => setPhase("sitting"), 2000);
       return () => clearTimeout(t);
     }
-  }, [phase]);
+  }, [phase, isInView]);
 
   useEffect(() => {
     const el = slideRef.current;
@@ -69,12 +73,24 @@ const AnimatedStudent = () => {
 
   return (
     <motion.g
+      ref={containerRef}
       initial={{ opacity: 0.5 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
+      {/* 3. Invisible anchor: This guarantees the ref is perfectly centered in your card so `isInView` actually triggers */}
+      <rect
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+        fill="transparent"
+        pointerEvents="none"
+      />
+
       <g transform="translate(0, 120)">
-        <g>
+        {/* 4. THE FIX: Shift him left by 80px ONLY when waiting. Once in view, we remove it and the animation takes over seamlessly! */}
+        <g transform={!isInView ? "translate(-80, 0)" : undefined}>
           <animateMotion
             ref={climbRef}
             dur="7s"
@@ -97,19 +113,19 @@ const AnimatedStudent = () => {
           />
 
           <motion.g
-            initial={{ y: -6, rotate: 10, scale: 1.25 }}
+            initial={{ y: -6, rotate: 10, scale: 1.3 }}
             animate={
               isSitting
-                ? { y: 0, rotate: 0, scale: 1.25 }
+                ? { y: 0, rotate: 0, scale: 1.3 }
                 : isSliding
-                  ? { y: -3, rotate: -18, scale: 1.25 }
+                  ? { y: -3, rotate: -18, scale: 1.3 }
                   : isDancing
                     ? {
                         y: [-6, -6, -6, -9, -6],
                         rotate: [-10, 10, -10, 0, 0],
-                        scale: 1.25,
+                        scale: 1.3,
                       }
-                    : { y: -6, rotate: 10, scale: 1.25 }
+                    : { y: -6, rotate: 10, scale: 1.3 }
             }
             transition={
               isDancing ? danceTransition : { duration: 0.4, ease: "easeOut" }
@@ -260,7 +276,7 @@ const AnimatedStudent = () => {
               strokeLinecap="round"
             />
 
-            {/* Left Arm - FIXED: Removed opacity: 0.5 from initial */}
+            {/* Left Arm */}
             <motion.line
               initial={{ x1: 0, y1: -10, x2: 4, y2: -6 }}
               animate={

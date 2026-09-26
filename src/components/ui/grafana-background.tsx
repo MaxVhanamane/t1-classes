@@ -192,7 +192,7 @@ export function GrafanaBackground({
               style={{
                 offsetPath: `path("${PATH_2}")`,
                 animation: "move-reverse 20s linear infinite",
-                animationDelay: "10s",
+                animationDelay: "5s",
               }}
             />
           </foreignObject>
@@ -390,7 +390,7 @@ export function GrafanaBackground({
                 offsetPath: `path("${PATH_2}")`,
                 animation:
                   "move-reverse 20s linear infinite, fade-in 0.2s forwards",
-                animationDelay: "10s",
+                animationDelay: "5s",
               }}
             />
           </foreignObject>
