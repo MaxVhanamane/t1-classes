@@ -91,41 +91,63 @@ export default function LoadingCoursePlayer() {
       <aside className="hidden lg:block">
         <div className="fixed top-14 right-7 w-md h-screen bg-background">
           <div className="h-[calc(100vh-56px)] flex flex-col">
-            {/* Header */}
-            <div className="px-4 py-3 shrink-0">
-              <Skeleton className="h-6 w-40" />
-            </div>
+            {/* Scroll Container (matches actual UI layout) */}
+            <div className="relative flex-1 overflow-y-auto px-4 pb-4 pt-4">
+              {/* Main Header & Toggle Button Placeholder */}
+              <div className="mb-4 flex items-center justify-between">
+                <Skeleton className="h-6 w-36" />
+                <Skeleton className="h-6 w-24 rounded-md" />
+              </div>
 
-            {/* Structure */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {Array.from({ length: 3 }).map((_, chapterIdx) => (
-                <div
-                  key={chapterIdx}
-                  className="border rounded-sm bg-muted/30 overflow-hidden"
-                >
-                  <div className="px-4 py-6">
-                    <Skeleton className="h-4 w-3/4" />
+              <div className="space-y-6">
+                {/* Curriculum Outer Wrapper Box */}
+                <div className="overflow-hidden rounded-sm border border-border">
+                  {/* Curriculum Header/Trigger Area */}
+                  <div className="flex w-full items-center justify-between px-4 py-3">
+                    <div className="space-y-2 w-full">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-64" />
+                    </div>
+                    <Skeleton className="size-4 shrink-0 rounded-sm ml-4" />
                   </div>
 
-                  <div className="border-t p-3 space-y-3">
-                    {Array.from({ length: 2 }).map((_, topicIdx) => (
+                  {/* Chapters Content Area */}
+                  <div className="border-t p-3 lg:p-4 space-y-4">
+                    {Array.from({ length: 3 }).map((_, chapterIdx) => (
                       <div
-                        key={topicIdx}
-                        className="border rounded-sm bg-background overflow-hidden"
+                        key={chapterIdx}
+                        className="border rounded-sm bg-muted/30 overflow-hidden"
                       >
-                        <div className="px-4 py-3 space-y-1">
+                        <div className="flex items-center justify-between px-4 py-6">
                           <Skeleton className="h-4 w-2/3" />
-                          <Skeleton className="h-3 w-1/3" />
+                          <Skeleton className="size-4 shrink-0 rounded-sm" />
                         </div>
 
-                        <div className="px-4 pb-3 space-y-1">
-                          {Array.from({ length: 2 }).map((_, unitIdx) => (
+                        <div className="border-t p-3 space-y-3">
+                          {Array.from({ length: 2 }).map((_, topicIdx) => (
                             <div
-                              key={unitIdx}
-                              className="flex items-center gap-2 px-2 py-2"
+                              key={topicIdx}
+                              className="border rounded-sm bg-background overflow-hidden"
                             >
-                              <Skeleton className="h-4 w-4 rounded-sm" />
-                              <Skeleton className="h-3 w-full" />
+                              <div className="flex justify-between px-4 py-3">
+                                <div className="space-y-2 w-full">
+                                  <Skeleton className="h-4 w-3/4" />
+                                  <Skeleton className="h-3 w-1/3" />
+                                </div>
+                                <Skeleton className="size-4 shrink-0 rounded-sm mt-1 ml-2" />
+                              </div>
+
+                              <div className="px-4 pb-3 space-y-1">
+                                {Array.from({ length: 2 }).map((_, unitIdx) => (
+                                  <div
+                                    key={unitIdx}
+                                    className="flex items-center gap-2 px-2 py-2"
+                                  >
+                                    <Skeleton className="h-4 w-4 rounded-sm shrink-0" />
+                                    <Skeleton className="h-3 w-full" />
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -133,7 +155,7 @@ export default function LoadingCoursePlayer() {
                     ))}
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>

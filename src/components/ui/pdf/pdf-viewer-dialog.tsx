@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -51,6 +51,12 @@ export function PdfViewerDialog({
   const [zoomBarOpen, setZoomBarOpen] = useState(true);
   const [scale, setScale] = useState(1);
 
+  const onCloseRef = useRef(onClose);
+
+  // Keep the ref updated with the latest onClose function without triggering re-renders
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
   /* =========================
      MODAL BACK BUTTON
   ========================= */
@@ -64,20 +70,28 @@ export function PdfViewerDialog({
   }
 
   useEffect(() => {
-    // Preserve Next.js App Router's internal history state and
-    // append our modal marker for swipe-back support.
+    // 1. Push our modal state into the browser history exactly once
     window.history.pushState({ ...window.history.state, pdfModal: true }, "");
 
-    const handlePopState = () => {
-      onClose();
+    const handlePopState = (e: PopStateEvent) => {
+      if (!e.state?.pdfModal) {
+        onCloseRef.current(); // Call the latest version of onClose
+      }
     };
 
     window.addEventListener("popstate", handlePopState);
 
     return () => {
       window.removeEventListener("popstate", handlePopState);
+
+      // 2. THE SAFETY NET
+      // This will now ONLY run when the modal is actually unmounted and destroyed,
+      // not just because the parent component re-rendered.
+      if (window.history.state?.pdfModal) {
+        window.history.back();
+      }
     };
-  }, [onClose]);
+  }, []);
 
   /* =========================
      ZOOM

@@ -24,7 +24,7 @@ export function CourseMobileContent({ courseId, treeProps }: Props) {
         <div className="overflow-hidden rounded-sm border border-border">
           <CollapsibleTrigger className="group flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-muted/50">
             <div className="space-y-1">
-              <h3 className="text-sm font-semibold">Course Structure</h3>
+              <h3 className="text-sm font-semibold">Curriculum</h3>
 
               <p className="text-xs text-muted-foreground">
                 Browse chapters, topics, and learning materials.

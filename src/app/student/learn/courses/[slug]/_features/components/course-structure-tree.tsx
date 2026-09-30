@@ -42,6 +42,8 @@ type Props = {
 
   onUnitSelect: (unitId: string, unitType: UnitType) => void;
   onPracticeSelect: (practiceSetId: string) => void;
+
+  viewMode: "nested" | "flat";
 };
 
 export function CourseStructureTree({
@@ -53,6 +55,7 @@ export function CourseStructureTree({
   onToggleTopic,
   onUnitSelect,
   onPracticeSelect,
+  viewMode,
 }: Props) {
   return (
     <div className="space-y-4 p-3 lg:p-4 ">
@@ -67,6 +70,7 @@ export function CourseStructureTree({
           activeUnitId={activeUnitId}
           onUnitSelect={onUnitSelect}
           onPracticeSelect={onPracticeSelect}
+          viewMode={viewMode}
         />
       ))}
     </div>
@@ -84,6 +88,7 @@ function ChapterBlock({
   activeUnitId,
   onUnitSelect,
   onPracticeSelect,
+  viewMode,
 }: {
   chapter: CourseChapter;
   open: boolean;
@@ -95,6 +100,7 @@ function ChapterBlock({
   activeUnitId?: string;
   onUnitSelect: (unitId: string, unitType: UnitType) => void;
   onPracticeSelect: (id: string) => void;
+  viewMode: "nested" | "flat";
 }) {
   return (
     <Collapsible open={open} onOpenChange={onToggle}>
@@ -138,6 +144,7 @@ function ChapterBlock({
                       activeUnitId={activeUnitId}
                       onUnitSelect={onUnitSelect}
                       onPracticeSelect={onPracticeSelect}
+                      viewMode={viewMode}
                     />
                   ))}
                 </div>
@@ -159,6 +166,7 @@ function TopicBlock({
   activeUnitId,
   onUnitSelect,
   onPracticeSelect,
+  viewMode,
 }: {
   topic: CourseTopic;
   open: boolean;
@@ -167,6 +175,7 @@ function TopicBlock({
   activeUnitId?: string;
   onUnitSelect: (unitId: string, unitType: UnitType) => void;
   onPracticeSelect: (id: string) => void;
+  viewMode: "nested" | "flat";
 }) {
   const lessonCount = topic.units.length;
   const practiceCount = topic.practiceSets.length;
@@ -224,6 +233,83 @@ function TopicBlock({
       ? `${lessonCount} lessons • ${practiceCount} practice`
       : `${lessonCount} lessons`;
 
+  const handleUnitClick = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    unit: CourseUnitOutline,
+  ) => {
+    if (unit.access === "accessible") {
+      onUnitSelect(unit.id, unit.unitType);
+    } else {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setLockedFeedbackFor(unit.id);
+      setFeedbackPos({
+        top: rect.bottom,
+        left: rect.left + rect.width / 2,
+      });
+    }
+  };
+
+  const handlePracticeClick = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    ps: PracticeSetOutline,
+  ) => {
+    if (ps.access === "accessible") {
+      onPracticeSelect(ps.id);
+    } else {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setLockedFeedbackFor(ps.id);
+      setFeedbackPos({
+        top: rect.bottom,
+        left: rect.left + rect.width / 2,
+      });
+    }
+  };
+
+  // ==========================================
+  // FLAT VIEW RENDER
+  // ==========================================
+  if (viewMode === "flat") {
+    return (
+      <div className="space-y-1 relative pt-2">
+        <div className="px-2 pb-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+          {topic.title}
+        </div>
+
+        {topic.units.map((unit) => (
+          <UnitRow
+            key={unit.id}
+            unit={unit}
+            activeUnitId={activeUnitId}
+            onClick={(e) => handleUnitClick(e, unit)}
+          />
+        ))}
+
+        {topic.practiceSets.map((ps) => (
+          <PracticeRow
+            key={ps.id}
+            practice={ps}
+            onClick={(e) => handlePracticeClick(e, ps)}
+          />
+        ))}
+
+        <AnimatePresence>
+          {lockedFeedbackFor && feedbackPos && (
+            <LockedPopup
+              lockedFeedbackFor={lockedFeedbackFor}
+              feedbackPos={feedbackPos}
+              unlockRef={unlockRef}
+              drawLock={drawLock}
+              setDrawLock={setDrawLock}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // NESTED VIEW RENDER
+  // ==========================================
   return (
     <Collapsible open={open} onOpenChange={onToggle}>
       <div className="border rounded-sm overflow-hidden bg-background">
@@ -264,21 +350,7 @@ function TopicBlock({
                       key={unit.id}
                       unit={unit}
                       activeUnitId={activeUnitId}
-                      onClick={(e) => {
-                        if (unit.access === "accessible") {
-                          onUnitSelect(unit.id, unit.unitType);
-                        } else {
-                          const rect = (
-                            e.currentTarget as HTMLElement
-                          ).getBoundingClientRect();
-
-                          setLockedFeedbackFor(unit.id);
-                          setFeedbackPos({
-                            top: rect.bottom,
-                            left: rect.left + rect.width / 2,
-                          });
-                        }
-                      }}
+                      onClick={(e) => handleUnitClick(e, unit)}
                     />
                   ))}
 
@@ -286,111 +358,20 @@ function TopicBlock({
                     <PracticeRow
                       key={ps.id}
                       practice={ps}
-                      onClick={(e) => {
-                        if (ps.access === "accessible") {
-                          onPracticeSelect(ps.id);
-                        } else {
-                          const rect = (
-                            e.currentTarget as HTMLElement
-                          ).getBoundingClientRect();
-
-                          setLockedFeedbackFor(ps.id);
-                          setFeedbackPos({
-                            top: rect.bottom,
-                            left: rect.left + rect.width / 2,
-                          });
-                        }
-                      }}
+                      onClick={(e) => handlePracticeClick(e, ps)}
                     />
                   ))}
                 </div>
 
                 <AnimatePresence>
                   {lockedFeedbackFor && feedbackPos && (
-                    <motion.div
-                      key={lockedFeedbackFor}
-                      ref={unlockRef}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.98 }}
-                      transition={{
-                        type: "tween",
-                        ease: "easeInOut",
-                        duration: 0.15,
-                      }}
-                      onAnimationComplete={() => {
-                        setDrawLock(true);
-                      }}
-                      style={{
-                        position: "fixed",
-                        top: feedbackPos.top + 14,
-                        left: feedbackPos.left,
-                      }}
-                      className="
-        z-999
-        w-[320px]
-        rounded-xl
-        border border-primary/30
-        bg-background
-        backdrop-blur-md
-        shadow-[0_10px_30px_rgba(0,0,0,0.12)]
-        p-4 -translate-x-1/2 relative 
-      "
-                    >
-                      <GrafanaBackground opacity={1} />
-                      <div className="flex items-center gap-3">
-                        {/* Icon */}
-                        <div className="flex shrink-0 h-9 w-9 items-center justify-center rounded-lg bg-muted/60">
-                          <motion.svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-foreground/80"
-                          >
-                            {/* Body */}
-                            <motion.rect
-                              x="3"
-                              y="11"
-                              width="18"
-                              height="11"
-                              rx="2"
-                              ry="2"
-                              initial={{ pathLength: 0 }}
-                              animate={{ pathLength: drawLock ? 1 : 0 }}
-                              transition={{ duration: 0.4, ease: "easeInOut" }}
-                            />
-
-                            {/* Shackle */}
-                            <motion.path
-                              d="M7 11V7a5 5 0 0 1 10 0v4"
-                              initial={{ pathLength: 0 }}
-                              animate={{ pathLength: drawLock ? 1 : 0 }}
-                              transition={{
-                                duration: 0.4,
-                                ease: "easeInOut",
-                                delay: 0.15,
-                              }}
-                            />
-                          </motion.svg>
-                        </div>
-
-                        {/* Text */}
-                        <div className="flex-1 space-y-1">
-                          <p className="text-sm font-semibold tracking-tight">
-                            This content is locked
-                          </p>
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            Enroll in this course to unlock all lessons and
-                            practice sets.
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
+                    <LockedPopup
+                      lockedFeedbackFor={lockedFeedbackFor}
+                      feedbackPos={feedbackPos}
+                      unlockRef={unlockRef}
+                      drawLock={drawLock}
+                      setDrawLock={setDrawLock}
+                    />
                   )}
                 </AnimatePresence>
               </motion.div>
@@ -399,6 +380,86 @@ function TopicBlock({
         </CollapsibleContent>
       </div>
     </Collapsible>
+  );
+}
+
+type LockedPopupProps = {
+  lockedFeedbackFor: string;
+  feedbackPos: {
+    top: number;
+    left: number;
+  };
+  unlockRef: React.MutableRefObject<HTMLDivElement | null>;
+  drawLock: boolean;
+  setDrawLock: (value: boolean) => void;
+};
+
+function LockedPopup({
+  lockedFeedbackFor,
+  feedbackPos,
+  unlockRef,
+  drawLock,
+  setDrawLock,
+}: LockedPopupProps) {
+  return (
+    <motion.div
+      key={lockedFeedbackFor}
+      ref={unlockRef}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ type: "tween", ease: "easeInOut", duration: 0.15 }}
+      onAnimationComplete={() => setDrawLock(true)}
+      style={{
+        position: "fixed",
+        top: feedbackPos.top + 14,
+        left: feedbackPos.left,
+      }}
+      className="z-999 w-[320px] rounded-xl border border-primary/30 bg-background backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.12)] p-4 -translate-x-1/2 relative"
+    >
+      <GrafanaBackground opacity={1} />
+      <div className="flex items-center gap-3">
+        <div className="flex shrink-0 h-9 w-9 items-center justify-center rounded-lg bg-muted/60">
+          <motion.svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-foreground/80"
+          >
+            <motion.rect
+              x="3"
+              y="11"
+              width="18"
+              height="11"
+              rx="2"
+              ry="2"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: drawLock ? 1 : 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+            />
+            <motion.path
+              d="M7 11V7a5 5 0 0 1 10 0v4"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: drawLock ? 1 : 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut", delay: 0.15 }}
+            />
+          </motion.svg>
+        </div>
+        <div className="flex-1 space-y-1">
+          <p className="text-sm font-semibold tracking-tight">
+            This content is locked
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Enroll in this course to unlock all lessons and practice sets.
+          </p>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -451,7 +512,6 @@ function UnitRow({
 
       <span className="flex-1 truncate">{unit.title}</span>
 
-      {/* Duration */}
       <span className="text-xs text-muted-foreground whitespace-nowrap">
         {formatDuration(unit.durationMinutes)}
       </span>

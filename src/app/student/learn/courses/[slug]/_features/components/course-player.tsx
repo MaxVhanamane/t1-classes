@@ -24,6 +24,7 @@ import { fetchWrapper } from "@/src/lib/api/fetch-wrapper";
 import dynamic from "next/dynamic";
 import { CourseSidebar } from "./course-sidebar";
 import { CourseMobileContent } from "./course-mobile-content";
+import { LayoutList, ListTree } from "lucide-react";
 
 const PdfViewerDialog = dynamic(
   () =>
@@ -46,7 +47,7 @@ const PracticeSetDialog = dynamic(
 );
 
 /* ========================================================= */
-/* Types                                                      */
+/* Types                                                     */
 /* ========================================================= */
 
 export type UnitType = "pdf" | "video";
@@ -71,7 +72,7 @@ type PlayerState =
   | { status: "practice"; unit: CourseUnitContent | null; isLoading: boolean };
 
 /* ========================================================= */
-/* Fetch helper                                               */
+/* Fetch helper                                              */
 /* ========================================================= */
 const fetchUnit = (unitId: string): Promise<CourseUnitContent> => {
   return fetchWrapper<CourseUnitContent>(
@@ -80,7 +81,7 @@ const fetchUnit = (unitId: string): Promise<CourseUnitContent> => {
 };
 
 /* ========================================================= */
-/* Component                                                  */
+/* Component                                                 */
 /* ========================================================= */
 
 export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
@@ -99,43 +100,48 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
 
   const didHydrateRef = useRef(false);
 
-  const [mobileMode, setMobileMode] = useState<"inline" | "drawer">(() => {
-    if (typeof window === "undefined") return "inline";
-    return localStorage.getItem("mobileCourseContentMode") === "drawer"
-      ? "drawer"
-      : "inline";
-  });
+  // 1. Initialize with server-safe defaults to prevent hydration mismatch
+  const [viewMode, setViewMode] = useState<"nested" | "flat">("nested");
+  const [mobileMode, setMobileMode] = useState<"inline" | "drawer">("inline");
 
-  // Derived — no need for hasPreviewUnit state
   const previewUnit = outline.chapters
     .flatMap((c) => c.topics)
     .flatMap((t) => t.units)
     .find((u) => u.isFreePreview);
 
   /* -------------------------------------------------- */
-  /* Persist mobile mode preference                      */
+  /* Load & Persist preferences                         */
   /* -------------------------------------------------- */
+
+  // Load saved preferences AFTER initial mount to prevent hydration mismatch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const savedViewMode = localStorage.getItem("courseViewMode");
+      if (savedViewMode === "flat") setViewMode("flat");
+
+      const savedMobileMode = localStorage.getItem("mobileCourseContentMode");
+      if (savedMobileMode === "drawer") setMobileMode("drawer");
+
+      // Mark as hydrated so future clicks save to localStorage
+      didHydrateRef.current = true;
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Save to localStorage when state changes (but only after hydration)
+  useEffect(() => {
+    if (!didHydrateRef.current) return;
+    localStorage.setItem("courseViewMode", viewMode);
+  }, [viewMode]);
 
   useEffect(() => {
     if (!didHydrateRef.current) return;
     localStorage.setItem("mobileCourseContentMode", mobileMode);
   }, [mobileMode]);
 
-  // Reset transient UI state on route leave/unmount.
-  // Next.js App Router may preserve cached client state, so close dialogs/drawers
-  // here to prevent PDF/practice/mobile panels reopening when returning.
-  // useLayoutEffect(() => {
-  //   return () => {
-  //
-  //     setPlayerState((prev) =>
-  //       prev.status === "pdf" ? { ...prev, isOpen: false } : prev,
-  //     );
-  //     setActivePracticeSetId(null);
-  //     setMobileOpen(false);
-  //   };
-  // }, []);
   /* -------------------------------------------------- */
-  /* Load unit                                           */
+  /* Load unit                                          */
   /* -------------------------------------------------- */
 
   const loadUnit = useCallback(
@@ -146,7 +152,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
     ) => {
       setActiveUnitId(unitId);
 
-      // Immediate optimistic UI
       if (unitType === "pdf") {
         setPlayerState({
           status: "pdf",
@@ -195,7 +200,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   );
 
   /* -------------------------------------------------- */
-  /* Restore last unit / preview unit on mount           */
+  /* Restore last unit / preview unit on mount          */
   /* -------------------------------------------------- */
 
   useEffect(() => {
@@ -225,10 +230,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outline, mode, loadUnit]);
 
-  /* -------------------------------------------------- */
-  /* Auto-expand active unit path in sidebar             */
-  /* -------------------------------------------------- */
-
   useEffect(() => {
     if (mode !== "learn" || !activeUnitId) return;
 
@@ -240,7 +241,7 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
   }, [activeUnitId, outline, mode]);
 
   /* -------------------------------------------------- */
-  /* Shared CourseStructureTree props                    */
+  /* Shared CourseStructureTree props                   */
   /* -------------------------------------------------- */
 
   const treeProps = {
@@ -258,10 +259,13 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
       ),
     onUnitSelect: loadUnit,
     onPracticeSelect: (id: string) => setActivePracticeSetId(id),
+    viewMode,
+    onToggleViewMode: () =>
+      setViewMode((prev) => (prev === "nested" ? "flat" : "nested")),
   };
 
   /* -------------------------------------------------- */
-  /* Derived dialog state helpers                        */
+  /* Derived dialog state helpers                       */
   /* -------------------------------------------------- */
 
   const isPdfOrPracticeDialog =
@@ -317,10 +321,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         mode === "preview" && "gap-6",
       )}
     >
-      {/* ============================================= */}
-      {/* LEFT — PLAYER                                 */}
-      {/* ============================================= */}
-
       <div className="flex lg:flex-1 flex-col">
         <div
           className={cn(
@@ -403,26 +403,52 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
 
         {/* Mobile — toggle bar */}
         <div className="lg:hidden px-4 flex justify-between items-center border-t border-b py-2">
-          <span className="text-sm text-muted-foreground">Course content</span>
-          <div className="flex rounded-lg border p-1 text-xs">
+          {/* Left Side: Context Text */}
+          <span className="text-sm font-medium text-foreground">
+            Course content
+          </span>
+
+          {/* Right Side: Grouped Controls */}
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => setMobileMode("inline")}
-              className={cn(
-                "px-2 py-1 rounded",
-                mobileMode === "inline" && "bg-muted font-semibold",
-              )}
+              onClick={() =>
+                setViewMode((prev) => (prev === "nested" ? "flat" : "nested"))
+              }
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Inline
-            </button>
-            <button
-              onClick={() => setMobileMode("drawer")}
-              className={cn(
-                "px-2 py-1 rounded",
-                mobileMode === "drawer" && "bg-muted font-semibold",
+              {viewMode === "nested" ? (
+                <>
+                  <LayoutList className="h-3.5 w-3.5" />
+                  Flat view
+                </>
+              ) : (
+                <>
+                  <ListTree className="h-3.5 w-3.5" />
+                  Nested view
+                </>
               )}
-            >
-              Drawer
             </button>
+
+            <div className="flex rounded-lg border p-1 text-xs">
+              <button
+                onClick={() => setMobileMode("inline")}
+                className={cn(
+                  "px-2 py-1 rounded",
+                  mobileMode === "inline" && "bg-muted font-semibold",
+                )}
+              >
+                Inline
+              </button>
+              <button
+                onClick={() => setMobileMode("drawer")}
+                className={cn(
+                  "px-2 py-1 rounded",
+                  mobileMode === "drawer" && "bg-muted font-semibold",
+                )}
+              >
+                Drawer
+              </button>
+            </div>
           </div>
         </div>
 
@@ -449,26 +475,17 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
         )}
       </div>
 
-      {/* ============================================= */}
-      {/* RIGHT — SIDEBAR                              */}
-      {/* ============================================= */}
-
       <CourseSidebar
         mode={mode}
         courseId={outline.courseId}
         treeProps={treeProps}
       />
 
-      {/* ============================================= */}
-      {/* DRAWER (mobile)                              */}
-      {/* ============================================= */}
-
       <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
         <DrawerContent className="h-[95dvh] data-[vaul-drawer-direction=bottom]:max-h-[95dvh]">
           <DrawerHeader className="border-b">
             <DrawerTitle>Course Content</DrawerTitle>
           </DrawerHeader>
-
           <div className="mt-1.5 flex-1 overflow-y-auto px-1 py-4">
             <CourseMobileContent
               courseId={outline.courseId}
@@ -476,7 +493,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
                 ...treeProps,
                 onUnitSelect: (id, type) => {
                   void loadUnit(id, type);
-
                   setMobileOpen(false);
                 },
               }}
@@ -484,10 +500,6 @@ export function CoursePlayer({ outline, mode = "learn" }: CoursePlayerProps) {
           </div>
         </DrawerContent>
       </Drawer>
-
-      {/* ============================================= */}
-      {/* DIALOGS                                      */}
-      {/* ============================================= */}
 
       {playerState.status === "pdf" &&
         playerState.isOpen &&

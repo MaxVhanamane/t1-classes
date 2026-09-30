@@ -153,7 +153,7 @@ export function VideoPlayer({ unit, onIframeLoad, pauseSignal }: Props) {
         </button> */}
       </div>
 
-      <div className="my-3 gap-3 px-4 lg:p-4  lg:bg-muted-soft lg:rounded-lg">
+      <div className="my-3 gap-3 px-4 lg:border lg:p-4  lg:rounded-lg">
         <div
           className={cn(
             "w-px origin-top bg-border transition-transform duration-200",
