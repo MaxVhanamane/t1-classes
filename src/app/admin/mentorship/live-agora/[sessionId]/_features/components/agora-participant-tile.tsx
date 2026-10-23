@@ -116,9 +116,7 @@ export function AgoraParticipantTile({
       // Silently catch fullscreen errors
     }
   };
-  console.log("!isLocal && remoteAudioTrack ", !isLocal && remoteAudioTrack);
-  console.log(isLocal);
-  console.log(remoteAudioTrack);
+
   return (
     <Card
       ref={containerRef}

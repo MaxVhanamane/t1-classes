@@ -18,13 +18,11 @@ import { cacheLife, cacheTag } from "next/cache";
 /* -------------------------------------------------------------------------- */
 
 async function getCourse(slug: string): Promise<CourseDetails | null> {
-  console.log("get course called on course details page for slug:", slug);
   const supabase = createStaticSupabaseClient();
   return await getCourseBySlug(slug, supabase);
 }
 
 async function getOutline(slug: string): Promise<CourseOutline | null> {
-  console.log("get course outline called");
   const supabase = createStaticSupabaseClient();
 
   const { data, error } = await supabase.rpc(
@@ -113,7 +111,6 @@ export default async function CourseLandingPage({
   params: Promise<{ slug: string }>;
 }) {
   "use cache";
-  console.log("Course details page rendered");
   cacheLife("aggressive");
   const { slug } = await params;
   cacheTag(`course-detail-${slug}`);

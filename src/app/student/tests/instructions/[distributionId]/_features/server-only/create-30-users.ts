@@ -136,11 +136,9 @@ export async function seed30Students() {
                 }
             }
 
-            console.log(`✓ ${email}`);
         } catch (error) {
             console.error(`Unexpected error for user${i}`, error);
         }
     }
 
-    console.log("Student seed completed for users 51-80");
 }

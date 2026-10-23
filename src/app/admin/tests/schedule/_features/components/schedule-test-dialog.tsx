@@ -239,7 +239,6 @@ export function ScheduleTestDialog({
     },
 
     (errors) => {
-      console.log("Validation errors", errors);
       const message = extractFirstErrorMessage(errors);
       toast.dismiss();
       toast.error(message ?? "Please fix the highlighted fields");
@@ -333,7 +332,7 @@ export function ScheduleTestDialog({
               })}
             />
             {/* The min-h-[1.25rem] wrapper prevents layout shift when text appears */}
-            <div className="min-h-[1.25rem] px-1 pt-1">
+            <div className="min-h-5 px-1 pt-1">
               {dateErrorText ? (
                 <p className="text-xs text-destructive font-medium">
                   {dateErrorText}

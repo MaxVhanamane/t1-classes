@@ -13,11 +13,9 @@ export async function endMentorshipSession(
 ): Promise<ServerActionResponse<boolean>> {
     // 1. Auth check
     const staff = await requireStaffServerOnly();
-    console.log("[END_SESSION_DEBUG] Auth passed. Current Staff ID:", staff.userId);
 
     try {
         const supabase = await createServerSupabaseClient();
-        console.log("[END_SESSION_DEBUG] Fetching session ID:", input.sessionId);
 
         // 2. Fetch session to verify ownership
         const { data: session, error: sessionError } = await supabase
@@ -32,12 +30,9 @@ export async function endMentorshipSession(
         }
 
         // 3. Permission check: Only the owner/moderator can end the session
-        console.log("[END_SESSION_DEBUG] --- PERMISSION CHECK ---");
-        console.log("[END_SESSION_DEBUG] Session created_by :", session.created_by);
-        console.log("[END_SESSION_DEBUG] Action executed by :", staff.userId);
+
 
         const isModerator = session.created_by === staff.userId;
-        console.log("[END_SESSION_DEBUG] isModerator result :", isModerator);
 
         if (!isModerator) {
             console.warn("[END_SESSION_DEBUG] Permission denied. IDs do not match.");
@@ -45,7 +40,6 @@ export async function endMentorshipSession(
         }
 
         // 4. Update Database
-        console.log("[END_SESSION_DEBUG] IDs match. Updating ends_at timestamp...");
         const { error: updateError } = await supabase
             .from("mentorship_sessions")
             .update({
@@ -58,7 +52,6 @@ export async function endMentorshipSession(
             return { error: "Failed to update session status" };
         }
 
-        console.log("[END_SESSION_DEBUG] Successfully ended session in database.");
         return { data: true };
     } catch (error) {
         console.error("[END_MENTORSHIP_SESSION_FATAL]", error);

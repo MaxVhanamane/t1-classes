@@ -9,7 +9,6 @@ import { verifyChapterSchema } from "../zod/syllabus-progress.schema";
 export async function verifyChapter(
     input: unknown
 ): Promise<ServerActionResponse<boolean>> {
-    console.log("hey")
     const staff = await requireStaffServerOnly();
 
     if (staff.role !== "admin") {

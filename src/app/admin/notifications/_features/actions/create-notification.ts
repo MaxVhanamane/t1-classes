@@ -63,7 +63,7 @@ export async function createNotification(
 
         after(async () => {
             try {
-                const result = await sendPushNotification({
+                await sendPushNotification({
                     title: payload.title ?? "Notification",
                     body: payload.message,
                     type: payload.type,
@@ -84,10 +84,7 @@ export async function createNotification(
                     },
                 });
 
-                console.log(
-                    "[CREATE_NOTIFICATION_PUSH]",
-                    result,
-                );
+
             } catch (error) {
                 // Push notifications are complementary.
                 // The notification already exists, so never fail

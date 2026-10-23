@@ -99,7 +99,6 @@ export default async function CategoryCoursesPaginatedPage({
 }) {
   "use cache";
   cacheLife("aggressive");
-  console.log("Courses pagination page rendered");
   const { category, page } = await params;
   cacheTag(`course-list-${category}`);
 

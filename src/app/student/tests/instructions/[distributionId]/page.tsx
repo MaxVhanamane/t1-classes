@@ -47,7 +47,6 @@ async function getCachedInstructionsPayload(
 
   cacheTag(`distribution:${distributionId}`);
   cacheLife("days");
-  console.log("getCachedInstructionsPayload called");
 
   const supabase = createStaticSupabaseClient();
 

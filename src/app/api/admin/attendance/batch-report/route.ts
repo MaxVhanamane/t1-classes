@@ -86,18 +86,7 @@ export async function GET(request: NextRequest) {
 
         const supabase =
             await createServerSupabaseClient();
-        console.log("BATCH REPORT PARAMS", {
-            batchId,
-            search,
-            startDate,
-            endDate,
-            page,
-            pageSize,
-            teacherId:
-                auth.user.role === "teacher"
-                    ? auth.user.userId
-                    : null,
-        });
+
         const { data, error } =
             await supabase.rpc(
                 "get_batch_attendance_report",
@@ -125,12 +114,6 @@ export async function GET(request: NextRequest) {
                 },
             );
 
-        console.log("BATCH REPORT RPC ERROR", error);
-
-        console.log(
-            "BATCH REPORT RPC DATA",
-            data?.[0],
-        );
 
         if (error) {
             return NextResponse.json(

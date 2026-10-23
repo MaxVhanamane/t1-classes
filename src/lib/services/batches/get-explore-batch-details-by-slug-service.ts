@@ -55,7 +55,6 @@ export async function getExploreBatchDetailBySlugService(
         .maybeSingle();
 
     if (batchError) {
-        console.log("batchError", batchError)
         throw new Error("Failed to fetch batch");
     }
 

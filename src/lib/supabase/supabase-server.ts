@@ -16,13 +16,13 @@ export async function createServerSupabaseClient() {
                 },
                 setAll(cookiesToSet) {
                     try {
-                        console.log("setting cookies createServerClient")
+
                         cookiesToSet.forEach(({ name, value, options }) => {
                             cookieStore.set(name, value, options);
                         });
-                    } catch (error) {
+                    } catch {
                         // Ignore 
-                        console.log(error)
+
 
                     }
                 }

@@ -94,7 +94,6 @@ export default async function CategoryBatchesPaginatedPage({
   "use cache";
   cacheLife("aggressive");
   const { category, page } = await params;
-  console.log("Batches pagination page rendered", category, page);
   cacheTag(`batch-list-${category}`);
   const pageNumber = Number(page);
 

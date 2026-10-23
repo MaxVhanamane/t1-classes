@@ -50,7 +50,6 @@ async function getCachedTestPayload(
 
     cacheTag(`test:${testId}`);
     cacheLife("days");
-    console.log("getCachedTestPayload called")
 
     const supabase = createStaticSupabaseClient();
 

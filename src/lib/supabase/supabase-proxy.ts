@@ -68,8 +68,6 @@ function redirect(
 
 export async function updateSession(request: NextRequest) {
 
-    console.log("---- REQUEST START (updateSession is running) (proxy) ----")
-    // console.log("ALL COOKIES:", request.cookies.getAll())
     let supabaseResponse = NextResponse.next({ request })
 
     // With Fluid compute, don't put this client in a global environment

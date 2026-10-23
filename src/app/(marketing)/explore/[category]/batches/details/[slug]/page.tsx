@@ -22,7 +22,6 @@ import { ExploreBatchDetail } from "./_features/types/batch.types";
 /* -------------------------------------------------------------------------- */
 
 async function getBatch(slug: string): Promise<ExploreBatchDetail | null> {
-  console.log("get batch called on batches details page for slug:", slug);
   const supabase = createStaticSupabaseClient();
   return await getExploreBatchDetailBySlugService(supabase, slug);
 }
@@ -45,12 +44,6 @@ export async function generateStaticParams() {
   if (error || !data || data.length === 0) {
     return [];
   }
-  console.log(
-    data.map((b) => ({
-      slug: b.slug,
-      category: b.category, //  REQUIRED
-    })),
-  );
 
   return data.map((b) => ({
     slug: b.slug,
@@ -68,7 +61,6 @@ export default async function BatchPage({
 }) {
   "use cache";
   const { slug, category } = await params;
-  console.log("Cached Batch page rendered", slug, category);
   cacheLife("aggressive");
   cacheTag(`batch-detail-${slug}`);
 

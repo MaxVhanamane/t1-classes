@@ -49,7 +49,7 @@ export async function createUserWithPassword(
             });
 
         if (createError || !userData.user) {
-            console.log("createErrorcreateError", createError)
+
             return {
                 error: createError?.message || "Failed to create auth user",
             };

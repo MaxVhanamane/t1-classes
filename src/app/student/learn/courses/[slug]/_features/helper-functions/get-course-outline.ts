@@ -24,7 +24,6 @@ export async function getCourseOutline(slug: string): Promise<{
     "use cache: remote";
     cacheLife("aggressive");
     cacheTag(`course-outline:enrolled:${slug}`);
-    console.log("getCourseOutline called", `course-outline:enrolled:${slug}`)
 
     const supabase = createStaticSupabaseClient();
 
